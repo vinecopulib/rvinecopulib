@@ -1,0 +1,24 @@
+Package: rvinecopulib
+Type: Package
+Title: High Performance Algorithms for Vine Copula Modeling
+Version: 0.0.1.9000
+Authors@R: c(
+        person("Thomas", "Nagler",, "thomas.nagler@tum.de", role = c("aut", "cre")),
+        person("Thibault", "Vatter",, "<thibault.vatter@gmail.com>", role = c("aut"))
+        )
+Description: This is the R interface to the vinecopulib C++ library.
+License: GPL-3 | file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    nloptr
+Suggests:
+    testthat,
+    VineCopula
+LinkingTo: 
+    Rcpp,
+    RcppEigen,
+    BH
+Roxygen: list(markdown = TRUE)
+SystemRequirements: C++11
+RoxygenNote: 6.0.0
