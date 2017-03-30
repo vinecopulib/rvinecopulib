@@ -7,3 +7,5 @@
 ^\.travis\.yml$
 ^appveyor\.yml$
 ^revdep$
+
+^src/update_vinecopulib\.sh$

@@ -6,7 +6,9 @@ rm -rf bicop
 rm -rf misc 
 rm -rf vinecop
 rm -rf ../inst/include
+
 mv ./vinecopulib/src/* .
 mv ./vinecopulib/include ../inst
 
+rm -rf ./../inst/include/mainpage.h
 rm -rf vinecopulib
