@@ -2,7 +2,7 @@ dist: trusty
 sudo: required
 
 language: R
-warnings_are_errors: true
+warnings_are_errors: false
 
 
 apt_packages:
