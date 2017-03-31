@@ -4,11 +4,13 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "misc/tools_optimization.hpp"
-#include "misc/tools_stats.hpp"
+#include <vinecopulib/misc/tools_optimization.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
 
 #include <cmath>
 
+namespace vinecopulib {
+    
 //! Utilities for numerical optimization (based on NLopt)
 namespace tools_optimization {
 
@@ -99,7 +101,9 @@ namespace tools_optimization {
         maxeval_ = maxeval;
     }
 
-    void NLoptControls::check_parameters(double xtol_rel, double xtol_abs, double ftol_rel, double ftol_abs, int maxeval)
+    void NLoptControls::check_parameters(double xtol_rel, double xtol_abs, 
+                                         double ftol_rel, double ftol_abs, 
+                                         int maxeval)
     {
         if (xtol_rel <= 0 || xtol_rel > 1) {
             throw std::runtime_error("xtol_rel should be in (0,1]");
@@ -224,4 +228,6 @@ namespace tools_optimization {
         Eigen::Map<const Eigen::VectorXd> optimized_parameters(&x[0], x.size());
         return optimized_parameters;
     }
+}
+
 }

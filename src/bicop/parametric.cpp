@@ -4,10 +4,10 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "bicop/parametric.hpp"
-#include "misc/tools_optimization.hpp"
-#include "misc/tools_stl.hpp"
-#include "misc/tools_stats.hpp"
+#include <vinecopulib/bicop/parametric.hpp>
+#include <vinecopulib/misc/tools_optimization.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
 
 namespace vinecopulib
 {

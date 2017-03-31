@@ -4,7 +4,7 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "bicop/indep.hpp"
+#include <vinecopulib/bicop/indep.hpp>
 
 namespace vinecopulib
 {

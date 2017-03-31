@@ -4,8 +4,8 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "bicop/archimedean.hpp"
-#include "misc/tools_stl.hpp"
+#include <vinecopulib/bicop/archimedean.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
 
 namespace vinecopulib
 {

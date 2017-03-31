@@ -4,13 +4,14 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "misc/tools_interpolation.hpp"
-#include "misc/tools_stats.hpp"
+#include <vinecopulib/misc/tools_interpolation.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
 #include <exception>
 #include <iostream>
 
-namespace vinecopulib
-{
+namespace vinecopulib {
+
+namespace tools_interpolation {
     //! Constructor
     //!
     //! @param grid_points an ascending sequence of grid_points; used in both
@@ -290,4 +291,6 @@ namespace vinecopulib
 
         return tmpint;
     }
+}
+
 }

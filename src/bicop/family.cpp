@@ -4,7 +4,7 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "bicop/family.hpp"
+#include <vinecopulib/bicop/family.hpp>
 #include <stdexcept>
 
 namespace vinecopulib {
