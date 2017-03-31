@@ -25,6 +25,7 @@ install:
   - lib /def:C:\projects\nlopt\libnlopt-0.def /machine:%platform%
   - move libnlopt-0.lib C:\projects\nlopt\
   - move libnlopt-0.exp C:\projects\nlopt\
+  - setx NLOPT_HOME "C:\projects\nlopt\"
 
 build_script:
   - set path=%path%;C:\projects\nlopt
