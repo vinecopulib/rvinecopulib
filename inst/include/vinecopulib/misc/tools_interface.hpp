@@ -6,9 +6,10 @@
 
 #pragma once
 
-// interface specfifc #defines can be set here 
+// interface specfifc #defines can be set here
 // (R package does: #define INTERFACED_FROM_R)
 #define INTERFACED_FROM_R
+#include <RcppEigen.h>
 
 #ifndef INTERFACED_FROM_R
     #include <iostream>
@@ -22,7 +23,7 @@ namespace vinecopulib {
             #ifndef INTERFACED_FROM_R
                 std::cout << text;
             #else
-                Rcpp::cout << text;
+                Rcpp::Rcout << text;
             #endif
         };
     }
