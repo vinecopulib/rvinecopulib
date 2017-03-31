@@ -2,16 +2,31 @@
 
 # Download script file from GitHub
 init:
-  ps: |
+  - ps: |
+        If ($env:platform -Match "x86") {
+          $env:NLOPT_ZIP="nlopt-2.4.2-dll32.zip"
+          $env:CMAKE_GEN_PLAT="Win32"
+        } Else {
+          $env:NLOPT_ZIP="nlopt-2.4.2-dll64.zip"
+          $env:CMAKE_GEN_PLAT="x64"
+        }
+  - cmd: C:/"Program Files (x86)"/"Microsoft Visual Studio 12.0"/VC/vcvarsall.bat
+
+  - ps: |
         $ErrorActionPreference = "Stop"
         Invoke-WebRequest http://raw.github.com/krlmlr/r-appveyor/master/scripts/appveyor-tool.ps1 -OutFile "..\appveyor-tool.ps1"
         Import-Module '..\appveyor-tool.ps1'
-install:
-  ps: Bootstrap
 
-# Adapt as necessary starting from here
+install:
+  - ps: Bootstrap
+  - ps: wget "http://ab-initio.mit.edu/nlopt/$env:NLOPT_ZIP" -OutFile nlopt.zip
+  - 7z x nlopt.zip -o"C:\projects\nlopt" -y > nul
+  - lib /def:C:\projects\nlopt\libnlopt-0.def /machine:%platform%
+  - move libnlopt-0.lib C:\projects\nlopt\
+  - move libnlopt-0.exp C:\projects\nlopt\
 
 build_script:
+  - set path=%path%;C:\projects\nlopt
   - travis-tool.sh install_deps
 
 test_script:
