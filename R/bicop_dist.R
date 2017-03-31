@@ -12,7 +12,7 @@
 #' \describe{
 #' \item{`indep`}{Independence copula.}
 #' \item{`gaussian`}{Gaussian copula.}
-#' \item{`t`}{Student t copula.}
+#' \item{`t`, `student`}{Student t copula.}
 #' \item{`clayton`}{Clayton copula.}
 #' \item{`gumbel`}{Gumbel copula.}
 #' \item{`frank`}{Frank copula.}
@@ -32,8 +32,14 @@
 #'
 #' @export
 bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {
-    lst <- list(family = family, rotation = rotation, parameters = parameters)
-    structure(lst, class = "bicop_dist")
+    stopifnot(length(family) == 1)
+    if (family == "t")
+        family <- "student"
+    dist <- list(family = family,
+                 rotation = rotation,
+                 parameters = as.matrix(parameters))
+    bicop_check_cpp(dist)
+    structure(dist, class = "bicop_dist")
 }
 
 #' @export
