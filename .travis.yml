@@ -1,7 +1,9 @@
+dist: trusty
+sudo: required
+
 language: R
 warnings_are_errors: true
 
-sudo: required
 
 apt_packages:
   - gsl-bin
@@ -17,10 +19,9 @@ apt_packages:
 before_install:
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -q
-  - sudo apt-get install g++-6.3 -y
-  - sudo apt-get install gfortran-6.3 -y
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6.3 100
-  - sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-6.3 100
-  
+  - sudo apt-get install gcc-5 g++-5 gfortran-5
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100
+  - sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100
+
 repos:
   CRAN: http://cran.rstudio.com
