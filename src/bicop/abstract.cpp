@@ -7,21 +7,21 @@
 #include <exception>
 #include <cmath>
 
-#include "bicop/abstract.hpp"
-#include "misc/tools_stl.hpp"
+#include <vinecopulib/bicop/abstract.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
 
-#include "bicop/bb1.hpp"
-#include "bicop/bb6.hpp"
-#include "bicop/bb7.hpp"
-#include "bicop/bb8.hpp"
-#include "bicop/clayton.hpp"
-#include "bicop/frank.hpp"
-#include "bicop/gaussian.hpp"
-#include "bicop/gumbel.hpp"
-#include "bicop/indep.hpp"
-#include "bicop/joe.hpp"
-#include "bicop/student.hpp"
-#include "bicop/tll0.hpp"
+#include <vinecopulib/bicop/bb1.hpp>
+#include <vinecopulib/bicop/bb6.hpp>
+#include <vinecopulib/bicop/bb7.hpp>
+#include <vinecopulib/bicop/bb8.hpp>
+#include <vinecopulib/bicop/clayton.hpp>
+#include <vinecopulib/bicop/frank.hpp>
+#include <vinecopulib/bicop/gaussian.hpp>
+#include <vinecopulib/bicop/gumbel.hpp>
+#include <vinecopulib/bicop/indep.hpp>
+#include <vinecopulib/bicop/joe.hpp>
+#include <vinecopulib/bicop/student.hpp>
+#include <vinecopulib/bicop/tll0.hpp>
 
 namespace vinecopulib
 {

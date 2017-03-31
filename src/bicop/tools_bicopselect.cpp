@@ -4,9 +4,9 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "bicop/tools_bicopselect.hpp"
-#include "misc/tools_stats.hpp"
-#include "misc/tools_stl.hpp"
+#include <vinecopulib/bicop/tools_bicopselect.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
 #include <cmath>
 
 std::vector<double> get_c1c2(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
@@ -16,7 +16,7 @@ std::vector<double> get_c1c2(const Eigen::Matrix<double, Eigen::Dynamic, 2>& dat
     Eigen::MatrixXd x = Eigen::MatrixXd::Zero(n, 2);
     Eigen::MatrixXd z1 = x;
     Eigen::MatrixXd z2 = x;
-    x = tools_stats::qnorm(data);
+    x = vinecopulib::tools_stats::qnorm(data);
     
     int count1 = 0, count2 = 0;
     for (size_t j = 0; j < n; ++j) {
@@ -42,8 +42,8 @@ std::vector<double> get_c1c2(const Eigen::Matrix<double, Eigen::Dynamic, 2>& dat
     }
 
     return  {
-        tools_stats::pairwise_cor(z1.block(0, 0, count1 - 1, 2)),
-        tools_stats::pairwise_cor(z2.block(0, 0, count2 - 1, 2))
+        vinecopulib::tools_stats::pairwise_cor(z1.block(0, 0, count1 - 1, 2)),
+        vinecopulib::tools_stats::pairwise_cor(z2.block(0, 0, count2 - 1, 2))
     };
 }
 

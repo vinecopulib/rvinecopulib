@@ -7,7 +7,9 @@
 #include <iostream>
 #include <fstream>
 
-#include "misc/tools_eigen.hpp"
+#include <vinecopulib/misc/tools_eigen.hpp>
+
+namespace vinecopulib {
 
 namespace tools_eigen
 {
@@ -117,4 +119,6 @@ namespace tools_eigen
     };
     
     //! @}
+}
+
 }

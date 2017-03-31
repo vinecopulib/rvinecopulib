@@ -4,8 +4,8 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "vinecop/rvine_matrix.hpp"
-#include "misc/tools_stl.hpp"
+#include <vinecopulib/vinecop/rvine_matrix.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
 
 namespace vinecopulib
 {
@@ -17,13 +17,13 @@ namespace vinecopulib
         // TODO: sanity checks for input matrix
         matrix_ = matrix;
     }
-
+    
     //! extract the matrix.
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> RVineMatrix::get_matrix() const
     {
         return matrix_;
     }
-
+    
     //! extracts the variable order in the R-vine.
     Eigen::Matrix<size_t, Eigen::Dynamic, 1> RVineMatrix::get_order() const
     {
@@ -58,8 +58,8 @@ namespace vinecopulib
 
     //! extracts the R-vine matrix in natural order.
     //!
-    //! Natural order means that the counter-diagonal has entries (d, ..., 1). We
-    //! convert to natural order by relabeling the variables. Most algorithms for
+    //! Natural order means that the counter-diagonal has entries (d, ..., 1). We 
+    //! convert to natural order by relabeling the variables. Most algorithms for 
     //! estimation and evaluation assume that the R-vine matrix is in natural order.
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> RVineMatrix::in_natural_order() const
     {
@@ -88,8 +88,8 @@ namespace vinecopulib
         return max_matrix;
     }
 
-    //! extracts a matrix indicating which of the first h-functions are needed
-    //! (it is usually not necessary to apply both h-functions for each
+    //! extracts a matrix indicating which of the first h-functions are needed 
+    //! (it is usually not necessary to apply both h-functions for each 
     //! pair-copula).
     MatrixXb RVineMatrix::get_needed_hfunc1() const
     {
@@ -106,9 +106,9 @@ namespace vinecopulib
         }
         return needed_hfunc1;
     }
-
-    //! extracts a matrix indicating which of the second h-functions are needed
-    //! (it is usually not necessary to apply both h-functions for each
+    
+    //! extracts a matrix indicating which of the second h-functions are needed 
+    //! (it is usually not necessary to apply both h-functions for each 
     //! pair-copula).
     MatrixXb RVineMatrix::get_needed_hfunc2() const
     {
@@ -131,8 +131,8 @@ namespace vinecopulib
     //! @}
 
     // translates matrix_entry from old to new labels
-    size_t relabel_one(size_t x,
-        const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& old_labels,
+    size_t relabel_one(size_t x, 
+        const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& old_labels, 
         const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& new_labels)
     {
         for (int i = 0; i < old_labels.size(); ++i) {
@@ -145,7 +145,7 @@ namespace vinecopulib
 
     // relabels all elements of the matrix (upper triangle assumed to be 0)
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> relabel_elements(
-        const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+        const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix, 
         const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& new_labels)
     {
         size_t d = matrix.rows();

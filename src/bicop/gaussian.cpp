@@ -4,11 +4,9 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "bicop/gaussian.hpp"
-#include "misc/tools_stats.hpp"
-#ifndef M_PI
-#define M_PI       3.14159265358979323846
-#endif
+#include <vinecopulib/bicop/gaussian.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
+#include <boost/math/constants/constants.hpp>
 
 namespace vinecopulib
 {
@@ -73,7 +71,7 @@ namespace vinecopulib
     Eigen::MatrixXd GaussianBicop::tau_to_parameters(const double& tau)
     {
         Eigen::VectorXd parameters = this->parameters_;
-        parameters(0) = sin(tau * M_PI / 2);
+        parameters(0) = sin(tau * boost::math::constants::pi<double>() / 2);
         return parameters;
     }
 }

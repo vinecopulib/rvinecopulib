@@ -4,9 +4,9 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "bicop/tll0.hpp"
-#include "bicop/family.hpp"
-#include "misc/tools_stats.hpp"
+#include <vinecopulib/bicop/tll0.hpp>
+#include <vinecopulib/bicop/family.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
 
 namespace vinecopulib
 {
@@ -86,7 +86,7 @@ namespace vinecopulib
         // for interpolation, we shift the limiting gridpoints to 0 and 1
         grid_points(0) = 0.0;
         grid_points(m - 1) = 1.0;
-        interp_grid_ = InterpolationGrid(grid_points, values);
+        interp_grid_ = tools_interpolation::InterpolationGrid(grid_points, values);
 
         // compute effective number of parameters
         double K0 = gaussian_kernel_2d(Eigen::MatrixXd::Constant(1, 2, 0.0))(0);
