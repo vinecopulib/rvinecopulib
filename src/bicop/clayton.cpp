@@ -5,8 +5,8 @@
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
 
-#include "bicop/clayton.hpp"
-#include "misc/tools_stl.hpp"
+#include <vinecopulib/bicop/clayton.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
 
 namespace vinecopulib
 {

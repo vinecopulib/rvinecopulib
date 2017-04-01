@@ -4,7 +4,7 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "misc/tools_c.h"
+#include <vinecopulib/misc/tools_c.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>

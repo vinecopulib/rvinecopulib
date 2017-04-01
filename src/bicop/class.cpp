@@ -4,12 +4,10 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "bicop/class.hpp"
-#include "bicop/tools_bicopselect.hpp"
-#include "misc/tools_stats.hpp"
-#include "misc/tools_stl.hpp"
-
-#include <iostream>
+#include <vinecopulib/bicop/class.hpp>
+#include <vinecopulib/bicop/tools_bicopselect.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
 
 //! Tools for bivariate and vine copula modeling
 namespace vinecopulib

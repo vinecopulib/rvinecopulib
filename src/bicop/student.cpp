@@ -4,12 +4,9 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "bicop/student.hpp"
-#include "misc/tools_stats.hpp"
-#include <cmath>
-#ifndef M_PI
-#define M_PI       3.14159265358979323846
-#endif
+#include <vinecopulib/bicop/student.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
+#include <boost/math/constants/constants.hpp>
 
 namespace vinecopulib
 {
@@ -38,8 +35,8 @@ namespace vinecopulib
         f = f + Eigen::VectorXd::Ones(u.rows());
         f = f.array().pow(-(nu + 2.0) / 2.0);
         f = f.cwiseQuotient(tools_stats::dt(tmp, nu).rowwise().prod());
-        //f *= StableGammaDivision((nu + 2.0) / 2.0, nu / 2.0) / (nu * M_PI * sqrt(1.0 - pow(rho, 2.0)));
-        f *= boost::math::tgamma_ratio((nu + 2.0) / 2.0, nu / 2.0) / (nu * M_PI * sqrt(1.0 - pow(rho, 2.0)));
+        f *= boost::math::tgamma_ratio((nu + 2.0) / 2.0, nu / 2.0);
+        f /= (nu * boost::math::constants::pi<double>() * sqrt(1.0 - pow(rho, 2.0)));
 
         return f;
     }
@@ -83,7 +80,7 @@ namespace vinecopulib
     Eigen::VectorXd StudentBicop::get_start_parameters(const double tau)
     {
         Eigen::VectorXd parameters = get_parameters();
-        parameters(0) = sin(tau * M_PI / 2);;
+        parameters(0) = sin(tau * boost::math::constants::pi<double>() / 2);;
         parameters(1) = 5;
         return parameters;
     }

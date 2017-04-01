@@ -4,13 +4,15 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://tvatter.github.io/vinecopulib/.
 
-#include "vinecop/tools_structselect.hpp"
-#include "misc/tools_stl.hpp"
-#include "misc/tools_stats.hpp"
-#include <iostream>
+#include <vinecopulib/vinecop/tools_structselect.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
+
 #include <cmath>
 #include <boost/graph/prim_minimum_spanning_tree.hpp>
 
+namespace vinecopulib {
+    
 namespace tools_structselect {
 
     using namespace tools_stl;
@@ -291,13 +293,9 @@ namespace tools_structselect {
     {
         for (auto e : boost::edges(tree)) {
             std::stringstream pc_info;
-            pc_info <<
-                    get_pc_index(e, tree) << " <-> " <<
-                    "fam = " << tree[e].pair_copula.get_family_name() <<
-                    ", rot = " << tree[e].pair_copula.get_rotation() <<
-                    ", par = " <<  tree[e].pair_copula.get_parameters() <<
-                    std::endl;
-            std::cout << pc_info.str().c_str();
+            pc_info << get_pc_index(e, tree) << " <-> " <<
+                        tree[e].pair_copula.str() << std::endl;
+            vinecopulib::tools_interface::print(pc_info.str().c_str());
         }
     }
 
@@ -327,5 +325,7 @@ namespace tools_structselect {
 
         return index.str().c_str();
     }
+
+}
 
 }
