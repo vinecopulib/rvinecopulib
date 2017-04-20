@@ -13,3 +13,8 @@ test_that("checks for family/rotation/parameters consistency", {
     expect_error(bicop_dist("frank", 90, -3))
     expect_error(bicop_dist("frank", 90, 1:2))
 })
+
+test_that("partial matching for family names", {
+    bicop_dist("ind")
+    bicop_dist("gauss") 
+})

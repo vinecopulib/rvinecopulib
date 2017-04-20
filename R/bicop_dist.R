@@ -16,7 +16,7 @@
 #' \item{`clayton`}{Clayton copula.}
 #' \item{`gumbel`}{Gumbel copula.}
 #' \item{`frank`}{Frank copula.}
-#' \item{`Joe`}{Joe copula.}
+#' \item{`joe`}{Joe copula.}
 #' \item{`bb1`}{BB1 copula.}
 #' \item{`bb6`}{BB6 copula.}
 #' \item{`bb7`}{BB7 copula.}
@@ -35,6 +35,7 @@ bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) 
     stopifnot(length(family) == 1)
     if (family == "t")
         family <- "student"
+    family <- all_families[pmatch(family, all_families)]
     dist <- list(family = family,
                  rotation = rotation,
                  parameters = as.matrix(parameters))
@@ -50,3 +51,9 @@ print.bicop_dist <- function(x, ...) {
         ", parameters = ", x$parameters,
         sep = "")
 }
+
+all_families <- c(
+    "indep", 
+    "gaussian", "clayton", "gumbel", "frank", "joe", 
+    "bb1", "bb6", "bb7", "bb8"
+)
