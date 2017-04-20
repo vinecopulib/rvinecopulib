@@ -2,9 +2,27 @@
 % Please edit documentation in R/bicop_dist.R
 \name{bicop_dist}
 \alias{bicop_dist}
+\alias{dbicop}
+\alias{rbicop}
+\alias{h1bicop}
+\alias{h2bicop}
+\alias{hi1bicop}
+\alias{hi2bicop}
 \title{Bivariate copula distributions}
 \usage{
 bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
+
+dbicop(u, family, rotation, parameters)
+
+rbicop(n, family, rotation, parameters)
+
+h1bicop(u, family, rotation, parameters)
+
+h2bicop(u, family, rotation, parameters)
+
+hi1bicop(u, family, rotation, parameters)
+
+hi2bicop(u, family, rotation, parameters)
 }
 \arguments{
 \item{family}{the copula family, a string containing the family name (see
@@ -13,6 +31,9 @@ bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
 \item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180} \code{270}.}
 
 \item{parameters}{a vector or matrix of copula paramters.}
+
+\item{n}{number of observations. If length(n) > 1, the length is taken to
+be the number required.}
 }
 \value{
 An object of class \code{bicop_dist}.
@@ -21,24 +42,45 @@ An object of class \code{bicop_dist}.
 A bivariate copula distribution is specified by:
 }
 \details{
-The implemented families are:
+The implemented families listed below. Partial matching is activated, i.e.,
+\code{"gauss"} is equivalent to \code{"gaussian"}.
 \describe{
 \item{\code{indep}}{Independence copula.}
 \item{\code{gaussian}}{Gaussian copula.}
-\item{\code{t}}{Student t copula.}
+\item{\code{t}, \code{student}}{Student t copula.}
 \item{\code{clayton}}{Clayton copula.}
 \item{\code{gumbel}}{Gumbel copula.}
 \item{\code{frank}}{Frank copula.}
-\item{\code{Joe}}{Joe copula.}
+\item{\code{joe}}{Joe copula.}
 \item{\code{bb1}}{BB1 copula.}
 \item{\code{bb6}}{BB6 copula.}
 \item{\code{bb7}}{BB7 copula.}
 \item{\code{bb8}}{BB8 copula.}
 }
 }
+\note{
+The evaluation functions can optionally be used with a \code{bicop_dist} object,
+e.g., \code{dbicop(c(0.1, 0.5), bicop_dist("indep"))}.
+}
 \examples{
-bicop_dist("clayton", 0, 3)
+bicop_dist("gaussian", 0, 3)
+str(bicop_dist("gauss", 0, 3))
 
-str(bicop_dist("clayton", 0, 3))
+bicop <- bicop_dist("clayton", 90, 3)
+# evaluate the copula density
+dbicop(c(0.1, 0.2), "clay", 90, 3)
+dbicop(c(0.1, 0.2), bicop)
+
+# evaluate the copula density
+plot(rbicop(500, "clay", 90, 3))
+plot(rbicop(500, bicop))
+
+# evaluate the copula density
+h1bicop(c(0.1, 0.2), "frank", 0, 5)
+h2bicop(c(0.1, 0.2), bicop)
+
+# evaluate the copula density
+hi1bicop(c(0.1, 0.2), "bb6", 180, 5)
+hi2bicop(c(0.1, 0.2), bicop)
 
 }
