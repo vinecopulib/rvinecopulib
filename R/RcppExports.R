@@ -5,10 +5,6 @@ bicop_check_cpp <- function(bicop_r) {
     invisible(.Call('rvinecopulib_bicop_check_cpp', PACKAGE = 'rvinecopulib', bicop_r))
 }
 
-bicop_fit_cpp <- function(data, bicop_r, method) {
-    .Call('rvinecopulib_bicop_fit_cpp', PACKAGE = 'rvinecopulib', data, bicop_r, method)
-}
-
 bicop_select_cpp <- function(data, family_set, method, mult, selcrit, presel) {
     .Call('rvinecopulib_bicop_select_cpp', PACKAGE = 'rvinecopulib', data, family_set, method, mult, selcrit, presel)
 }

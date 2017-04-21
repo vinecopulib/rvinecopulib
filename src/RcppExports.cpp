@@ -16,19 +16,6 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// bicop_fit_cpp
-Rcpp::List bicop_fit_cpp(const Eigen::MatrixXd& data, Rcpp::List& bicop_r, std::string method);
-RcppExport SEXP rvinecopulib_bicop_fit_cpp(SEXP dataSEXP, SEXP bicop_rSEXP, SEXP methodSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type bicop_r(bicop_rSEXP);
-    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(bicop_fit_cpp(data, bicop_r, method));
-    return rcpp_result_gen;
-END_RCPP
-}
 // bicop_select_cpp
 Rcpp::List bicop_select_cpp(Eigen::MatrixXd& data, std::vector<std::string> family_set, std::string method, double mult, std::string selcrit, bool presel);
 RcppExport SEXP rvinecopulib_bicop_select_cpp(SEXP dataSEXP, SEXP family_setSEXP, SEXP methodSEXP, SEXP multSEXP, SEXP selcritSEXP, SEXP preselSEXP) {
