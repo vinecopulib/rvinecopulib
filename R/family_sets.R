@@ -1,13 +1,21 @@
-family_set_onepar <- c(
-    "gaussian", "clayton", "gumbel", "frank", "joe"
+family_set_archimedean <- c(
+    "clayton", "gumbel", "frank", "joe"
+)
+
+family_set_elliptical <- c(
+    "gaussian", "student"
 )
 
 family_set_bb <- c(
     "bb1", "bb6", "bb7", "bb8"
 )
 
+family_set_onepar <- c(
+    "gaussian", family_set_archimedean
+)
+
 family_set_twopar <- c(
-    "student", family_set_bb
+    "t", family_set_bb
 )
 
 family_set_parametric <- c(
@@ -20,4 +28,8 @@ family_set_nonparametric <- c(
 
 family_set_all <- unique(
     c(family_set_parametric, family_set_nonparametric)
+)
+
+family_set_defs <- c(
+    "arch", "ellip", "bb", "onepar", "twopar", "par", "nonpar"
 )

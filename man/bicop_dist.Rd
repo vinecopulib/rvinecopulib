@@ -32,7 +32,7 @@ hi2bicop(u, family, rotation, parameters)
 
 \item{parameters}{a vector or matrix of copula paramters.}
 
-\item{n}{number of observations. If length(n) > 1, the length is taken to
+\item{n}{number of observations. If `length(n) > 1``, the length is taken to
 be the number required.}
 }
 \value{
@@ -47,7 +47,7 @@ The implemented families listed below. Partial matching is activated, i.e.,
 \describe{
 \item{\code{indep}}{Independence copula.}
 \item{\code{gaussian}}{Gaussian copula.}
-\item{\code{t}, \code{student}}{Student t copula.}
+\item{\code{t}}{Student t copula.}
 \item{\code{clayton}}{Clayton copula.}
 \item{\code{gumbel}}{Gumbel copula.}
 \item{\code{frank}}{Frank copula.}
@@ -56,6 +56,8 @@ The implemented families listed below. Partial matching is activated, i.e.,
 \item{\code{bb6}}{BB6 copula.}
 \item{\code{bb7}}{BB7 copula.}
 \item{\code{bb8}}{BB8 copula.}
+\item{\code{tll0}}{local constant transformation kernel, should only be used with
+data, see \code{bicop()}.}
 }
 }
 \note{

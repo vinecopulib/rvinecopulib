@@ -17,7 +17,7 @@
 #' \describe{
 #' \item{`indep`}{Independence copula.}
 #' \item{`gaussian`}{Gaussian copula.}
-#' \item{`t`, `student`}{Student t copula.}
+#' \item{`t`}{Student t copula.}
 #' \item{`clayton`}{Clayton copula.}
 #' \item{`gumbel`}{Gumbel copula.}
 #' \item{`frank`}{Frank copula.}
@@ -26,6 +26,8 @@
 #' \item{`bb6`}{BB6 copula.}
 #' \item{`bb7`}{BB7 copula.}
 #' \item{`bb8`}{BB8 copula.}
+#' \item{`tll0`}{local constant transformation kernel, should only be used with
+#' data, see `bicop()`.}
 #' }
 #' 
 #'
@@ -39,12 +41,13 @@
 #' @export
 bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {
     stopifnot(length(family) == 1)
-    if (family == "t")
-        family <- "student"
+    if (family %in% family_set_nonparametric)
+        stop("bicop_dist should not be used directly with nonparametric families.")
     family <- family_set_all[pmatch(family, family_set_all)]
-    dist <- list(family = family,
-                 rotation = rotation,
-                 parameters = as.matrix(parameters))
+    dist <- list(family     = family,
+                 rotation   = rotation,
+                 parameters = as.matrix(parameters),
+                 npars      = length(parameters))
     bicop_check_cpp(dist)
     structure(dist, class = "bicop_dist")
 }

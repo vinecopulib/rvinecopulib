@@ -14,8 +14,10 @@ if_vec_to_matrix <- function(u) {
     }
     if (!NCOL(u) == 2)
         stop("u must be a mx2 matrix, data.frame or a length two vector.")
+    if (!is.matrix(u))
+        u <- as.matrix(u)
     
-    as.matrix(u)
+    u
 }
 
 args2bicop <- function(args) {
@@ -31,14 +33,16 @@ expand_familyset <- function(familyset) {
 }
 
 expand_family <- function(family) {
-    switch(
+    fams <- switch(
         family,
-        "onepar" = family_set_onepar,
+        "arch"   = family_set_archimedean,
+        "ellip"  = family_set_elliptical,
         "bb"     = family_set_bb,
+        "onepar" = family_set_onepar,
         "twopar" = family_set_twopar,
         "par"    = family_set_parametric,
-        "nonpar" = family_set_nonpar,
-        "all" = family_set_all,
+        "nonpar" = family_set_nonparametric,
+        "all"    = family_set_all,
         family  # default is no expansion
     )
 }
