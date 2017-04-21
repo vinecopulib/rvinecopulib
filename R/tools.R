@@ -1,4 +1,4 @@
-#' Internal: Turns vector input into a matrix with two columns
+#' Internal: Turn vector input into a matrix with two columns
 #'
 #' @param u input data
 #'
@@ -20,6 +20,11 @@ if_vec_to_matrix <- function(u) {
     u
 }
 
+#' Internal: Convert arguments to `bicop_dist` object.
+#' @param args the arguments of the function call, a list containing at least
+#'   `family`, `rotation`, and `parameters`.
+#' @return A `bicop_dist` object.
+#' @noRd
 args2bicop <- function(args) {
     if (all(inherits(args$family, "bicop_dist"))) {
         return(args$family)
@@ -28,6 +33,8 @@ args2bicop <- function(args) {
     }
 }
 
+#' Internal: Expand shortcuts in the familyset.
+#' @noRd
 expand_familyset <- function(familyset) {
     unique(sapply(familyset, expand_family))
 }
