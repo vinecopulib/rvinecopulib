@@ -34,8 +34,8 @@
 #' @return An object of class `bicop_dist`.
 #'
 #' @examples
-#' bicop_dist("gaussian", 0, 3)
-#' str(bicop_dist("gauss", 0, 3))
+#' bicop_dist("gaussian", 0, 0.5)
+#' str(bicop_dist("gauss", 0, 0.5))
 #' 
 #' bicop <- bicop_dist("clayton", 90, 3)
 #' @export
@@ -62,6 +62,7 @@ print.bicop_dist <- function(x, ...) {
 }
 
 #' @rdname bicop_dist
+#' @param u evaluation points, either a length 2 vector or a two-column matrix.
 #' @examples
 #' # evaluate the copula density
 #' dbicop(c(0.1, 0.2), "clay", 90, 3)
@@ -77,7 +78,7 @@ dbicop <- function(u, family, rotation, parameters) {
 #' @param n number of observations. If `length(n) > 1``, the length is taken to 
 #'   be the number required.
 #' @examples
-#' # evaluate the copula density
+#' # simulate data
 #' plot(rbicop(500, "clay", 90, 3))
 #' plot(rbicop(500, bicop))
 #' 
@@ -91,7 +92,7 @@ rbicop <- function(n, family, rotation, parameters) {
 
 #' @rdname bicop_dist
 #' @examples
-#' # evaluate the copula density
+#' # evaluate h-functions
 #' h1bicop(c(0.1, 0.2), "frank", 0, 5)
 #' h2bicop(c(0.1, 0.2), bicop)
 #' 
@@ -110,8 +111,8 @@ h2bicop <- function(u, family, rotation, parameters) {
 
 #' @rdname bicop_dist
 #' @examples
-#' # evaluate the copula density
-#' hi1bicop(c(0.1, 0.2), "bb6", 180, 5)
+#' # evaluate inverse h-functions
+#' hi1bicop(c(0.1, 0.2), "bb6", 180, c(1, 2))
 #' hi2bicop(c(0.1, 0.2), bicop)
 #' 
 #' @export
