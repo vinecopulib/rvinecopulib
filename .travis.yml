@@ -16,6 +16,7 @@ apt_packages:
   - libxml2-dev
   - r-cran-vinecopula
   - r-cran-copula
+  - r-cran-gsl
   - r-cran-nloptr
   - r-cran-rcpp
   - r-cran-rcppeigen
