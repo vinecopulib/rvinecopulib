@@ -6,7 +6,6 @@ warnings_are_errors: false
 
 
 apt_packages:
-  - gsl-bin
   - libgsl-dbg
   - libgsl-dev
   - libgsl2
