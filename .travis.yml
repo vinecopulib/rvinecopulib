@@ -10,6 +10,7 @@ apt_packages:
   - libgsl0-dbg
   - libgsl0-dev
   - libgsl0ldbl
+  - libgsl2
   - libboost-all-dev
   - libnlopt-dev
   - libeigen3-dev
