@@ -9,7 +9,6 @@ apt_packages:
   - gsl-bin
   - libgsl0-dbg
   - libgsl0-dev
-  - libgsl0ldbl
   - libgsl2
   - libboost-all-dev
   - libnlopt-dev
