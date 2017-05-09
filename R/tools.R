@@ -16,20 +16,21 @@ if_vec_to_matrix <- function(u) {
         stop("u must be a mx2 matrix, data.frame or a length two vector.")
     if (!is.matrix(u))
         u <- as.matrix(u)
-    
+
     u
 }
 
 #' Internal: Convert arguments to `bicop_dist` object.
-#' @param args the arguments of the function call, a list containing at least
-#'   `family`, `rotation`, and `parameters`.
+#' @param family the family as passed in function call.
+#' @param rotation the rotation as passed in function call.
+#' @param parameters the parameters as passed in function call.
 #' @return A `bicop_dist` object.
 #' @noRd
-args2bicop <- function(args) {
-    if (all(inherits(args$family, "bicop_dist"))) {
-        return(args$family)
+args2bicop <- function(family, rotation, parameters) {
+    if (all(inherits(family, "bicop_dist"))) {
+        return(family)
     } else {
-        return(bicop_dist(args$family, args$rotation, args$parameters))
+        return(bicop_dist(family, rotation, parameters))
     }
 }
 

@@ -6,13 +6,13 @@
 #' *Details* for all possible families).
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180` `270`.
 #' @param parameters a vector or matrix of copula paramters.
-#' 
-#' @note 
-#' The evaluation functions can optionally be used with a `bicop_dist` object, 
+#'
+#' @note
+#' The evaluation functions can optionally be used with a `bicop_dist` object,
 #' e.g., `dbicop(c(0.1, 0.5), bicop_dist("indep"))`.
 #'
 #' @details
-#' The implemented families listed below. Partial matching is activated, i.e., 
+#' The implemented families listed below. Partial matching is activated, i.e.,
 #' `"gauss"` is equivalent to `"gaussian"`.
 #' \describe{
 #' \item{`indep`}{Independence copula.}
@@ -29,14 +29,14 @@
 #' \item{`tll0`}{local constant transformation kernel, should only be used with
 #' data, see `bicop()`.}
 #' }
-#' 
+#'
 #'
 #' @return An object of class `bicop_dist`.
 #'
 #' @examples
 #' bicop_dist("gaussian", 0, 0.5)
 #' str(bicop_dist("gauss", 0, 0.5))
-#' 
+#'
 #' bicop <- bicop_dist("clayton", 90, 3)
 #' @export
 bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {
@@ -67,26 +67,26 @@ print.bicop_dist <- function(x, ...) {
 #' # evaluate the copula density
 #' dbicop(c(0.1, 0.2), "clay", 90, 3)
 #' dbicop(c(0.1, 0.2), bicop)
-#' 
+#'
 #' @export
 dbicop <- function(u, family, rotation, parameters) {
-    bicop <- args2bicop(as.list(environment()))
+    bicop <- args2bicop(family, rotation, parameters)
     bicop_pdf_cpp(if_vec_to_matrix(u), bicop)
 }
 
 #' @rdname bicop_dist
-#' @param n number of observations. If `length(n) > 1``, the length is taken to 
+#' @param n number of observations. If `length(n) > 1``, the length is taken to
 #'   be the number required.
 #' @examples
 #' # simulate data
 #' plot(rbicop(500, "clay", 90, 3))
 #' plot(rbicop(500, bicop))
-#' 
+#'
 #' @export
 rbicop <- function(n, family, rotation, parameters) {
     if (length(n) > 1)
         n <- length(n)
-    bicop <- args2bicop(as.list(environment()))
+    bicop <- args2bicop(family, rotation, parameters)
     bicop_simulate_cpp(n, bicop)
 }
 
@@ -95,17 +95,17 @@ rbicop <- function(n, family, rotation, parameters) {
 #' # evaluate h-functions
 #' h1bicop(c(0.1, 0.2), "frank", 0, 5)
 #' h2bicop(c(0.1, 0.2), bicop)
-#' 
+#'
 #' @export
 h1bicop <- function(u, family, rotation, parameters) {
-    bicop <- args2bicop(as.list(environment()))
+    bicop <- args2bicop(family, rotation, parameters)
     bicop_hfunc1_cpp(if_vec_to_matrix(u), bicop)
 }
 
 #' @rdname bicop_dist
 #' @export
 h2bicop <- function(u, family, rotation, parameters) {
-    bicop <- args2bicop(as.list(environment()))
+    bicop <- args2bicop(family, rotation, parameters)
     bicop_hfunc2_cpp(if_vec_to_matrix(u), bicop)
 }
 
@@ -114,17 +114,17 @@ h2bicop <- function(u, family, rotation, parameters) {
 #' # evaluate inverse h-functions
 #' hi1bicop(c(0.1, 0.2), "bb6", 180, c(1, 2))
 #' hi2bicop(c(0.1, 0.2), bicop)
-#' 
+#'
 #' @export
 hi1bicop <- function(u, family, rotation, parameters) {
-    bicop <- args2bicop(as.list(environment()))
+    bicop <- args2bicop(family, rotation, parameters)
     bicop_hinv1_cpp(if_vec_to_matrix(u), bicop)
 }
 
 #' @rdname bicop_dist
 #' @export
 hi2bicop <- function(u, family, rotation, parameters) {
-    bicop <- args2bicop(as.list(environment()))
+    bicop <- args2bicop(family, rotation, parameters)
     bicop_hinv2_cpp(if_vec_to_matrix(u), bicop)
 }
 
