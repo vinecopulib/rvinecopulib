@@ -6,17 +6,15 @@ warnings_are_errors: false
 
 
 apt_packages:
-  - libgsl-dbg
-  - libgsl-dev
-  - libgsl2
+  - libgsl0-dbg
+  - libgsl0-dev
+  - libgsl0ldbl
   - libboost-all-dev
   - libnlopt-dev
   - libeigen3-dev
   - libcurl4-openssl-dev
   - libxml2-dev
   - r-cran-vinecopula
-  - r-cran-copula
-  - r-cran-gsl
   - r-cran-nloptr
   - r-cran-rcpp
   - r-cran-rcppeigen
