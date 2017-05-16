@@ -4,7 +4,7 @@
 #'
 #' @param family the copula family, a string containing the family name (see
 #' *Details* for all possible families).
-#' @param rotation the rotation of the copula, one of `0`, `90`, `180` `270`.
+#' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
 #' @param parameters a vector or matrix of copula paramters.
 #'
 #' @note
@@ -90,41 +90,57 @@ rbicop <- function(n, family, rotation, parameters) {
     bicop_simulate_cpp(n, bicop)
 }
 
-#' @rdname bicop_dist
-#' @examples
-#' # evaluate h-functions
-#' h1bicop(c(0.1, 0.2), "frank", 0, 5)
-#' h2bicop(c(0.1, 0.2), bicop)
+
+#' H-functions and their inverses for bivariate copula distributions
 #'
-#' @export
-h1bicop <- function(u, family, rotation, parameters) {
-    bicop <- args2bicop(family, rotation, parameters)
-    bicop_hfunc1_cpp(if_vec_to_matrix(u), bicop)
-}
-
-#' @rdname bicop_dist
-#' @export
-h2bicop <- function(u, family, rotation, parameters) {
-    bicop <- args2bicop(family, rotation, parameters)
-    bicop_hfunc2_cpp(if_vec_to_matrix(u), bicop)
-}
-
-#' @rdname bicop_dist
-#' @examples
-#' # evaluate inverse h-functions
-#' hi1bicop(c(0.1, 0.2), "bb6", 180, c(1, 2))
-#' hi2bicop(c(0.1, 0.2), bicop)
+#' @param u evaluation points, either a length 2 vector or a two-column matrix.
+#' @param cond_var either `1` or `2`; `cond_var = 1` conditions on the first
+#'    variable, `cond.var = 2` on the second.
+#' @param family the copula family, a string containing the family name (see
+#' [`bicop_dist()`]).
+#' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
+#' @param parameters a vector or matrix of copula paramters.
+#' @param inverse whether to compute the h-function or its inverse.
 #'
+#' @details H-functions are conditional distributions derived from a copula.
+#' If \eqn{C(u, v) = P(U \le u, V \le v)} is a copula, then
+#' \deqn{h_1(v | u) = P(U \le u | V = v),}
+#' \deqn{h_2(u | v) = P(V \le v | U = u).}
+#'
+#' @return A numeric vector containing the value of the (inverse) h-function.
 #' @export
-hi1bicop <- function(u, family, rotation, parameters) {
+#'
+#' @examples
+#' joe_cop <- bicop_dist("joe", 0, 3)
+#'
+#' # h_1(0.2 | 0.1)
+#' hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5))
+#'
+#' # h_2(0.1 | 0.2)
+#' hbicop(c(0.1, 0.2), 2, joe_cop)
+#'
+#' # h_1^{-1}(0.2 | 0.1)
+#' hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5), inverse = TRUE)
+#'
+#' # h_2^{-1}(0.1 | 0.2)
+#' hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
+hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
+    stopifnot(length(cond_var) == 1)
+    stopifnot(cond_var %in% c(1, 2))
+    stopifnot(is.logical(inverse))
     bicop <- args2bicop(family, rotation, parameters)
-    bicop_hinv1_cpp(if_vec_to_matrix(u), bicop)
-}
 
-#' @rdname bicop_dist
-#' @export
-hi2bicop <- function(u, family, rotation, parameters) {
-    bicop <- args2bicop(family, rotation, parameters)
-    bicop_hinv2_cpp(if_vec_to_matrix(u), bicop)
+    if (!inverse) {
+        if (cond_var == 1) {
+            return(bicop_hfunc1_cpp(if_vec_to_matrix(u), bicop))
+        } else {
+            return(bicop_hfunc2_cpp(if_vec_to_matrix(u), bicop))
+        }
+    } else {
+        if (cond_var == 1) {
+            return(bicop_hinv1_cpp(if_vec_to_matrix(u), bicop))
+        } else {
+            return(bicop_hinv2_cpp(if_vec_to_matrix(u), bicop))
+        }
+    }
 }
-
