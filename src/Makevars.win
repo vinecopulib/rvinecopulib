@@ -9,7 +9,7 @@ SOURCES_CPP = ./bicop/abstract.cpp	  ./bicop/bb7.cpp      ./bicop/elliptical.cpp
               ./misc/tools_interpolation.cpp  ./misc/tools_eigen.cpp        ./misc/tools_optimization.cpp \
               ./misc/tools_integration.cpp  ./misc/tools_stats.cpp \
               ./vinecop/class.cpp  ./vinecop/rvine_matrix.cpp  ./vinecop/tools_structselect.cpp  ./vinecop/fit_controls.cpp  \
-              ./RcppExports.cpp ./Rcpp_wrappers.cpp
+              ./RcppExports.cpp ./Bicop_wrappers.cpp
 SOURCES_C   = ./misc/tools_c.c
 
 OBJECTS = $(SOURCES_CPP:.cpp=.o) $(SOURCES_C:.c=.o)
