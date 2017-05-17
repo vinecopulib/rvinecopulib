@@ -24,6 +24,6 @@ Predictions and fitted values for a bivariate copula model
 }
 \examples{
 u <- rbicop(500, "gauss", 0, 0.5)
-fit <- bicop_fit(object$data, "par")
+fit <- bicop_fit(u, "par")
 all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
 }

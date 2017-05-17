@@ -29,7 +29,7 @@ than 1 less smooth.}
 \item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
 
-\item{save_data}{whether the data should be stored (necessary for computing
+\item{keep_data}{whether the data should be stored (necessary for computing
 fit statistics and using \code{fitted()}).}
 }
 \value{
@@ -55,7 +55,6 @@ defintion can be used (and combined):
 \examples{
 u <- rbicop(500, "gauss", 0, 0.5)
 fit1 <- bicop_fit(u, "par")
-fit2 <- bicop(~., as.data.frame(u), "par")
-all.equal(fit1, fit2)
+fit1
 
 }
