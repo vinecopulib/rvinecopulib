@@ -3,7 +3,6 @@
 S3method(fitted,bicop_fit)
 S3method(predict,bicop_fit)
 S3method(print,bicop_dist)
-export(bicop)
 export(bicop_dist)
 export(bicop_fit)
 export(dbicop)

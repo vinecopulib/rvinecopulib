@@ -31,5 +31,9 @@ family_set_all <- unique(
 )
 
 family_set_defs <- c(
-    "arch", "ellip", "bb", "onepar", "twopar", "par", "nonpar"
+    "arch", "ellip", "bb", "onepar", "twopar", "par", "nonpar", "all"
+)
+
+family_set_all_defs <- c(
+    family_set_all, family_set_defs
 )

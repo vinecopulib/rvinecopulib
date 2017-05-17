@@ -3,13 +3,9 @@
 \name{bicop_fit}
 \alias{bicop_fit}
 \alias{bicop}
-\alias{bicop}
 \title{Bivariate copula models}
 \usage{
 bicop_fit(data, family_set = "all", method = "mle", mult = 1,
-  selcrit = "bic", presel = TRUE, keep_data = TRUE)
-
-bicop(formula, data, family_set = "all", method = "mle", mult = 1,
   selcrit = "bic", presel = TRUE, keep_data = TRUE)
 }
 \arguments{
@@ -30,11 +26,8 @@ than 1 less smooth.}
 \item{selcrit}{criterion for family selection, either "loglik", "aic", or
 "bic".}
 
-\item{presel}{whether the familyset should be thinned out according to
+\item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
-
-\item{formula}{a formula with empty LHS and the two variables to model on the
-RHS, e.g., \code{~ u1 + u2}, or \code{~ .} if the data only has two columns.}
 
 \item{save_data}{whether the data should be stored (necessary for computing
 fit statistics and using \code{fitted()}).}
@@ -61,7 +54,8 @@ defintion can be used (and combined):
 }
 \examples{
 u <- rbicop(500, "gauss", 0, 0.5)
-fit1 <- bicop_fit(object$data, "par")
+fit1 <- bicop_fit(u, "par")
 fit2 <- bicop(~., as.data.frame(u), "par")
 all.equal(fit1, fit2)
+
 }

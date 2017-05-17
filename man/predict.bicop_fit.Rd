@@ -14,7 +14,8 @@
 
 \item{newdata}{points where the fit shall be evaluated.}
 
-\item{what}{what to predict, one of \code{"pdf"}, \code{"hfunc1"``,}"hfunc2"\code{, `"hinv1"}, \code{"hinv2"}.}
+\item{what}{what to predict, one of \code{"pdf"}, \code{"hfunc1"}, \code{"hfunc2"},
+\code{"hinv1"}, \code{"hinv2"}.}
 
 \item{...}{unused.}
 }
