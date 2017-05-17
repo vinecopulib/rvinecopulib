@@ -8,15 +8,15 @@
 #'   see *Details* for additional options.
 #' @param method the estimation method for parametric models, either `"mle"` for
 #'   maximum likelihood or `"itau"` for inversion of Kendall's tau (only 
-#'   available for one-parametr families and '"t"`.
+#'   available for one-parametr families and `"t"`.
 #' @param mult multiplier for the smoothing parameters of nonparametric 
 #'   families. Values larger than 1 make the estimate more smooth, values less
 #'   than 1 less smooth.
-#' @param selcrit criterion for family selection, either "loglik", "aic", or 
-#'   "bic".
+#' @param selcrit criterion for family selection, either `"loglik"`, `"aic"`, or 
+#'   `"bic"`.
 #' @param presel whether the family set should be thinned out according to
 #'   symmetry characteristics of the data.
-#' @param save_data whether the data should be stored (necessary for computing
+#' @param keep_data whether the data should be stored (necessary for computing
 #'   fit statistics and using `fitted()`).
 #' 
 #' @details
@@ -38,12 +38,11 @@
 #' @examples
 #' u <- rbicop(500, "gauss", 0, 0.5)
 #' fit1 <- bicop_fit(u, "par")
-#' fit2 <- bicop(~., as.data.frame(u), "par")
-#' all.equal(fit1, fit2)
+#' fit1
 #' 
 #' @export
 bicop_fit <- function(data, family_set = "all", method = "mle", mult = 1, 
-                      selcrit = "bic",  presel = TRUE, keep_data = TRUE) {
+                      selcrit = "bic", presel = TRUE, keep_data = TRUE) {
     
     # family_set can only use standard family names in cpp
     family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
@@ -88,11 +87,11 @@ bicop_fit <- function(data, family_set = "all", method = "mle", mult = 1,
 #'
 #' @examples
 #' u <- rbicop(500, "gauss", 0, 0.5)
-#' fit <- bicop_fit(object$data, "par")
+#' fit <- bicop_fit(u, "par")
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
 predict.bicop_fit <- function(object, newdata, what = "pdf", ...) {
     stopifnot(what %in% c("pdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
-    u <- if_vec_to_matrix(newdata)
+    newdata <- if_vec_to_matrix(newdata)
     switch(
         what,
         "pdf"    = bicop_pdf_cpp(newdata, object),
@@ -109,8 +108,6 @@ fitted.bicop_fit <- function(object, what = "pdf", ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     stopifnot(what %in% c("pdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
-    
-    u <- if_vec_to_matrix(newdata)
     switch(
         what,
         "pdf"    = bicop_pdf_cpp(object$data, object),
