@@ -17,14 +17,14 @@ see \emph{Details} for additional options.}
 
 \item{method}{the estimation method for parametric models, either \code{"mle"} for
 maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
-available for one-parametr families and '"t"`.}
+available for one-parametr families and \code{"t"}.}
 
 \item{mult}{multiplier for the smoothing parameters of nonparametric
 families. Values larger than 1 make the estimate more smooth, values less
 than 1 less smooth.}
 
-\item{selcrit}{criterion for family selection, either "loglik", "aic", or
-"bic".}
+\item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"}, or
+\code{"bic"}.}
 
 \item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
