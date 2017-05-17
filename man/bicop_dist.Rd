@@ -4,10 +4,6 @@
 \alias{bicop_dist}
 \alias{dbicop}
 \alias{rbicop}
-\alias{h1bicop}
-\alias{h2bicop}
-\alias{hi1bicop}
-\alias{hi2bicop}
 \title{Bivariate copula distributions}
 \usage{
 bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
@@ -15,20 +11,12 @@ bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
 dbicop(u, family, rotation, parameters)
 
 rbicop(n, family, rotation, parameters)
-
-h1bicop(u, family, rotation, parameters)
-
-h2bicop(u, family, rotation, parameters)
-
-hi1bicop(u, family, rotation, parameters)
-
-hi2bicop(u, family, rotation, parameters)
 }
 \arguments{
 \item{family}{the copula family, a string containing the family name (see
 \emph{Details} for all possible families).}
 
-\item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180} \code{270}.}
+\item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
 
 \item{parameters}{a vector or matrix of copula paramters.}
 
@@ -78,13 +66,5 @@ dbicop(c(0.1, 0.2), bicop)
 # simulate data
 plot(rbicop(500, "clay", 90, 3))
 plot(rbicop(500, bicop))
-
-# evaluate h-functions
-h1bicop(c(0.1, 0.2), "frank", 0, 5)
-h2bicop(c(0.1, 0.2), bicop)
-
-# evaluate inverse h-functions
-hi1bicop(c(0.1, 0.2), "bb6", 180, c(1, 2))
-hi2bicop(c(0.1, 0.2), bicop)
 
 }

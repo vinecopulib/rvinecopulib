@@ -16,7 +16,7 @@ test_that("checks for family/rotation/parameters consistency", {
 
 test_that("partial matching for family names", {
     bicop_dist("ind")
-    bicop_dist("gauss") 
+    bicop_dist("gauss")
 })
 
 test_that("d/r/hx/hix functions work", {
@@ -24,8 +24,8 @@ test_that("d/r/hx/hix functions work", {
     u <- rbicop(500, "bb1", 270, c(1, 2))
     expect_gte(min(dbicop(c(0.1, 0.2), dist)), 0)
     expect_gte(min(dbicop(u, dist)), 0)
-    expect_lte(max(h1bicop(c(0.1, 0.2), dist)), 1)
-    expect_lte(max(h2bicop(u, dist)), 1)
-    expect_lte(max(hi1bicop(c(0.1, 0.2), dist)), 1)
-    expect_lte(max(hi2bicop(u, dist)), 1)
+    expect_lte(max(hbicop(c(0.1, 0.2), 1, dist)), 1)
+    expect_lte(max(hbicop(u, 2, dist)), 1)
+    expect_lte(max(hbicop(c(0.1, 0.2), 1, dist, inverse = TRUE)), 1)
+    expect_lte(max(hbicop(u, 1, dist, inverse = TRUE)), 1)
 })
