@@ -10,7 +10,7 @@ hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
 \item{u}{evaluation points, either a length 2 vector or a two-column matrix.}
 
 \item{cond_var}{either \code{1} or \code{2}; \code{cond_var = 1} conditions on the first
-variable, \code{cond.var = 2} on the second.}
+variable, \code{cond_var = 2} on the second.}
 
 \item{family}{the copula family, a string containing the family name (see
 \code{\link[=bicop_dist]{bicop_dist()}}).}

@@ -95,7 +95,7 @@ rbicop <- function(n, family, rotation, parameters) {
 #'
 #' @param u evaluation points, either a length 2 vector or a two-column matrix.
 #' @param cond_var either `1` or `2`; `cond_var = 1` conditions on the first
-#'    variable, `cond.var = 2` on the second.
+#'    variable, `cond_var = 2` on the second.
 #' @param family the copula family, a string containing the family name (see
 #' [`bicop_dist()`]).
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
