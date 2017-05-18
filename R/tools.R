@@ -41,16 +41,16 @@ expand_family_set <- function(family_set) {
 }
 
 expand_family <- function(family) {
-    fams <- switch(
+    switch(
         family,
-        "arch"   = family_set_archimedean,
-        "ellip"  = family_set_elliptical,
-        "bb"     = family_set_bb,
-        "onepar" = family_set_onepar,
-        "twopar" = family_set_twopar,
-        "par"    = family_set_parametric,
-        "nonpar" = family_set_nonparametric,
-        "all"    = family_set_all,
+        "archimedean"   = family_set_archimedean,
+        "ellipiltical"  = family_set_elliptical,
+        "bbs"           = family_set_bb,
+        "oneparametric" = family_set_onepar,
+        "twoparametric" = family_set_twopar,
+        "parametric"    = family_set_parametric,
+        "nonparametric" = family_set_nonparametric,
+        "all"           = family_set_all,
         family  # default is no expansion
     )
 }
