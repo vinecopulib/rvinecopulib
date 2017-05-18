@@ -17,7 +17,7 @@ see \emph{Details} for additional options.}
 
 \item{method}{the estimation method for parametric models, either \code{"mle"} for
 maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
-available for one-parametr families and \code{"t"}.}
+available for one-parameter families and \code{"t"}.}
 
 \item{mult}{multiplier for the smoothing parameters of nonparametric
 families. Values larger than 1 make the estimate more smooth, values less
@@ -43,14 +43,16 @@ In addition, to the families in \code{bicop_dist()}, the following convenience
 defintion can be used (and combined):
 \describe{
 \item{"all"}{all families}.
-\item{"par"}{parametric families.}
-\item{"nonpar"}{nonparametric families.}
-\item{"arch"}{archimedean families.}
-\item{"ell"}{elliptical families.}
-\item{"bb"}{BB families.}
-\item{"onepar"}{one parameter families.}
-\item{"twopar"}{two parameter families.}
+\item{"parametric"}{parametric families.}
+\item{"nonparametric"}{nonparametric families.}
+\item{"archimedean"}{archimedean families.}
+\item{"elliptical"}{elliptical families.}
+\item{"bbs"}{BB families.}
+\item{"oneparametric "}{one parameter families.}
+\item{"twoparametric "}{two parameter families.}
 }
+Partial matching is activated. For example, you can write \code{"nonpar"} instead
+of the full name \code{"nonparametric"}.
 }
 \examples{
 u <- rbicop(500, "gauss", 0, 0.5)

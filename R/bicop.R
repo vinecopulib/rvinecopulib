@@ -8,7 +8,7 @@
 #'   see *Details* for additional options.
 #' @param method the estimation method for parametric models, either `"mle"` for
 #'   maximum likelihood or `"itau"` for inversion of Kendall's tau (only 
-#'   available for one-parametr families and `"t"`.
+#'   available for one-parameter families and `"t"`.
 #' @param mult multiplier for the smoothing parameters of nonparametric 
 #'   families. Values larger than 1 make the estimate more smooth, values less
 #'   than 1 less smooth.
@@ -24,14 +24,17 @@
 #' defintion can be used (and combined):
 #' \describe{
 #' \item{"all"}{all families}.
-#' \item{"par"}{parametric families.}
-#' \item{"nonpar"}{nonparametric families.}
-#' \item{"arch"}{archimedean families.}
-#' \item{"ell"}{elliptical families.}
-#' \item{"bb"}{BB families.}
-#' \item{"onepar"}{one parameter families.}
-#' \item{"twopar"}{two parameter families.}
+#' \item{"parametric"}{parametric families.}
+#' \item{"nonparametric"}{nonparametric families.}
+#' \item{"archimedean"}{archimedean families.}
+#' \item{"elliptical"}{elliptical families.}
+#' \item{"bbs"}{BB families.}
+#' \item{"oneparametric "}{one parameter families.}
+#' \item{"twoparametric "}{two parameter families.}
 #' }
+#' Partial matching is activated. For example, you can write `"nonpar"` instead 
+#' of the full name `"nonparametric"`.
+#'
 #'
 #' @return An object inherting from `bicop_fit` and `bicop_dist`.
 #'
