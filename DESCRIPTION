@@ -22,4 +22,4 @@ LinkingTo:
     BH
 Roxygen: list(markdown = TRUE)
 SystemRequirements: C++11
-RoxygenNote: 6.0.0
+RoxygenNote: 6.0.1
