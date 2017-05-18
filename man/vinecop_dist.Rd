@@ -6,7 +6,7 @@
 \alias{rvinecop}
 \title{Vine copula models}
 \usage{
-vinecop_dist(pair_copulas = NULL, matrix = NULL)
+vinecop_dist(pair_copulas, matrix)
 
 dvinecop(u, vinecop)
 
@@ -21,7 +21,8 @@ tree \code{t}.
 [e]: R:e}
 
 \item{matrix}{A quadratic structure matrix of dimension
-\code{length(pair_copulas) + 1}.}
+`length(pair_copulas) + 1. All entries in the lower right triangle must
+be zero (see \emph{Examples}).}
 
 \item{u}{evaluation points, either a length d vector or a d-column matrix,
 where d is the number of variables in the vine.}
@@ -34,5 +35,24 @@ where d is the number of variables in the vine.}
 Vine copula models
 }
 \examples{
+# specify pair-copulas
+bicop <- bicop_dist("bb1", 90, c(3, 2))
+pcs <- list(
+    list(bicop, bicop),  # pair-copulas in first tree 
+    list(bicop)          # pair-copulas in second tree 
+ )
+ 
+# specify R-vine matrix
+mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
+
+# set up vine copula model
+vc <- vinecop_dist(pcs, mat)
+
+# simulate from the model
+u <- rvinecop(200, vc)
+pairs(u)
+
+# evaluate the density
+dvinecop(u[1, ], vc)
 
 }
