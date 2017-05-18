@@ -90,3 +90,47 @@ vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle"
     
     structure(vinecop, class = c("vinecop_fit", "vinecop_dist"))
 }
+
+#' Predictions and fitted values for a vine copula model
+#'
+#' @param object a `vinecop_fit` object.
+#' @param newdata points where the fit shall be evaluated.
+#' @param what what to predict, currently only `"pdf"` is implemented.
+#' @param ... unused.
+#'
+#' @export
+#'
+#' @examples
+#' u <- sapply(1:5, function(i) runif(50))
+#' fit <- vinecop_select(u, "par")
+#' all.equal(predict(fit, u), fitted(fit))
+predict.vinecop_fit <- function(object, newdata, what = "pdf", ...) {
+    stopifnot(what %in% c("pdf"))
+    newdata <- if_vec_to_matrix(newdata)
+    switch(
+        what,
+        "pdf" = vinecop_pdf_cpp(newdata, object)
+        # cdf
+    )
+}
+
+#' @rdname predict.vinecop_fit
+#' @export
+fitted.vinecop_fit <- function(object, what = "pdf", ...) {
+    if (is.null(object$data))
+        stop("data have not been stored, use keep_data = TRUE when fitting.")
+    stopifnot(what %in% c("pdf"))
+    switch(
+        what,
+        "pdf" = vinecop_pdf_cpp(object$data, object)
+        # cdf
+    )
+}
+
+logLik.vinecop_fit <- function(object, ...) {
+    if (is.null(object$data))
+        stop("data have not been stored, use keep_data = TRUE when fitting.")
+    pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
+    npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
+    structure(vinecop_loglik_cpp(object$data, object), "df" = npars)
+}

@@ -62,6 +62,12 @@ Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vine
 }
 
 // [[Rcpp::export()]]
+double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
+{
+    return vinecop_wrap(vinecop_r).loglik(u);
+}
+
+// [[Rcpp::export()]]
 Rcpp::List vinecop_select_cpp(
         const Eigen::MatrixXd& data,
         Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix,

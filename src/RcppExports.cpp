@@ -174,6 +174,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// vinecop_loglik_cpp
+double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r);
+RcppExport SEXP rvinecopulib_vinecop_loglik_cpp(SEXP uSEXP, SEXP vinecop_rSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
+    rcpp_result_gen = Rcpp::wrap(vinecop_loglik_cpp(u, vinecop_r));
+    return rcpp_result_gen;
+END_RCPP
+}
 // vinecop_select_cpp
 Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data, Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix, std::vector<std::string> family_set, std::string method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, bool preselect_families);
 RcppExport SEXP rvinecopulib_vinecop_select_cpp(SEXP dataSEXP, SEXP matrixSEXP, SEXP family_setSEXP, SEXP methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP preselect_familiesSEXP) {
