@@ -9,7 +9,7 @@
 #' @examples
 #' 
 #' @export
-vinecop_dist <- function(pair_copulas = NULL, matrix = NULL) {
+vinecop_dist <- function(pair_copulas, matrix) {
     # create object
     vinecop <- structure(
         list(pair_copulas = pair_copulas, matrix = matrix),
@@ -17,11 +17,10 @@ vinecop_dist <- function(pair_copulas = NULL, matrix = NULL) {
     )
     
     # sanity checks
-    if (!is.null(pair_copulas)) {
-        pc_lst <- unlist(pair_copulas, recursive = FALSE)
-        if (!all(sapply(pc_lst, function(x) inherits(x, "bicop_dist")))) {
-            stop("some objects in pair_copulas aren't of class 'bicop_dist'")
-        }
+    stopifnot(is.list(pair_copulas))
+    pc_lst <- unlist(pair_copulas, recursive = FALSE)
+    if (!all(sapply(pc_lst, function(x) inherits(x, "bicop_dist")))) {
+        stop("some objects in pair_copulas aren't of class 'bicop_dist'")
     }
     vinecop_check_cpp(vinecop)
     
