@@ -32,7 +32,7 @@ args2bicop <- function(family, rotation, parameters) {
 #' Internal: Expand shortcuts in the familyset.
 #' @noRd
 expand_family_set <- function(family_set) {
-    unique(sapply(family_set, expand_family))
+    unique(unlist(lapply(family_set, expand_family)))
 }
 
 expand_family <- function(family) {

@@ -71,7 +71,13 @@ bicop_fit <- function(data, family_set = "all", method = "mle", mult = 1,
         presel = presel
     )
     
-    structure(bicop, class = c("bicop_fit", "bicop_dist"))
+    as.bicop_fit(bicop)
+}
+
+as.bicop_fit <- function(object) {
+    if (!all(c("family", "rotation", "parameters", "npars") %in% names(object)))
+        stop("object cannot be coerced to class 'bicop_fit'")
+    structure(object, class = c("bicop_fit", "bicop_dist"))
 }
 
 

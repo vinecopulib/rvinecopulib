@@ -174,3 +174,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// vinecop_select_cpp
+Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data, Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix, std::vector<std::string> family_set, std::string method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, bool preselect_families);
+RcppExport SEXP rvinecopulib_vinecop_select_cpp(SEXP dataSEXP, SEXP matrixSEXP, SEXP family_setSEXP, SEXP methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP preselect_familiesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> >::type matrix(matrixSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type family_set(family_setSEXP);
+    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< double >::type mult(multSEXP);
+    Rcpp::traits::input_parameter< int >::type truncation_level(truncation_levelSEXP);
+    Rcpp::traits::input_parameter< std::string >::type tree_criterion(tree_criterionSEXP);
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    Rcpp::traits::input_parameter< std::string >::type selection_criterion(selection_criterionSEXP);
+    Rcpp::traits::input_parameter< bool >::type preselect_families(preselect_familiesSEXP);
+    rcpp_result_gen = Rcpp::wrap(vinecop_select_cpp(data, matrix, family_set, method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families));
+    return rcpp_result_gen;
+END_RCPP
+}

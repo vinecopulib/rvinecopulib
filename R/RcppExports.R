@@ -57,3 +57,7 @@ vinecop_pdf_cpp <- function(u, vinecop_r) {
     .Call('rvinecopulib_vinecop_pdf_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
 
+vinecop_select_cpp <- function(data, matrix, family_set, method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families) {
+    .Call('rvinecopulib_vinecop_select_cpp', PACKAGE = 'rvinecopulib', data, matrix, family_set, method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families)
+}
+
