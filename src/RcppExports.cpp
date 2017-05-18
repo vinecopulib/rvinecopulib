@@ -140,3 +140,37 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// vinecop_check_cpp
+void vinecop_check_cpp(Rcpp::List vinecop_r);
+RcppExport SEXP rvinecopulib_vinecop_check_cpp(SEXP vinecop_rSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type vinecop_r(vinecop_rSEXP);
+    vinecop_check_cpp(vinecop_r);
+    return R_NilValue;
+END_RCPP
+}
+// vinecop_sim_cpp
+Eigen::MatrixXd vinecop_sim_cpp(int n, const Rcpp::List& vinecop_r);
+RcppExport SEXP rvinecopulib_vinecop_sim_cpp(SEXP nSEXP, SEXP vinecop_rSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
+    rcpp_result_gen = Rcpp::wrap(vinecop_sim_cpp(n, vinecop_r));
+    return rcpp_result_gen;
+END_RCPP
+}
+// vinecop_pdf_cpp
+Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r);
+RcppExport SEXP rvinecopulib_vinecop_pdf_cpp(SEXP uSEXP, SEXP vinecop_rSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
+    rcpp_result_gen = Rcpp::wrap(vinecop_pdf_cpp(u, vinecop_r));
+    return rcpp_result_gen;
+END_RCPP
+}

@@ -41,7 +41,7 @@
 #' @export
 bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {
     stopifnot(length(family) == 1)
-    if (family %in% family_set_nonparametric)
+    if (family %in% setdiff(family_set_nonparametric, "indep"))
         stop("bicop_dist should not be used directly with nonparametric families.")
     family <- family_set_all[pmatch(family, family_set_all)]
     dist <- list(family     = family,

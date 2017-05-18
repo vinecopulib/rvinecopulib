@@ -45,3 +45,15 @@ bicop_bic_cpp <- function(u, bicop_r) {
     .Call('rvinecopulib_bicop_bic_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
+vinecop_check_cpp <- function(vinecop_r) {
+    invisible(.Call('rvinecopulib_vinecop_check_cpp', PACKAGE = 'rvinecopulib', vinecop_r))
+}
+
+vinecop_sim_cpp <- function(n, vinecop_r) {
+    .Call('rvinecopulib_vinecop_sim_cpp', PACKAGE = 'rvinecopulib', n, vinecop_r)
+}
+
+vinecop_pdf_cpp <- function(u, vinecop_r) {
+    .Call('rvinecopulib_vinecop_pdf_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
+}
+
