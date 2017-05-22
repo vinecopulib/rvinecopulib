@@ -30,3 +30,5 @@ vignettes/*.pdf
 *.dll
 *.hpp.gch
 rvinecopulib.Rproj
+# CLion stuff
+*.idea

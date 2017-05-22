@@ -206,3 +206,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"rvinecopulib_bicop_check_cpp", (DL_FUNC) &rvinecopulib_bicop_check_cpp, 1},
+    {"rvinecopulib_bicop_select_cpp", (DL_FUNC) &rvinecopulib_bicop_select_cpp, 6},
+    {"rvinecopulib_bicop_pdf_cpp", (DL_FUNC) &rvinecopulib_bicop_pdf_cpp, 2},
+    {"rvinecopulib_bicop_hfunc1_cpp", (DL_FUNC) &rvinecopulib_bicop_hfunc1_cpp, 2},
+    {"rvinecopulib_bicop_hfunc2_cpp", (DL_FUNC) &rvinecopulib_bicop_hfunc2_cpp, 2},
+    {"rvinecopulib_bicop_hinv1_cpp", (DL_FUNC) &rvinecopulib_bicop_hinv1_cpp, 2},
+    {"rvinecopulib_bicop_hinv2_cpp", (DL_FUNC) &rvinecopulib_bicop_hinv2_cpp, 2},
+    {"rvinecopulib_bicop_simulate_cpp", (DL_FUNC) &rvinecopulib_bicop_simulate_cpp, 2},
+    {"rvinecopulib_bicop_loglik_cpp", (DL_FUNC) &rvinecopulib_bicop_loglik_cpp, 2},
+    {"rvinecopulib_bicop_aic_cpp", (DL_FUNC) &rvinecopulib_bicop_aic_cpp, 2},
+    {"rvinecopulib_bicop_bic_cpp", (DL_FUNC) &rvinecopulib_bicop_bic_cpp, 2},
+    {"rvinecopulib_vinecop_check_cpp", (DL_FUNC) &rvinecopulib_vinecop_check_cpp, 1},
+    {"rvinecopulib_vinecop_sim_cpp", (DL_FUNC) &rvinecopulib_vinecop_sim_cpp, 2},
+    {"rvinecopulib_vinecop_pdf_cpp", (DL_FUNC) &rvinecopulib_vinecop_pdf_cpp, 2},
+    {"rvinecopulib_vinecop_loglik_cpp", (DL_FUNC) &rvinecopulib_vinecop_loglik_cpp, 2},
+    {"rvinecopulib_vinecop_select_cpp", (DL_FUNC) &rvinecopulib_vinecop_select_cpp, 10},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_rvinecopulib(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}
