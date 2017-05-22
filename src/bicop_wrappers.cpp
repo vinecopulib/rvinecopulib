@@ -1,5 +1,5 @@
 #include <RcppEigen.h>
-#include "Bicop_wrappers.hpp"
+#include "bicop_wrappers.hpp"
 
 using namespace vinecopulib;
 

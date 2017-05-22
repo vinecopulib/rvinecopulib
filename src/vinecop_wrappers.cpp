@@ -24,7 +24,7 @@ Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
 }
 
 
-Rcpp::List vinecop_wrap(Vinecop& vinecop_cpp) {
+Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp) {
     auto matrix = vinecop_cpp.get_matrix();
     size_t d = matrix.cols();
     Rcpp::List pair_copulas(d - 1);
@@ -65,6 +65,18 @@ Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vine
 double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
 {
     return vinecop_wrap(vinecop_r).loglik(u);
+}
+
+// [[Rcpp::export()]]
+double vinecop_aic_cpp(Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
+{
+  return vinecop_wrap(vinecop_r).aic(u);
+}
+
+// [[Rcpp::export()]]
+double vinecop_bic_cpp(Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
+{
+  return vinecop_wrap(vinecop_r).bic(u);
 }
 
 // [[Rcpp::export()]]

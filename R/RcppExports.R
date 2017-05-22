@@ -61,6 +61,14 @@ vinecop_loglik_cpp <- function(u, vinecop_r) {
     .Call('rvinecopulib_vinecop_loglik_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
 
+vinecop_aic_cpp <- function(u, vinecop_r) {
+    .Call('rvinecopulib_vinecop_aic_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
+}
+
+vinecop_bic_cpp <- function(u, vinecop_r) {
+    .Call('rvinecopulib_vinecop_bic_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
+}
+
 vinecop_select_cpp <- function(data, matrix, family_set, method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families) {
     .Call('rvinecopulib_vinecop_select_cpp', PACKAGE = 'rvinecopulib', data, matrix, family_set, method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families)
 }
