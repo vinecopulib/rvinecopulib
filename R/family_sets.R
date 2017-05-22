@@ -31,5 +31,10 @@ family_set_all <- unique(
 )
 
 family_set_defs <- c(
-    "arch", "ellip", "bb", "onepar", "twopar", "par", "nonpar"
+    "archimedean", "elliptical", "bbs", "oneparametric", "twoparametric", 
+    "parametric", "nonparametric", "all"
+)
+
+family_set_all_defs <- c(
+    family_set_all, family_set_defs
 )

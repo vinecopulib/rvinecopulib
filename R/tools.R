@@ -16,7 +16,7 @@ if_vec_to_matrix <- function(u) {
         stop("u must be a mx2 matrix, data.frame or a length two vector.")
     if (!is.matrix(u))
         u <- as.matrix(u)
-
+    
     u
 }
 
@@ -36,21 +36,31 @@ args2bicop <- function(family, rotation, parameters) {
 
 #' Internal: Expand shortcuts in the familyset.
 #' @noRd
-expand_familyset <- function(familyset) {
-    unique(sapply(familyset, expand_family))
+expand_family_set <- function(family_set) {
+    unique(sapply(family_set, expand_family))
 }
 
 expand_family <- function(family) {
-    fams <- switch(
+    switch(
         family,
-        "arch"   = family_set_archimedean,
-        "ellip"  = family_set_elliptical,
-        "bb"     = family_set_bb,
-        "onepar" = family_set_onepar,
-        "twopar" = family_set_twopar,
-        "par"    = family_set_parametric,
-        "nonpar" = family_set_nonparametric,
-        "all"    = family_set_all,
+        "archimedean"   = family_set_archimedean,
+        "ellipiltical"  = family_set_elliptical,
+        "bbs"           = family_set_bb,
+        "oneparametric" = family_set_onepar,
+        "twoparametric" = family_set_twopar,
+        "parametric"    = family_set_parametric,
+        "nonparametric" = family_set_nonparametric,
+        "all"           = family_set_all,
         family  # default is no expansion
     )
+}
+
+check_family_set <- function(family_set) {
+    i_wrong <- which(!(family_set %in% family_set_all_defs))
+    if (length(i_wrong) > 0) {
+        stop(
+            "unknown families in family_set: ",
+            paste0('"', family_set[i_wrong], '"', collapse = ", ")
+        )
+    }
 }
