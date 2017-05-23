@@ -10,9 +10,9 @@ Description: This is the R interface to the vinecopulib C++ library.
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
+NeedsCompilation: yes
 Imports:
-    Rcpp,
-    nloptr
+    Rcpp
 Suggests:
     testthat,
     VineCopula
