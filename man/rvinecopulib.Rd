@@ -11,7 +11,7 @@ High Performance Algorithms for Vine Copula Modeling
 \examples{
 dist <- bicop_dist("clayton", 90, 3)
 u <- rbicop(100, dist)
-fit <- bicop_fit(u)
+fit <- bicop(u)
 fit
 }
 \author{

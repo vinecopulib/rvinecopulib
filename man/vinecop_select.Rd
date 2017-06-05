@@ -44,7 +44,7 @@ symmetry characteristics of the data.}
 fit statistics and using \code{fitted()}).}
 }
 \value{
-An object inherting from \code{bicop_fit} and \code{bicop_dist}.
+An object inherting from \code{bicop} and \code{bicop_dist}.
 }
 \description{
 Automated fitting for vine copula models
