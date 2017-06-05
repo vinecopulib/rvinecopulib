@@ -88,12 +88,12 @@ vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle"
         threshold = threshold
     )
     
-    structure(vinecop, class = c("vinecop_fit", "vinecop_dist"))
+    structure(vinecop, class = c("vinecop", "vinecop_dist"))
 }
 
 #' Predictions and fitted values for a vine copula model
 #'
-#' @param object a `vinecop_fit` object.
+#' @param object a `vinecop` object.
 #' @param newdata points where the fit shall be evaluated.
 #' @param what what to predict, currently only `"pdf"` is implemented.
 #' @param ... unused.
@@ -104,7 +104,7 @@ vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle"
 #' u <- sapply(1:5, function(i) runif(50))
 #' fit <- vinecop_select(u, "par")
 #' all.equal(predict(fit, u), fitted(fit))
-predict.vinecop_fit <- function(object, newdata, what = "pdf", ...) {
+predict.vinecop <- function(object, newdata, what = "pdf", ...) {
     stopifnot(what %in% c("pdf"))
     newdata <- if_vec_to_matrix(newdata)
     switch(
@@ -114,9 +114,9 @@ predict.vinecop_fit <- function(object, newdata, what = "pdf", ...) {
     )
 }
 
-#' @rdname predict.vinecop_fit
+#' @rdname predict.vinecop
 #' @export
-fitted.vinecop_fit <- function(object, what = "pdf", ...) {
+fitted.vinecop <- function(object, what = "pdf", ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     stopifnot(what %in% c("pdf"))
@@ -127,7 +127,7 @@ fitted.vinecop_fit <- function(object, what = "pdf", ...) {
     )
 }
 
-logLik.vinecop_fit <- function(object, ...) {
+logLik.vinecop <- function(object, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
@@ -135,13 +135,13 @@ logLik.vinecop_fit <- function(object, ...) {
     structure(vinecop_loglik_cpp(object$data, object), "df" = npars)
 }
 
-AIC.vinecop_fit <- function(object, ...) {
+AIC.vinecop <- function(object, ...) {
   if (is.null(object$data))
     stop("data have not been stored, use keep_data = TRUE when fitting.")
   vinecop_aic_cpp(object$data, object)
 }
 
-BIC.vinecop_fit <- function(object, ...) {
+BIC.vinecop <- function(object, ...) {
   if (is.null(object$data))
     stop("data have not been stored, use keep_data = TRUE when fitting.")
   vinecop_bic_cpp(object$data, object)
