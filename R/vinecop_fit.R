@@ -2,7 +2,7 @@
 #' 
 #' Automated fitting for vine copula models
 #' 
-#' @inheritParams bicop_fit
+#' @inheritParams bicop
 #' @param matrix an R-vine matrix specifying the structure matrix, or `NA` for
 #'   automatic structure selection (default).
 #' @param trunc_lvl the truncation level of the vine copula.
@@ -27,7 +27,7 @@
 #' Partial matching is activated. For example, you can write `"nonpar"` instead 
 #' of the full name `"nonparametric"`.
 #'
-#' @return An object inherting from `bicop_fit` and `bicop_dist`.
+#' @return An object inherting from `bicop` and `bicop_dist`.
 #'
 #' @examples
 #' u <- sapply(1:3, function(i) runif(50))
@@ -67,10 +67,10 @@ vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle"
         threshold = threshold
     )
     
-    ## make all pair-copulas bicop_fit objects
+    ## make all pair-copulas bicop objects
     vinecop$pair_copulas <- lapply(
         vinecop$pair_copulas, 
-        function(tree) lapply(tree, as.bicop_fit)
+        function(tree) lapply(tree, as.bicop)
     )
     
     ## add information about the fit
