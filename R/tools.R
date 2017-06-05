@@ -7,13 +7,8 @@
 #'
 #' @noRd
 if_vec_to_matrix <- function(u) {
-    if (NCOL(u) == 1) {
-        if (length(u) != 2)
-            stop("u must be a mx2 matrix, data.frame or a length two vector.")
-        u <- matrix(u, 1, 2)
-    }
-    if (!NCOL(u) == 2)
-        stop("u must be a mx2 matrix, data.frame or a length two vector.")
+    if (NCOL(u) == 1)
+        u <- matrix(u, 1, length(u))
     if (!is.matrix(u))
         u <- as.matrix(u)
     
@@ -37,7 +32,7 @@ args2bicop <- function(family, rotation, parameters) {
 #' Internal: Expand shortcuts in the familyset.
 #' @noRd
 expand_family_set <- function(family_set) {
-    unique(sapply(family_set, expand_family))
+    unique(unlist(lapply(family_set, expand_family)))
 }
 
 expand_family <- function(family) {

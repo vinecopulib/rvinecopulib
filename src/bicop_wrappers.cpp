@@ -1,7 +1,8 @@
 #include <RcppEigen.h>
+#include "bicop_wrappers.hpp"
 
-#include "vinecopulib.hpp"
 using namespace vinecopulib;
+
 
 BicopFamily to_cpp_family(const std::string& fam)
 {

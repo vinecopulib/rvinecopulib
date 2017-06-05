@@ -1,6 +1,6 @@
 #' Bivariate copula models
 #' 
-#' @aliases bicop_fit bicop
+#' @aliases bicop bicop
 #'
 #' @param data a matrix or data.frame (copula data should have approximately
 #'  uniform margins).
@@ -36,15 +36,15 @@
 #' of the full name `"nonparametric"`.
 #'
 #'
-#' @return An object inherting from `bicop_fit` and `bicop_dist`.
+#' @return An object inherting from `bicop` and `bicop_dist`.
 #'
 #' @examples
 #' u <- rbicop(500, "gauss", 0, 0.5)
-#' fit1 <- bicop_fit(u, "par")
+#' fit1 <- bicop(u, "par")
 #' fit1
 #' 
 #' @export
-bicop_fit <- function(data, family_set = "all", method = "mle", mult = 1, 
+bicop <- function(data, family_set = "all", method = "mle", mult = 1, 
                       selcrit = "bic", presel = TRUE, keep_data = TRUE) {
     
     # family_set can only use standard family names in cpp
@@ -74,13 +74,19 @@ bicop_fit <- function(data, family_set = "all", method = "mle", mult = 1,
         presel = presel
     )
     
-    structure(bicop, class = c("bicop_fit", "bicop_dist"))
+    as.bicop(bicop)
+}
+
+as.bicop <- function(object) {
+    if (!all(c("family", "rotation", "parameters", "npars") %in% names(object)))
+        stop("object cannot be coerced to class 'bicop'")
+    structure(object, class = c("bicop", "bicop_dist"))
 }
 
 
 #' Predictions and fitted values for a bivariate copula model
 #'
-#' @param object a `bicop_fit` object.
+#' @param object a `bicop` object.
 #' @param newdata points where the fit shall be evaluated.
 #' @param what what to predict, one of `"pdf"`, `"hfunc1"`, `"hfunc2"`, 
 #'    `"hinv1"`, `"hinv2"`.
@@ -90,9 +96,9 @@ bicop_fit <- function(data, family_set = "all", method = "mle", mult = 1,
 #'
 #' @examples
 #' u <- rbicop(500, "gauss", 0, 0.5)
-#' fit <- bicop_fit(u, "par")
+#' fit <- bicop(u, "par")
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
-predict.bicop_fit <- function(object, newdata, what = "pdf", ...) {
+predict.bicop <- function(object, newdata, what = "pdf", ...) {
     stopifnot(what %in% c("pdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
     newdata <- if_vec_to_matrix(newdata)
     switch(
@@ -105,9 +111,9 @@ predict.bicop_fit <- function(object, newdata, what = "pdf", ...) {
     )
 }
 
-#' @rdname predict.bicop_fit
+#' @rdname predict.bicop
 #' @export
-fitted.bicop_fit <- function(object, what = "pdf", ...) {
+fitted.bicop <- function(object, what = "pdf", ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     stopifnot(what %in% c("pdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
@@ -121,7 +127,7 @@ fitted.bicop_fit <- function(object, what = "pdf", ...) {
     )
 }
 
-logLik.bicop_fit <- function(object, ...) {
+logLik.bicop <- function(object, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     structure(bicop_loglik_cpp(object$data, object), "df" = object$npars)
