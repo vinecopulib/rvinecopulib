@@ -2,7 +2,7 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #pragma once
 
@@ -33,6 +33,9 @@ namespace vinecopulib
         Eigen::VectorXd pdf(
             const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
         );
+        Eigen::VectorXd cdf(
+                const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
+        );
         Eigen::VectorXd hfunc1(
             const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
         );
@@ -50,6 +53,8 @@ namespace vinecopulib
         Eigen::MatrixXd tau_to_parameters(const double& tau);
         double calculate_npars();
 
+        Eigen::MatrixXd get_parameters() const;
+        void set_parameters(const Eigen::MatrixXd& parameters);
         void flip();
 
         tools_interpolation::InterpolationGrid interp_grid_;

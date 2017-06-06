@@ -2,7 +2,7 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #pragma once
 
@@ -21,10 +21,13 @@ namespace tools_interpolation {
         InterpolationGrid() {}
         InterpolationGrid(const Eigen::VectorXd& grid_points, const Eigen::MatrixXd& values);
 
+        Eigen::MatrixXd get_values() const;
+        void set_values(const Eigen::MatrixXd& values);
         void flip();
 
         Eigen::VectorXd interpolate(const Eigen::MatrixXd& x);
         Eigen::VectorXd intergrate_1d(const Eigen::MatrixXd& u, size_t cond_var);
+        Eigen::VectorXd intergrate_2d(const Eigen::MatrixXd& u);
 
     private:
         // Utility functions for spline Interpolation
@@ -39,7 +42,7 @@ namespace tools_interpolation {
 
         Eigen::VectorXd grid_points_;
         Eigen::MatrixXd values_;
-    };    
+    };
 }
 
 }

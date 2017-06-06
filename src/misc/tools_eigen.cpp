@@ -2,7 +2,7 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <iostream>
 #include <fstream>
@@ -51,6 +51,26 @@ namespace tools_eigen
 
         return x_tmp;
     }
+
+    //! expand a vector into a matrix with two columns where each row
+    //! contains one combination of the vector elements
+    //!
+    //! @param grid_points the vector to expand.
+    Eigen::Matrix<double, Eigen::Dynamic, 2> expand_grid(
+            const Eigen::VectorXd& grid_points)
+    {
+        ptrdiff_t m = grid_points.size();
+        Eigen::Matrix<double, Eigen::Dynamic, 2> grid_2d(m * m, 2);
+        ptrdiff_t k = 0;
+        for (ptrdiff_t i = 0; i < m; ++i) {
+            for (ptrdiff_t j = 0; j < m; ++j) {
+                grid_2d(k, 0) = grid_points(i);
+                grid_2d(k, 1) = grid_points(j);
+                ++k;
+            }
+        }
+        return grid_2d;
+    };
     
     //! reads data from a file to an Eigen matrix of integers.
     //! 

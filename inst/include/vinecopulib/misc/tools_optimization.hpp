@@ -2,7 +2,7 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #pragma once
 
@@ -17,7 +17,7 @@ namespace tools_optimization {
     //! @brief A helper struct for (profile) maximum likelihood estimation
     typedef struct
     {
-        const Eigen::MatrixXd& U; //!< the data.
+        const Eigen::Matrix<double, Eigen::Dynamic, 2>& U; //!< the data.
         vinecopulib::ParBicop* bicop; //!< a pointer to the bivariate copula to optimize.
         double par0;  //!< main dependence parameter.
         unsigned int objective_calls; //!< number of evaluations of the objective.

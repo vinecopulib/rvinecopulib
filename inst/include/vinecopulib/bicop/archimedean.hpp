@@ -2,7 +2,7 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #pragma once
 
@@ -23,6 +23,7 @@ namespace vinecopulib
     private:
         // pdf, hfunctions and inverses
         Eigen::VectorXd pdf(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u);
+        Eigen::VectorXd cdf(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u);
         Eigen::VectorXd hfunc1(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u);
         Eigen::VectorXd hfunc2(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u);
         Eigen::VectorXd hinv1(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u);
