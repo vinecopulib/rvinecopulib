@@ -45,6 +45,14 @@ bicop_bic_cpp <- function(u, bicop_r) {
     .Call('rvinecopulib_bicop_bic_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
+rvine_matrix_check_cpp <- function(matrix) {
+    invisible(.Call('rvinecopulib_rvine_matrix_check_cpp', PACKAGE = 'rvinecopulib', matrix))
+}
+
+rvine_matrix_get_order <- function(matrix) {
+    .Call('rvinecopulib_rvine_matrix_get_order', PACKAGE = 'rvinecopulib', matrix)
+}
+
 vinecop_check_cpp <- function(vinecop_r) {
     invisible(.Call('rvinecopulib_vinecop_check_cpp', PACKAGE = 'rvinecopulib', vinecop_r))
 }
