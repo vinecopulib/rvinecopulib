@@ -2,10 +2,6 @@
 
 git clone git@github.com:vinecopulib/vinecopulib.git
 
-cd vinecopulib 
-git checkout dev
-cd ..
-
 rm -rf bicop 
 rm -rf misc 
 rm -rf vinecop

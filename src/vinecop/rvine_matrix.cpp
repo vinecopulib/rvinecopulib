@@ -145,6 +145,7 @@ namespace vinecopulib
     }
     //! @}
     
+    
     void RVineMatrix::check_if_quadratic() const {
         std::string problem = "must be quadratic.";
         if (matrix_.rows() != matrix_.cols()) {

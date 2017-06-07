@@ -24,7 +24,8 @@ namespace vinecopulib
         for (size_t i = 0; i < d; ++i) {
             order(i) = i + 1;
         }
-        vine_matrix_ = RVineMatrix(RVineMatrix::construct_d_vine_matrix(order));
+        vine_matrix_ = RVineMatrix(RVineMatrix::construct_d_vine_matrix(order),
+                                   false);  // don't check if R-vine matrix
 
         // all pair-copulas are independence
         pair_copulas_ = make_pair_copula_store(d);
@@ -38,10 +39,13 @@ namespace vinecopulib
     //! creates a vine copula with structure specified by an R-vine matrix; all
     //! pair-copulas are set to independence.
     //! @param matrix an R-vine matrix.
-    Vinecop::Vinecop(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix)
+    //! @param check_matrix whether to check if `matrix` is a valid R-vine 
+    //!     matrix.
+    Vinecop::Vinecop(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+        bool check_matrix)
     {
         d_ = matrix.rows();
-        vine_matrix_ = RVineMatrix(matrix);
+        vine_matrix_ = RVineMatrix(matrix, check_matrix);
 
         // all pair-copulas are independence
         pair_copulas_ = make_pair_copula_store(d_);
@@ -56,10 +60,11 @@ namespace vinecopulib
     //! @param pair_copulas Bicop objects specifying the pair-copulas, see 
     //!     make_pair_copula_store().
     //! @param matrix an R-vine matrix specifying the vine structure.
-    Vinecop::Vinecop(
-            const std::vector<std::vector<Bicop>>& pair_copulas,
-            const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix
-    )
+    //! @param check_matrix whether to check if `matrix` is a valid R-vine 
+    //!     matrix.
+    Vinecop::Vinecop(const std::vector<std::vector<Bicop>>& pair_copulas,
+        const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+        bool check_matrix)
     {
         d_ = matrix.rows();
         if (pair_copulas.size() != d_ - 1) {
@@ -84,7 +89,7 @@ namespace vinecopulib
             }
         }
 
-        vine_matrix_ = RVineMatrix(matrix);
+        vine_matrix_ = RVineMatrix(matrix, check_matrix);
         pair_copulas_ = pair_copulas;
     }
 
@@ -96,13 +101,16 @@ namespace vinecopulib
     //! @param matrix either an empty matrix (default) or an R-vine structure 
     //!     matrix, see select_families().
     //! @param controls see FitControlsVinecop.
+    //! @param check_matrix whether to check if `matrix` is a valid R-vine 
+    //!     matrix.
     Vinecop::Vinecop(const Eigen::MatrixXd& data, 
         const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
-        FitControlsVinecop controls)
+        FitControlsVinecop controls,
+        bool check_matrix)
     {
         d_ = data.cols();
         pair_copulas_ = make_pair_copula_store(d_);
-        vine_matrix_ = RVineMatrix(matrix);
+        vine_matrix_ = RVineMatrix(matrix, check_matrix);
         select_families(data, controls);
     }
 
