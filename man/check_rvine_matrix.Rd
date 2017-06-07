@@ -10,7 +10,7 @@ check_rvine_matrix(matrix)
 \item{matrix}{a quadratic matrix, see \emph{Details}.}
 }
 \value{
-An object of class \code{"rvine_matrix"}.
+Throws an error if \code{matrix`` is not a vlaid R-vine matrix, otherwise}TRUE` is returned invisibly.
 }
 \description{
 R-vine matrices are compressed representations of the vine structure. It
@@ -69,5 +69,9 @@ check by hand.
 \examples{
 mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
 check_rvine_matrix(mat)
+
+# throws an error
+mat[4, 4] <- 5
+try(check_rvine_matrix(mat))
 
 }

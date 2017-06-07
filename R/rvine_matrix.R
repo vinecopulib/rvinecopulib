@@ -51,12 +51,17 @@
 #'
 #' @param matrix a quadratic matrix, see *Details*.
 #'
-#' @return An object of class `"rvine_matrix"`.
+#' @return Throws an error if `matrix`` is not a vlaid R-vine matrix, otherwise
+#'     `TRUE` is returned invisibly.
 #' @export
 #'
 #' @examples
 #' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
 #' check_rvine_matrix(mat)
+#' 
+#' # throws an error
+#' mat[4, 4] <- 5
+#' try(check_rvine_matrix(mat))
 #' 
 check_rvine_matrix <- function(matrix) {
     stopifnot(is.matrix(matrix))
