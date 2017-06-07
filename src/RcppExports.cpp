@@ -140,6 +140,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rvine_matrix_check_cpp
+void rvine_matrix_check_cpp(Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix);
+RcppExport SEXP rvinecopulib_rvine_matrix_check_cpp(SEXP matrixSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> >::type matrix(matrixSEXP);
+    rvine_matrix_check_cpp(matrix);
+    return R_NilValue;
+END_RCPP
+}
 // vinecop_check_cpp
 void vinecop_check_cpp(Rcpp::List vinecop_r);
 RcppExport SEXP rvinecopulib_vinecop_check_cpp(SEXP vinecop_rSEXP) {
@@ -243,6 +253,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"rvinecopulib_bicop_loglik_cpp", (DL_FUNC) &rvinecopulib_bicop_loglik_cpp, 2},
     {"rvinecopulib_bicop_aic_cpp", (DL_FUNC) &rvinecopulib_bicop_aic_cpp, 2},
     {"rvinecopulib_bicop_bic_cpp", (DL_FUNC) &rvinecopulib_bicop_bic_cpp, 2},
+    {"rvinecopulib_rvine_matrix_check_cpp", (DL_FUNC) &rvinecopulib_rvine_matrix_check_cpp, 1},
     {"rvinecopulib_vinecop_check_cpp", (DL_FUNC) &rvinecopulib_vinecop_check_cpp, 1},
     {"rvinecopulib_vinecop_sim_cpp", (DL_FUNC) &rvinecopulib_vinecop_sim_cpp, 2},
     {"rvinecopulib_vinecop_pdf_cpp", (DL_FUNC) &rvinecopulib_vinecop_pdf_cpp, 2},

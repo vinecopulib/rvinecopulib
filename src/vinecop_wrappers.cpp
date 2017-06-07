@@ -3,6 +3,10 @@
 
 using namespace vinecopulib;
 
+// [[Rcpp::export()]]
+void rvine_matrix_check_cpp(Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix) {
+    auto rvm = RVineMatrix(matrix);
+}
 
 Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
 {
@@ -19,8 +23,9 @@ Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
     }
 
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix = vinecop_r["matrix"];
-
-    return Vinecop(pc_store, matrix);
+    
+    // omit R-vine matrix check, already done in R
+    return Vinecop(pc_store, matrix, false);
 }
 
 

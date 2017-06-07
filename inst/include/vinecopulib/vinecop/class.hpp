@@ -22,13 +22,17 @@ namespace vinecopulib
         // Constructors
         Vinecop() {}
         Vinecop(size_t d);
-        Vinecop(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix);
+        Vinecop(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+                bool check_matrix = true);
         Vinecop(const std::vector<std::vector<Bicop>>& pair_copulas,
-                const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix);
+                const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+                bool check_matrix = true);
         Vinecop(const Eigen::MatrixXd& data,
                 FitControlsVinecop controls = FitControlsVinecop());
-        Vinecop(const Eigen::MatrixXd& data, const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
-                FitControlsVinecop controls = FitControlsVinecop());
+        Vinecop(const Eigen::MatrixXd& data, 
+                const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+                FitControlsVinecop controls = FitControlsVinecop(),
+                bool check_matrix = true);
 
         // Methods modifying structure and/or families and parameters
         void select_all(const Eigen::MatrixXd& data,
