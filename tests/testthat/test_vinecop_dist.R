@@ -12,9 +12,11 @@ test_that("constructor creates proper vinecop_dist object", {
 })
 
 
-test_that("d/r- functions work", {
+test_that("d/p/r- functions work", {
     u <- rvinecop(50, vc)
     expect_gte(min(dvinecop(u, vc)), 0)
+    expect_gte(min(pvinecop(u, vc, 100)), 0)
+    expect_lte(max(pvinecop(u, vc, 100)), 1)
 })
 
 test_that("constructor catches wrong R-vine matrix", {

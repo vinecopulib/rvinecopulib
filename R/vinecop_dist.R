@@ -24,8 +24,9 @@
 #' u <- rvinecop(200, vc)
 #' pairs(u)
 #' 
-#' # evaluate the density
+#' # evaluate the density and cdf
 #' dvinecop(u[1, ], vc)
+#' pvinecop(u[1, ], vc)
 #' 
 #' @export
 vinecop_dist <- function(pair_copulas, matrix) {
@@ -55,6 +56,16 @@ vinecop_dist <- function(pair_copulas, matrix) {
 dvinecop <- function(u, vinecop) {
     stopifnot(inherits(vinecop, "vinecop_dist"))
     vinecop_pdf_cpp(if_vec_to_matrix(u), vinecop)
+}
+
+
+#' @rdname vinecop_dist
+#' @param n_mc number of samples used for quasi Monte Carlo integration.
+#' @export
+#' 
+pvinecop <- function(u, vinecop, n_mc = 10^4) {
+    stopifnot(inherits(vinecop, "vinecop_dist"))
+    vinecop_cdf_cpp(if_vec_to_matrix(u), vinecop, n_mc)
 }
 
 #' @rdname vinecop_dist

@@ -3,18 +3,24 @@
 \name{predict.vinecop}
 \alias{predict.vinecop}
 \alias{fitted.vinecop}
+\alias{logLik.vinecop}
 \title{Predictions and fitted values for a vine copula model}
 \usage{
-\method{predict}{vinecop}(object, newdata, what = "pdf", ...)
+\method{predict}{vinecop}(object, newdata, what = "pdf", n_mc = 10^4, ...)
 
-\method{fitted}{vinecop}(object, what = "pdf", ...)
+\method{fitted}{vinecop}(object, what = "pdf", n_mc = 10^4, ...)
+
+\method{logLik}{vinecop}(object, ...)
 }
 \arguments{
 \item{object}{a \code{vinecop} object.}
 
 \item{newdata}{points where the fit shall be evaluated.}
 
-\item{what}{what to predict, currently only \code{"pdf"} is implemented.}
+\item{what}{what to predict, either \code{"pdf"} or \code{"cdf"}.}
+
+\item{n_mc}{number of samples used for quasi Monte Carlo integration when
+\code{what = "cdf"}.}
 
 \item{...}{unused.}
 }
@@ -25,4 +31,5 @@ Predictions and fitted values for a vine copula model
 u <- sapply(1:5, function(i) runif(50))
 fit <- vinecop_select(u, "par")
 all.equal(predict(fit, u), fitted(fit))
+logLik(fit)
 }

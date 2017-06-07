@@ -3,12 +3,15 @@
 \name{bicop_dist}
 \alias{bicop_dist}
 \alias{dbicop}
+\alias{pbicop}
 \alias{rbicop}
 \title{Bivariate copula distributions}
 \usage{
 bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
 
 dbicop(u, family, rotation, parameters)
+
+pbicop(u, family, rotation, parameters)
 
 rbicop(n, family, rotation, parameters)
 }
@@ -62,7 +65,8 @@ bicop <- bicop_dist("clayton", 90, 3)
 # evaluate the copula density
 dbicop(c(0.1, 0.2), "clay", 90, 3)
 dbicop(c(0.1, 0.2), bicop)
-
+# evaluate the copula cdf
+pbicop(c(0.1, 0.2), "clay", 90, 3)
 # simulate data
 plot(rbicop(500, "clay", 90, 3))
 plot(rbicop(500, bicop))
