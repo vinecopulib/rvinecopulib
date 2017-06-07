@@ -3,7 +3,8 @@
 #' Automated fitting for vine copula models
 #' 
 #' @inheritParams bicop
-#' @param matrix an R-vine matrix specifying the structure matrix, or `NA` for
+#' @param matrix an R-vine matrix specifying the structure matrix (see 
+#'   [`check_rvine_matrix()`]), or `NA` for
 #'   automatic structure selection (default).
 #' @param trunc_lvl the truncation level of the vine copula.
 #' @param tree_crit the criterion for tree selection, one of `"tau"`, `"rho"`,
@@ -36,9 +37,9 @@
 #' 
 #' @export
 vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle", 
-                        mult = 1, selcrit = "bic", presel = TRUE, 
-                        trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
-                        keep_data = TRUE) {
+                           mult = 1, selcrit = "bic", presel = TRUE, 
+                           trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
+                           keep_data = TRUE) {
     
     ## family_set can only use standard family names in cpp
     family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
@@ -136,13 +137,13 @@ logLik.vinecop <- function(object, ...) {
 }
 
 AIC.vinecop <- function(object, ...) {
-  if (is.null(object$data))
-    stop("data have not been stored, use keep_data = TRUE when fitting.")
-  vinecop_aic_cpp(object$data, object)
+    if (is.null(object$data))
+        stop("data have not been stored, use keep_data = TRUE when fitting.")
+    vinecop_aic_cpp(object$data, object)
 }
 
 BIC.vinecop <- function(object, ...) {
-  if (is.null(object$data))
-    stop("data have not been stored, use keep_data = TRUE when fitting.")
-  vinecop_bic_cpp(object$data, object)
+    if (is.null(object$data))
+        stop("data have not been stored, use keep_data = TRUE when fitting.")
+    vinecop_bic_cpp(object$data, object)
 }

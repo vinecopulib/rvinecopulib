@@ -15,7 +15,8 @@ uniform margins).}
 \item{family_set}{a character vector of families; as in \code{bicop_dist()},
 see \emph{Details} for additional options.}
 
-\item{matrix}{an R-vine matrix specifying the structure matrix, or \code{NA} for
+\item{matrix}{an R-vine matrix specifying the structure matrix (see
+\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}), or \code{NA} for
 automatic structure selection (default).}
 
 \item{method}{the estimation method for parametric models, either \code{"mle"} for

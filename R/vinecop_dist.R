@@ -4,8 +4,7 @@
 #'    `pair_copulas[[t]][[e]]` corresponds to the pair-copula at edge `e` in
 #'    tree `t`.
 #' @param matrix A quadratic structure matrix of dimension 
-#'   `length(pair_copulas) + 1. All entries in the lower right triangle must 
-#'    be zero (see *Examples*). 
+#'   `length(pair_copulas) + 1` (see *Examples* and [`check_rvine_matrix()`]). 
 #'
 #' @examples
 #' # specify pair-copulas
@@ -43,6 +42,7 @@ vinecop_dist <- function(pair_copulas, matrix) {
         stop("some objects in pair_copulas aren't of class 'bicop_dist'")
     }
     vinecop_check_cpp(vinecop)
+    check_rvine_matrix(matrix)
     
     vinecop
 }
@@ -50,9 +50,10 @@ vinecop_dist <- function(pair_copulas, matrix) {
 #' @rdname vinecop_dist
 #' @param u evaluation points, either a length d vector or a d-column matrix,
 #'   where d is the number of variables in the vine.
-#' @param vinecop an object of class `"vinecop"`.
+#' @param vinecop an object of class `"vinecop_dist"`.
 #' @export
 dvinecop <- function(u, vinecop) {
+    stopifnot(inherits(vinecop, "vinecop_dist"))
     vinecop_pdf_cpp(if_vec_to_matrix(u), vinecop)
 }
 
@@ -60,5 +61,6 @@ dvinecop <- function(u, vinecop) {
 #' @param n number of observations.
 #' @export
 rvinecop <- function(n, vinecop) {
+    stopifnot(inherits(vinecop, "vinecop_dist"))
     vinecop_sim_cpp(n, vinecop)
 }

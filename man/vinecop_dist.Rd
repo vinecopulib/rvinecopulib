@@ -21,13 +21,12 @@ tree \code{t}.
 [e]: R:e}
 
 \item{matrix}{A quadratic structure matrix of dimension
-`length(pair_copulas) + 1. All entries in the lower right triangle must
-be zero (see \emph{Examples}).}
+\code{length(pair_copulas) + 1} (see \emph{Examples} and \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}).}
 
 \item{u}{evaluation points, either a length d vector or a d-column matrix,
 where d is the number of variables in the vine.}
 
-\item{vinecop}{an object of class \code{"vinecop"}.}
+\item{vinecop}{an object of class \code{"vinecop_dist"}.}
 
 \item{n}{number of observations.}
 }

@@ -1,11 +1,11 @@
 #' R-vine matrices
 #' 
 #' R-vine matrices are compressed representations of the vine structure. It 
-#' needs to satisfy several properties that are checked when calling
-#' `as.rvine_matrix()`, see *Details*.
+#' needs to satisfy several properties that can be checked by
+#' `check_rvine_matrix()`, see *Details*.
 #' 
 #' The R-vine matrix notation in vinecopulib is different from the one in 
-#' [VineCopula]. An example matrix is
+#' [VineCopula::RVineMatrix()]. An example matrix is
 #' ```
 #' 1 1 1 1
 #' 2 2 2 0
@@ -56,20 +56,12 @@
 #'
 #' @examples
 #' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
-#' rvm <- as.rvine_matrix(mat)
+#' check_rvine_matrix(mat)
 #' 
-as.rvine_matrix <- function(matrix) {
+check_rvine_matrix <- function(matrix) {
     stopifnot(is.matrix(matrix))
     rvine_matrix_check_cpp(matrix)
-    d <- ncol(matrix)
-    structure(
-        list(
-            matrix = matrix,
-            order = diag(matrix[]),
-            
-        )
-        class = "rvine_matrix"
-    )
+    invisible(TRUE)
 }
 
 
