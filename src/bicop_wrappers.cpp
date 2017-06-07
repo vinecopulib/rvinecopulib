@@ -156,6 +156,12 @@ Eigen::VectorXd bicop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_
 }
 
 // [[Rcpp::export()]]
+Eigen::VectorXd bicop_cdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
+{
+    return bicop_wrap(bicop_r).cdf(u);
+}
+
+// [[Rcpp::export()]]
 Eigen::VectorXd bicop_hfunc1_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).hfunc1(u);

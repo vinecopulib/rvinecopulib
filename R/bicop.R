@@ -88,7 +88,7 @@ as.bicop <- function(object) {
 #'
 #' @param object a `bicop` object.
 #' @param newdata points where the fit shall be evaluated.
-#' @param what what to predict, one of `"pdf"`, `"hfunc1"`, `"hfunc2"`, 
+#' @param what what to predict, one of `"pdf"`, `"cdf"`, `"hfunc1"`, `"hfunc2"`, 
 #'    `"hinv1"`, `"hinv2"`.
 #' @param ... unused.
 #'
@@ -99,11 +99,12 @@ as.bicop <- function(object) {
 #' fit <- bicop(u, "par")
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
 predict.bicop <- function(object, newdata, what = "pdf", ...) {
-    stopifnot(what %in% c("pdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
+    stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
     newdata <- if_vec_to_matrix(newdata)
     switch(
         what,
         "pdf"    = bicop_pdf_cpp(newdata, object),
+        "cdf"    = bicop_cdf_cpp(newdata, object),
         "hfunc1" = bicop_hfunc1_cpp(newdata, object),
         "hfunc2" = bicop_hfunc2_cpp(newdata, object),
         "hinv1"  = bicop_hinv1_cpp(newdata, object),
@@ -116,10 +117,11 @@ predict.bicop <- function(object, newdata, what = "pdf", ...) {
 fitted.bicop <- function(object, what = "pdf", ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
-    stopifnot(what %in% c("pdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
+    stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
     switch(
         what,
         "pdf"    = bicop_pdf_cpp(object$data, object),
+        "cdf"    = bicop_cdf_cpp(object$data, object),
         "hfunc1" = bicop_hfunc1_cpp(object$data, object),
         "hfunc2" = bicop_hfunc2_cpp(object$data, object),
         "hinv1"  = bicop_hinv1_cpp(object$data, object),

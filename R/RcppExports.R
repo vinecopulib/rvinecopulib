@@ -13,6 +13,10 @@ bicop_pdf_cpp <- function(u, bicop_r) {
     .Call('rvinecopulib_bicop_pdf_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
+bicop_cdf_cpp <- function(u, bicop_r) {
+    .Call('rvinecopulib_bicop_cdf_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+}
+
 bicop_hfunc1_cpp <- function(u, bicop_r) {
     .Call('rvinecopulib_bicop_hfunc1_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }

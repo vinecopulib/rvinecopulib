@@ -67,11 +67,19 @@ print.bicop_dist <- function(x, ...) {
 #' # evaluate the copula density
 #' dbicop(c(0.1, 0.2), "clay", 90, 3)
 #' dbicop(c(0.1, 0.2), bicop)
-#'
 #' @export
 dbicop <- function(u, family, rotation, parameters) {
     bicop <- args2bicop(family, rotation, parameters)
     bicop_pdf_cpp(if_vec_to_matrix(u), bicop)
+}
+#' @rdname bicop_dist
+#' @examples
+#' # evaluate the copula cdf
+#' pbicop(c(0.1, 0.2), "clay", 90, 3)
+#' @export
+pbicop <- function(u, family, rotation, parameters) {
+    bicop <- args2bicop(family, rotation, parameters)
+    bicop_cdf_cpp(if_vec_to_matrix(u), bicop)
 }
 
 #' @rdname bicop_dist

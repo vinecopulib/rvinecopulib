@@ -44,6 +44,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// bicop_cdf_cpp
+Eigen::VectorXd bicop_cdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_r);
+RcppExport SEXP rvinecopulib_bicop_cdf_cpp(SEXP uSEXP, SEXP bicop_rSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type bicop_r(bicop_rSEXP);
+    rcpp_result_gen = Rcpp::wrap(bicop_cdf_cpp(u, bicop_r));
+    return rcpp_result_gen;
+END_RCPP
+}
 // bicop_hfunc1_cpp
 Eigen::VectorXd bicop_hfunc1_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_r);
 RcppExport SEXP rvinecopulib_bicop_hfunc1_cpp(SEXP uSEXP, SEXP bicop_rSEXP) {
@@ -258,6 +270,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"rvinecopulib_bicop_check_cpp", (DL_FUNC) &rvinecopulib_bicop_check_cpp, 1},
     {"rvinecopulib_bicop_select_cpp", (DL_FUNC) &rvinecopulib_bicop_select_cpp, 6},
     {"rvinecopulib_bicop_pdf_cpp", (DL_FUNC) &rvinecopulib_bicop_pdf_cpp, 2},
+    {"rvinecopulib_bicop_cdf_cpp", (DL_FUNC) &rvinecopulib_bicop_cdf_cpp, 2},
     {"rvinecopulib_bicop_hfunc1_cpp", (DL_FUNC) &rvinecopulib_bicop_hfunc1_cpp, 2},
     {"rvinecopulib_bicop_hfunc2_cpp", (DL_FUNC) &rvinecopulib_bicop_hfunc2_cpp, 2},
     {"rvinecopulib_bicop_hinv1_cpp", (DL_FUNC) &rvinecopulib_bicop_hinv1_cpp, 2},
