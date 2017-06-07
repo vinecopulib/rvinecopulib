@@ -16,3 +16,8 @@ test_that("d/r- functions work", {
     u <- rvinecop(50, vc)
     expect_gte(min(dvinecop(u, vc)), 0)
 })
+
+test_that("constructor catches wrong R-vine matrix", {
+    mat[3, 3] <- 5
+    expect_error(vinecop_dist(pcs, mat))
+})
