@@ -2,7 +2,7 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #pragma once
 
@@ -51,6 +51,7 @@ namespace vinecopulib
 
         // Stats methods
         Eigen::VectorXd pdf(const Eigen::MatrixXd& u);
+        Eigen::VectorXd cdf(const Eigen::MatrixXd& u, const size_t N = 1e4);
         Eigen::MatrixXd simulate(size_t n);
         Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd& u);
 

@@ -2,7 +2,7 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/bicop/indep.hpp>
 
@@ -18,6 +18,13 @@ namespace vinecopulib
     )
     {
         return Eigen::VectorXd::Ones(u.rows());
+    }
+
+    Eigen::VectorXd IndepBicop::cdf(
+            const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
+    )
+    {
+        return u.rowwise().prod();
     }
 
     Eigen::VectorXd IndepBicop::hfunc1(

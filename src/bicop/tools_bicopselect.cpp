@@ -2,7 +2,7 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/bicop/tools_bicopselect.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
@@ -12,11 +12,12 @@
 std::vector<double> get_c1c2(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
                              double tau)
 {
+    using namespace vinecopulib::tools_stats;
     size_t n = data.rows();
     Eigen::MatrixXd x = Eigen::MatrixXd::Zero(n, 2);
     Eigen::MatrixXd z1 = x;
     Eigen::MatrixXd z2 = x;
-    x = vinecopulib::tools_stats::qnorm(data);
+    x = qnorm(data);
     
     int count1 = 0, count2 = 0;
     for (size_t j = 0; j < n; ++j) {
@@ -40,11 +41,21 @@ std::vector<double> get_c1c2(const Eigen::Matrix<double, Eigen::Dynamic, 2>& dat
             }
         }
     }
+    
+    // if one of the quadrants is empty, we see it as independent
+    double c1, c2;
+    if (count1 == 0) {
+        c1 = 0.0;
+    } else {
+        c1 = pairwise_cor(z1.block(0, 0, count1 - 1, 2));
+    }
+    if (count2 == 0) {
+        c2 = 0.0;
+    } else {
+        c2 = pairwise_cor(z2.block(0, 0, count2 - 1, 2));
+    }
 
-    return  {
-        vinecopulib::tools_stats::pairwise_cor(z1.block(0, 0, count1 - 1, 2)),
-        vinecopulib::tools_stats::pairwise_cor(z2.block(0, 0, count2 - 1, 2))
-    };
+    return {c1, c2};
 }
 
 bool preselect_family(std::vector<double> c, double tau, 

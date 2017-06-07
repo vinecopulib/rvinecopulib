@@ -2,7 +2,7 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <exception>
 #include <cmath>
@@ -103,36 +103,8 @@ namespace vinecopulib
     {
         return vinecopulib::get_family_name(family_);
     };
-    
-    Eigen::MatrixXd AbstractBicop::get_parameters() const 
-    {
-        return parameters_;
-    }
-    
-    Eigen::MatrixXd AbstractBicop::get_parameters_lower_bounds() const 
-    {
-        return parameters_lower_bounds_;
-    }
-    
-    Eigen::MatrixXd AbstractBicop::get_parameters_upper_bounds() const 
-    {
-        return parameters_upper_bounds_;
-    }
-
-    void AbstractBicop::set_parameters(const Eigen::MatrixXd& parameters)
-    {
-        check_parameters(parameters);
-        parameters_ = parameters;
-    }
     //! @}
-    
-    //! Adjust the copula to flipped columns
-    void AbstractBicop::flip()
-    {
-        // Most parametric families can be flipped by changing the rotation. 
-        // This is done in Bicop::flip() directly. All other families need to
-        // override this method.
-    }
+
     
 
     //! Numerical inversion of h-functions
@@ -163,73 +135,5 @@ namespace vinecopulib
 
         return tools_eigen::invert_f(u.col(0), h1);
     }
-    //! @}
-
-    
-    //! Sanity checks
-    //! @{
-    void AbstractBicop::check_parameters(const Eigen::MatrixXd& parameters)
-    {
-        check_parameters_size(parameters);
-        check_parameters_lower(parameters);
-        check_parameters_upper(parameters);
-    }
-    
-    
-    void AbstractBicop::check_parameters_size(const Eigen::MatrixXd& parameters)
-    {
-        if (parameters.size() != parameters_.size()) {
-            if (parameters.rows() != parameters_.rows()) {
-                std::stringstream message;
-                message <<
-                    "parameters have has wrong number of rows " << 
-                    "for " << get_family_name() << " copula; " << 
-                    "expected: " << parameters_.rows() << ", " <<
-                    "actual: " << parameters.rows() << std::endl;
-                throw std::runtime_error(message.str().c_str());
-            }
-            if (parameters.cols() != parameters_.cols()) {
-                std::stringstream message;
-                message <<
-                    "parameters have wrong number of columns " << 
-                    "for " << get_family_name() << " copula; " << 
-                    "expected: " << parameters_.cols() << ", " <<
-                    "actual: " << parameters.cols() << std::endl;
-                throw std::runtime_error(message.str().c_str());
-            }
-        }
-    }
-    
-    
-    void AbstractBicop::check_parameters_lower(const Eigen::MatrixXd& parameters)
-    {
-        if (parameters_lower_bounds_.size() > 0) {
-            std::stringstream message;
-            if ((parameters.array() < parameters_lower_bounds_.array()).any()) {
-                message <<
-                    "parameters exceed lower bound " << 
-                    " for " << get_family_name() << " copula; \n" << 
-                    "bound: \n" << parameters_lower_bounds_ << "\n" <<
-                    "actual: " << parameters << "\n";
-                throw std::runtime_error(message.str().c_str());  
-            }
-        }
-    }
-    
-    void AbstractBicop::check_parameters_upper(const Eigen::MatrixXd& parameters)
-    {
-        if (parameters_upper_bounds_.size() > 0) {
-            std::stringstream message;
-            if ((parameters.array() > parameters_upper_bounds_.array()).any()) {
-                message <<
-                    "parameters exceed upper bound " << 
-                    " for " << get_family_name() << " copula; \n" << 
-                    "bound: \n" << parameters_upper_bounds_ << "\n" <<
-                    "actual: " << parameters << "\n";
-                throw std::runtime_error(message.str().c_str());  
-            }
-        }
-    }
-
     //! @}
 }
