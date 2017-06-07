@@ -20,6 +20,7 @@ namespace vinecopulib
         d_ = matrix.rows();
         matrix_ = matrix;
         if (check) {
+            check_if_quadratic();
             check_lower_tri();
             check_upper_tri();
             check_antidiagonal();
@@ -29,7 +30,8 @@ namespace vinecopulib
     }
     
     //! extract the matrix.
-    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> RVineMatrix::get_matrix() const
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> 
+    RVineMatrix::get_matrix() const
     {
         return matrix_;
     }
@@ -45,7 +47,8 @@ namespace vinecopulib
     //! A D-vine is a vine where each tree is a path.
     //!
     //! @param order order of the variables.
-    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> RVineMatrix::construct_d_vine_matrix(
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> 
+    RVineMatrix::construct_d_vine_matrix(
         const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& order)
     {
         size_t d = order.size();
@@ -71,7 +74,8 @@ namespace vinecopulib
     //! Natural order means that the counter-diagonal has entries (d, ..., 1). We 
     //! convert to natural order by relabeling the variables. Most algorithms for 
     //! estimation and evaluation assume that the R-vine matrix is in natural order.
-    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> RVineMatrix::in_natural_order() const
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> 
+    RVineMatrix::in_natural_order() const
     {
         // create vector of new variable labels: d, ..., 1
         std::vector<size_t> ivec = tools_stl::seq_int(1, d_);
@@ -87,7 +91,8 @@ namespace vinecopulib
     //! the (elementwise) maximum of a row and the row below (starting from the
     //! bottom). It is used in estimation and evaluation algorithms to find the right
     //! pseudo observations for an edge.
-    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> RVineMatrix::get_max_matrix() const
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> 
+    RVineMatrix::get_max_matrix() const
     {
         auto max_matrix = this->in_natural_order();
         for (size_t i = 0; i < d_ - 1; ++i) {
@@ -139,6 +144,13 @@ namespace vinecopulib
         return needed_hfunc2;
     }
     //! @}
+    
+    void RVineMatrix::check_if_quadratic() const {
+        std::string problem = "must be quadratic.";
+        if (matrix_.rows() != matrix_.cols()) {
+            throw std::runtime_error("not a valid R-vine matrix: " + problem);
+        }
+    }
     
     void RVineMatrix::check_lower_tri() const {
         std::string problem = "the lower right triangle must only contain zeros";

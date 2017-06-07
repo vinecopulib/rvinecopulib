@@ -32,10 +32,9 @@ namespace vinecopulib
     //! |      | 1    | `(3, 2; 1)`    |
     //! | 2    | 0    | `(4, 3; 2, 1)` |
     //! ```
-    //! Denoting by `M[i][j]` the matrix entry in row `i` and column `j` 
-    //! (starting at 0), the pair-copula index for edge `e` in tree `t` of a 
-    //! `d` dimensional vine is
-    //! `(M[d - 1 - t][e], M[t][e]; M[t - 1][e], ..., M[0][e])`. Less 
+    //! Denoting by `M[i, j]` the matrix entry in row `i` and column `j`, 
+    //! the pair-copula index for edge `e` in tree `t` of a `d` dimensional vine
+    //! is `(M[d - 1 - t, e], M[t, e]; M[t - 1, e], ..., M[0, e])`. Less 
     //! formally,
     //! 1. Start with the counter-diagonal element of column `e` (first conditioned 
     //!    variable).
@@ -78,6 +77,7 @@ namespace vinecopulib
         construct_d_vine_matrix(const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& order);
 
     private:
+        void check_if_quadratic() const;
         void check_lower_tri() const;
         void check_upper_tri() const;
         void check_antidiagonal() const;
