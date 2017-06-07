@@ -2,7 +2,7 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/vinecop/class.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
@@ -65,10 +65,10 @@ namespace vinecopulib
         if (pair_copulas.size() != d_ - 1) {
             std::stringstream message;
             message <<
-                    "size of of pair_copulas does not match dimension of matrix (" <<
-                    d_ << ")" <<
-                    "expected size:" << d_ - 1 << ", "<<
-                    "actual size:" << pair_copulas.size() << std::endl;
+                    "size of pair_copulas does not match dimension of matrix (" <<
+                    d_ << "); " <<
+                    "expected size: " << d_ - 1 << ", "<<
+                    "actual size: " << pair_copulas.size() << std::endl;
             throw std::runtime_error(message.str().c_str());
 
         }
@@ -76,10 +76,10 @@ namespace vinecopulib
             if (pair_copulas[t].size() != d_ - 1 - t) {
                 std::stringstream message;
                 message <<
-                        "size of of pair_copulas[" << t << "] " <<
-                        "does not match dimension of matrix (" << d_ << ")" <<
-                        "expected size:" << d_ - 1 - t << ", "<<
-                        "actual size:" << pair_copulas[t].size() << std::endl;
+                        "size of pair_copulas[" << t << "] " <<
+                        "does not match dimension of matrix (" << d_ << "); " <<
+                        "expected size: " << d_ - 1 - t << ", "<<
+                        "actual size: " << pair_copulas[t].size() << std::endl;
                 throw std::runtime_error(message.str().c_str());
             }
         }
@@ -126,6 +126,10 @@ namespace vinecopulib
     //!     object for the pair copula corresponding to tree `t` and edge `e`.
     std::vector<std::vector<Bicop>> Vinecop::make_pair_copula_store(size_t d)
     {
+        if (d < 2) {
+            throw std::runtime_error("the dimension should be larger than 1");
+        }
+
         std::vector<std::vector<Bicop>> pc_store(d - 1);
         for (size_t t = 0; t < d - 1; ++t) {
             pc_store[t].resize(d - 1 - t);
@@ -526,6 +530,50 @@ namespace vinecopulib
     
         return vine_density;
     }
+
+    //! calculates the cumulative distribution of the vine copula model.
+    //!
+    //! @param u \f$ n \times d \f$ matrix of evaluation points.
+    //! @param N integer for the number of quasi-random numbers to draw
+    //! to evaluate the distribution (default: 1e4).
+    Eigen::VectorXd Vinecop::cdf(const Eigen::MatrixXd& u, const size_t N)
+    {
+        if (d_ > 360) {
+            std::stringstream message;
+            message << "cumulative distribution available for models of " <<
+                    "dimension 360 or less. This model's dimension: " << d_
+                    << std::endl;
+            throw std::runtime_error(message.str().c_str());
+        }
+
+        size_t d = u.cols();
+        size_t n = u.rows();
+        if (d != d_) {
+            std::stringstream message;
+            message << "u has wrong number of columns. " <<
+                    "expected: " << d_ <<
+                    ", actual: " << d << std::endl;
+            throw std::runtime_error(message.str().c_str());
+        }
+
+        // Simulate N quasi-random numbers from the vine model
+        auto U = tools_stats::ghalton(N, d);
+        U = inverse_rosenblatt(U);
+
+        // Alternative: simulate N pseudo-random numbers from the vine model
+        //auto U = simulate(N);
+
+        Eigen::VectorXd vine_distribution(n);
+        Eigen::ArrayXXd x(N,1);
+        Eigen::RowVectorXd temp(d);
+        for (size_t i = 0; i < n; i++) {
+            temp = u.block(i,0,1,d);
+            x = (U.rowwise() - temp).rowwise().maxCoeff().array();
+            vine_distribution(i) = (x <= 0.0).count();
+        }
+
+        return vine_distribution/((double) N);
+    }
     
     //! simulates from a vine copula model, see inverse_rosenblatt().
     //! 
@@ -637,55 +685,59 @@ namespace vinecopulib
                 inverse_rosenblatt(u.block(n_half, 0, n_left, d));
             return U_vine;
         }
-    
-        // info about the vine structure (in upper triangular matrix notation)
-        Eigen::Matrix<size_t, Eigen::Dynamic, 1> revorder = vine_matrix_.get_order().reverse();
-        auto no_matrix  = vine_matrix_.in_natural_order();
-        auto max_matrix = vine_matrix_.get_max_matrix();
-        MatrixXb needed_hfunc1 = vine_matrix_.get_needed_hfunc1();
-        MatrixXb needed_hfunc2 = vine_matrix_.get_needed_hfunc2();
-    
-        // temporary storage objects for (inverse) h-functions
-        Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> hinv2(d, d);
-        Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> hfunc1(d, d);
-    
-        // initialize with independent uniforms (corresponding to natural order)
-        for (size_t j = 0; j < d; ++j)
-            hinv2(d - j - 1, j) = u.col(revorder(j) - 1);
-        hfunc1(0, d - 1) = hinv2(0, d - 1);
-    
-        // loop through variables (0 is just the inital uniform)
-        for (ptrdiff_t var = d - 2; var >= 0; --var) {
-            for (ptrdiff_t tree = d - var - 2; tree >= 0; --tree) {
-                Bicop edge_copula = get_pair_copula(tree, var);
-    
-                // extract data for conditional pair
-                Eigen::MatrixXd U_e(n, 2);
-                size_t m = max_matrix(tree, var);
-                U_e.col(0) = hinv2(tree + 1, var);
-                if (m == no_matrix(tree, var)) {
-                    U_e.col(1) = hinv2(tree, d - m);
-                } else {
-                    U_e.col(1) = hfunc1(tree, d - m);
-                }
-    
-                // inverse Rosenblatt transform simulates data for conditional pair
-                hinv2(tree, var) = edge_copula.hinv2(U_e);
-    
-                // if required at later stage, also calculate hfunc2
-                if (var < (ptrdiff_t) d_ - 1) {
-                    if (needed_hfunc1(tree + 1, var)) {
-                        U_e.col(0) = hinv2(tree, var);
-                        hfunc1(tree + 1, var) = edge_copula.hfunc1(U_e);
+
+        if (d > 2) {
+            // info about the vine structure (in upper triangular matrix notation)
+            Eigen::Matrix<size_t, Eigen::Dynamic, 1> revorder = vine_matrix_.get_order().reverse();
+            auto no_matrix  = vine_matrix_.in_natural_order();
+            auto max_matrix = vine_matrix_.get_max_matrix();
+            MatrixXb needed_hfunc1 = vine_matrix_.get_needed_hfunc1();
+            MatrixXb needed_hfunc2 = vine_matrix_.get_needed_hfunc2();
+
+            // temporary storage objects for (inverse) h-functions
+            Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> hinv2(d, d);
+            Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> hfunc1(d, d);
+
+            // initialize with independent uniforms (corresponding to natural order)
+            for (size_t j = 0; j < d; ++j)
+                hinv2(d - j - 1, j) = u.col(revorder(j) - 1);
+            hfunc1(0, d - 1) = hinv2(0, d - 1);
+
+            // loop through variables (0 is just the inital uniform)
+            for (ptrdiff_t var = d - 2; var >= 0; --var) {
+                for (ptrdiff_t tree = d - var - 2; tree >= 0; --tree) {
+                    Bicop edge_copula = get_pair_copula(tree, var);
+
+                    // extract data for conditional pair
+                    Eigen::MatrixXd U_e(n, 2);
+                    size_t m = max_matrix(tree, var);
+                    U_e.col(0) = hinv2(tree + 1, var);
+                    if (m == no_matrix(tree, var)) {
+                        U_e.col(1) = hinv2(tree, d - m);
+                    } else {
+                        U_e.col(1) = hfunc1(tree, d - m);
+                    }
+
+                    // inverse Rosenblatt transform simulates data for conditional pair
+                    hinv2(tree, var) = edge_copula.hinv2(U_e);
+
+                    // if required at later stage, also calculate hfunc2
+                    if (var < (ptrdiff_t) d_ - 1) {
+                        if (needed_hfunc1(tree + 1, var)) {
+                            U_e.col(0) = hinv2(tree, var);
+                            hfunc1(tree + 1, var) = edge_copula.hfunc1(U_e);
+                        }
                     }
                 }
             }
+
+            // go back to original order
+            auto inverse_order = inverse_permutation(revorder);
+            for (size_t j = 0; j < d; ++j)
+                U_vine.col(j) = hinv2(0, inverse_order(j));
+        } else {
+            U_vine.col(1) = get_pair_copula(0, 0).hinv1(u);
         }
-    
-        // go back to original order
-        auto inverse_order = inverse_permutation(revorder);
-        for (size_t j = 0; j < d; ++j)
-            U_vine.col(j) = hinv2(0, inverse_order(j));
     
         return U_vine;
     }

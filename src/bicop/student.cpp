@@ -2,9 +2,10 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/bicop/student.hpp>
+#include <vinecopulib/misc/tools_c.h>
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <boost/math/constants/constants.hpp>
 
@@ -39,6 +40,31 @@ namespace vinecopulib
         f /= (nu * boost::math::constants::pi<double>() * sqrt(1.0 - pow(rho, 2.0)));
 
         return f;
+    }
+
+    Eigen::VectorXd StudentBicop::cdf(
+            const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
+    )
+    {
+        ptrdiff_t n = u.rows();
+        Eigen::VectorXd p = Eigen::VectorXd::Ones(u.rows());
+        double rho = double(this->parameters_(0));
+        int nu = (int) double(this->parameters_(1));
+
+        double abseps = 0.001, releps = 0, error = 0;
+        int d = 2, maxpts = 25000, inform;
+        std::vector<double> lower(2), upper(2);
+        std::vector<int> infin(2);
+
+        auto v = tools_stats::qt(u, nu);
+        for (ptrdiff_t i = 0; i < n; i++)
+        {
+            upper[0] = v(i,0);
+            upper[1] = v(i,1);
+            mvtdst_(&d, &nu, &lower[0], &upper[0], &infin[0], &rho,
+                    &lower[0], &maxpts,&abseps, &releps, &error, &p(i), &inform);
+        }
+        return p;
     }
 
     Eigen::VectorXd StudentBicop::hfunc1(
