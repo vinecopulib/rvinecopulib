@@ -67,6 +67,12 @@ Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vine
 }
 
 // [[Rcpp::export()]]
+Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, size_t N)
+{
+    return vinecop_wrap(vinecop_r).cdf(u, N);
+}
+
+// [[Rcpp::export()]]
 double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
 {
     return vinecop_wrap(vinecop_r).loglik(u);

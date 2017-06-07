@@ -3,12 +3,15 @@
 \name{vinecop_dist}
 \alias{vinecop_dist}
 \alias{dvinecop}
+\alias{pvinecop}
 \alias{rvinecop}
 \title{Vine copula models}
 \usage{
 vinecop_dist(pair_copulas, matrix)
 
 dvinecop(u, vinecop)
+
+pvinecop(u, vinecop, n_mc = 10^4)
 
 rvinecop(n, vinecop)
 }
@@ -27,6 +30,8 @@ tree \code{t}.
 where d is the number of variables in the vine.}
 
 \item{vinecop}{an object of class \code{"vinecop_dist"}.}
+
+\item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 
 \item{n}{number of observations.}
 }
@@ -51,7 +56,8 @@ vc <- vinecop_dist(pcs, mat)
 u <- rvinecop(200, vc)
 pairs(u)
 
-# evaluate the density
+# evaluate the density and cdf
 dvinecop(u[1, ], vc)
+pvinecop(u[1, ], vc)
 
 }

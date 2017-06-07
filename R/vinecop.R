@@ -96,7 +96,9 @@ vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle"
 #'
 #' @param object a `vinecop` object.
 #' @param newdata points where the fit shall be evaluated.
-#' @param what what to predict, currently only `"pdf"` is implemented.
+#' @param what what to predict, either `"pdf"` or `"cdf"`.
+#' @param n_mc number of samples used for quasi Monte Carlo integration when
+#'    `what = "cdf"`.
 #' @param ... unused.
 #'
 #' @export
@@ -105,45 +107,36 @@ vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle"
 #' u <- sapply(1:5, function(i) runif(50))
 #' fit <- vinecop_select(u, "par")
 #' all.equal(predict(fit, u), fitted(fit))
-predict.vinecop <- function(object, newdata, what = "pdf", ...) {
-    stopifnot(what %in% c("pdf"))
+#' logLik(fit)
+predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4, ...) {
+    stopifnot(what %in% c("pdf", "cdf"))
     newdata <- if_vec_to_matrix(newdata)
     switch(
         what,
-        "pdf" = vinecop_pdf_cpp(newdata, object)
-        # cdf
+        "pdf" = vinecop_pdf_cpp(newdata, object),
+        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc)
     )
 }
 
 #' @rdname predict.vinecop
 #' @export
-fitted.vinecop <- function(object, what = "pdf", ...) {
+fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
-    stopifnot(what %in% c("pdf"))
+    stopifnot(what %in% c("pdf", "cdf"))
     switch(
         what,
-        "pdf" = vinecop_pdf_cpp(object$data, object)
-        # cdf
+        "pdf" = vinecop_pdf_cpp(object$data, object),
+        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc)
     )
 }
 
+#' @rdname predict.vinecop
+#' @export
 logLik.vinecop <- function(object, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
     npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
     structure(vinecop_loglik_cpp(object$data, object), "df" = npars)
-}
-
-AIC.vinecop <- function(object, ...) {
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    vinecop_aic_cpp(object$data, object)
-}
-
-BIC.vinecop <- function(object, ...) {
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    vinecop_bic_cpp(object$data, object)
 }

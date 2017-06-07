@@ -61,6 +61,10 @@ vinecop_pdf_cpp <- function(u, vinecop_r) {
     .Call('rvinecopulib_vinecop_pdf_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
 
+vinecop_cdf_cpp <- function(u, vinecop_r, N) {
+    .Call('rvinecopulib_vinecop_cdf_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r, N)
+}
+
 vinecop_loglik_cpp <- function(u, vinecop_r) {
     .Call('rvinecopulib_vinecop_loglik_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
