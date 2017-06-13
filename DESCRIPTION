@@ -12,7 +12,12 @@ Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
 Imports:
-    Rcpp
+    graphics,
+    grDevices,
+    lattice,
+    Rcpp,
+    stats,
+    utils
 Suggests:
     testthat,
     VineCopula
