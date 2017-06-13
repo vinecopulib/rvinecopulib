@@ -20,7 +20,6 @@
 #' "surface"}.
 #' @param \dots optional arguments passed to \code{\link{contour}} or
 #' \code{\link{wireframe}}.
-#' @author Thomas Nagler
 #' @seealso \code{\link{bicop_dist}}, \code{\link{contour}}, \code{\link{wireframe}}
 #' @keywords plot
 #' @examples
