@@ -7,7 +7,7 @@
 #'
 #' @method plot bicop_dist
 #'
-#' @aliases plot.bicop_dist contour.bicop_dist
+#' @aliases plot.bicop_dist contour.bicop_dist plot.bicop contour.bicop
 #' @param x \code{bicop_dist object.}
 #' @param type plot type; either \code{"surface"} or \code{"contour"}.
 #' @param margins options are: \code{"unif"} for the original copula density,
@@ -164,9 +164,6 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
                                    "exp"   = expression(e[2]),
                                    "flexp" = expression(e[2])))
         
-        # call contour with final parameters
-        do.call(contour, modifyList(pars, list(...)))
-        
     } else if (type == "surface") {
         # list with coordinates
         lst <- list(u = gu, v = gv, c = as.vector(dens))
@@ -200,10 +197,13 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
                                    "norm"  = c(0, max(0.4, 1.1 * max(lst$c))),
                                    "exp"   = c(0, max(1,   1.1 * max(lst$c))),
                                    "flexp" = c(0, max(1,   1.1 * max(lst$c)))))
-        
-        # call wireframe with final parameters
-        do.call(wireframe, modifyList(pars, list(...)))
     }
+    
+    pars <- modifyList(pars, list(...))
+    plot_obj <- switch(type,
+                       contour = do.call(contour, pars),
+                       surface = print(do.call(wireframe, pars)))
+    invisible(plot_obj)
 }
 
 #' @method contour bicop_dist
@@ -212,10 +212,3 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
 contour.bicop_dist <- function(x, margins = "norm", size = 100L, ...) {
     plot(x, type = "contour", margins = margins, size = size, ...)
 }
-
-tint <- function(x, fac, alpha = 1) {
-    x <- c(col2rgb(x))
-    x <- (x + (255 - x) * fac) / 255
-    rgb(x[1], x[2], x[3], alpha)
-}
-

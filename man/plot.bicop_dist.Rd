@@ -3,6 +3,8 @@
 \name{plot.bicop_dist}
 \alias{plot.bicop_dist}
 \alias{contour.bicop_dist}
+\alias{plot.bicop}
+\alias{contour.bicop}
 \alias{contour.bicop_dist}
 \title{Plotting tools for bicop_dist objects}
 \usage{
@@ -47,8 +49,5 @@ contour(obj, margins = "unif")  # contour plot of copula density
 }
 \seealso{
 \code{\link{bicop_dist}}, \code{\link{contour}}, \code{\link{wireframe}}
-}
-\author{
-Thomas Nagler
 }
 \keyword{plot}
