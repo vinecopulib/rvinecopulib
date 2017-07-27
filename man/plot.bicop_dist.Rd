@@ -23,9 +23,8 @@
 flipped exponential margins. Default is \code{"norm"} for \code{type =
 "contour"}, and \code{"unif"} for \code{type = "surface"}.}
 
-\item{size}{integer; the plot is based on values on a \eqn{size x size} grid;
-default is 100 for \code{type = "contour"}, and 40 for \code{type =
-"surface"}.}
+\item{size}{integer; the plot is based on values on a \eqn{size x size} grid,
+default is 100.}
 
 \item{\dots}{optional arguments passed to \code{\link{contour}} or
 \code{\link{wireframe}}.}
