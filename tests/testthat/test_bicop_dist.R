@@ -35,8 +35,8 @@ test_that("d/p/r/h functions work", {
 test_that("plot functions work", {
     dist <- bicop_dist("gumbel", 90, 3)
     # we could check some values in the plot objects
-    p <- plot(dist)
-    p <- contour(dist)
-    p <- plot(dist, margins = "norm")
-    p <- contour(dist, margins = "unif")
+    expect_silent(p <- plot(dist))
+    expect_silent(p <- contour(dist))
+    expect_silent(p <- plot(dist, margins = "norm"))
+    expect_silent(p <- contour(dist, margins = "unif"))
 })
