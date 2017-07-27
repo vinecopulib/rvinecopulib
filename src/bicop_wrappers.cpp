@@ -106,21 +106,7 @@ Rcpp::List bicop_wrap(Bicop bicop_cpp)
 // [[Rcpp::export]]
 void bicop_check_cpp(const Rcpp::List& bicop_r)
 {
-    Eigen::MatrixXd par = bicop_r["parameters"];
-    Bicop bicop_cpp;
-    if (par.size() == 0) {
-        bicop_cpp = Bicop(
-            to_cpp_family(bicop_r["family"]),
-            bicop_r["rotation"]
-        );
-    } else {
-        Eigen::MatrixXd pars = bicop_r["parameters"];
-        bicop_cpp = Bicop(
-            to_cpp_family(bicop_r["family"]),
-            bicop_r["rotation"],
-            pars
-        );
-    }
+    bicop_wrap(bicop_r);
 }
 
 // [[Rcpp::export()]]

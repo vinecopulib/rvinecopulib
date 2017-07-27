@@ -25,6 +25,10 @@ args2bicop <- function(family, rotation, parameters) {
     if (all(inherits(family, "bicop_dist"))) {
         return(family)
     } else {
+        if (missing(rotation))
+            rotation <- 0
+        if (missing(parameters))
+            parameters <- numeric(0)
         return(bicop_dist(family, rotation, parameters))
     }
 }
