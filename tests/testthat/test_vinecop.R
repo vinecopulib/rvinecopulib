@@ -8,8 +8,14 @@ fit_no_data <- vinecop_select(u, "nonpar", keep_data = FALSE)
 test_that("returns proper 'bicop' object", {
     expect_s3_class(fit, "vinecop")
     expect_s3_class(fit, "vinecop_dist")
-    expect_identical(names(fit),  c("pair_copulas", "matrix", "data", "controls"))
-    expect_identical(names(fit_no_data),  c("pair_copulas", "matrix", "controls"))
+    expect_identical(
+        names(fit),  
+        c("pair_copulas", "matrix", "data", "controls", "nobs")
+    )
+    expect_identical(
+        names(fit_no_data), 
+        c("pair_copulas", "matrix", "controls", "nobs")
+    )
 })
 
 test_that("S3 generics work", {
@@ -22,4 +28,11 @@ test_that("S3 generics work", {
     expect_error(predict(fit, u, what = "hfunc1"))
     expect_length(attr(logLik(fit), "df"), 1)
     expect_error(logLik(fit_no_data))
+})
+
+test_that("print/summary generics work", {
+    expect_output(print(fit))
+    expect_output(s <- summary(fit))
+    expect_is(s, "data.frame")
+    expect_length(attr(s, "info"), 5)
 })
