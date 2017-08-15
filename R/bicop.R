@@ -152,6 +152,9 @@ print.bicop <- function(x, ...) {
     cat("npars =", round(info$npars, 2), "  ")
     cat("AIC =", round(info$AIC, 2), "  ")
     cat("BIC =", round(info$BIC, 2), "  ")
+    
+    attr(x, "info") <- info
+    invisible(x)
 }
 
 bicop_fit_info <- function(bc) {
