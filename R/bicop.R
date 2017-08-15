@@ -45,7 +45,7 @@
 #' 
 #' @export
 bicop <- function(data, family_set = "all", method = "mle", mult = 1, 
-                      selcrit = "bic", presel = TRUE, keep_data = TRUE) {
+                  selcrit = "bic", presel = TRUE, keep_data = TRUE) {
     
     # family_set can only use standard family names in cpp
     family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
@@ -73,6 +73,7 @@ bicop <- function(data, family_set = "all", method = "mle", mult = 1,
         selcrit = selcrit,
         presel = presel
     )
+    bicop$nobs <- nrow(data)
     
     as.bicop(bicop)
 }
@@ -133,4 +134,33 @@ logLik.bicop <- function(object, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     structure(bicop_loglik_cpp(object$data, object), "df" = object$npars)
+}
+
+print.bicop <- function(x, ...) {
+    info <- bicop_fit_info(x)
+    if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
+        x$parameters <- "[30x30 grid]"
+    }
+    cat("Bivariate copula fit ('bicop'): ",
+        "family = ", x$family,
+        ", rotation = ", x$rotation,
+        ", parameters = ", x$parameters,
+        "\n",
+        sep = "")
+    cat("nobs =", info$nobs, "  ")
+    cat("logLik =", round(info$logLik, 2), "  ")
+    cat("npars =", round(info$npars, 2), "  ")
+    cat("AIC =", round(info$AIC, 2), "  ")
+    cat("BIC =", round(info$BIC, 2), "  ")
+}
+
+bicop_fit_info <- function(bc) {
+    ll <- logLik(bc)
+    list(
+        nobs   = bc$nobs,
+        logLik = ll[1],
+        npars  = attr(ll, "df"),
+        AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
+        BIC    = -2 * ll[1] + log(bc$nobs) * attr(ll, "df")
+    )
 }
