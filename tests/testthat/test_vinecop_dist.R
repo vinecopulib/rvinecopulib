@@ -23,3 +23,11 @@ test_that("constructor catches wrong R-vine matrix", {
     mat[3, 3] <- 5
     expect_error(vinecop_dist(pcs, mat))
 })
+
+test_that("print/summary generics work", {
+    expect_output(print(vc))
+    expect_output(s <- summary(vc))
+    expect_is(s, "data.frame")
+    expect_equal(nrow(s), 3)
+    expect_equal(ncol(s), 7)
+})

@@ -20,6 +20,9 @@
 #' # set up vine copula model
 #' vc <- vinecop_dist(pcs, mat)
 #' 
+#' # show model
+#' summary(vc)
+#' 
 #' # simulate from the model
 #' u <- rvinecop(200, vc)
 #' pairs(u)
@@ -74,4 +77,37 @@ pvinecop <- function(u, vinecop, n_mc = 10^4) {
 rvinecop <- function(n, vinecop) {
     stopifnot(inherits(vinecop, "vinecop_dist"))
     vinecop_sim_cpp(n, vinecop)
+}
+
+#' @export
+print.vinecop_dist <- function(x, ...) {
+    d <- nrow(x$matrix)
+    cat(d, "-dimensional vine copula model", sep = "")
+}
+
+#' @export
+summary.vinecop_dist <- function(object, ...) {
+    mat <- object$matrix
+    d <- nrow(mat)
+    mdf <- as.data.frame(matrix(NA, choose(d, 2), 7))
+    names(mdf) <- c("tree", "edge", 
+                    "conditioned", "conditioning", 
+                    "family", "rotation", "parameters")
+    k <- 1
+    for (t in seq.int(d - 1)) {
+        for (e in seq.int(d - t)) {
+            mdf$tree[k] <- t
+            mdf$edge[k] <- e
+            mdf$conditioned[k]  <- list(c(mat[d - e + 1, e], mat[t, e]))
+            mdf$conditioning[k] <- list(mat[rev(seq_len(t - 1)), e])
+            pc <- object$pair_copulas[[t]][[e]]
+            mdf$family[k]     <- pc$family
+            mdf$rotation[k]   <- pc$rotation
+            mdf$parameters[k] <- list(pc$parameters)
+            k <- k + 1
+        }
+    }
+    print(mdf, digits = 2, row.names = FALSE)
+    
+    invisible(mdf)
 }

@@ -69,6 +69,8 @@ of the full name \code{"nonparametric"}.
 \examples{
 u <- sapply(1:3, function(i) runif(50))
 fit <- vinecop_select(u, "par")
+fit
+summary(fit)
 str(fit, 3)
 
 }

@@ -33,6 +33,8 @@
 #' @examples
 #' u <- sapply(1:3, function(i) runif(50))
 #' fit <- vinecop_select(u, "par")
+#' fit
+#' summary(fit)
 #' str(fit, 3)
 #' 
 #' @export
@@ -88,6 +90,7 @@ vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle"
         tree_crit = tree_crit,
         threshold = threshold
     )
+    vinecop$nobs <- nrow(data)
     
     structure(vinecop, class = c("vinecop", "vinecop_dist"))
 }
@@ -139,4 +142,39 @@ logLik.vinecop <- function(object, ...) {
     pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
     npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
     structure(vinecop_loglik_cpp(object$data, object), "df" = npars)
+}
+
+#' @export
+print.vinecop <- function(x, ...) {
+    info <- vinecop_fit_info(x)
+    print.vinecop_dist(x)
+    cat(" fit\n")
+    cat("nobs =", info$nobs, "  ")
+    cat("logLik =", round(info$logLik, 2), "  ")
+    cat("npars =", round(info$npars, 2), "  ")
+    cat("AIC =", round(info$AIC, 2), "  ")
+    cat("BIC =", round(info$BIC, 2), "  ")
+    attr(x, "info") <- info
+    invisible(x)
+}
+
+summary.vinecop <- function(object, ...) {
+    info <- attr(print.vinecop(object), "info")
+    cat("\n----\n")
+    s <- summary.vinecop_dist(object)
+    attr(s, "info") <- info
+    invisible(s)
+}
+
+
+vinecop_fit_info <- function(vc) {
+    stopifnot(inherits(vc, "vinecop"))
+    ll <- logLik(vc)
+    list(
+        nobs   = vc$nobs,
+        logLik = ll[1],
+        npars  = attr(ll, "df"),
+        AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
+        BIC    = -2 * ll[1] + log(vc$nobs) * attr(ll, "df")
+     )
 }
