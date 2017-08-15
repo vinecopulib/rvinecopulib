@@ -68,7 +68,7 @@ std::string to_r_family(const BicopFamily& fam)
     } else {
         throw std::runtime_error("family not implemented");
     }
-    
+
     return bicop_fam;
 }
 
@@ -131,7 +131,7 @@ Rcpp::List bicop_select_cpp(
             presel
     );
     Bicop bicop_cpp(data, controls);
-    
+
     return bicop_wrap(bicop_cpp);
 }
 
@@ -195,3 +195,16 @@ double bicop_bic_cpp(Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
     return bicop_wrap(bicop_r).bic(u);
 }
 
+// [[Rcpp::export()]]
+double bicop_par_to_tau_cpp(const Rcpp::List& bicop_r)
+{
+    Bicop bicop_cpp = bicop_wrap(bicop_r);
+    return bicop_cpp.parameters_to_tau(bicop_cpp.get_parameters());
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd bicop_tau_to_par_cpp(const Rcpp::List& bicop_r, const double& tau)
+{
+    Bicop bicop_cpp = bicop_wrap(bicop_r);
+    return bicop_cpp.tau_to_parameters(tau);
+}
