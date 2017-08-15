@@ -40,3 +40,15 @@ test_that("plot functions work", {
     expect_silent(p <- plot(dist, margins = "norm"))
     expect_silent(p <- contour(dist, margins = "unif"))
 })
+
+test_that("parameter <-> tau conversion works", {
+    dist <- bicop_dist("joe", 90, 3)
+    
+    tau <- par_to_tau(dist)
+    expect_identical(tau, par_to_tau("joe", 90, 3))
+    
+    par <- tau_to_par(dist, tau)
+    expect_identical(par, tau_to_par("joe", tau))
+    
+    expect_equal(3, par[1])
+})
