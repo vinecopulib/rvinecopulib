@@ -49,6 +49,14 @@ bicop_bic_cpp <- function(u, bicop_r) {
     .Call('_rvinecopulib_bicop_bic_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
+bicop_par_to_tau_cpp <- function(bicop_r) {
+    .Call('_rvinecopulib_bicop_par_to_tau_cpp', PACKAGE = 'rvinecopulib', bicop_r)
+}
+
+bicop_tau_to_par_cpp <- function(bicop_r, tau) {
+    .Call('_rvinecopulib_bicop_tau_to_par_cpp', PACKAGE = 'rvinecopulib', bicop_r, tau)
+}
+
 rvine_matrix_check_cpp <- function(matrix) {
     invisible(.Call('_rvinecopulib_rvine_matrix_check_cpp', PACKAGE = 'rvinecopulib', matrix))
 }

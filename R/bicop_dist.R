@@ -155,3 +155,33 @@ hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
         }
     }
 }
+
+#' Conversion between Kendall's tau and parameters
+#'
+#' @param family a copula family (see `bicop_dist()`) or a `bicop_dist` object.
+#' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
+#' @param parameters vector or matrix of copula parameters, not used when 
+#'   `family` is a `bicop_dist` object.
+#'
+#' @export
+#'
+#' @examples
+#' # the following are equivalent
+#' par_to_tau(bicop_dist("clayton", 0, 3))
+#' par_to_tau("clayton", 0, 3)
+#' 
+#' tau_to_par("clayton", 0.5)
+#' tau_to_par(bicop_dist("clayton", 0, 3), 0.5)
+par_to_tau <- function(family, rotation, parameters) {
+    bicop <- args2bicop(family, rotation, parameters)
+    bicop_par_to_tau_cpp(bicop)
+}
+
+#' @rdname par_to_tau
+#' @export
+tau_to_par <- function(family, tau) {
+    bicop <- args2bicop(family)
+    if (!(bicop$family %in% c(family_set_elliptical, family_set_nonparametric)))
+        bicop$rotation <- ifelse(tau > 0, 0, 90)
+    bicop_tau_to_par_cpp(bicop, tau)
+}
