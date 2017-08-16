@@ -54,6 +54,9 @@ bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) 
 
 #' @export
 print.bicop_dist <- function(x, ...) {
+    if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
+        x$parameters <- "[30x30 grid]"
+    }
     cat("Bivariate copula ('bicop_dist'): ",
         "family = ", x$family,
         ", rotation = ", x$rotation,

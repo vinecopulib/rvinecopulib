@@ -9,7 +9,7 @@ test_that("returns proper 'bicop' object", {
     expect_s3_class(fit, "bicop_dist")
     expect_identical(
         names(fit), 
-        c("family", "rotation", "parameters", "npars", "data", "controls")
+        c("family", "rotation", "parameters", "npars", "data", "controls", "nobs")
     )
     
     fit <- bicop(u, "tll0", keep_data = FALSE)
@@ -17,7 +17,7 @@ test_that("returns proper 'bicop' object", {
     expect_s3_class(fit, "bicop_dist")
     expect_identical(
         names(fit), 
-        c("family", "rotation", "parameters", "npars", "controls")
+        c("family", "rotation", "parameters", "npars", "controls", "nobs")
     )
 })
 
