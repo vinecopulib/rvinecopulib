@@ -2,86 +2,86 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 bicop_check_cpp <- function(bicop_r) {
-    invisible(.Call('rvinecopulib_bicop_check_cpp', PACKAGE = 'rvinecopulib', bicop_r))
+    invisible(.Call('_rvinecopulib_bicop_check_cpp', PACKAGE = 'rvinecopulib', bicop_r))
 }
 
 bicop_select_cpp <- function(data, family_set, method, mult, selcrit, presel) {
-    .Call('rvinecopulib_bicop_select_cpp', PACKAGE = 'rvinecopulib', data, family_set, method, mult, selcrit, presel)
+    .Call('_rvinecopulib_bicop_select_cpp', PACKAGE = 'rvinecopulib', data, family_set, method, mult, selcrit, presel)
 }
 
 bicop_pdf_cpp <- function(u, bicop_r) {
-    .Call('rvinecopulib_bicop_pdf_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call('_rvinecopulib_bicop_pdf_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
 bicop_cdf_cpp <- function(u, bicop_r) {
-    .Call('rvinecopulib_bicop_cdf_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call('_rvinecopulib_bicop_cdf_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
 bicop_hfunc1_cpp <- function(u, bicop_r) {
-    .Call('rvinecopulib_bicop_hfunc1_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call('_rvinecopulib_bicop_hfunc1_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
 bicop_hfunc2_cpp <- function(u, bicop_r) {
-    .Call('rvinecopulib_bicop_hfunc2_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call('_rvinecopulib_bicop_hfunc2_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
 bicop_hinv1_cpp <- function(u, bicop_r) {
-    .Call('rvinecopulib_bicop_hinv1_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call('_rvinecopulib_bicop_hinv1_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
 bicop_hinv2_cpp <- function(u, bicop_r) {
-    .Call('rvinecopulib_bicop_hinv2_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call('_rvinecopulib_bicop_hinv2_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
 bicop_simulate_cpp <- function(n, bicop_r) {
-    .Call('rvinecopulib_bicop_simulate_cpp', PACKAGE = 'rvinecopulib', n, bicop_r)
+    .Call('_rvinecopulib_bicop_simulate_cpp', PACKAGE = 'rvinecopulib', n, bicop_r)
 }
 
 bicop_loglik_cpp <- function(u, bicop_r) {
-    .Call('rvinecopulib_bicop_loglik_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call('_rvinecopulib_bicop_loglik_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
 bicop_aic_cpp <- function(u, bicop_r) {
-    .Call('rvinecopulib_bicop_aic_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call('_rvinecopulib_bicop_aic_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
 bicop_bic_cpp <- function(u, bicop_r) {
-    .Call('rvinecopulib_bicop_bic_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call('_rvinecopulib_bicop_bic_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
 rvine_matrix_check_cpp <- function(matrix) {
-    invisible(.Call('rvinecopulib_rvine_matrix_check_cpp', PACKAGE = 'rvinecopulib', matrix))
+    invisible(.Call('_rvinecopulib_rvine_matrix_check_cpp', PACKAGE = 'rvinecopulib', matrix))
 }
 
 vinecop_check_cpp <- function(vinecop_r) {
-    invisible(.Call('rvinecopulib_vinecop_check_cpp', PACKAGE = 'rvinecopulib', vinecop_r))
+    invisible(.Call('_rvinecopulib_vinecop_check_cpp', PACKAGE = 'rvinecopulib', vinecop_r))
 }
 
 vinecop_sim_cpp <- function(n, vinecop_r) {
-    .Call('rvinecopulib_vinecop_sim_cpp', PACKAGE = 'rvinecopulib', n, vinecop_r)
+    .Call('_rvinecopulib_vinecop_sim_cpp', PACKAGE = 'rvinecopulib', n, vinecop_r)
 }
 
 vinecop_pdf_cpp <- function(u, vinecop_r) {
-    .Call('rvinecopulib_vinecop_pdf_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
+    .Call('_rvinecopulib_vinecop_pdf_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
 
 vinecop_cdf_cpp <- function(u, vinecop_r, N) {
-    .Call('rvinecopulib_vinecop_cdf_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r, N)
+    .Call('_rvinecopulib_vinecop_cdf_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r, N)
 }
 
 vinecop_loglik_cpp <- function(u, vinecop_r) {
-    .Call('rvinecopulib_vinecop_loglik_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
+    .Call('_rvinecopulib_vinecop_loglik_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
 
 vinecop_aic_cpp <- function(u, vinecop_r) {
-    .Call('rvinecopulib_vinecop_aic_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
+    .Call('_rvinecopulib_vinecop_aic_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
 
 vinecop_bic_cpp <- function(u, vinecop_r) {
-    .Call('rvinecopulib_vinecop_bic_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
+    .Call('_rvinecopulib_vinecop_bic_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
 
 vinecop_select_cpp <- function(data, matrix, family_set, method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families) {
-    .Call('rvinecopulib_vinecop_select_cpp', PACKAGE = 'rvinecopulib', data, matrix, family_set, method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families)
+    .Call('_rvinecopulib_vinecop_select_cpp', PACKAGE = 'rvinecopulib', data, matrix, family_set, method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families)
 }
 
