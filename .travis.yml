@@ -1,33 +1,37 @@
-dist: trusty
-sudo: required
-
 language: R
+sudo: required
 warnings_are_errors: false
 
-
-apt_packages:
-  - libgsl0-dbg
-  - libgsl0-dev
-  - libgsl0ldbl
-  - libboost-all-dev
-  - libnlopt-dev
-  - libeigen3-dev
-  - libcurl4-openssl-dev
-  - libxml2-dev
-  - r-cran-vinecopula
-  - r-cran-nloptr
-  - r-cran-rcpp
-  - r-cran-rcppeigen
-  - r-cran-testthat
-  - r-cran-bh
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+    - os: osx
+      osx_image: xcode8.2
 
 before_install:
-  - sudo add-apt-repository ppa:marutter/c2d4u -y
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -q
-  - sudo apt-get install gcc-5 g++-5 gfortran-5
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100
-  - sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100
+  ### Linux
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo add-apt-repository ppa:marutter/c2d4u -y; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get update -q; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get install gcc-5 g++-5 gfortran-5; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get install libgsl0-dbg libgsl0-dev libgsl0ldbl libboost-all-dev libnlopt-dev libeigen3-dev libcurl4-openssl-dev libxml2-dev; fi 
 
-repos:
-  CRAN: http://cran.rstudio.com
+    ### OSX
+  - if [ $TRAVIS_OS_NAME == osx ]; then rm /usr/local/include/c++; fi # https://github.com/Homebrew/brew/issues/1742#issuecomment-277308817
+  - if [ $TRAVIS_OS_NAME == osx ]; then brew update && brew install gcc; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then brew tap homebrew/science && brew install boost eigen gsl nlopt; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then mkdir ~/.R; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then touch ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "CC=/usr/local/bin/gcc-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "CXX=/usr/local/bin/g++-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "CXX11=/usr/local/bin/g++-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "FC=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "F77=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
+        
+  ### Common
+  - export R_PACKAGES='c("nloptr", "Rcpp", "RcppEigen", "testthat", "BH", "VineCopula")'
+  - sudo Rscript -e 'withCallingHandlers(install.packages('$R_PACKAGES', repos="http://cran.rstudio.com/"), warning=function(x) { message(x); quit(status=1, save="no") })'
+
