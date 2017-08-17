@@ -67,7 +67,7 @@ namespace vinecopulib
         Eigen::MatrixXd values(m, m);
         for (size_t k = 0; k < m * m; ++k) {
             kernels = gaussian_kernel_2d((z_data - z.row(k).replicate(n, 1)));
-            values(i, j) = kernels.mean() / (det_B * phi.row(k).prod());
+            values(j, i) = kernels.mean() / (det_B * phi.row(k).prod());
             ++i;
             if (i % m == 0) {
                 i = 0;
