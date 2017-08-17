@@ -9,6 +9,31 @@ matrix:
     - os: osx
       osx_image: xcode8.2
 
+
+apt_packages:
+  - libgsl0-dbg
+  - libgsl0-dev
+  - libgsl0ldbl
+  - libboost-all-dev
+  - libnlopt-dev
+  - libeigen3-dev
+  - libcurl4-openssl-dev
+  - libxml2-dev
+
+brew_packages:
+  - gcc
+  - boost
+  - eigen 
+  - gsl 
+  - nlopt
+
+r_packages:
+  - VineCopula
+  - nloptr
+  - Rcpp
+  - RcppEigen
+  - BH
+
 before_install:
   ### Linux
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo add-apt-repository ppa:marutter/c2d4u -y; fi
@@ -17,12 +42,10 @@ before_install:
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get install gcc-5 g++-5 gfortran-5; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100; fi
-  - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get install libgsl0-dbg libgsl0-dev libgsl0ldbl libboost-all-dev libnlopt-dev libeigen3-dev libcurl4-openssl-dev libxml2-dev; fi 
-
-    ### OSX
+  
+  ### OSX
   - if [ $TRAVIS_OS_NAME == osx ]; then rm /usr/local/include/c++; fi # https://github.com/Homebrew/brew/issues/1742#issuecomment-277308817
-  - if [ $TRAVIS_OS_NAME == osx ]; then brew update && brew install gcc; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then brew tap homebrew/science && brew install boost eigen gsl nlopt; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then brew update; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then mkdir ~/.R; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then touch ~/.R/Makevars; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then echo "CC=/usr/local/bin/gcc-7" >> ~/.R/Makevars; fi
@@ -30,8 +53,6 @@ before_install:
   - if [ $TRAVIS_OS_NAME == osx ]; then echo "CXX11=/usr/local/bin/g++-7" >> ~/.R/Makevars; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then echo "FC=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then echo "F77=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
-        
-  ### Common
-  - export R_PACKAGES='c("nloptr", "Rcpp", "RcppEigen", "testthat", "BH", "VineCopula")'
-  - sudo Rscript -e 'withCallingHandlers(install.packages('$R_PACKAGES', repos="http://cran.rstudio.com/"), warning=function(x) { message(x); quit(status=1, save="no") })'
 
+repos:
+  CRAN: http://cran.rstudio.com
