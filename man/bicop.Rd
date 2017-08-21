@@ -21,7 +21,7 @@ available for one-parameter families and \code{"t"}.}
 
 \item{nonpar_method}{the estimation method for nonparametric models, either
 \code{"constant"} for the standard transformation estimator, or
-\code{"linear"}/\code{"quadratic"} for the loca-likelihood approximations of order
+\code{"linear"}/\code{"quadratic"} for the local-likelihood approximations of order
 one/two.}
 
 \item{mult}{multiplier for the smoothing parameters of nonparametric

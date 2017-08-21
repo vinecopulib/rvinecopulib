@@ -11,7 +11,7 @@
 #'   available for one-parameter families and `"t"`.
 #' @param nonpar_method the estimation method for nonparametric models, either 
 #'   `"constant"` for the standard transformation estimator, or 
-#'   `"linear"`/`"quadratic"` for the loca-likelihood approximations of order 
+#'   `"linear"`/`"quadratic"` for the local-likelihood approximations of order 
 #'   one/two.
 #' @param mult multiplier for the smoothing parameters of nonparametric 
 #'   families. Values larger than 1 make the estimate more smooth, values less
