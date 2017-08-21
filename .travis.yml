@@ -22,8 +22,7 @@ apt_packages:
 
 brew_packages:
   - eigen 
-  - gsl 
-  - nlopt
+  - gsl
 
 r_packages:
   - VineCopula
