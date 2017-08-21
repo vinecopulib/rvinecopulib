@@ -56,7 +56,8 @@ namespace vinecopulib
     {
         // compute inverse/root bandwidth matrices
         Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> takes_root(B);
-        Eigen::Matrix2d irB = takes_root.operatorSqrt().inverse();
+        Eigen::Matrix2d rB = takes_root.operatorSqrt();
+        Eigen::Matrix2d irB = rB.inverse();
         double det_irB = irB.determinant();
         Eigen::Matrix2d iB = B.inverse();
         
@@ -72,30 +73,31 @@ namespace vinecopulib
         Eigen::VectorXd kernels(m);
         Eigen::MatrixXd zz(m, 2), zz2(m, 2);
         Eigen::VectorXd res = Eigen::VectorXd::Ones(n);
-        if (method == "linear") {
-            S = B;
-        }
+        S = B;
         for (size_t k = 0; k < n; ++k) {
             zz = z_data - z.row(k).replicate(m, 1);
             kernels = gaussian_kernel_2d(zz);
             f0 = kernels.mean() * det_irB;
             res(k) *= f0;
             if (method != "constant") {
-                zz = (irB * zz.transpose()).transpose();
+                zz = (rB * zz.transpose()).transpose();
                 f1(0) = zz.col(0).cwiseProduct(kernels).mean() * det_irB;
                 f1(1) = zz.col(1).cwiseProduct(kernels).mean() * det_irB;
+                f1 = iB * f1;
                 if (method == "linear") {
                     b(0) = f1(0) / f0;
                     b(1) = f1(1) / f0;
-                } else {
-                    zz2.col(0) = zz.col(0).cwiseProduct(kernels);
-                    zz2.col(0) = zz.col(0).cwiseProduct(kernels);
-                    f2 = zz.transpose() * zz2 * det_irB - iB * f0;
-                    b = B * f1 / f0;
-                    S = ((B * f2 * B) / f0 + B - b * b.transpose()).inverse();
-                    res(k) *= std::pow(S.determinant() / det_irB, 0.5);
-                }
-                res(k) *= std::exp(-0.5 * double(b.transpose() * S * b));
+                    f1 = iB * f1;
+                } 
+                // else {
+                //     zz2.col(0) = zz.col(0).cwiseProduct(kernels);
+                //     zz2.col(1) = zz.col(1).cwiseProduct(kernels);
+                //     f2 = zz.transpose() * zz2 * det_irB - iB * f0;
+                //     b = B * f1 / f0;
+                //     S = ((B * f2 * B) / f0 + B - b * b.transpose()).inverse();
+                //     res(k) *= std::sqrt(S.determinant()) / det_irB;
+                // }
+                res(k) *= std::exp(-0.5 * (b.transpose() * S * b)(0));
             }
         }
 

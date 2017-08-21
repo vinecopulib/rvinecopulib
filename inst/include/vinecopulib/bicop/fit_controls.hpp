@@ -18,7 +18,7 @@ namespace vinecopulib {
         // Constructor
         FitControlsBicop(std::vector<BicopFamily> family_set = bicop_families::all,
                          std::string parametric_method = "mle",
-                         std::string nonparametric_method = "quadratic",
+                         std::string nonparametric_method = "linear",
                          double nonparametric_mult = 1.0,
                          std::string selection_criterion = "bic",
                          bool preselect_families = true);
