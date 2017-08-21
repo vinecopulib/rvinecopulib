@@ -5,7 +5,7 @@
 \title{Bivariate copula models}
 \usage{
 bicop(data, family_set = "all", par_method = "mle",
-  nonpar_method = "constant", mult = 1, selcrit = "bic", presel = TRUE,
+  nonpar_method = "quadratic", mult = 1, selcrit = "bic", presel = TRUE,
   keep_data = TRUE)
 }
 \arguments{
