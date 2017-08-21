@@ -13,9 +13,3 @@ SOURCES_CPP = ./bicop/abstract.cpp	  ./bicop/bb7.cpp      ./bicop/elliptical.cpp
 SOURCES_C   = ./misc/tools_c.c
 
 OBJECTS = $(SOURCES_CPP:.cpp=.o) $(SOURCES_C:.c=.o)
-
-strippedLib: $(SHLIB)
-	if test -e "/usr/bin/strip"; then /usr/bin/strip --strip-debug $(SHLIB); fi
-
-.phony: strippedLib
-

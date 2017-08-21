@@ -4,8 +4,9 @@
 \alias{bicop}
 \title{Bivariate copula models}
 \usage{
-bicop(data, family_set = "all", method = "mle", mult = 1,
-  selcrit = "bic", presel = TRUE, keep_data = TRUE)
+bicop(data, family_set = "all", par_method = "mle",
+  nonpar_method = "constant", mult = 1, selcrit = "bic", presel = TRUE,
+  keep_data = TRUE)
 }
 \arguments{
 \item{data}{a matrix or data.frame (copula data should have approximately
@@ -13,10 +14,6 @@ uniform margins).}
 
 \item{family_set}{a character vector of families; as in \code{bicop_dist()},
 see \emph{Details} for additional options.}
-
-\item{method}{the estimation method for parametric models, either \code{"mle"} for
-maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
-available for one-parameter families and \code{"t"}.}
 
 \item{mult}{multiplier for the smoothing parameters of nonparametric
 families. Values larger than 1 make the estimate more smooth, values less
@@ -30,6 +27,10 @@ symmetry characteristics of the data.}
 
 \item{keep_data}{whether the data should be stored (necessary for computing
 fit statistics and using \code{fitted()}).}
+
+\item{method}{the estimation method for parametric models, either \code{"mle"} for
+maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
+available for one-parameter families and \code{"t"}.}
 }
 \value{
 An object inherting from \code{bicop} and \code{bicop_dist}.
