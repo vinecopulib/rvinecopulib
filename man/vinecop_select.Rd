@@ -19,6 +19,15 @@ see \emph{Details} for additional options.}
 \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}), or \code{NA} for
 automatic structure selection (default).}
 
+\item{par_method}{the estimation method for parametric models, either \code{"mle"}
+for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
+available for one-parameter families and \code{"t"}.}
+
+\item{nonpar_method}{the estimation method for nonparametric models, either
+\code{"constant"} for the standard transformation estimator, or
+\code{"linear"}/\code{"quadratic"} for the loca-likelihood approximations of order
+one/two.}
+
 \item{mult}{multiplier for the smoothing parameters of nonparametric
 families. Values larger than 1 make the estimate more smooth, values less
 than 1 less smooth.}

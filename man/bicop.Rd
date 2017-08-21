@@ -15,6 +15,15 @@ uniform margins).}
 \item{family_set}{a character vector of families; as in \code{bicop_dist()},
 see \emph{Details} for additional options.}
 
+\item{par_method}{the estimation method for parametric models, either \code{"mle"}
+for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
+available for one-parameter families and \code{"t"}.}
+
+\item{nonpar_method}{the estimation method for nonparametric models, either
+\code{"constant"} for the standard transformation estimator, or
+\code{"linear"}/\code{"quadratic"} for the loca-likelihood approximations of order
+one/two.}
+
 \item{mult}{multiplier for the smoothing parameters of nonparametric
 families. Values larger than 1 make the estimate more smooth, values less
 than 1 less smooth.}
@@ -27,10 +36,6 @@ symmetry characteristics of the data.}
 
 \item{keep_data}{whether the data should be stored (necessary for computing
 fit statistics and using \code{fitted()}).}
-
-\item{method}{the estimation method for parametric models, either \code{"mle"} for
-maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
-available for one-parameter families and \code{"t"}.}
 }
 \value{
 An object inherting from \code{bicop} and \code{bicop_dist}.

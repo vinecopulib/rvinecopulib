@@ -6,9 +6,13 @@
 #'  uniform margins).
 #' @param family_set a character vector of families; as in `bicop_dist()`,
 #'   see *Details* for additional options.
-#' @param method the estimation method for parametric models, either `"mle"` for
-#'   maximum likelihood or `"itau"` for inversion of Kendall's tau (only 
+#' @param par_method the estimation method for parametric models, either `"mle"` 
+#'   for maximum likelihood or `"itau"` for inversion of Kendall's tau (only 
 #'   available for one-parameter families and `"t"`.
+#' @param nonpar_method the estimation method for nonparametric models, either 
+#'   `"constant"` for the standard transformation estimator, or 
+#'   `"linear"`/`"quadratic"` for the loca-likelihood approximations of order 
+#'   one/two.
 #' @param mult multiplier for the smoothing parameters of nonparametric 
 #'   families. Values larger than 1 make the estimate more smooth, values less
 #'   than 1 less smooth.
