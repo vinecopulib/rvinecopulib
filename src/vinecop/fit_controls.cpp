@@ -33,6 +33,7 @@ namespace vinecopulib
     //! @param show_trace whether to show a trace of the building progress.
     FitControlsVinecop::FitControlsVinecop(std::vector<BicopFamily> family_set,
                                            std::string parametric_method,
+                                           std::string nonparametric_method,
                                            double nonparametric_mult,
                                            size_t truncation_level,
                                            std::string tree_criterion,
@@ -40,8 +41,12 @@ namespace vinecopulib
                                            std::string selection_criterion,
                                            bool preselect_families,
                                            bool show_trace) :
-            FitControlsBicop(family_set, parametric_method, nonparametric_mult, 
-                             selection_criterion, preselect_families)
+            FitControlsBicop(family_set,
+                             parametric_method,
+                             nonparametric_method,
+                             nonparametric_mult,
+                             selection_criterion,
+                             preselect_families)
     {
         check_truncation_level(truncation_level);
         check_threshold(threshold);
@@ -126,6 +131,7 @@ namespace vinecopulib
     {
         FitControlsBicop controls_bicop(get_family_set(), 
                                         get_parametric_method(),
+                                        get_nonparametric_method(),
                                         get_nonparametric_mult(),
                                         get_selection_criterion(),
                                         get_preselect_families());

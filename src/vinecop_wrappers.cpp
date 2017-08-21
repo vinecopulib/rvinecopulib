@@ -95,7 +95,8 @@ Rcpp::List vinecop_select_cpp(
         const Eigen::MatrixXd& data,
         Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix,
         std::vector<std::string> family_set,
-        std::string method,
+        std::string par_method,
+        std::string nonpar_method,
         double mult,
         int truncation_level,
         std::string tree_criterion,
@@ -111,7 +112,8 @@ Rcpp::List vinecop_select_cpp(
 
     FitControlsVinecop fit_controls(
             fam_set,
-            method,
+            par_method,
+            nonpar_method,
             mult,
             truncation_level,
             tree_criterion,

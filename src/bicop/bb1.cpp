@@ -48,7 +48,7 @@ namespace vinecopulib
         return res * (1 + delta * theta - (1 + theta) * std::pow(u, theta));
     }
 
-    double Bb1Bicop::parameters_to_tau(const Eigen::VectorXd& parameters)
+    double Bb1Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
     {
         return 1 - 2 / (parameters(1) * (parameters(0) + 2));
     }

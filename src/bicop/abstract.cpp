@@ -21,10 +21,13 @@
 #include <vinecopulib/bicop/indep.hpp>
 #include <vinecopulib/bicop/joe.hpp>
 #include <vinecopulib/bicop/student.hpp>
-#include <vinecopulib/bicop/tll0.hpp>
+#include <vinecopulib/bicop/tll.hpp>
 
 namespace vinecopulib
 {
+    //! virtual destructor
+    AbstractBicop::~AbstractBicop() {}
+    
     //! Create a bivariate copula using the default contructor
     //!
     //! @param family the copula family.
@@ -70,8 +73,8 @@ namespace vinecopulib
             case BicopFamily::bb8:
                 new_bicop = BicopPtr(new Bb8Bicop());
                 break;
-            case BicopFamily::tll0:
-                new_bicop =  BicopPtr(new Tll0Bicop());
+            case BicopFamily::tll:
+                new_bicop =  BicopPtr(new TllBicop());
                 break;
 
             default:

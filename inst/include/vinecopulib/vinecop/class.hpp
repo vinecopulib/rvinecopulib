@@ -33,6 +33,12 @@ namespace vinecopulib
                 const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
                 FitControlsVinecop controls = FitControlsVinecop(),
                 bool check_matrix = true);
+        Vinecop(const char *filename, bool check_matrix = true);
+        Vinecop(boost::property_tree::ptree input, bool check_matrix = true);
+
+        // Serialize
+        boost::property_tree::ptree to_ptree();
+        void to_json(const char *filename);
 
         // Methods modifying structure and/or families and parameters
         void select_all(const Eigen::MatrixXd& data,

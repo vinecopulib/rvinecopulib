@@ -19,14 +19,25 @@ namespace vinecopulib
     //! @literature
     //! Nagler, Thomas. *kdecopula: An R Package for the Kernel Estimation of 
     //! Copula Densities*. arXiv:1603.04229 [stat.CO], 2016
-    class Tll0Bicop : public KernelBicop
+    class TllBicop : public KernelBicop
     {
     public:
-        Tll0Bicop();
+        TllBicop();
     private:
         Eigen::VectorXd gaussian_kernel_2d(
             const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
-        void fit(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data, 
-                 std::string, double mult);
+
+        Eigen::Matrix2d bandwidth(
+                const Eigen::Matrix<double, Eigen::Dynamic, 2>& x,
+                std::string method);
+
+        Eigen::VectorXd ftll(
+                const Eigen::Matrix<double, Eigen::Dynamic, 2>& x,
+                const Eigen::Matrix<double, Eigen::Dynamic, 2>& x_data,
+                Eigen::Matrix2d B,
+                std::string method);
+
+        void fit(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
+                 std::string method, double mult);
     };
 }

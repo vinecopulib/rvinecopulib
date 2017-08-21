@@ -93,6 +93,40 @@ namespace vinecopulib
         pair_copulas_ = pair_copulas;
     }
 
+    //! creates from a boost::property_tree::ptree object
+    //! @param input the boost::property_tree::ptree object to convert from
+    //! (see to_ptree() for the structure of the input).
+    //! @param check_matrix whether to check if the `"matrix"` node represents
+    //!      a valid R-vine matrix.
+    Vinecop::Vinecop(boost::property_tree::ptree input, bool check_matrix) {
+
+        auto matrix = tools_serialization::ptree_to_matrix<size_t>(
+                input.get_child("matrix"));
+        vine_matrix_ = RVineMatrix(matrix, check_matrix);
+        d_ = (size_t) matrix.rows();
+
+        pair_copulas_ = make_pair_copula_store(d_);
+        boost::property_tree::ptree pcs_node = input.get_child("pair copulas");
+        for (size_t tree = 0; tree < d_ - 1; ++tree) {
+            boost::property_tree::ptree tree_node = pcs_node.get_child(
+                    "tree" + std::to_string(tree));
+            for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
+                boost::property_tree::ptree pc_node = tree_node.get_child(
+                        "pc" + std::to_string(edge));
+                pair_copulas_[tree][edge] = Bicop(pc_node);
+            }
+        }
+    }
+
+    //! creates from a JSON file
+    //! @filename the name of the JSON file to read (see to_ptree() for the
+    //! structure of the file).
+    //! @param check_matrix whether to check if the `"matrix"` node represents
+    //!      a valid R-vine matrix.
+    Vinecop::Vinecop(const char *filename, bool check_matrix) :
+            Vinecop(tools_serialization::json_to_ptree(filename),
+                    check_matrix) {}
+
     //! constructs a vine copula model from data. 
     //! 
     //! The function creates a model and calls select_family().
@@ -125,6 +159,49 @@ namespace vinecopulib
         d_ = data.cols();
         pair_copulas_ = make_pair_copula_store(d_);
         select_all(data, controls);
+    }
+
+    //! Convert the copula into a boost::property_tree::ptree object
+    //!
+    //! The ptree object contains two nodes : `"matrix"` and `"pair copulas"`.
+    //! The former is encodes the R-Vine structure and the latter is a list of
+    //! child nodes for the trees (`"tree1"`, `"tree2"`, etc), each containing
+    //! a list of child nodes for the edges (`"pc1"`, `"pc2"`, etc).
+    //! See Bicop::to_ptree() for the encoding of pair-copulas.
+    //!
+    //! @param check_matrix whether to check if the `"matrix"` node represents
+    //!      a valid R-vine matrix.
+    //!
+    //! @return the boost::property_tree::ptree object containing the copula.
+    boost::property_tree::ptree Vinecop::to_ptree()
+    {
+        boost::property_tree::ptree output;
+
+        boost::property_tree::ptree pair_copulas;
+        for (size_t tree = 0; tree < d_ - 1; ++tree) {
+            boost::property_tree::ptree tree_node;
+            for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
+                tree_node.add_child("pc"+std::to_string(edge),
+                                    pair_copulas_[tree][edge].to_ptree());
+            }
+            pair_copulas.add_child("tree"+std::to_string(tree), tree_node);
+        }
+
+        output.add_child("pair copulas", pair_copulas);
+        auto matrix_node = tools_serialization::matrix_to_ptree(get_matrix());
+        output.add_child("matrix", matrix_node);
+
+        return output;
+    }
+
+    //! Write the copula object into a JSON file
+    //!
+    //! See to_ptree() for the structure of the file.
+    //!
+    //! @param filename the name of the file to write.
+    void Vinecop::to_json(const char *filename)
+    {
+        boost::property_tree::write_json(filename, to_ptree());
     }
 
     //! Initialize object for storing pair copulas

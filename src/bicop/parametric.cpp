@@ -8,6 +8,7 @@
 #include <vinecopulib/misc/tools_optimization.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
+#include <iostream>
 
 namespace vinecopulib
 {
@@ -80,8 +81,19 @@ namespace vinecopulib
                 // Set bounds and starting values
                 auto lb = get_parameters_lower_bounds();
                 auto ub = get_parameters_upper_bounds();
-                auto initial_parameters = newpar;
-                ParBicopOptData my_data = {temp_data, this, newpar(0), 0};
+                
+                // ensure that starting values are sufficiently separated from 
+                // bounds
+                double sign = 1.0;
+                if (tau < 0) sign = -1.0;
+                if (std::abs(tau) < 0.01) {
+                    tau = 0.01 * sign;
+                } else if (std::abs(tau) > 0.9) {
+                    tau = 0.9 * sign;
+                }
+                auto initial_parameters = get_start_parameters(tau);
+                
+                ParBicopOptData my_data = {temp_data, this, initial_parameters(0), 0};
                 if (method == "itau") {
                       lb.resize(1, 1);
                       lb(0) = get_parameters_lower_bounds()(1);

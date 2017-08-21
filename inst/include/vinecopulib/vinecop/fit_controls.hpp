@@ -20,6 +20,7 @@ namespace vinecopulib {
         FitControlsVinecop();
         FitControlsVinecop(std::vector<BicopFamily> family_set,
                            std::string parametric_method = "mle",
+                           std::string nonparametric_method = "quadratic",
                            double nonparametric_mult = 1.0,
                            size_t truncation_level = std::numeric_limits<size_t>::max(),
                            std::string tree_criterion = "tau",

@@ -203,7 +203,7 @@ namespace tools_optimization {
     Eigen::VectorXd Optimizer::optimize(Eigen::VectorXd initial_parameters)
     {
         if (initial_parameters.size() != n_parameters_) {
-            throw std::string("The size of x should be n_parameters_.");
+            throw std::runtime_error("The size of x should be n_parameters_.");
         }
 
         double nll;
@@ -212,15 +212,15 @@ namespace tools_optimization {
         try {
             opt_.optimize(x, nll);
         } catch (nlopt::roundoff_limited err) {
-            throw std::string("Halted because roundoff errors limited progress! ") + err.what();
+            throw std::runtime_error(std::string("Halted because roundoff errors limited progress! ") + err.what());
         } catch (nlopt::forced_stop err) {
-            throw std::string("Halted because of a forced termination! ") + err.what();
+            throw std::runtime_error(std::string("Halted because of a forced termination! ") + err.what());
         } catch (std::invalid_argument err) {
-            throw std::string("Invalid arguments. ") + err.what();
+            throw std::runtime_error(std::string("Invalid arguments. ") + err.what());
         } catch (std::bad_alloc err) {
-            throw std::string("Ran out of memory. ") + err.what();
+            throw std::runtime_error(std::string("Ran out of memory. ") + err.what());
         } catch (std::runtime_error err) {
-            throw std::string("Generic failure. ") + err.what();
+            throw std::runtime_error(std::string("Generic failure. ") + err.what());
         } catch (...) {
             // do nothing for other errors (results are fine)
         }

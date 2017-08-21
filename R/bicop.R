@@ -44,9 +44,9 @@
 #' fit1
 #' 
 #' @export
-bicop <- function(data, family_set = "all", method = "mle", mult = 1, 
-                  selcrit = "bic", presel = TRUE, keep_data = TRUE) {
-    
+bicop <- function(data, family_set = "all", par_method = "mle",
+                  nonpar_method = "constant", mult = 1, selcrit = "bic", 
+                  presel = TRUE, keep_data = TRUE) {
     # family_set can only use standard family names in cpp
     family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
     family_set <- expand_family_set(family_set)
@@ -56,7 +56,8 @@ bicop <- function(data, family_set = "all", method = "mle", mult = 1,
     bicop <- bicop_select_cpp(
         data = data, 
         family_set = family_set,
-        method = method,
+        par_method = par_method,
+        nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
         presel = presel
@@ -68,7 +69,8 @@ bicop <- function(data, family_set = "all", method = "mle", mult = 1,
     }
     bicop$controls <- list(
         family_set = family_set,
-        method = method,
+        par_method = par_method,
+        nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
         presel = presel
