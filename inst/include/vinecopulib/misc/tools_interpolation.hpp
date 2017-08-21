@@ -19,11 +19,14 @@ namespace tools_interpolation {
     {
     public:
         InterpolationGrid() {}
-        InterpolationGrid(const Eigen::VectorXd& grid_points, const Eigen::MatrixXd& values);
+        InterpolationGrid(const Eigen::VectorXd& grid_points, 
+                          const Eigen::MatrixXd& values,
+                          int norm_times = 3);
 
         Eigen::MatrixXd get_values() const;
-        void set_values(const Eigen::MatrixXd& values);
+        void set_values(const Eigen::MatrixXd& values, int norm_times = 3);
         void flip();
+        void normalize_margins(int times);
 
         Eigen::VectorXd interpolate(const Eigen::MatrixXd& x);
         Eigen::VectorXd intergrate_1d(const Eigen::MatrixXd& u, size_t cond_var);

@@ -34,7 +34,7 @@ namespace vinecopulib
 
         double mult;
         if (method == "constant") {
-            mult = std::pow(n, -1.0 / 3.0);
+            mult = std::pow(n, - 1.0 / 3.0);
         } else {
             double degree;
             if (method == "linear") {
@@ -42,64 +42,64 @@ namespace vinecopulib
             } else {
                 degree = 2.0;
             }
-            mult = std::pow(n, - 1.0 / (2.0 * degree + 1.0));
+            mult = 9.0 * std::pow(n, - 1.0 / (2.0 * degree + 1.0));
         }
 
         return mult * cov;
     }
 
+    Eigen::Matrix2d chol22(const Eigen::Matrix2d& B) {
+
+        Eigen::Matrix2d rB;
+
+        rB(0,0) = std::sqrt(B(0,0));
+        rB(0,1) = 0.0;
+        rB(1,0) = B(1,0) / rB(0,0);
+        rB(1,1) = std::sqrt( B(1, 1) - rB(1, 0) * rB(1, 0));
+
+        return rB;
+    }
+
     Eigen::VectorXd TllBicop::ftll(
             const Eigen::Matrix<double, Eigen::Dynamic, 2>& x,
             const Eigen::Matrix<double, Eigen::Dynamic, 2>& x_data,
-            Eigen::Matrix2d B,
+            const Eigen::Matrix2d& B,
             std::string method)
     {
-        // compute inverse/root bandwidth matrices
-        Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> takes_root(B);
-        Eigen::Matrix2d rB = takes_root.operatorSqrt();
-        Eigen::Matrix2d irB = rB.inverse();
+        Eigen::Matrix2d irB = chol22(B).inverse();
         double det_irB = irB.determinant();
-        Eigen::Matrix2d iB = B.inverse();
-        
-        // apply bandwidth matrix
+
         Eigen::MatrixXd z = (irB * x.transpose()).transpose();
         Eigen::MatrixXd z_data = (irB * x_data.transpose()).transpose();
 
-        size_t n = x.rows();
-        size_t m = x_data.rows();
+        size_t m = x.rows();
+        size_t n = x_data.rows();
         double f0;
-        Eigen::Vector2d f1, b;
-        Eigen::MatrixXd f2, S;
-        Eigen::VectorXd kernels(m);
-        Eigen::MatrixXd zz(m, 2);
-        Eigen::VectorXd res = Eigen::VectorXd::Ones(n);
-        S = B;
-        for (size_t k = 0; k < n; ++k) {
-            zz = z_data - z.row(k).replicate(m, 1);
+        Eigen::Vector2d b;
+        Eigen::Matrix2d S(B);
+        Eigen::VectorXd kernels(n);
+        Eigen::MatrixXd zz(n, 2), zz2(n, 2);
+        Eigen::VectorXd res = Eigen::VectorXd::Ones(m);
+
+        for (size_t k = 0; k < m; ++k) {
+            zz = z_data - z.row(k).replicate(n, 1);
             kernels = gaussian_kernel_2d(zz);
-            f0 = kernels.mean() * det_irB;
-            res(k) *= f0;
+            f0 = kernels.mean();
             if (method != "constant") {
-                zz = (rB * zz.transpose()).transpose();
-                Eigen::MatrixXd kz(m, 2);
-                kz.col(0) = zz.col(0).cwiseProduct(kernels);
-                kz.col(1) = zz.col(1).cwiseProduct(kernels);
-                f1 = iB * kz.colwise().mean().transpose() * det_irB;
-                if (method == "linear") {
-                    b(0) = f1(0) / f0;
-                    b(1) = f1(1) / f0;
-                    f1 = iB * f1;
-                } 
-                else {
-                    f2 = iB * kz.transpose() * zz * iB / det_irB - f0 * iB;
-                    b = B * f1 / f0;
-                    S = ((B * f2 * B) / f0 + B - b * b.transpose()).inverse();
+                zz = (irB * zz.transpose()).transpose();
+                b = zz.cwiseProduct(kernels.replicate(1, 2)).colwise().mean() / f0;
+                if (method == "quadratic") {
+                    zz2 = zz.cwiseProduct(kernels.replicate(1, 2)) /
+                          (f0 * (double) n);
+                    b = B * b;
+                    S = (B * (zz.transpose() * zz2) * B -
+                         b * b.transpose()).inverse();
                     res(k) *= std::sqrt(S.determinant()) / det_irB;
                 }
-                res(k) *= std::exp(-0.5 * (b.transpose() * S * b)(0));
+                res(k) *= std::exp(- 0.5 * double(b.transpose() * S * b));
             }
+            res(k) *= f0 * det_irB;
         }
-
         return res;
     }
 
@@ -121,22 +121,20 @@ namespace vinecopulib
         Eigen::Matrix<double, Eigen::Dynamic, 2> z = tools_stats::qnorm(grid_2d);
         Eigen::Matrix<double, Eigen::Dynamic, 2> z_data = tools_stats::qnorm(data);
 
-        // apply normal density to z (used later for normalization)
-        Eigen::Matrix<double, Eigen::Dynamic, 2> phi = tools_stats::dnorm(z);
-        Eigen::Matrix<double, Eigen::Dynamic, 2> phi_data = tools_stats::dnorm(z_data);
-
         // find bandwidth matrix
         Eigen::Matrix2d B = bandwidth(z_data, method);
         B *= mult;
 
-        // compute the density estimator on z-scale
+        // compute the density estimator
         Eigen::VectorXd f = ftll(z, z_data, B, method);
-        // bring to copula sacle (divide through std normal marginal densities)
-        f = f.array() / phi.rowwise().prod().array();
-        // Rcpp::Rcout << phi.array().rowwise().prod() << std::endl;
+
+        // apply normal density to z (used later for normalization)
+        f = f.cwiseQuotient(tools_stats::dnorm(z).rowwise().prod());
+
+        // store values in mxm grid
         Eigen::MatrixXd values(m, m);
         values = Eigen::Map<Eigen::MatrixXd>(f.data(), m, m).transpose();
-
+        
         // for interpolation, we shift the limiting gridpoints to 0 and 1
         grid_points(0) = 0.0;
         grid_points(m - 1) = 1.0;
@@ -144,7 +142,7 @@ namespace vinecopulib
 
         // compute effective number of parameters
         double K0 = gaussian_kernel_2d(Eigen::MatrixXd::Constant(1, 2, 0.0))(0);
-        Eigen::VectorXd scale = phi_data.rowwise().prod();
+        Eigen::VectorXd scale = tools_stats::dnorm(z_data).rowwise().prod();
         npars_ =  K0 / B.determinant() / (scale.array() * this->pdf(data).array()).mean();
     }
 }

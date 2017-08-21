@@ -34,7 +34,7 @@ namespace vinecopulib
         Eigen::VectorXd ftll(
                 const Eigen::Matrix<double, Eigen::Dynamic, 2>& x,
                 const Eigen::Matrix<double, Eigen::Dynamic, 2>& x_data,
-                Eigen::Matrix2d B,
+                const Eigen::Matrix2d& B,
                 std::string method);
 
         void fit(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,

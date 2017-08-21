@@ -433,7 +433,9 @@ namespace vinecopulib
     {
         using namespace tools_stl;
         std::vector<BicopFamily> family_set = controls.get_family_set();
-        std::string method = controls.get_parametric_method();
+        std::string parametric_method = controls.get_parametric_method();
+        std::string nonparametric_method = controls.get_nonparametric_method();
+        std::string method;
         double mult = controls.get_nonparametric_mult();
         std::string selection_criterion = controls.get_selection_criterion();
         bool preselect_families = controls.get_preselect_families();
@@ -441,7 +443,7 @@ namespace vinecopulib
         // If the familyset is empty, use all families.
         // If the familyset is not empty, check that all included families are implemented.
         if (family_set.empty()) {
-            if (method == "itau") {
+            if (parametric_method == "itau") {
                 family_set = bicop_families::itau;
             } else {
                 family_set = bicop_families::all;
@@ -450,7 +452,7 @@ namespace vinecopulib
             if (intersect(family_set, bicop_families::all).empty()) {
                 throw std::runtime_error("One of the families is not implemented");
             }
-            if (method == "itau") {
+            if (parametric_method == "itau") {
                 family_set = intersect(family_set, bicop_families::itau);
                 if (family_set.empty()) {
                     throw std::runtime_error("No family with method itau provided");
@@ -512,6 +514,12 @@ namespace vinecopulib
             // Estimate the model
             bicop_ = AbstractBicop::create(families[j]);
             rotation_ = rotations[j];
+            if (tools_stl::is_member(bicop_->get_family(),
+                                     bicop_families::parametric)) {
+                method = parametric_method;
+            } else {
+                method = nonparametric_method;
+            }
             bicop_->fit(cut_and_rotate(data), method, mult);
 
             // Compute the selection criterion
