@@ -99,6 +99,7 @@ as.bicop <- function(object) {
 #' u <- rbicop(500, "gauss", 0, 0.5)
 #' fit <- bicop(u, "par")
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
+#' @importFrom stats logLik
 predict.bicop <- function(object, newdata, what = "pdf", ...) {
     stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
     newdata <- if_vec_to_matrix(newdata)
