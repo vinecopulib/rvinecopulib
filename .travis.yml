@@ -26,7 +26,6 @@ brew_packages:
 
 r_packages:
   - VineCopula
-  - nloptr
   - Rcpp
   - RcppEigen
   - BH
@@ -41,17 +40,10 @@ before_install:
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100; fi
   
   ### OSX
-  - if [ $TRAVIS_OS_NAME == osx ]; then rm /usr/local/include/c++; fi # https://github.com/Homebrew/brew/issues/1742#issuecomment-277308817
-  - if [ $TRAVIS_OS_NAME == osx ]; then brew update; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then sudo rm '/usr/local/bin/gfortran'; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then brew install gcc || brew link --overwrite gcc; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then mkdir ~/.R; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then touch ~/.R/Makevars; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then echo "CC=/usr/local/bin/gcc-7" >> ~/.R/Makevars; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then echo "CXX=/usr/local/bin/g++-7" >> ~/.R/Makevars; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then echo "CXX11=/usr/local/bin/g++-7" >> ~/.R/Makevars; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then echo "FC=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then echo "F77=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "FC=/usr/local/bin/gfortran" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "F77=/usr/local/bin/gfortran" >> ~/.R/Makevars; fi
 
 repos:
   CRAN: http://cran.rstudio.com
