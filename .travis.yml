@@ -9,23 +9,11 @@ matrix:
     - os: osx
       osx_image: xcode8.2
 
-
 apt_packages:
-  - libgsl0-dbg
-  - libgsl0-dev
-  - libgsl0ldbl
-  - libboost-all-dev
-  - libnlopt-dev
-  - libeigen3-dev
   - libcurl4-openssl-dev
   - libxml2-dev
 
-brew_packages:
-  - eigen 
-  - gsl
-
 r_packages:
-  - VineCopula
   - Rcpp
   - RcppEigen
   - BH
@@ -53,5 +41,6 @@ before_install:
   - if [ $TRAVIS_OS_NAME == osx ]; then echo "CXX11=/usr/local/bin/g++-7" >> ~/.R/Makevars; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then echo "FC=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then echo "F77=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
+
 repos:
   CRAN: http://cran.rstudio.com
