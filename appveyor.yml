@@ -31,6 +31,7 @@ install:
   - cmake -DCMAKE_GENERATOR_PLATFORM="%CMAKE_GEN_PLAT%" -DCMAKE_INSTALL_PREFIX=C:\projects\nlopt-install -DCMAKE_INSTALL_BINDIR=c:\projects\nlopt-install\lib .
   - cmake --build . --config Release --target install
   - cd ..
+  - cd rvinecopulib
   - set path=%path%;C:\projects\nlopt-install\lib
   - setx NLOPT_HOME "C:\projects\nlopt-install\"
 
