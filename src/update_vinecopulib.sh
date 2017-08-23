@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git clone git@github.com:vinecopulib/vinecopulib.git
+git clone https://github.com/vinecopulib/vinecopulib
 
 rm -rf bicop 
 rm -rf misc 
