@@ -154,7 +154,7 @@ range of dependence patterns. For Archimedean copula families,
 rotated versions are included to cover negative dependence as well. 
 Additionally, nonparametric families are also supported.
 
-| type          | name                  | BicopFamily   |
+| type          | name                  | name in R     |
 |---------------|-----------------------|---------------|
 | -             | Independence          | "indep"       |
 | Elliptical    | Gaussian              | "gaussian"    |
@@ -170,23 +170,23 @@ Additionally, nonparametric families are also supported.
 | Nonparametric | Transformation kernel | "tll"         |
 
 Note that several convenience vectors of families are included:
-* `all` contains all the families
-* `parametric` contains the parametric families (all except `tll`)
-* `nonparametric` contains the nonparametric families (`indep` and `tll`)
-* `one_par` contains the parametric families with a single parameter
-(`gaussian`, `clayton`, `gumbel`, `frank`, and `joe`)
-* `two_par` contains the parametric families with two parameters
-(`student`, `bb1`, `bb6`, `bb7`, and `bb8`)
-* `elliptical` contains the elliptical families
-* `archimedean` contains the archimedean families
-* `BB` contains the BB families
-* `itau` families for which estimation by Kendall's tau inversion is available
-(`indep`,`gaussian`, `student`,`clayton`, `gumbel`, `frank`, `joe`)
+* `"all"` contains all the families
+* `"parametric"` contains the parametric families (all except `"tll"`)
+* `"nonparametric"` contains the nonparametric families (`"indep"` and `"tll"`)
+* `"one_par"` contains the parametric families with a single parameter
+(`"gaussian"`, `"clayton"`, `"gumbel"`, `"frank"`, and `"joe"`)
+* `"two_par"` contains the parametric families with two parameters
+(`"student"`, `"bb1"`, `"bb6"`, `"bb7"`, and `"bb8"`)
+* `"elliptical"` contains the elliptical families
+* `"archimedean"` contains the archimedean families
+* `"BB"` contains the BB families
+* `"itau"` families for which estimation by Kendall's tau inversion is available
+(`"indep"`,`"gaussian"`, `"student"`,`"clayton"`, `"gumbel"`, `"frank"`, `"joe"`)
 
 The following table shows the parameter ranges of bivariate copula families with 
-one or two parameters (`par` and `par2`):
+one or two parameters:
 
-| Copula family                    | `par`        | `par2`       |
+| Copula family                    | `par[1]`        | `par[2]`  |
 |:---------------------------------|:-------------|:-------------|
 | Gaussian                         | `(-1, 1)`    | -            |
 | Student t                        | `(-1, 1)`    | `(2,Inf)`    |
@@ -198,9 +198,6 @@ one or two parameters (`par` and `par2`):
 | Joe-Gumbel (BB6)                 | `[1 ,Inf)`   | `[1, Inf)`   |
 | Joe-Clayton (BB7)                | `[1, Inf)`   | `(0, Inf)`   |
 | Joe-Frank (BB8)                  | `[1, Inf)`   | `(0, 1]`     |
-
-Note that, when `rotation = 90` or `rotation = 270` for the Clayton, Gumbel, 
-and BB families, the parameters are negative.
 
 ------------------------------------------------------------------------
 
