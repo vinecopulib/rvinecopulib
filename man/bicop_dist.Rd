@@ -5,6 +5,7 @@
 \alias{dbicop}
 \alias{pbicop}
 \alias{rbicop}
+\alias{hbicop}
 \title{Bivariate copula distributions}
 \usage{
 bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
@@ -14,6 +15,8 @@ dbicop(u, family, rotation, parameters)
 pbicop(u, family, rotation, parameters)
 
 rbicop(n, family, rotation, parameters)
+
+hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
 }
 \arguments{
 \item{family}{the copula family, a string containing the family name (see
@@ -27,9 +30,16 @@ rbicop(n, family, rotation, parameters)
 
 \item{n}{number of observations. If `length(n) > 1``, the length is taken to
 be the number required.}
+
+\item{cond_var}{either \code{1} or \code{2}; \code{cond_var = 1} conditions on the first
+variable, \code{cond_var = 2} on the second.}
+
+\item{inverse}{whether to compute the h-function or its inverse.}
 }
 \value{
 An object of class \code{bicop_dist}.
+
+A numeric vector containing the value of the (inverse) h-function.
 }
 \description{
 A bivariate copula distribution is specified by:
@@ -49,26 +59,44 @@ The implemented families listed below. Partial matching is activated, i.e.,
 \item{\code{bb6}}{BB6 copula.}
 \item{\code{bb7}}{BB7 copula.}
 \item{\code{bb8}}{BB8 copula.}
-\item{\code{tll0}}{local constant transformation kernel, should only be used with
+\item{\code{tll}}{transformation kernel local likelihood, should only be used with
 data, see \code{bicop()}.}
 }
+
+H-functions (\code{hbicop()}) are conditional distributions derived from a copula.
+If \eqn{C(u, v) = P(U \le u, V \le v)} is a copula, then
+\deqn{h_1(v | u) = P(U \le u | V = v),}
+\deqn{h_2(u | v) = P(V \le v | U = u).}
 }
 \note{
 The evaluation functions can optionally be used with a \code{bicop_dist} object,
 e.g., \code{dbicop(c(0.1, 0.5), bicop_dist("indep"))}.
 }
 \examples{
+## bicop_dist objects
 bicop_dist("gaussian", 0, 0.5)
 str(bicop_dist("gauss", 0, 0.5))
-
 bicop <- bicop_dist("clayton", 90, 3)
-# evaluate the copula density
+
+## evaluate the copula density
 dbicop(c(0.1, 0.2), "clay", 90, 3)
 dbicop(c(0.1, 0.2), bicop)
-# evaluate the copula cdf
+
+## evaluate the copula cdf
 pbicop(c(0.1, 0.2), "clay", 90, 3)
-# simulate data
+
+## simulate data
 plot(rbicop(500, "clay", 90, 3))
 plot(rbicop(500, bicop))
 
+## h-functions
+joe_cop <- bicop_dist("joe", 0, 3)
+# h_1(0.2 | 0.1)
+hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5))
+# h_2(0.1 | 0.2)
+hbicop(c(0.1, 0.2), 2, joe_cop)
+# h_1^{-1}(0.2 | 0.1)
+hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5), inverse = TRUE)
+# h_2^{-1}(0.1 | 0.2)
+hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
 }
