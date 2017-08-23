@@ -19,13 +19,19 @@ init:
         Import-Module '..\appveyor-tool.ps1'
 
 install:
+  - choco upgrade cmake # so Boost 1.63 is supported
+  - set path=C:\Program Files\CMake\bin;%path%
   - ps: Bootstrap
-  - ps: wget "http://ab-initio.mit.edu/nlopt/$env:NLOPT_ZIP" -OutFile nlopt.zip
-  - 7z x nlopt.zip -o"C:\projects\nlopt" -y > nul
-  - lib /def:C:\projects\nlopt\libnlopt-0.def /machine:%platform%
-  - move libnlopt-0.lib C:\projects\nlopt\
-  - move libnlopt-0.exp C:\projects\nlopt\
-  - setx NLOPT_HOME "C:\projects\nlopt\"
+  - git clone git://github.com/stevengj/nlopt
+  - cd nlopt
+  - sed -i '26i#define NLOPT_DLL' .\api\nlopt.h
+  - sed -i '27i#define NLOPT_DLL_EXPORT' .\api\nlopt.h
+  - sed -i '$i\#undef NLOPT_DLL' .\api\nlopt.h
+  - sed -i '$i\#undef NLOPT_DLL_EXPORT' .\api\nlopt.h
+  - cmake -DCMAKE_GENERATOR_PLATFORM="%CMAKE_GEN_PLAT%" -DCMAKE_INSTALL_PREFIX=C:\projects\nlopt-install -DCMAKE_INSTALL_BINDIR=c:\projects\nlopt-install\lib .
+  - cmake --build . --config Release --target install
+  - cd ..
+  - setx NLOPT_HOME "C:\projects\nlopt-install\"
 
 build_script:
   - set path=%path%;C:\projects\nlopt
