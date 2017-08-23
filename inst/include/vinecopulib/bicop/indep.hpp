@@ -50,7 +50,7 @@ namespace vinecopulib
         );
 
         Eigen::MatrixXd tau_to_parameters(const double &);
-        double parameters_to_tau(const Eigen::VectorXd &);
+        double parameters_to_tau(const Eigen::MatrixXd &);
 
         void flip();
 

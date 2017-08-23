@@ -69,7 +69,7 @@ namespace vinecopulib
         return parameters;
     }
 
-    double ClaytonBicop::parameters_to_tau(const Eigen::VectorXd& parameters)
+    double ClaytonBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
     {
         return parameters(0) / (2 + std::fabs(parameters(0)));
     }

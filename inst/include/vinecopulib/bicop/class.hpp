@@ -9,6 +9,7 @@
 #include <vinecopulib/bicop/abstract.hpp>
 #include <vinecopulib/bicop/fit_controls.hpp>
 #include <vinecopulib/misc/tools_interface.hpp>
+#include <vinecopulib/misc/tools_serialization.hpp>
 
 namespace vinecopulib {
     //! @brief A class for bivariate copula models.
@@ -24,6 +25,12 @@ namespace vinecopulib {
               const Eigen::MatrixXd& parameters = Eigen::MatrixXd());
         Bicop(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
               FitControlsBicop controls = FitControlsBicop());
+        Bicop(const char *filename);
+        Bicop(boost::property_tree::ptree input);
+
+        // Serialize
+        boost::property_tree::ptree to_ptree();
+        void to_json(const char *filename);
 
         // Getters and setters
         BicopFamily get_family() const;
@@ -57,7 +64,7 @@ namespace vinecopulib {
         // Misc
         std::string str();
         double calculate_npars();
-        double parameters_to_tau(const Eigen::VectorXd& parameters);
+        double parameters_to_tau(const Eigen::MatrixXd& parameters);
         Eigen::MatrixXd tau_to_parameters(const double& tau);
         void flip();
 

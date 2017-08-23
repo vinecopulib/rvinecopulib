@@ -28,7 +28,20 @@ namespace vinecopulib
             check_proximity_condition();
         }
     }
-    
+
+    //! extract matrix_(row, col)
+    //!
+    //! \param row
+    //! \param col
+    //! \return matrix_(row, col)
+    size_t RVineMatrix::get_element(size_t row, size_t col) const
+    {
+        if (row >= d_ || col >= d_) {
+            throw std::runtime_error("row and col should be < d");
+        }
+        return matrix_(row, col);
+    }
+
     //! extract the matrix.
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> 
     RVineMatrix::get_matrix() const
@@ -66,6 +79,41 @@ namespace vinecopulib
         }
 
         return vine_matrix;
+    }
+
+    //! check whether an edge belong to the implied structure
+    //!
+    //! @param conditioned the conditioned set.
+    //! @param conditioning the conditioning set.
+    bool RVineMatrix::belongs_to_structure(const std::vector<size_t> conditioned,
+                                           const std::vector<size_t> conditioning) {
+        if (conditioned.size() != 2) {
+            throw std::runtime_error("conditioned should have size 2 ");
+        }
+
+        size_t tree = conditioning.size();
+        std::vector<size_t> conditioning_mat(tree);
+        std::vector<size_t> conditioned_mat(2);
+        if (tree + 2 <= d_) {
+            for (size_t i = 0; i < d_ - tree - 1; ++i) {
+                conditioned_mat = {matrix_(d_ - 1 - i, i), matrix_(tree, i)};
+                if (conditioned == conditioned_mat) {
+                    // conditioned sets equal, need to check conditioning set
+                    if (tree == 0) {
+                        return true;  // conditioning set is empty for tree == 0
+                    }
+                    auto cond = matrix_.col(i).head(tree);
+                    Eigen::Matrix<size_t, Eigen::Dynamic, 1>::Map(
+                        &conditioning_mat[0], tree) = cond;
+                    if (tools_stl::is_same_set(conditioning, conditioning_mat)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        // edge is not contained in the structure implied by the matrix
+        return false;
     }
 
 
