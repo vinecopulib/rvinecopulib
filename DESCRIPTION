@@ -19,8 +19,7 @@ Imports:
     stats,
     utils
 Suggests:
-    testthat,
-    VineCopula
+    testthat
 LinkingTo: 
     Rcpp,
     RcppEigen,

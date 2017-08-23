@@ -31,10 +31,10 @@ install:
   - cmake -DCMAKE_GENERATOR_PLATFORM="%CMAKE_GEN_PLAT%" -DCMAKE_INSTALL_PREFIX=C:\projects\nlopt-install -DCMAKE_INSTALL_BINDIR=c:\projects\nlopt-install\lib .
   - cmake --build . --config Release --target install
   - cd ..
+  - set path=%path%;C:\projects\nlopt-install\lib
   - setx NLOPT_HOME "C:\projects\nlopt-install\"
 
 build_script:
-  - set path=%path%;C:\projects\nlopt
   - travis-tool.sh install_deps
 
 test_script:
