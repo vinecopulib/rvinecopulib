@@ -33,7 +33,7 @@ install:
   - cd ..
   - cd rvinecopulib
   - set path=%path%;C:\projects\nlopt-install\lib
-  - set NLOPT_HOME "C:/projects/nlopt-install"
+  - set NLOPT_HOME=C:/projects/nlopt-install
 
 build_script:
   - travis-tool.sh install_deps
