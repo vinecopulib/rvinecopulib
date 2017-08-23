@@ -14,19 +14,19 @@ This package is the [R](https://cran.r-project.org/) API to the C++ library
 [vinecopulib](https://github.com/vinecopulib/vinecopulib), a C++ library for 
 vine copula models based on
 * [Boost](http://eigen.tuxfamily.org/index.php?title=Main_Page), 
-* [Eigen](http://www.boost.org/)m
+* [Eigen](http://www.boost.org/),
 * [NLopt](http://ab-initio.mit.edu/wiki/index.php/NLopt). 
 
 It provides high-perfomance implementations of the core features of the popular
-[vinecopula R library](https://github.com/tnagler/vinecopula), in particular
+[VineCopula R library](https://github.com/tnagler/VineCopula), in particular
 inference algorithms for both vine copula and bivariate copula models.
-Advantages over vinecopula are  
+Advantages over VineCopula are  
 * interfaces to both both R and Python (coming soon)
 * a sleaker and more modern API,
 * shorter runtimes, especially in high dimensions,
 * nonparametric and multi-parameter families.
 
-As vinecopula, the package is primarily made for the statistical analysis of 
+As VineCopula, the package is primarily made for the statistical analysis of 
 **vine copula models**. The package includes tools for parameter estimation, 
 model selection, simulation, and visualization. Tools for estimation, selection 
 and exploratory data analysis of **bivariate copula** models are also provided. 
