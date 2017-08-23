@@ -96,11 +96,11 @@ hypercube.
     Kendall's tau (`par_method = "itau"`, only available for one-parameter 
     families) for parametric families, and using local-likelihood 
     approximations of order zero/one/two for nonparametric models 
-    (`par_method="constant"`/`par_method="linear"`/`par_method="quadratic"`). 
+    (`nonpar_method="constant"`/`nonpar_method="linear"`/`nonpar_method="quadratic"`). 
     If `family_set` is a vector of families, then the family is selected using
     `selcrit="loglik"`, `selcrit="aic"` or `selcrit="bic"`. The function 
     returns an object of classes `bicop` and `bicop_dist`.
-    The class has the `bicop` has the following following methods:
+    The class `bicop` has the following following methods:
     
      * `print`: a more comprehensive overview of the bivariate copula model 
        with fit statistics. 
