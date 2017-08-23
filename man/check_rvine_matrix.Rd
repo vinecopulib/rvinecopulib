@@ -10,7 +10,8 @@ check_rvine_matrix(matrix)
 \item{matrix}{a quadratic matrix, see \emph{Details}.}
 }
 \value{
-Throws an error if \code{matrix`` is not a vlaid R-vine matrix, otherwise}TRUE` is returned invisibly.
+Throws an error if \code{matrix} is not a valid R-vine matrix, otherwise
+\code{TRUE} is returned invisibly.
 }
 \description{
 R-vine matrices are compressed representations of the vine structure. It

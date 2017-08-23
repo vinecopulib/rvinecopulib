@@ -2,8 +2,8 @@ context("Fitting vine copula models")
 
 set.seed(5)
 u <- sapply(1:5, function(i) runif(30))
-fit <- vinecop_select(u, "nonpar")
-fit_no_data <- vinecop_select(u, "nonpar", keep_data = FALSE)
+fit <- vinecop(u, "nonpar")
+fit_no_data <- vinecop(u, "nonpar", keep_data = FALSE)
 
 test_that("returns proper 'bicop' object", {
     expect_s3_class(fit, "vinecop")

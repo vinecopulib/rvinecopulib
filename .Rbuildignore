@@ -11,3 +11,4 @@
 \.so$
 \.dll$
 ^src/update_vinecopulib\.sh$
+^docs$
