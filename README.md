@@ -21,7 +21,6 @@ It provides high-perfomance implementations of the core features of the popular
 [VineCopula R library](https://github.com/tnagler/VineCopula), in particular
 inference algorithms for both vine copula and bivariate copula models.
 Advantages over VineCopula are  
-* interfaces to both both R and Python (coming soon)
 * a sleaker and more modern API,
 * shorter runtimes, especially in high dimensions,
 * nonparametric and multi-parameter families.
