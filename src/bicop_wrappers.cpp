@@ -29,8 +29,8 @@ BicopFamily to_cpp_family(const std::string& fam)
         bicop_fam = BicopFamily::bb7;
     } else if (fam == "bb8") {
         bicop_fam = BicopFamily::bb8;
-    } else if (fam == "tll0") {
-        bicop_fam = BicopFamily::tll0;
+    } else if (fam == "tll") {
+        bicop_fam = BicopFamily::tll;
     } else {
         throw std::runtime_error("family not implemented");
     }
@@ -63,8 +63,8 @@ std::string to_r_family(const BicopFamily& fam)
         bicop_fam = "bb7";
     } else if (fam == BicopFamily::bb8) {
         bicop_fam = "bb8";
-    } else if (fam == BicopFamily::tll0) {
-        bicop_fam = "tll0";
+    } else if (fam == BicopFamily::tll) {
+        bicop_fam = "tll";
     } else {
         throw std::runtime_error("family not implemented");
     }
@@ -113,7 +113,8 @@ void bicop_check_cpp(const Rcpp::List& bicop_r)
 Rcpp::List bicop_select_cpp(
         Eigen::MatrixXd& data,
         std::vector<std::string> family_set,
-        std::string method,
+        std::string par_method,
+        std::string nonpar_method,
         double mult,
         std::string selcrit,
         bool presel
@@ -125,7 +126,8 @@ Rcpp::List bicop_select_cpp(
     }
     FitControlsBicop controls(
             fam_set,
-            method,
+            par_method,
+            nonpar_method,
             mult,
             selcrit,
             presel

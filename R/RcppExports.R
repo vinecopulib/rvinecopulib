@@ -5,8 +5,8 @@ bicop_check_cpp <- function(bicop_r) {
     invisible(.Call('_rvinecopulib_bicop_check_cpp', PACKAGE = 'rvinecopulib', bicop_r))
 }
 
-bicop_select_cpp <- function(data, family_set, method, mult, selcrit, presel) {
-    .Call('_rvinecopulib_bicop_select_cpp', PACKAGE = 'rvinecopulib', data, family_set, method, mult, selcrit, presel)
+bicop_select_cpp <- function(data, family_set, par_method, nonpar_method, mult, selcrit, presel) {
+    .Call('_rvinecopulib_bicop_select_cpp', PACKAGE = 'rvinecopulib', data, family_set, par_method, nonpar_method, mult, selcrit, presel)
 }
 
 bicop_pdf_cpp <- function(u, bicop_r) {
@@ -89,7 +89,7 @@ vinecop_bic_cpp <- function(u, vinecop_r) {
     .Call('_rvinecopulib_vinecop_bic_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
 
-vinecop_select_cpp <- function(data, matrix, family_set, method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families) {
-    .Call('_rvinecopulib_vinecop_select_cpp', PACKAGE = 'rvinecopulib', data, matrix, family_set, method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families)
+vinecop_select_cpp <- function(data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families) {
+    .Call('_rvinecopulib_vinecop_select_cpp', PACKAGE = 'rvinecopulib', data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families)
 }
 
