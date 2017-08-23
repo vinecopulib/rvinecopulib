@@ -22,6 +22,7 @@ install:
   - choco upgrade cmake # so Boost 1.63 is supported
   - set path=C:\Program Files\CMake\bin;%path%
   - ps: Bootstrap
+  - cd ..
   - git clone git://github.com/stevengj/nlopt
   - cd nlopt
   - sed -i '26i#define NLOPT_DLL' .\api\nlopt.h
