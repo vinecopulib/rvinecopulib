@@ -4,9 +4,9 @@
 \alias{vinecop_select}
 \title{Fit vine copula models}
 \usage{
-vinecop_select(data, family_set = "all", matrix = NA, method = "mle",
-  mult = 1, selcrit = "bic", presel = TRUE, trunc_lvl = Inf,
-  tree_crit = "tau", threshold = 0, keep_data = TRUE)
+vinecop_select(data, family_set = "all", matrix = NA, par_method = "mle",
+  nonpar_method = "constant", mult = 1, selcrit = "bic", presel = TRUE,
+  trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = TRUE)
 }
 \arguments{
 \item{data}{a matrix or data.frame (copula data should have approximately
@@ -19,9 +19,14 @@ see \emph{Details} for additional options.}
 \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}), or \code{NA} for
 automatic structure selection (default).}
 
-\item{method}{the estimation method for parametric models, either \code{"mle"} for
-maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
+\item{par_method}{the estimation method for parametric models, either \code{"mle"}
+for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
 available for one-parameter families and \code{"t"}.}
+
+\item{nonpar_method}{the estimation method for nonparametric models, either
+\code{"constant"} for the standard transformation estimator, or
+\code{"linear"}/\code{"quadratic"} for the local-likelihood approximations of order
+one/two.}
 
 \item{mult}{multiplier for the smoothing parameters of nonparametric
 families. Values larger than 1 make the estimate more smooth, values less
