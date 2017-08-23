@@ -32,17 +32,17 @@
 #'
 #' @examples
 #' u <- sapply(1:3, function(i) runif(50))
-#' fit <- vinecop_select(u, "par")
+#' fit <- vinecop(u, "par")
 #' fit
 #' summary(fit)
 #' str(fit, 3)
 #' 
 #' @export
-vinecop_select <- function(data, family_set = "all", matrix = NA, 
-                           par_method = "mle", nonpar_method = "constant",
-                           mult = 1, selcrit = "bic", presel = TRUE, 
-                           trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
-                           keep_data = TRUE) {
+vinecop <- function(data, family_set = "all", matrix = NA, 
+                    par_method = "mle", nonpar_method = "constant",
+                    mult = 1, selcrit = "bic", presel = TRUE, 
+                    trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
+                    keep_data = TRUE) {
     
     ## family_set can only use standard family names in cpp
     family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
@@ -111,7 +111,7 @@ vinecop_select <- function(data, family_set = "all", matrix = NA,
 #'
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop_select(u, "par")
+#' fit <- vinecop(u, "par")
 #' all.equal(predict(fit, u), fitted(fit))
 #' logLik(fit)
 predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4, ...) {
@@ -179,5 +179,5 @@ vinecop_fit_info <- function(vc) {
         npars  = attr(ll, "df"),
         AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
         BIC    = -2 * ll[1] + log(vc$nobs) * attr(ll, "df")
-     )
+    )
 }

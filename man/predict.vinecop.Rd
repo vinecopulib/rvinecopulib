@@ -29,7 +29,7 @@ Predictions and fitted values for a vine copula model
 }
 \examples{
 u <- sapply(1:5, function(i) runif(50))
-fit <- vinecop_select(u, "par")
+fit <- vinecop(u, "par")
 all.equal(predict(fit, u), fitted(fit))
 logLik(fit)
 }
