@@ -26,7 +26,7 @@ namespace vinecopulib {
         bb6,           ///< BB6 copula
         bb7,           ///< BB7 copula
         bb8,           ///< BB8 copula
-        tll           ///< Transformation local-constant likelihood kernel estimator
+        tll           ///< Transformation local likelihood kernel estimator
     };
 
     std::string get_family_name(BicopFamily family);

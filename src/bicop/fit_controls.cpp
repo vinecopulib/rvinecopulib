@@ -6,7 +6,7 @@
 
 #include <vinecopulib/bicop/fit_controls.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
-#include <exception>
+#include <stdexcept>
 
 //! Tools for bivariate and vine copula modeling
 namespace vinecopulib
@@ -16,6 +16,9 @@ namespace vinecopulib
     //!     all families are included).
     //! @param parametric_method the fit method for parametric families;
     //!     possible choices: `"mle"`, `"itau"`.
+    //! @param nonparametric_method the fit method for the local-likelihood
+    //!     nonparametric family (TLLs); possible choices: `"constant"`,
+    //!     `"linear"`, `"quadratic"`.
     //! @param nonparametric_mult a factor with which the smoothing parameters
     //!     are multiplied.
     //! @param selection_criterion the selection criterion (`"aic"` or `"bic"`).

@@ -5,7 +5,7 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/bicop/class.hpp>
-#include <vinecopulib/bicop/tools_bicopselect.hpp>
+#include <vinecopulib/bicop/tools_select.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
 
@@ -54,7 +54,7 @@ namespace vinecopulib
             ) {}
 
     //! creates from a JSON file
-    //! @filename the name of the JSON file to read (see to_ptree() for the
+    //! @param filename the name of the JSON file to read (see to_ptree() for the
     //! structure of the file).
     Bicop::Bicop(const char *filename) :
             Bicop(tools_serialization::json_to_ptree(filename)) {}
@@ -462,7 +462,7 @@ namespace vinecopulib
 
         // When using rotations, add only the ones that yield the appropriate
         // association direction.
-        auto tau = tools_stats::pairwise_ktau(data);
+        auto tau = tools_stats::pairwise_tau(data);
         std::vector<int> which_rotations;
         if (tau > 0) {
             which_rotations = {0, 180};

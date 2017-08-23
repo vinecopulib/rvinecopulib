@@ -6,7 +6,7 @@
 
 #include <vinecopulib/misc/tools_interpolation.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
-#include <exception>
+#include <stdexcept>
 #include <iostream>
 
 namespace vinecopulib {

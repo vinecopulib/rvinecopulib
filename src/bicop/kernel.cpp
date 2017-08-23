@@ -64,7 +64,7 @@ namespace vinecopulib
         set_parameters(parameters);
         Eigen::Matrix<double, Eigen::Dynamic, 2> U = tools_stats::ghalton(1e3, 2);
         U.col(1) = hinv1(U);
-        return tools_stats::pairwise_ktau(U);
+        return tools_stats::pairwise_tau(U);
     }
 
     double KernelBicop::calculate_npars()

@@ -8,7 +8,7 @@
 
 #include <vinecopulib/bicop/class.hpp>
 #include <vinecopulib/vinecop/rvine_matrix.hpp>
-#include <vinecopulib/vinecop/tools_structselect.hpp>
+#include <vinecopulib/vinecop/tools_select.hpp>
 
 namespace vinecopulib
 {
@@ -29,7 +29,7 @@ namespace vinecopulib
                 bool check_matrix = true);
         Vinecop(const Eigen::MatrixXd& data,
                 FitControlsVinecop controls = FitControlsVinecop());
-        Vinecop(const Eigen::MatrixXd& data, 
+        Vinecop(const Eigen::MatrixXd& data,
                 const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
                 FitControlsVinecop controls = FitControlsVinecop(),
                 bool check_matrix = true);
@@ -45,7 +45,7 @@ namespace vinecopulib
                         FitControlsVinecop controls = FitControlsVinecop());
         void select_families(const Eigen::MatrixXd& data,
                              FitControlsVinecop controls = FitControlsVinecop());
-
+        
         // Getters for a single pair copula
         Bicop get_pair_copula(size_t tree, size_t edge) const;
         BicopFamily get_family(size_t tree, size_t edge) const;
@@ -73,11 +73,13 @@ namespace vinecopulib
 
         // Misc methods
         static std::vector<std::vector<Bicop>> make_pair_copula_store(size_t d);
+        
     private:
         size_t d_;
         RVineMatrix vine_matrix_;
         std::vector<std::vector<Bicop>> pair_copulas_;
-        void update_vinecop(std::vector<tools_structselect::VineTree>& trees);
+        
+        void check_data_dim(const Eigen::MatrixXd& data);
         Eigen::Matrix<size_t, Eigen::Dynamic, 1> inverse_permutation(const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& order);
     };
 

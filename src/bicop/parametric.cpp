@@ -72,7 +72,7 @@ namespace vinecopulib
             }
 
             auto temp_data = data;
-            double tau = tools_stats::pairwise_ktau(temp_data);
+            double tau = tools_stats::pairwise_tau(temp_data);
             auto newpar = get_start_parameters(tau);
             if (npars > 0) {
                 // Create optimizer

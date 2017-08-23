@@ -1,9 +1,6 @@
 #!/bin/bash
 
 git clone https://github.com/vinecopulib/vinecopulib
-cd vinecopulib
-git checkout tlls
-cd ..
 
 rm -rf bicop
 rm -rf misc

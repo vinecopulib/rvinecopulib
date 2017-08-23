@@ -27,15 +27,22 @@ namespace vinecopulib
         Eigen::VectorXd gaussian_kernel_2d(
             const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
 
-        Eigen::Matrix2d bandwidth(
+        Eigen::Matrix2d select_bandwidth(
                 const Eigen::Matrix<double, Eigen::Dynamic, 2>& x,
                 std::string method);
 
-        Eigen::VectorXd ftll(
+        Eigen::MatrixXd fit_local_likelihood(
                 const Eigen::Matrix<double, Eigen::Dynamic, 2>& x,
                 const Eigen::Matrix<double, Eigen::Dynamic, 2>& x_data,
                 const Eigen::Matrix2d& B,
                 std::string method);
+        double calculate_infl(const size_t& n, 
+                              const double& f0, 
+                              const Eigen::Vector2d& b,
+                              const Eigen::Matrix2d& B,
+                              const double& det_irB,
+                              const Eigen::Matrix2d& S,
+                              const std::string& method);
 
         void fit(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
                  std::string method, double mult);

@@ -4,7 +4,7 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <exception>
+#include <stdexcept>
 #include <cmath>
 
 #include <vinecopulib/bicop/abstract.hpp>

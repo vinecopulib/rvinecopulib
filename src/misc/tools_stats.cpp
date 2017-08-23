@@ -112,16 +112,16 @@ namespace tools_stats {
     //! @{
 
     //! calculates the pairwise Kendall's \f$ \tau \f$.
-    double pairwise_ktau(Eigen::Matrix<double, Eigen::Dynamic, 2>& x)
+    double pairwise_tau(Eigen::Matrix<double, Eigen::Dynamic, 2>& x)
     {
         double tau;
         int n = (int) x.rows();
         int two = 2;
-        ktau_matrix(x.data(), &two, &n, &tau);
+        ktau_matrix_c(x.data(), &two, &n, &tau);
         return tau;
     }
 
-    //! calculates the pairwise correlation.
+    //! calculates the pairwise Pearson correlation.
     double pairwise_cor(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x)
     {
         double rho;
@@ -132,6 +132,18 @@ namespace tools_stats {
         return rho;
     }
 
+    //! calculates the pairwise Spearman's \f$ \rho \f$.
+    double pairwise_rho(Eigen::Matrix<double, Eigen::Dynamic, 2> x)
+    {
+        x = to_pseudo_obs(x);
+        double rho;
+        auto z = x.rowwise() - x.colwise().mean();
+        Eigen::MatrixXd sigma = z.adjoint() * z;
+        rho = sigma(1,0) / sqrt(sigma(0,0) * sigma(1,1));
+
+        return rho;
+    }
+    
     //! calculates the pair-wise Hoeffding's D.
     double pairwise_hoeffd(Eigen::Matrix<double, Eigen::Dynamic, 2> x)
     {
@@ -170,7 +182,42 @@ namespace tools_stats {
     }
 
     //! @}
-
+     
+    //! calculates a matrix of pairwise dependence measures.
+    //! @param x an \f$ n \times d \f$ matrix of observations.
+    //! @param measure either `"cor"` for Pearson correlation, `"tau"` for
+    //!     Kendall's \f$ \tau \f$, `"rho"` for Spearman's  \f$ \rho \f$,
+    //!     or `"hoeffd"` for Hoeffding's \f$ D \f$.
+    //! @return a quadratic matrix of pairwise dependence measures.
+    Eigen::MatrixXd dependence_matrix(const Eigen::MatrixXd& x, 
+                                      const std::string& measure)
+    {
+        int n = x.rows();
+        int d = x.cols();
+        Eigen::MatrixXd mat(d, d);
+        mat.diagonal() = Eigen::VectorXd::Constant(d, 1.0);
+        Eigen::Matrix<double, Eigen::Dynamic, 2> pair_data(n, 2);
+        for (int i = 1; i < d; ++i) {
+            for (int j = 0; j < i; ++j) {
+                pair_data.col(0) = x.col(i);
+                pair_data.col(1) = x.col(j);
+                if (measure == "tau") {
+                    mat(i, j) = pairwise_tau(pair_data);
+                } else if (measure == "cor") {
+                    mat(i, j) = pairwise_cor(pair_data);
+                } else if (measure == "rho") {
+                    mat(i, j) = pairwise_rho(pair_data);
+                } else if (measure == "hoeffd") {
+                    mat(i, j) = pairwise_hoeffd(pair_data);
+                } else {
+                    throw std::runtime_error("measure not implemented");
+                }
+                mat(j, i) = mat(i, j);
+            }
+        }
+        
+        return mat;
+    }
 
     //! Maximal dimension allowed for generalized Halton quasi Monte Carlo.
     #define ghalton_max_dim 360
