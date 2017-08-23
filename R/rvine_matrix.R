@@ -51,7 +51,7 @@
 #'
 #' @param matrix a quadratic matrix, see *Details*.
 #'
-#' @return Throws an error if `matrix`` is not a vlaid R-vine matrix, otherwise
+#' @return Throws an error if `matrix` is not a valid R-vine matrix, otherwise
 #'     `TRUE` is returned invisibly.
 #' @export
 #'
