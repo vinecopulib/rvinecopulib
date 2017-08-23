@@ -130,10 +130,9 @@ hypercube.
     input to pre-specify the vine structure. `tree_crit` describes the 
     criterion for tree selection, one of `"tau"`, `"rho"`, `"hoeffd"` for 
     Kendall's tau, Spearman's rho, and Hoeffding's D, respectively.
-    Additionally, `threshold`, and `trunc_lvl`, `trunc_lvl_sel` 
-    allow to threshold the `tree_crit` and `trunc_lvl` to truncate the level of 
-    the vine copula, with `threshold_sel` and `trunc_lvl_sel` to automatically 
-    select both parameters. The function 
+    Additionally, `threshold` allows to threshold the `tree_crit` and 
+    `trunc_lvl` to truncate the vine copula, with `threshold_sel` and 
+    `trunc_lvl_sel` to automatically select both parameters. The function 
     returns an object of classes `vinecop` and `vinecop_dist`.
     The class has the `vinecop` has the following following methods:
     
