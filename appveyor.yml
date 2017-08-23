@@ -19,7 +19,6 @@ init:
         Import-Module '..\appveyor-tool.ps1'
 
 install:
-  - choco upgrade cmake # so Boost 1.63 is supported
   - set path=C:\Program Files\CMake\bin;%path%
   - ps: Bootstrap
   - cd ..
