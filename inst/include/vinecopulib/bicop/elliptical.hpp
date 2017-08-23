@@ -30,6 +30,6 @@ namespace vinecopulib
         );
 
         // link between Kendall's tau and the par_bicop parameter
-        double parameters_to_tau(const Eigen::VectorXd& parameters);
+        double parameters_to_tau(const Eigen::MatrixXd& parameters);
     };
 }

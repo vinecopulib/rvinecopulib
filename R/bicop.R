@@ -6,9 +6,13 @@
 #'  uniform margins).
 #' @param family_set a character vector of families; as in `bicop_dist()`,
 #'   see *Details* for additional options.
-#' @param method the estimation method for parametric models, either `"mle"` for
-#'   maximum likelihood or `"itau"` for inversion of Kendall's tau (only 
+#' @param par_method the estimation method for parametric models, either `"mle"` 
+#'   for maximum likelihood or `"itau"` for inversion of Kendall's tau (only 
 #'   available for one-parameter families and `"t"`.
+#' @param nonpar_method the estimation method for nonparametric models, either 
+#'   `"constant"` for the standard transformation estimator, or 
+#'   `"linear"`/`"quadratic"` for the local-likelihood approximations of order 
+#'   one/two.
 #' @param mult multiplier for the smoothing parameters of nonparametric 
 #'   families. Values larger than 1 make the estimate more smooth, values less
 #'   than 1 less smooth.
@@ -44,9 +48,9 @@
 #' fit1
 #' 
 #' @export
-bicop <- function(data, family_set = "all", method = "mle", mult = 1, 
-                  selcrit = "bic", presel = TRUE, keep_data = TRUE) {
-    
+bicop <- function(data, family_set = "all", par_method = "mle",
+                  nonpar_method = "quadratic", mult = 1, selcrit = "bic", 
+                  presel = TRUE, keep_data = TRUE) {
     # family_set can only use standard family names in cpp
     family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
     family_set <- expand_family_set(family_set)
@@ -56,7 +60,8 @@ bicop <- function(data, family_set = "all", method = "mle", mult = 1,
     bicop <- bicop_select_cpp(
         data = data, 
         family_set = family_set,
-        method = method,
+        par_method = par_method,
+        nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
         presel = presel
@@ -68,7 +73,8 @@ bicop <- function(data, family_set = "all", method = "mle", mult = 1,
     }
     bicop$controls <- list(
         family_set = family_set,
-        method = method,
+        par_method = par_method,
+        nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
         presel = presel
@@ -130,6 +136,7 @@ fitted.bicop <- function(object, what = "pdf", ...) {
     )
 }
 
+#' @importFrom stats logLik
 logLik.bicop <- function(object, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")

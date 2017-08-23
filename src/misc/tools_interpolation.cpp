@@ -6,7 +6,7 @@
 
 #include <vinecopulib/misc/tools_interpolation.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
-#include <exception>
+#include <stdexcept>
 #include <iostream>
 
 namespace vinecopulib {
@@ -18,10 +18,10 @@ namespace tools_interpolation {
     //! dimensions.
     //! @param values a dxd matrix of copula density values evaluated at
     //! (grid_points_i, grid_points_j).
-    InterpolationGrid::InterpolationGrid(
-        const Eigen::VectorXd& grid_points, 
-        const Eigen::MatrixXd& values
-    )
+    //! @param norm_times how many times the normalization routine should run.
+    InterpolationGrid::InterpolationGrid(const Eigen::VectorXd& grid_points, 
+                                         const Eigen::MatrixXd& values,
+                                         int norm_times)
     {
         if (values.cols() != values.rows()) {
             throw std::runtime_error("values must be a quadratic matrix");
@@ -33,6 +33,7 @@ namespace tools_interpolation {
 
         grid_points_ = grid_points;
         values_ = values;
+        normalize_margins(norm_times);
     }
 
     Eigen::MatrixXd InterpolationGrid::get_values() const
@@ -40,7 +41,8 @@ namespace tools_interpolation {
         return values_;
     }
 
-    void InterpolationGrid::set_values(const Eigen::MatrixXd& values)
+    void InterpolationGrid::set_values(const Eigen::MatrixXd& values,
+                                       int norm_times)
     {
         if (values.size() != values_.size()) {
             if (values.rows() != values_.rows()) {
@@ -62,11 +64,28 @@ namespace tools_interpolation {
         }
 
         values_ = values;
+        normalize_margins(norm_times);
     }
 
     void InterpolationGrid::flip()
     {
         values_.transposeInPlace();
+    }
+    
+    //! renormalizes the estimate to uniform margins
+    //! 
+    //! @param times how many times the normalization routine should run.
+    void InterpolationGrid::normalize_margins(int times)
+    {
+        size_t m = grid_points_.size();        
+        for(int k = 0; k < times; ++k) {
+            for (size_t i = 0; i < m; ++i) {
+                values_.row(i) /= int_on_grid(1.0, values_.row(i), grid_points_);
+            }
+            for (size_t j = 0; j < m; ++j) {
+                values_.col(j) /= int_on_grid(1.0, values_.col(j), grid_points_);
+            }
+        }
     }
 
     //! Interpolation in two dimensions

@@ -38,7 +38,8 @@
 #' str(fit, 3)
 #' 
 #' @export
-vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle", 
+vinecop_select <- function(data, family_set = "all", matrix = NA, 
+                           par_method = "mle", nonpar_method = "constant",
                            mult = 1, selcrit = "bic", presel = TRUE, 
                            trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
                            keep_data = TRUE) {
@@ -57,7 +58,8 @@ vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle"
         data = data, 
         matrix = matrix,
         family_set = family_set,
-        method = method,
+        par_method = par_method,
+        nonpar_method = nonpar_method,
         mult = mult,
         selection_criterion = selcrit,
         preselect_families = presel,
@@ -82,7 +84,8 @@ vinecop_select <- function(data, family_set = "all", matrix = NA, method = "mle"
     }
     vinecop$controls <- list(
         family_set = family_set,
-        method = method,
+        par_method = par_method,
+        nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
         presel = presel,

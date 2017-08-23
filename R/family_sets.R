@@ -23,7 +23,7 @@ family_set_parametric <- c(
 )
 
 family_set_nonparametric <- c(
-    "indep", "tll0"
+    "indep", "tll"
 )
 
 family_set_all <- unique(

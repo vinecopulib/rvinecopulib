@@ -16,6 +16,8 @@ tau_to_par(family, tau)
 
 \item{parameters}{vector or matrix of copula parameters, not used when
 \code{family} is a \code{bicop_dist} object.}
+
+\item{tau}{Kendall's \eqn{\tau}.}
 }
 \description{
 Conversion between Kendall's tau and parameters

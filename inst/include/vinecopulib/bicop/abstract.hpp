@@ -23,6 +23,9 @@ namespace vinecopulib
     {
     friend class Bicop;
     
+    public:
+        virtual ~AbstractBicop() = 0;
+        
     protected:
         // Factories
         static std::shared_ptr<AbstractBicop> create(
@@ -40,7 +43,7 @@ namespace vinecopulib
         virtual void fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
                 std::string method, double mult) = 0;
         virtual double calculate_npars() = 0;
-        virtual double parameters_to_tau(const Eigen::VectorXd& parameters) = 0;
+        virtual double parameters_to_tau(const Eigen::MatrixXd& parameters) = 0;
         virtual Eigen::VectorXd pdf(
                 const Eigen::Matrix<double, Eigen::Dynamic, 2>& u) = 0;
         virtual Eigen::VectorXd cdf(
