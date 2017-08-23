@@ -136,6 +136,7 @@ fitted.bicop <- function(object, what = "pdf", ...) {
     )
 }
 
+#' @importFrom stats logLik
 logLik.bicop <- function(object, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")

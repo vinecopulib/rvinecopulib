@@ -178,6 +178,7 @@ par_to_tau <- function(family, rotation, parameters) {
 }
 
 #' @rdname par_to_tau
+#' @param tau Kendall's \eqn{\tau}.
 #' @export
 tau_to_par <- function(family, tau) {
     bicop <- args2bicop(family)
