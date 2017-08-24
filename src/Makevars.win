@@ -1,6 +1,6 @@
 CXX_STD      = CXX11
 PKG_CPPFLAGS = -I"$(NLOPT_HOME)$(R_ARCH)/include" -I"../inst/include"
-PKG_LIBS = -L"$(NLOPT_HOME)$(R_ARCH)/lib" -lnlopt
+PKG_LIBS = -L"$(NLOPT_HOME)$(R_ARCH)/lib" -lnlopt_cxx
 
 SOURCES_CPP = ./bicop/abstract.cpp	  ./bicop/bb7.cpp      ./bicop/elliptical.cpp  ./bicop/gumbel.cpp  ./bicop/parametric.cpp \
               ./bicop/archimedean.cpp ./bicop/bb8.cpp      ./bicop/family.cpp      ./bicop/indep.cpp   ./bicop/student.cpp \
