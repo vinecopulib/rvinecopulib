@@ -6,7 +6,7 @@
 
 #include <vinecopulib/bicop/fit_controls.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
-#include <exception>
+#include <stdexcept>
 
 //! Tools for bivariate and vine copula modeling
 namespace vinecopulib
@@ -16,6 +16,9 @@ namespace vinecopulib
     //!     all families are included).
     //! @param parametric_method the fit method for parametric families;
     //!     possible choices: `"mle"`, `"itau"`.
+    //! @param nonparametric_method the fit method for the local-likelihood
+    //!     nonparametric family (TLLs); possible choices: `"constant"`,
+    //!     `"linear"`, `"quadratic"`.
     //! @param nonparametric_mult a factor with which the smoothing parameters
     //!     are multiplied.
     //! @param selection_criterion the selection criterion (`"aic"` or `"bic"`).
@@ -23,12 +26,14 @@ namespace vinecopulib
     //!     based on symmetry properties of the data.
     FitControlsBicop::FitControlsBicop(std::vector<BicopFamily> family_set,
                                        std::string parametric_method,
+                                       std::string nonparametric_method,
                                        double nonparametric_mult,
                                        std::string selection_criterion,
                                        bool preselect_families)
     {
         set_family_set(family_set);
         set_parametric_method(parametric_method);
+        set_nonparametric_method(nonparametric_method);
         set_nonparametric_mult(nonparametric_mult);
         set_selection_criterion(selection_criterion);
         set_preselect_families(preselect_families);
@@ -42,11 +47,16 @@ namespace vinecopulib
         set_parametric_method(parametric_method);
     }
 
+    //! @param nonparametric_method the fit method for the local-likelihood
+    //!     nonparametric family (TLLs); possible choices: `"constant"`,
+    //!     `"linear"`, `"quadratic"`.
     //! @param nonparametric_mult a factor with which the smoothing parameters
     //!     are multiplied.
-    FitControlsBicop::FitControlsBicop(double nonparametric_mult) : 
+    FitControlsBicop::FitControlsBicop(std::string nonparametric_method,
+                                       double nonparametric_mult) :
         FitControlsBicop()
     {
+        set_nonparametric_method(nonparametric_method);
         set_nonparametric_mult(nonparametric_mult);
     }
     
@@ -57,6 +67,15 @@ namespace vinecopulib
         if (!tools_stl::is_member(parametric_method, {"itau", "mle"}))
         {
             throw std::runtime_error("parametric_method should be mle or itau");
+        }
+    }
+
+    void FitControlsBicop::check_nonparametric_method(std::string nonparametric_method)
+    {
+        if (!tools_stl::is_member(nonparametric_method,
+                                  {"constant", "linear", "quadratic"}))
+        {
+            throw std::runtime_error("parametric_method should be constant, linear or quadratic");
         }
     }
 
@@ -88,6 +107,11 @@ namespace vinecopulib
     {
         return parametric_method_;
     }
+
+    std::string FitControlsBicop::get_nonparametric_method() const
+    {
+        return nonparametric_method_;
+    }
     
     double FitControlsBicop::get_nonparametric_mult() const 
     {
@@ -113,6 +137,12 @@ namespace vinecopulib
     {
         check_parametric_method(parametric_method);
         parametric_method_ = parametric_method;
+    }
+
+    void FitControlsBicop::set_nonparametric_method(std::string nonparametric_method)
+    {
+        check_nonparametric_method(nonparametric_method);
+        nonparametric_method_ = nonparametric_method;
     }
     
     void FitControlsBicop::set_nonparametric_mult(double nonparametric_mult)

@@ -26,7 +26,7 @@ namespace vinecopulib
         return hinv1(tools_eigen::swap_cols(u));
     }
 
-    double EllipticalBicop::parameters_to_tau(const Eigen::VectorXd& parameters)
+    double EllipticalBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
     {
         double tau = (2 / M_PI) * asin(parameters(0));
         return tau;

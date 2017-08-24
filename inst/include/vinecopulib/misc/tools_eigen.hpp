@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <vector>
 #include <Eigen/Dense>
 
 namespace vinecopulib {
@@ -29,7 +30,7 @@ namespace tools_eigen
     Eigen::Matrix<double, Eigen::Dynamic, 2> expand_grid(
             const Eigen::VectorXd& grid_points
     );
-    
+
     Eigen::MatrixXd read_matxd(const char *filename, int max_buffer_size = (int) 1e6);
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> read_matxs(
         const char *filename, int max_buffer_size = (int) 1e6);

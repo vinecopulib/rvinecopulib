@@ -26,7 +26,7 @@
 #' \item{`bb6`}{BB6 copula.}
 #' \item{`bb7`}{BB7 copula.}
 #' \item{`bb8`}{BB8 copula.}
-#' \item{`tll0`}{local constant transformation kernel, should only be used with
+#' \item{`tll`}{transformation kernel local likelihood, should only be used with
 #' data, see `bicop()`.}
 #' }
 #'
@@ -34,9 +34,9 @@
 #' @return An object of class `bicop_dist`.
 #'
 #' @examples
+#' ## bicop_dist objects
 #' bicop_dist("gaussian", 0, 0.5)
 #' str(bicop_dist("gauss", 0, 0.5))
-#'
 #' bicop <- bicop_dist("clayton", 90, 3)
 #' @export
 bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {
@@ -67,7 +67,8 @@ print.bicop_dist <- function(x, ...) {
 #' @rdname bicop_dist
 #' @param u evaluation points, either a length 2 vector or a two-column matrix.
 #' @examples
-#' # evaluate the copula density
+#' 
+#' ## evaluate the copula density
 #' dbicop(c(0.1, 0.2), "clay", 90, 3)
 #' dbicop(c(0.1, 0.2), bicop)
 #' @export
@@ -77,7 +78,8 @@ dbicop <- function(u, family, rotation, parameters) {
 }
 #' @rdname bicop_dist
 #' @examples
-#' # evaluate the copula cdf
+#' 
+#' ## evaluate the copula cdf
 #' pbicop(c(0.1, 0.2), "clay", 90, 3)
 #' @export
 pbicop <- function(u, family, rotation, parameters) {
@@ -89,10 +91,10 @@ pbicop <- function(u, family, rotation, parameters) {
 #' @param n number of observations. If `length(n) > 1``, the length is taken to
 #'   be the number required.
 #' @examples
-#' # simulate data
+#' 
+#' ## simulate data
 #' plot(rbicop(500, "clay", 90, 3))
 #' plot(rbicop(500, bicop))
-#'
 #' @export
 rbicop <- function(n, family, rotation, parameters) {
     if (length(n) > 1)
@@ -102,18 +104,12 @@ rbicop <- function(n, family, rotation, parameters) {
 }
 
 
-#' H-functions and their inverses for bivariate copula distributions
-#'
-#' @param u evaluation points, either a length 2 vector or a two-column matrix.
+#' @rdname bicop_dist
 #' @param cond_var either `1` or `2`; `cond_var = 1` conditions on the first
 #'    variable, `cond_var = 2` on the second.
-#' @param family the copula family, a string containing the family name (see
-#' [`bicop_dist()`]).
-#' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
-#' @param parameters a vector or matrix of copula paramters.
 #' @param inverse whether to compute the h-function or its inverse.
 #'
-#' @details H-functions are conditional distributions derived from a copula.
+#' @details H-functions (`hbicop()`) are conditional distributions derived from a copula.
 #' If \eqn{C(u, v) = P(U \le u, V \le v)} is a copula, then
 #' \deqn{h_1(v | u) = P(U \le u | V = v),}
 #' \deqn{h_2(u | v) = P(V \le v | U = u).}
@@ -122,17 +118,15 @@ rbicop <- function(n, family, rotation, parameters) {
 #' @export
 #'
 #' @examples
+#' 
+#' ## h-functions
 #' joe_cop <- bicop_dist("joe", 0, 3)
-#'
 #' # h_1(0.2 | 0.1)
 #' hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5))
-#'
 #' # h_2(0.1 | 0.2)
 #' hbicop(c(0.1, 0.2), 2, joe_cop)
-#'
 #' # h_1^{-1}(0.2 | 0.1)
 #' hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5), inverse = TRUE)
-#'
 #' # h_2^{-1}(0.1 | 0.2)
 #' hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
 hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
@@ -178,6 +172,7 @@ par_to_tau <- function(family, rotation, parameters) {
 }
 
 #' @rdname par_to_tau
+#' @param tau Kendall's \eqn{\tau}.
 #' @export
 tau_to_par <- function(family, tau) {
     bicop <- args2bicop(family)

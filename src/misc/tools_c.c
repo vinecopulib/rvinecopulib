@@ -228,7 +228,7 @@ void ktau(double *X, double *Y, int *N, double *tau, double *S, double *D, int *
 // Output:
 // out			Kendall's tau Matrix (as vector)
 
-void ktau_matrix(double *data, int *d, int *N, double *out)
+void ktau_matrix_c(double *data, int *d, int *N, double *out)
 {
 	double **x, S=0.0, D=0.0, *X, *Y;
 	int k=0, i, j, t, T=0, U=0, V=0;

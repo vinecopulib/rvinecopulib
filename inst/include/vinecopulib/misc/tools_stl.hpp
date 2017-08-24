@@ -89,6 +89,14 @@ namespace tools_stl {
         out.insert(out.end(), y.begin(), y.end());
         return out;
     }
+    
+    template<class T>
+    vector<T> set_sym_diff(vector<T> x, vector<T> y)
+    {
+        vector<T> dxy = set_diff(x, y);
+        auto dyx = set_diff(y, x);
+        return cat(dxy, dyx);
+    }
 
     template<class T>
     void reverse(vector<T>& x)

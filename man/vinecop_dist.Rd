@@ -18,10 +18,7 @@ rvinecop(n, vinecop)
 \arguments{
 \item{pair_copulas}{A nested list of 'bicop_dist' objects, where
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
-tree \code{t}.
-
-[[t]: R:[t
-[e]: R:e}
+tree \code{t}.}
 
 \item{matrix}{A quadratic structure matrix of dimension
 \code{length(pair_copulas) + 1} (see \emph{Examples} and \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}).}

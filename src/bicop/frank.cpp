@@ -52,7 +52,7 @@ namespace vinecopulib
         return tools_eigen::invert_f(tau2, f, -100+1e-6, 100);
     }
 
-    double FrankBicop::parameters_to_tau(const Eigen::VectorXd& parameters)
+    double FrankBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
     {
         double par = parameters(0);
         double tau = 1 - 4/par;

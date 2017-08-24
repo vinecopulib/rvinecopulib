@@ -55,7 +55,7 @@ namespace vinecopulib
         return res*delta*theta*std::pow(1-u, theta-2)/std::pow(tmp - 1,2);
     }
 
-    double Bb6Bicop::parameters_to_tau(const Eigen::VectorXd& parameters)
+    double Bb6Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
     {
         double theta = parameters(0);
         double delta = parameters(1);

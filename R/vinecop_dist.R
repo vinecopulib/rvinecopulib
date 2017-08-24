@@ -1,7 +1,7 @@
 #' Vine copula models
 #'
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where 
-#'    `pair_copulas[[t]][[e]]` corresponds to the pair-copula at edge `e` in
+#'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
 #'    tree `t`.
 #' @param matrix A quadratic structure matrix of dimension 
 #'   `length(pair_copulas) + 1` (see *Examples* and [`check_rvine_matrix()`]). 
