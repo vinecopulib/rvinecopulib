@@ -1,5 +1,5 @@
 CXX_STD      = CXX11
-PKG_CXXFLAGS = -I"$(NLOPT_HOME)/include" -I"../inst/include"
+PKG_CPPFLAGS = -I"$(NLOPT_HOME)/include" -I"../inst/include"
 PKG_LIBS = -L"$(NLOPT_HOME)/lib" -lnlopt_cxx
 
 SOURCES_CPP = ./bicop/abstract.cpp	  ./bicop/bb7.cpp      ./bicop/elliptical.cpp  ./bicop/gumbel.cpp  ./bicop/parametric.cpp \
