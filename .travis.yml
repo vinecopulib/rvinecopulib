@@ -17,6 +17,9 @@ r_packages:
   - Rcpp
   - RcppEigen
   - BH
+  
+brew_packages:
+  - nlopt
 
 before_install:
   ### Linux
