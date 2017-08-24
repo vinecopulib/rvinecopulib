@@ -28,12 +28,12 @@ install:
   - sed -i '27i#define NLOPT_DLL_EXPORT' .\api\nlopt.h
   - sed -i '$i\#undef NLOPT_DLL' .\api\nlopt.h
   - sed -i '$i\#undef NLOPT_DLL_EXPORT' .\api\nlopt.h
-  - cmake -DCMAKE_GENERATOR_PLATFORM="%CMAKE_GEN_PLAT%" -DCMAKE_INSTALL_PREFIX=C:\projects\nlopt-install -DCMAKE_INSTALL_BINDIR=c:\projects\nlopt-install\lib .
+  - cmake -DCMAKE_GENERATOR_PLATFORM="%CMAKE_GEN_PLAT%" -DCMAKE_INSTALL_PREFIX=C:\projects\nlopt%R_ARCH% -DCMAKE_INSTALL_BINDIR=c:\projects\nlopt%R_ARCH%\lib .
   - cmake --build . --config Release --target install
   - cd ..
   - cd rvinecopulib
-  - set path=%path%;C:\projects\nlopt-install\lib
-  - set NLOPT_HOME=C:/projects/nlopt-install
+  - set path=%path%;C:\projects\nlopt%R_ARCH%\lib
+  - set NLOPT_HOME=C:/projects/nlopt%R_ARCH%
 
 build_script:
   - travis-tool.sh install_deps
