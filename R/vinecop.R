@@ -85,7 +85,7 @@ vinecop <- function(data, family_set = "all", matrix = NA,
         vinecop$pair_copulas, 
         function(tree) lapply(tree, as.bicop)
     )
-    
+
     ## add information about the fit
     if (keep_data) {
         vinecop$data <- data

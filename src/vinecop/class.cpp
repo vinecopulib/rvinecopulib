@@ -391,7 +391,7 @@ namespace vinecopulib
     //! calculates the density function of the vine copula model.
     //!
     //! @param u \f$ n \times d \f$ matrix of evaluation points.
-    Eigen::VectorXd Vinecop::pdf(const Eigen::MatrixXd& u)
+    Eigen::VectorXd Vinecop::pdf(const Eigen::MatrixXd& u) const
     {
         size_t d = u.cols();
         size_t n = u.rows();
@@ -456,7 +456,7 @@ namespace vinecopulib
     //! @param u \f$ n \times d \f$ matrix of evaluation points.
     //! @param N integer for the number of quasi-random numbers to draw
     //! to evaluate the distribution (default: 1e4).
-    Eigen::VectorXd Vinecop::cdf(const Eigen::MatrixXd& u, const size_t N)
+    Eigen::VectorXd Vinecop::cdf(const Eigen::MatrixXd& u, const size_t N) const
     {
         if (d_ > 360) {
             std::stringstream message;
@@ -498,7 +498,7 @@ namespace vinecopulib
     //! simulates from a vine copula model, see inverse_rosenblatt().
     //! 
     //! @param n number of observations.
-    Eigen::MatrixXd Vinecop::simulate(size_t n)
+    Eigen::MatrixXd Vinecop::simulate(size_t n) const
     {
         Eigen::MatrixXd U = tools_stats::simulate_uniform(n, d_);
         return inverse_rosenblatt(U);
@@ -511,7 +511,7 @@ namespace vinecopulib
     //! where \f$ c \f$ is the copula density pdf().
     //!
     //! @param u \f$n \times d\f$ matrix of observations.
-    double Vinecop::loglik(const Eigen::MatrixXd& u)
+    double Vinecop::loglik(const Eigen::MatrixXd& u) const
     {
         return pdf(u).array().log().sum();
     }
@@ -526,7 +526,7 @@ namespace vinecopulib
     //! for nonparametric models.
     //!
     //! @param u \f$n \times 2\f$ matrix of observations.
-    double Vinecop::aic(const Eigen::MatrixXd& u)
+    double Vinecop::aic(const Eigen::MatrixXd& u) const
     {
         return -2 * loglik(u) + 2 * calculate_npars();
     }
@@ -541,7 +541,7 @@ namespace vinecopulib
     //! for nonparametric models.
     //!
     //! @param u \f$n \times 2\f$ matrix of observations.
-    double Vinecop::bic(const Eigen::MatrixXd& u)
+    double Vinecop::bic(const Eigen::MatrixXd& u) const
     {
         return -2 * loglik(u) + calculate_npars() * log(u.rows());
     }
@@ -550,7 +550,7 @@ namespace vinecopulib
     //!
     //! Returns sum of the number of parameters for all pair copulas (see
     //! Bicop::calculate_npars()).
-    double Vinecop::calculate_npars()
+    double Vinecop::calculate_npars() const
     {
         double npars = 0.0;
         for (auto& tree : pair_copulas_) {
@@ -575,7 +575,7 @@ namespace vinecopulib
     //! \f$d = 200\f$.
     //! 
     //! @param u \f$ n \times d \f$ matrix of evaluation points.
-    Eigen::MatrixXd Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u)
+    Eigen::MatrixXd Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u) const
     {
         size_t n = u.rows();
         if (n < 1) {
@@ -678,7 +678,7 @@ namespace vinecopulib
           
     // get indexes for reverting back to old order in simulation routine
     Eigen::Matrix<size_t, Eigen::Dynamic, 1> Vinecop::inverse_permutation(
-        const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& order) {
+        const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& order) const {
         // start with (0, 1, .., k)
         auto indexes = tools_stl::seq_int(0, order.size());
     

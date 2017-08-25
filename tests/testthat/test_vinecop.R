@@ -10,11 +10,11 @@ test_that("returns proper 'bicop' object", {
     expect_s3_class(fit, "vinecop_dist")
     expect_identical(
         names(fit),  
-        c("pair_copulas", "matrix", "data", "controls", "nobs")
+        c("pair_copulas", "matrix", "npars", "data", "controls", "nobs")
     )
     expect_identical(
         names(fit_no_data), 
-        c("pair_copulas", "matrix", "controls", "nobs")
+        c("pair_copulas", "matrix", "npars", "controls", "nobs")
     )
 })
 

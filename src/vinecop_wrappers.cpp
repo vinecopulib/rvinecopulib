@@ -41,10 +41,11 @@ Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp) {
         }
         pair_copulas[t] = tree_pcs;
     }
-
+    double npars = vinecop_cpp.calculate_npars();
     return Rcpp::List::create(
         Rcpp::Named("pair_copulas") = pair_copulas,
-        Rcpp::Named("matrix") = matrix
+        Rcpp::Named("matrix") = matrix,
+        Rcpp::Named("npars") = npars
     );
 }
 

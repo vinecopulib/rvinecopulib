@@ -67,7 +67,7 @@ namespace vinecopulib
     //! for the parameters.
     //!
     //! @return the boost::property_tree::ptree object containing the copula.
-    boost::property_tree::ptree Bicop::to_ptree()
+    boost::property_tree::ptree Bicop::to_ptree() const
     {
         boost::property_tree::ptree output;
 
@@ -84,7 +84,7 @@ namespace vinecopulib
     //! See to_ptree() for the structure of the file.
     //!
     //! @param filename the name of the file to write.
-    void Bicop::to_json(const char *filename)
+    void Bicop::to_json(const char *filename) const
     {
         boost::property_tree::write_json(filename, to_ptree());
     }
@@ -93,7 +93,8 @@ namespace vinecopulib
     //!
     //! @param u \f$n \times 2\f$ matrix of evaluation points.
     //! @return The copula density evaluated at \c u.
-    Eigen::VectorXd Bicop::pdf(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u)
+    Eigen::VectorXd Bicop::pdf(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u) 
+        const
     {
         Eigen::VectorXd f = bicop_->pdf(cut_and_rotate(u));
         f = f.unaryExpr([](const double x){ return std::min(x,1e16);});
@@ -105,6 +106,7 @@ namespace vinecopulib
     //! @param u \f$n \times 2\f$ matrix of evaluation points.
     //! @return The copula distribution evaluated at \c u.
     Eigen::VectorXd Bicop::cdf(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u)
+        const
     {
         Eigen::VectorXd p = bicop_->cdf(cut_and_rotate(u));
         switch (rotation_) {
@@ -134,6 +136,7 @@ namespace vinecopulib
     //! \f$ h_1(u_1, u_2) = \int_0^{u_2} c(u_1, s) \f$.
     //! @param u \f$m \times 2\f$ matrix of evaluation points.
     Eigen::VectorXd Bicop::hfunc1(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u)
+        const
     {
         switch (rotation_) {
             case 0:
@@ -159,6 +162,7 @@ namespace vinecopulib
     //! \f$ h_2(u_1, u_2) = \int_0^{u_1} c(s, u_2) \f$.
     //! @param u \f$m \times 2\f$ matrix of evaluation points.
     Eigen::VectorXd Bicop::hfunc2(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u)
+        const
     {
         switch (rotation_) {
             case 0:
@@ -184,6 +188,7 @@ namespace vinecopulib
     //! argument.
     //! @param u \f$m \times 2\f$ matrix of evaluation points.
     Eigen::VectorXd Bicop::hinv1(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u)
+        const
     {
         switch (rotation_) {
             case 0:
@@ -209,6 +214,7 @@ namespace vinecopulib
     //! argument.
     //! @param u \f$m \times 2\f$ matrix of evaluation points.
     Eigen::VectorXd Bicop::hinv2(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u)
+        const
     {
         switch (rotation_) {
             case 0:
@@ -236,7 +242,7 @@ namespace vinecopulib
     //!
     //! @param n number of observations.
     //! @return An \f$ n \times 2 \f$ matrix of samples from the copula model.
-    Eigen::Matrix<double, Eigen::Dynamic, 2> Bicop::simulate(const int& n)
+    Eigen::Matrix<double, Eigen::Dynamic, 2> Bicop::simulate(const int& n) const
     {
         Eigen::Matrix<double, Eigen::Dynamic, 2> U =
                 tools_stats::simulate_uniform(n, 2);
@@ -252,7 +258,7 @@ namespace vinecopulib
     //! where \f$ c \f$ is the copula density pdf().
     //!
     //! @param u \f$n \times 2\f$ matrix of observations.
-    double Bicop::loglik(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u)
+    double Bicop::loglik(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u) const
     {
         return pdf(u).array().log().sum();
     }
@@ -267,7 +273,7 @@ namespace vinecopulib
     //! for nonparametric models.
     //!
     //! @param u \f$n \times 2\f$ matrix of observations.
-    double Bicop::aic(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u)
+    double Bicop::aic(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u) const
     {
         return -2 * loglik(u) + 2 * calculate_npars();
     }
@@ -282,7 +288,7 @@ namespace vinecopulib
     //! for nonparametric models.
     //!
     //! @param u \f$n \times 2\f$ matrix of observations.
-    double Bicop::bic(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u)
+    double Bicop::bic(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u) const
     {
         return -2 * loglik(u) + calculate_npars() * log(u.rows());
     }
@@ -292,7 +298,7 @@ namespace vinecopulib
     //! Returns the actual number of parameters for parameteric families. For
     //! nonparametric families, there is a conceptually similar definition in
     //! the sense that it can be used in the calculation of fit statistics.
-    double Bicop::calculate_npars()
+    double Bicop::calculate_npars() const
     {
         return bicop_->calculate_npars();
     }
@@ -301,7 +307,7 @@ namespace vinecopulib
     //! current family (only works for one-parameter families).
     //!
     //! @param tau a value in \f$ (-1, 1) \f$.
-    Eigen::MatrixXd Bicop::tau_to_parameters(const double& tau)
+    Eigen::MatrixXd Bicop::tau_to_parameters(const double& tau) const
     {
         return bicop_->tau_to_parameters(tau);
     }
@@ -311,7 +317,7 @@ namespace vinecopulib
     //!
     //! @param parameters the parameters (must be a valid parametrization of
     //!     the current family).
-    double Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
+    double Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters) const
     {
         double tau = bicop_->parameters_to_tau(parameters);
         if (tools_stl::is_member(rotation_, {90, 270})) {
@@ -375,7 +381,7 @@ namespace vinecopulib
     }
 
     //! summarizes the model into a string (can be used for printing).
-    std::string Bicop::str()
+    std::string Bicop::str() const
     {
         std::stringstream bicop_str;
         bicop_str << "family = "    << get_family_name() <<
@@ -386,7 +392,7 @@ namespace vinecopulib
     }
     //! @}
 
-    BicopPtr Bicop::get_bicop()
+    BicopPtr Bicop::get_bicop() const
     {
         return bicop_;
     };
@@ -550,7 +556,7 @@ namespace vinecopulib
     //! @param u \f$m \times 2\f$ matrix of data.
     //! @return The manipulated data.
     Eigen::Matrix<double, Eigen::Dynamic, 2> Bicop::cut_and_rotate(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2>& u)
+        const Eigen::Matrix<double, Eigen::Dynamic, 2>& u) const
     {
         Eigen::Matrix<double, Eigen::Dynamic, 2> u_new(u.rows(), 2);
 
@@ -585,7 +591,7 @@ namespace vinecopulib
         return u_new;
     }
 
-    void Bicop::check_rotation(int rotation)
+    void Bicop::check_rotation(int rotation) const
     {
         using namespace tools_stl;
         std::vector<int> allowed_rotations = {0, 90, 180, 270};
