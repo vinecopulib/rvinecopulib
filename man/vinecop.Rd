@@ -6,7 +6,8 @@
 \usage{
 vinecop(data, family_set = "all", matrix = NA, par_method = "mle",
   nonpar_method = "constant", mult = 1, selcrit = "bic", presel = TRUE,
-  trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = TRUE)
+  trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = TRUE,
+  show_trace = FALSE)
 }
 \arguments{
 \item{data}{a matrix or data.frame (copula data should have approximately
@@ -38,16 +39,22 @@ than 1 less smooth.}
 \item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
 
-\item{trunc_lvl}{the truncation level of the vine copula.}
+\item{trunc_lvl}{the truncation level of the vine copula; \code{Inf} means no
+truncation, \code{NA} indicates that the truncation level should be selected
+automatically by GIC.}
 
 \item{tree_crit}{the criterion for tree selection, one of \code{"tau"}, \code{"rho"},
 \code{"hoeffd"} for Kendall's \eqn{tau}, Spearman's \eqn{rho}, and Hoeffding's
 \eqn{D}, respectively.}
 
-\item{threshold}{for thresholded vine copulas.}
+\item{threshold}{for thresholded vine copulas; \code{NA} indicates that the
+threshold should be selected automatically by GIC.}
 
 \item{keep_data}{whether the data should be stored (necessary for computing
 fit statistics and using \code{fitted()}).}
+
+\item{show_trace}{logical; whether a trace of the fitting progress should be
+printed.}
 }
 \value{
 An object inherting from \code{bicop} and \code{bicop_dist}.

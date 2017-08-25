@@ -89,7 +89,7 @@ vinecop_bic_cpp <- function(u, vinecop_r) {
     .Call('_rvinecopulib_vinecop_bic_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
 
-vinecop_select_cpp <- function(data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families) {
-    .Call('_rvinecopulib_vinecop_select_cpp', PACKAGE = 'rvinecopulib', data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, preselect_families)
+vinecop_select_cpp <- function(data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, select_truncation_level, select_threshold, preselect_families, show_trace) {
+    .Call('_rvinecopulib_vinecop_select_cpp', PACKAGE = 'rvinecopulib', data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, select_truncation_level, select_threshold, preselect_families, show_trace)
 }
 

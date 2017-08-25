@@ -102,7 +102,10 @@ Rcpp::List vinecop_select_cpp(
         std::string tree_criterion,
         double threshold,
         std::string selection_criterion,
-        bool preselect_families
+        bool select_truncation_level,
+        bool select_threshold,
+        bool preselect_families,
+        bool show_trace
 )
 {
     std::vector<BicopFamily> fam_set(family_set.size());
@@ -120,7 +123,9 @@ Rcpp::List vinecop_select_cpp(
             threshold,
             selection_criterion,
             preselect_families,
-            false  // show_trace
+            select_truncation_level,
+            select_threshold,
+            show_trace
     );
     Vinecop vinecop_cpp(data.cols());
     if (matrix.cols() > 1) {
