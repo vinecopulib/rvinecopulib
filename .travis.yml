@@ -31,10 +31,11 @@ before_install:
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100; fi
   
   ### OSX
-  - if [ $TRAVIS_OS_NAME == osx ]; then rm '/usr/local/bin/gfortran'; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then sudo chown -R `whoami`:admin /usr/local/share/man/man7; fi       # http://stackoverflow.com/questions/26647412/homebrew-could-not-symlink-usr-local-bin-is-not-writable
-  - if [ $TRAVIS_OS_NAME == osx ]; then sudo chown -R `whoami`:admin /usr/local/lib/gcc; fi       # htt$
-  - if [ $TRAVIS_OS_NAME == osx ]; then rm /usr/local/include/c++; fi # https://github.com/Homebrew/brew/issues/1742#issuecomment-277308817
+  - if [ $TRAVIS_OS_NAME == osx ]; then /usr/bin/yes | pip uninstall numpy; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then rm '/usr/local/bin/gfortran'; fi # otherwise gcc install fails
+  - if [ $TRAVIS_OS_NAME == osx ]; then sudo chown -R `whoami`:admin /usr/local/share/man/man7; fi       # same, see http://stackoverflow.com/questions/26647412/homebrew-could-not-symlink-usr-local-bin-is-not-writable
+  - if [ $TRAVIS_OS_NAME == osx ]; then sudo chown -R `whoami`:admin /usr/local/lib/gcc; fi       # same
+  - if [ $TRAVIS_OS_NAME == osx ]; then rm /usr/local/include/c++; fi # same, see https://github.com/Homebrew/brew/issues/1742#issuecomment-277308817
   - if [ $TRAVIS_OS_NAME == osx ]; then brew update; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then brew install gcc || brew link --overwrite gcc; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then mkdir ~/.R; fi
