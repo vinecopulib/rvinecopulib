@@ -17,9 +17,6 @@ r_packages:
   - Rcpp
   - RcppEigen
   - BH
-  
-brew_packages:
-  - nlopt
 
 before_install:
   ### Linux
@@ -45,6 +42,7 @@ before_install:
   - if [ $TRAVIS_OS_NAME == osx ]; then echo "CXX11=/usr/local/bin/g++-7" >> ~/.R/Makevars; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then echo "FC=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then echo "F77=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then brew install --without-numpy --HEAD nlopt; fi
 
 repos:
   CRAN: http://cran.rstudio.com
