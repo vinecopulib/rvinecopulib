@@ -60,16 +60,16 @@ namespace vinecopulib
         std::vector<std::vector<Eigen::VectorXd>> get_all_parameters() const;
 
         // Stats methods
-        Eigen::VectorXd pdf(const Eigen::MatrixXd& u);
-        Eigen::VectorXd cdf(const Eigen::MatrixXd& u, const size_t N = 1e4);
-        Eigen::MatrixXd simulate(size_t n);
-        Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd& u);
+        Eigen::VectorXd pdf(const Eigen::MatrixXd& u) const;
+        Eigen::VectorXd cdf(const Eigen::MatrixXd& u, const size_t N = 1e4) const;
+        Eigen::MatrixXd simulate(size_t n) const;
+        Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd& u) const;
 
         // Fit statistics
-        double calculate_npars();
-        double loglik(const Eigen::MatrixXd& u);
-        double aic(const Eigen::MatrixXd& u);
-        double bic(const Eigen::MatrixXd& u);
+        double calculate_npars() const;
+        double loglik(const Eigen::MatrixXd& u) const;
+        double aic(const Eigen::MatrixXd& u) const;
+        double bic(const Eigen::MatrixXd& u) const;
 
         // Misc methods
         static std::vector<std::vector<Bicop>> make_pair_copula_store(size_t d);
@@ -80,7 +80,8 @@ namespace vinecopulib
         std::vector<std::vector<Bicop>> pair_copulas_;
         
         void check_data_dim(const Eigen::MatrixXd& data);
-        Eigen::Matrix<size_t, Eigen::Dynamic, 1> inverse_permutation(const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& order);
+        Eigen::Matrix<size_t, Eigen::Dynamic, 1> inverse_permutation(
+            const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& order) const;
     };
 
 }

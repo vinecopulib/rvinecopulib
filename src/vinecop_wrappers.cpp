@@ -41,10 +41,11 @@ Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp) {
         }
         pair_copulas[t] = tree_pcs;
     }
-
+    double npars = vinecop_cpp.calculate_npars();
     return Rcpp::List::create(
         Rcpp::Named("pair_copulas") = pair_copulas,
-        Rcpp::Named("matrix") = matrix
+        Rcpp::Named("matrix") = matrix,
+        Rcpp::Named("npars") = npars
     );
 }
 
@@ -102,7 +103,10 @@ Rcpp::List vinecop_select_cpp(
         std::string tree_criterion,
         double threshold,
         std::string selection_criterion,
-        bool preselect_families
+        bool select_truncation_level,
+        bool select_threshold,
+        bool preselect_families,
+        bool show_trace
 )
 {
     std::vector<BicopFamily> fam_set(family_set.size());
@@ -120,7 +124,9 @@ Rcpp::List vinecop_select_cpp(
             threshold,
             selection_criterion,
             preselect_families,
-            false  // show_trace
+            select_truncation_level,
+            select_threshold,
+            show_trace
     );
     Vinecop vinecop_cpp(data.cols());
     if (matrix.cols() > 1) {

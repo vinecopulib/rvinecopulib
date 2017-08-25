@@ -6,11 +6,16 @@
 #' @param matrix an R-vine matrix specifying the structure matrix (see 
 #'   [`check_rvine_matrix()`]), or `NA` for
 #'   automatic structure selection (default).
-#' @param trunc_lvl the truncation level of the vine copula.
+#' @param trunc_lvl the truncation level of the vine copula; `Inf` means no
+#'   truncation, `NA` indicates that the truncation level should be selected
+#'   automatically by GIC.
 #' @param tree_crit the criterion for tree selection, one of `"tau"`, `"rho"`,
 #'    `"hoeffd"` for Kendall's \eqn{tau}, Spearman's \eqn{rho}, and Hoeffding's
 #'    \eqn{D}, respectively.
-#' @param threshold for thresholded vine copulas.
+#' @param threshold for thresholded vine copulas; `NA` indicates that the 
+#'   threshold should be selected automatically by GIC.
+#' @param show_trace logical; whether a trace of the fitting progress should be 
+#'    printed.
 #' 
 #' @details
 #' In addition, to the families in `bicop_dist()`, the following convenience
@@ -42,7 +47,7 @@ vinecop <- function(data, family_set = "all", matrix = NA,
                     par_method = "mle", nonpar_method = "constant",
                     mult = 1, selcrit = "bic", presel = TRUE, 
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
-                    keep_data = TRUE) {
+                    keep_data = TRUE, show_trace = FALSE) {
     
     ## family_set can only use standard family names in cpp
     family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
@@ -69,7 +74,10 @@ vinecop <- function(data, family_set = "all", matrix = NA,
             .Machine$integer.max
         ),
         tree_criterion = tree_crit,
-        threshold = threshold
+        threshold = threshold,
+        select_truncation_level = is.na(trunc_lvl),
+        select_threshold = is.na(threshold),
+        show_trace = show_trace
     )
     
     ## make all pair-copulas bicop objects
@@ -77,7 +85,7 @@ vinecop <- function(data, family_set = "all", matrix = NA,
         vinecop$pair_copulas, 
         function(tree) lapply(tree, as.bicop)
     )
-    
+
     ## add information about the fit
     if (keep_data) {
         vinecop$data <- data
