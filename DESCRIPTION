@@ -23,6 +23,7 @@ Suggests:
 LinkingTo: 
     Rcpp,
     RcppEigen,
+    RcppProgress,
     BH
 Roxygen: list(markdown = TRUE)
 SystemRequirements: C++11

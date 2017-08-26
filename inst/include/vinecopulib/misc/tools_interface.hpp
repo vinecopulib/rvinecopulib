@@ -10,6 +10,8 @@
 // (R package does: #define INTERFACED_FROM_R)
 #define INTERFACED_FROM_R
 #include <RcppEigen.h>
+// [[Rcpp::depends(RcppProgress)]]
+#include <progress.hpp>
 
 #ifndef INTERFACED_FROM_R
     #include <iostream>
@@ -25,6 +27,17 @@ namespace vinecopulib {
             #else
                 Rcpp::Rcout << text;
             #endif
-        };
+        }
+    
+        inline void check_for_user_interrupt(bool do_check)
+        {
+            if (do_check) {
+                #ifdef INTERFACED_FROM_R
+                    if (Progress::check_abort()) {
+                        throw std::runtime_error("C++ call interrupted by user");
+                    }
+                #endif
+            }
+        }
     }
 }
