@@ -58,24 +58,28 @@ void vinecop_check_cpp(Rcpp::List vinecop_r) {
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_sim_cpp(int n, const Rcpp::List& vinecop_r)
 {
+    Progress p(0, false);
     return vinecop_wrap(vinecop_r).simulate(n);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
 {
+    Progress p(0, false);
     return vinecop_wrap(vinecop_r).pdf(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, size_t N)
 {
+    Progress p(0, false);
     return vinecop_wrap(vinecop_r).cdf(u, N);
 }
 
 // [[Rcpp::export()]]
 double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
 {
+    Progress p(0, false);
     return vinecop_wrap(vinecop_r).loglik(u);
 }
 
@@ -117,6 +121,7 @@ Rcpp::List vinecop_select_cpp(
             show_trace
     );
     Vinecop vinecop_cpp(data.cols());
+    Progress p(0, false);
     if (matrix.cols() > 1) {
         vinecop_cpp = Vinecop(matrix);
         vinecop_cpp.select_families(data, fit_controls);

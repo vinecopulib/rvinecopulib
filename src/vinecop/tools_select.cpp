@@ -87,6 +87,7 @@ namespace tools_select {
     {
         initialize_new_fit(data);
         for (size_t t = 0; t < d_ - 1; ++t) {
+            tools_interface::check_for_user_interrupt(true);
             select_tree(t);  // select pair copulas (+ structure) of tree t
         
             if (controls_.get_show_trace()) {
@@ -154,6 +155,7 @@ namespace tools_select {
             double gic_trunc = 0.0;   
             
             for (size_t t = 0; t < d_ - 1; ++t) {
+                tools_interface::check_for_user_interrupt(true);
                 if (controls_.get_show_trace()) {
                     msg << "** Tree: " << t;
                 }
@@ -284,6 +286,7 @@ namespace tools_select {
         std::string tree_criterion = controls_.get_tree_criterion();
         double threshold = controls_.get_threshold();
         for (auto v0 : boost::vertices(vine_tree)) {
+            tools_interface::check_for_user_interrupt(v0 % 10000 == 0);
             for (size_t v1 = 0; v1 < v0; ++v1) {
                 // check proximity condition: common neighbor in previous tree
                 // (-1 means 'no common neighbor')
@@ -306,6 +309,7 @@ namespace tools_select {
         mat.fill(0);
     
         for (size_t col = 0; col < d_ - 1; ++col) {
+            tools_interface::check_for_user_interrupt(true);
             size_t t = d_ - 1 - col;
             // start with highest tree in this column and fill first two
             // entries by conditioned set
@@ -410,6 +414,7 @@ namespace tools_select {
         double w = 1.0;
         std::string tree_criterion = controls_.get_tree_criterion();
         for (auto v0 : boost::vertices(vine_tree)) {
+            tools_interface::check_for_user_interrupt(v0 % 10000 == 0);
             for (auto v1 : boost::vertices(vine_tree)) {
                 if (v0 == v1) continue;
                 // check whether edege (v0, v1) belongs to the structure
@@ -584,6 +589,7 @@ namespace tools_select {
         VineTree base_tree(d);
         // a star connects the root node (d) with all other nodes
         for (size_t target = 0; target < d; ++target) {
+            tools_interface::check_for_user_interrupt(target % 10000 == 0);
             // add edge and extract edge iterator
             auto e = add_edge(d, target, base_tree).first;
     
@@ -716,7 +722,9 @@ namespace tools_select {
     void VinecopSelector::select_pair_copulas(VineTree& tree,
                                                 const VineTree& tree_opt)
     {
+        size_t count = 0;
         for (auto e : boost::edges(tree)) {
+            tools_interface::check_for_user_interrupt(++count % 20 == 0);
             bool is_thresholded = (tree[e].crit < controls_.get_threshold());
             bool used_old_fit = false;
             
@@ -732,8 +740,7 @@ namespace tools_select {
                         // data and thresholding status haven't changed, 
                         // we can use old fit
                         used_old_fit = true;
-                        tree[e].pair_copula = 
-                            tree_opt[old_fit.first].pair_copula;
+                        tree[e].pair_copula = tree_opt[old_fit.first].pair_copula;
                     }
                 }
             }

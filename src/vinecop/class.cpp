@@ -424,7 +424,9 @@ namespace vinecopulib
             hfunc2.col(j) = u.col(revorder(j) - 1);
     
         for (size_t tree = 0; tree < d - 1; ++tree) {
+            tools_interface::check_for_user_interrupt(n * d > 10^5);
             for (size_t edge = 0; edge < d - tree - 1; ++edge) {
+                tools_interface::check_for_user_interrupt(edge % 100 == 0);
                 // extract evaluation point from hfunction matrices (have been
                 // computed in previous tree level)
                 size_t m = max_matrix(tree, edge);
@@ -487,6 +489,7 @@ namespace vinecopulib
         Eigen::ArrayXXd x(N,1);
         Eigen::RowVectorXd temp(d);
         for (size_t i = 0; i < n; i++) {
+            tools_interface::check_for_user_interrupt(i % 1000 == 0);
             temp = u.block(i,0,1,d);
             x = (U.rowwise() - temp).rowwise().maxCoeff().array();
             vine_distribution(i) = (x <= 0.0).count();
@@ -625,6 +628,7 @@ namespace vinecopulib
 
             // loop through variables (0 is just the inital uniform)
             for (ptrdiff_t var = d - 2; var >= 0; --var) {
+                tools_interface::check_for_user_interrupt(n * d > 1e5);
                 for (ptrdiff_t tree = d - var - 2; tree >= 0; --tree) {
                     Bicop edge_copula = get_pair_copula(tree, var);
 
