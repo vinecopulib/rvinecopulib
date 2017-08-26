@@ -41,14 +41,6 @@ bicop_loglik_cpp <- function(u, bicop_r) {
     .Call('_rvinecopulib_bicop_loglik_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
-bicop_aic_cpp <- function(u, bicop_r) {
-    .Call('_rvinecopulib_bicop_aic_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
-}
-
-bicop_bic_cpp <- function(u, bicop_r) {
-    .Call('_rvinecopulib_bicop_bic_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
-}
-
 bicop_par_to_tau_cpp <- function(bicop_r) {
     .Call('_rvinecopulib_bicop_par_to_tau_cpp', PACKAGE = 'rvinecopulib', bicop_r)
 }
@@ -79,14 +71,6 @@ vinecop_cdf_cpp <- function(u, vinecop_r, N) {
 
 vinecop_loglik_cpp <- function(u, vinecop_r) {
     .Call('_rvinecopulib_vinecop_loglik_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
-}
-
-vinecop_aic_cpp <- function(u, vinecop_r) {
-    .Call('_rvinecopulib_vinecop_aic_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
-}
-
-vinecop_bic_cpp <- function(u, vinecop_r) {
-    .Call('_rvinecopulib_vinecop_bic_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
 }
 
 vinecop_select_cpp <- function(data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, select_truncation_level, select_threshold, preselect_families, show_trace) {

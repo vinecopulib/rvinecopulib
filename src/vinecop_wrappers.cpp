@@ -80,18 +80,6 @@ double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
 }
 
 // [[Rcpp::export()]]
-double vinecop_aic_cpp(Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
-{
-  return vinecop_wrap(vinecop_r).aic(u);
-}
-
-// [[Rcpp::export()]]
-double vinecop_bic_cpp(Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
-{
-  return vinecop_wrap(vinecop_r).bic(u);
-}
-
-// [[Rcpp::export()]]
 Rcpp::List vinecop_select_cpp(
         const Eigen::MatrixXd& data,
         Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix,
