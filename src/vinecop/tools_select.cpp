@@ -87,7 +87,6 @@ namespace tools_select {
     {
         initialize_new_fit(data);
         for (size_t t = 0; t < d_ - 1; ++t) {
-            tools_interface::check_for_user_interrupt(true);
             select_tree(t);  // select pair copulas (+ structure) of tree t
         
             if (controls_.get_show_trace()) {
@@ -155,7 +154,6 @@ namespace tools_select {
             double gic_trunc = 0.0;   
             
             for (size_t t = 0; t < d_ - 1; ++t) {
-                tools_interface::check_for_user_interrupt(true);
                 if (controls_.get_show_trace()) {
                     msg << "** Tree: " << t;
                 }
@@ -724,7 +722,6 @@ namespace tools_select {
     {
         size_t count = 0;
         for (auto e : boost::edges(tree)) {
-            tools_interface::check_for_user_interrupt(++count % 20 == 0);
             bool is_thresholded = (tree[e].crit < controls_.get_threshold());
             bool used_old_fit = false;
             
