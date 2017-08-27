@@ -284,7 +284,7 @@ namespace tools_select {
         std::string tree_criterion = controls_.get_tree_criterion();
         double threshold = controls_.get_threshold();
         for (auto v0 : boost::vertices(vine_tree)) {
-            tools_interface::check_for_user_interrupt(v0 % 10000 == 0);
+            tools_interface::check_user_interrupt(v0 % 10000 == 0);
             for (size_t v1 = 0; v1 < v0; ++v1) {
                 // check proximity condition: common neighbor in previous tree
                 // (-1 means 'no common neighbor')
@@ -307,7 +307,7 @@ namespace tools_select {
         mat.fill(0);
     
         for (size_t col = 0; col < d_ - 1; ++col) {
-            tools_interface::check_for_user_interrupt(true);
+            tools_interface::check_user_interrupt();
             size_t t = d_ - 1 - col;
             // start with highest tree in this column and fill first two
             // entries by conditioned set
@@ -412,7 +412,7 @@ namespace tools_select {
         double w = 1.0;
         std::string tree_criterion = controls_.get_tree_criterion();
         for (auto v0 : boost::vertices(vine_tree)) {
-            tools_interface::check_for_user_interrupt(v0 % 10000 == 0);
+            tools_interface::check_user_interrupt(v0 % 10000 == 0);
             for (auto v1 : boost::vertices(vine_tree)) {
                 if (v0 == v1) continue;
                 // check whether edege (v0, v1) belongs to the structure
@@ -587,7 +587,7 @@ namespace tools_select {
         VineTree base_tree(d);
         // a star connects the root node (d) with all other nodes
         for (size_t target = 0; target < d; ++target) {
-            tools_interface::check_for_user_interrupt(target % 10000 == 0);
+            tools_interface::check_user_interrupt(target % 10000 == 0);
             // add edge and extract edge iterator
             auto e = add_edge(d, target, base_tree).first;
     

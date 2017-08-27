@@ -29,7 +29,7 @@ namespace vinecopulib {
             #endif
         }
     
-        inline void check_for_user_interrupt(bool do_check)
+        inline void check_user_interrupt(bool do_check = true)
         {
             if (do_check) {
                 #ifdef INTERFACED_FROM_R

@@ -518,7 +518,7 @@ namespace vinecopulib
         int fitted_rotation = 0;
         double fitted_criterion = 1e6;
         for (unsigned int j = 0; j < families.size(); j++) {
-            tools_interface::check_for_user_interrupt(true);
+            tools_interface::check_user_interrupt();
             // Estimate the model
             bicop_ = AbstractBicop::create(families[j]);
             rotation_ = rotations[j];
