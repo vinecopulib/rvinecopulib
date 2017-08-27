@@ -9,13 +9,17 @@
 // interface specfifc #defines can be set here 
 // (R package does: #define INTERFACED_FROM_R)
 #define INTERFACED_FROM_R
-#include <RcppEigen.h>
-// [[Rcpp::depends(RcppProgress)]]
-#include <progress.hpp>
 
-#ifndef INTERFACED_FROM_R
+
+// interface specific headers
+#ifdef INTERFACED_FROM_R
+    #include <RcppEigen.h>
+    // [[Rcpp::depends(RcppProgress)]]
+    #include <progress.hpp>
+#else
     #include <iostream>
 #endif
+
 
 namespace vinecopulib {
 
