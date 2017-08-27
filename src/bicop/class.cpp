@@ -8,6 +8,7 @@
 #include <vinecopulib/bicop/tools_select.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
+#include <vinecopulib/misc/tools_interface.hpp>
 
 //! Tools for bivariate and vine copula modeling
 namespace vinecopulib
@@ -517,6 +518,7 @@ namespace vinecopulib
         int fitted_rotation = 0;
         double fitted_criterion = 1e6;
         for (unsigned int j = 0; j < families.size(); j++) {
+            tools_interface::check_for_user_interrupt(true);
             // Estimate the model
             bicop_ = AbstractBicop::create(families[j]);
             rotation_ = rotations[j];
