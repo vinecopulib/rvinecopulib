@@ -131,6 +131,7 @@ Rcpp::List bicop_select_cpp(
             selcrit,
             presel
     );
+    Progress p(0, false);
     Bicop bicop_cpp(data, controls);
 
     return bicop_wrap(bicop_cpp);
