@@ -10,7 +10,7 @@ apt_packages:
   - libxml2-dev
 
 r_packages:
-  - graph
+  - ggraph
   - Rcpp
   - RcppEigen
   - BH
