@@ -17,7 +17,7 @@
 #' @param x \code{vinecop_dist} object.
 #' @param tree \code{"ALL"} or integer vector; specifies which trees are
 #' plotted.
-#' @param type integer; specifies how to make use of variable names: \cr
+#' @param var_names integer; specifies how to make use of variable names: \cr
 #' \code{0} = variable names are ignored, \cr \code{1} = variable names are
 #' used to annotate vertices, \cr \code{2} = uses numbers in plot and adds a
 #' legend for variable names.
@@ -58,7 +58,7 @@
 #' contour(vc)
 #'
 #' @export
-plot.vinecop_dist <- function(x, tree = 1, type = 0, edge_labels = NULL) {
+plot.vinecop_dist <- function(x, tree = 1, var_names = 0, edge_labels = NULL) {
     if (!requireNamespace("ggraph", quietly = TRUE))
         stop("The 'ggraph' package must be installed to plot.")
     if (!requireNamespace("grid", quietly = TRUE))
@@ -85,8 +85,8 @@ plot.vinecop_dist <- function(x, tree = 1, type = 0, edge_labels = NULL) {
             tree <- 1:(d - 1)
         }
     }
-    if (!all(type %in% c(0, 1, 2)))
-        stop("type not implemented")
+    if (!all(var_names %in% c(0, 1, 2)))
+        stop("var_names not implemented")
     if (!(is.null(edge_labels) || 
           any(edge_labels %in% c("pair","tau","family","family_tau"))))
         stop("edge_labels not implemented")
@@ -94,13 +94,13 @@ plot.vinecop_dist <- function(x, tree = 1, type = 0, edge_labels = NULL) {
     ## set names if empty
     if (is.null(x$names))
         x$names <- as.character(1:d)
-    if (type %in% c(0, 2)) {
+    if (var_names %in% c(0, 2)) {
         names <- x$names
         x$names <- as.character(1:d)
     }
     
     #### loop through the trees and create graph objects
-    g <- lapply(tree, get_graph, vc = x, edge_labels = edge_labels, type = type)
+    g <- lapply(tree, get_graph, vc = x, edge_labels = edge_labels, var_names = var_names)
     
     plots <- vector("list", length(tree))
     for (i in seq_along(tree)) {
@@ -122,7 +122,7 @@ plot.vinecop_dist <- function(x, tree = 1, type = 0, edge_labels = NULL) {
                                    repel = TRUE) + 
             ggplot2::theme_void() +
             ggplot2::labs(title = paste0("Tree ", tree[i]))
-        if (type == 2)
+        if (var_names == 2)
             p <- p + ggplot2::labs(caption = paste(x$names, names, 
                                                    sep = " = ", 
                                                    collapse = ", "))
@@ -140,7 +140,7 @@ plot.vinecop_dist <- function(x, tree = 1, type = 0, edge_labels = NULL) {
 
 
 ## creates a graph object for a tree in a given vinecop_dist
-get_graph <- function(tree, vc, edge_labels, type) {
+get_graph <- function(tree, vc, edge_labels, var_names) {
     M <- vc$matrix
     d <- ncol(M)
     
@@ -180,14 +180,14 @@ get_graph <- function(tree, vc, edge_labels, type) {
         igraph::E(g)$name <- sapply(tree, set_edge_labels,
                                     vc = vc,
                                     edge_labels = edge_labels,
-                                    type = type)
+                                    var_names = var_names)
     }
     
     g
 }
 
 ## finds appropriate edge labels for the plot
-set_edge_labels <- function(tree, vc, edge_labels, type) {
+set_edge_labels <- function(tree, vc, edge_labels, var_names) {
     d <- nrow(vc$matrix)
     get_edge_label <- switch(edge_labels,
                              family = get_family,
@@ -246,8 +246,8 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     }
     n.tree <- length(tree)
     
-    if (!is.null(list(...)$type))
-        stop("Only contour plots allowed. Don't use the type argument!")
+    if (!is.null(list(...)$var_names))
+        stop("Only contour plots allowed. Don't use the var_names argument!")
     if (!is.null(list(...)$margins)) {
         margins <- list(...)$margins
         if (!(margins %in% c("unif", "norm", "exp", "flexp")))

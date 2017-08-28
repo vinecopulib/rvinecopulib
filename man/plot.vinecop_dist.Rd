@@ -8,7 +8,8 @@
 \alias{contour.vinecop_dist}
 \title{Plotting \code{vinecop_dist} objects.}
 \usage{
-\method{plot}{vinecop_dist}(x, tree = 1, type = 0, edge_labels = NULL)
+\method{plot}{vinecop_dist}(x, tree = 1, var_names = 0,
+  edge_labels = NULL)
 
 \method{contour}{vinecop_dist}(x, tree = "ALL", cex.nums = 1, ...)
 }
@@ -18,7 +19,7 @@
 \item{tree}{\code{"ALL"} or integer vector; specifies which trees are
 plotted.}
 
-\item{type}{integer; specifies how to make use of variable names: \cr
+\item{var_names}{integer; specifies how to make use of variable names: \cr
 \code{0} = variable names are ignored, \cr \code{1} = variable names are
 used to annotate vertices, \cr \code{2} = uses numbers in plot and adds a
 legend for variable names.}
