@@ -19,12 +19,15 @@ Imports:
     stats,
     utils
 Suggests:
+    igraph,
+    ggplot2,
+    ggraph,
     testthat
 LinkingTo: 
+    BH,
     Rcpp,
     RcppEigen,
-    RcppProgress,
-    BH
+    RcppProgress
 Roxygen: list(markdown = TRUE)
 SystemRequirements: C++11
 RoxygenNote: 6.0.1

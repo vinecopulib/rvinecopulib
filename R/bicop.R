@@ -69,6 +69,7 @@ bicop <- function(data, family_set = "all", par_method = "mle",
     )
     
     ## add information about the fit
+    bicop$names <- colnames(data)
     if (keep_data) {
         bicop$data <- data
     }
@@ -138,12 +139,14 @@ fitted.bicop <- function(object, what = "pdf", ...) {
 }
 
 #' @importFrom stats logLik
+#' @export
 logLik.bicop <- function(object, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     structure(bicop_loglik_cpp(object$data, object), "df" = object$npars)
 }
 
+#' @export
 print.bicop <- function(x, ...) {
     info <- bicop_fit_info(x)
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
