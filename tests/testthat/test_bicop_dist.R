@@ -64,5 +64,7 @@ test_that("parameter <-> tau conversion works", {
 })
 
 test_that("print method produces output", {
-    expect_output(print(bicop_dist("indep")))
+    dist <- bicop_dist("indep")
+    expect_output(print(dist))
+    expect_output(summary(dist))
 })
