@@ -32,7 +32,7 @@ test_that("d/p/r/h functions work", {
     expect_lte(max(hbicop(c(0.1, 0.2), 1, dist)), 1)
     expect_lte(max(hbicop(u, 2, dist)), 1)
     expect_lte(max(hbicop(c(0.1, 0.2), 1, dist, inverse = TRUE)), 1)
-    expect_lte(max(hbicop(u, 1, dist, inverse = TRUE)), 1)
+    expect_lte(max(hbicop(u, 2, dist, inverse = TRUE)), 1)
 })
 
 test_that("plot functions work", {
