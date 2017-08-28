@@ -104,7 +104,7 @@ rbicop <- function(n, family, rotation, parameters, U = NULL) {
         n <- length(n)
     bicop <- args2bicop(family, rotation, parameters)
     U <- prep_uniform_data(n, 2, U)
-    U <- cbind(U[, 1], bicop_hinv1_cpp(U, bicop))
+    cbind(U[, 1], bicop_hinv1_cpp(U, bicop))
 }
 
 

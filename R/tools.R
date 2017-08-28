@@ -72,4 +72,5 @@ prep_uniform_data <- function(n, d, U) {
         stopifnot(nrow(U) == n)
         stopifnot(ncol(U) == d)
     }
+    U
 }
