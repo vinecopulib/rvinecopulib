@@ -8,6 +8,25 @@
 #' @param u evaluation points, either a length d vector or a d-column matrix,
 #'   where d is the number of variables in the vine.
 #' @param vinecop an object of class `"vinecop_dist"`.
+#' @details 
+#' See [vinecop] for the estimation and construction of vine copula models. 
+#' Here, the density, distribution function and random generation 
+#' for the vine copula distribution are standard.
+#' 
+#' The Rosenblatt transform (Rosenblatt, 1952) \eqn{U = T(V)} of a random vector
+#' \eqn{V = (V_1,\ldots,V_d) ~ C} is defined as
+#' \deqn{ 
+#'   U_1 = V_1, U_2 = C(V_2|V_1), \ldots, U_d =C(V_d|V_1,\ldots,V_{d-1}), 
+#' } 
+#' where \eqn{C(v_k|v_1,\ldots,v_{k-1})} is the conditional distribution of 
+#' \eqn{V_k} given \eqn{V_1 \ldots, V_{k-1}, k = 2,\ldots,d}. The vector \eqn{V}
+#' are then independent standard uniform variables. The inverse operation 
+#' \deqn{ 
+#'   V_1 = U_1, V_2 = C^{-1}(U_2|U_1), \ldots, V_d =C^{-1}(U_d|U_1,\ldots,U_{d-1}), 
+#' } 
+#' can can be used to simulate from a copula. For any copula \eqn{C}, if 
+#' \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has 
+#' distribution \eqn{C}.
 #' @return 
 #' `dvinecop()` gives the density, `pvinecop()` gives the distribution function, 
 #' and `rvinecop()` generates random deviates.
