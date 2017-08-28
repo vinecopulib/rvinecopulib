@@ -11,7 +11,7 @@
 #' @details 
 #' See [vinecop] for the estimation and construction of vine copula models. 
 #' Here, the density, distribution function and random generation 
-#' for the vine copula distribution are standard.
+#' for the vine copulas are standard.
 #' 
 #' The Rosenblatt transform (Rosenblatt, 1952) \eqn{U = T(V)} of a random vector
 #' \eqn{V = (V_1,\ldots,V_d) ~ C} is defined as
