@@ -1,4 +1,4 @@
-#' Plotting \code{vinecop_dist} objects.
+#' Plotting \code{vinecop_dist} and `vinecop` objects.
 #'
 #' There are two plotting generics for \code{vinecop_dist} objects.
 #' \code{plot.vinecop_dist} plots one or all trees of a given R-vine copula
@@ -114,14 +114,14 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
         if (!is.null(edge_labels)) {
             p <- p + 
                 ggraph::geom_edge_link(ggplot2::aes(label = name),
-                                       fontface = 'bold',
-                                       colour = '#56B4E9',
-                                       angle_calc = 'along')
+                                       colour = '#000000',
+                                       angle_calc = 'along',
+                                       label_dodge = grid::unit(7, "points"))
         } else {
-            p <- p + ggraph::geom_edge_link(colour = '#56B4E9')
+            p <- p + ggraph::geom_edge_link(colour = '#000000')
         }
         p <- p + 
-            ggraph::geom_node_point(col = '#D55E00', size = 3) + 
+            ggraph::geom_node_point(col = '#56B4E9', size = 3) + 
             ggraph::geom_node_text(ggplot2::aes(label = name),
                                    fontface = 'bold',
                                    repel = TRUE) + 
@@ -131,9 +131,8 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
             p <- p + ggplot2::labs(caption = paste(x$names, names, 
                                                    sep = " = ", 
                                                    collapse = ", "))
-        plots[[i]] <- p + ggplot2::theme(plot.margin = ggplot2::margin(5, 5, 
-                                                                       5, 5, 
-                                                                       "pt"))
+        plots[[i]] <- p + 
+            ggplot2::theme(plot.margin = ggplot2::margin(5, 5, 5, 5, "pt"))
     }
     
     if (length(tree) > 3) {
@@ -143,6 +142,9 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
     }
 }
 
+#' @rdname plot.vinecop_dist
+#' @export
+plot.vinecop <- plot.vinecop_dist
 
 ## creates a graph object for a tree in a given vinecop_dist
 get_graph <- function(tree, vc, edge_labels, var_names) {
@@ -391,4 +393,8 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
         message(paste(msg.space, msg.tree))
     }
 }
+
+#' @rdname plot.vinecop_dist
+#' @export
+contour.vinecop <- contour.vinecop_dist
 
