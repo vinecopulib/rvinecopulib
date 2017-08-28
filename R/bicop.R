@@ -68,6 +68,7 @@ bicop <- function(data, family_set = "all", par_method = "mle",
     )
     
     ## add information about the fit
+    bicop$names <- colnames(data)
     if (keep_data) {
         bicop$data <- data
     }
