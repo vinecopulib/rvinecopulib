@@ -74,11 +74,6 @@ pbicop <- function(u, family, rotation, parameters) {
 #'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
 #'    matrix of independent \eqn{U(0, 1)} variebls, this simulates data 
 #'    from `vinecop`.
-#' @examples
-#' 
-#' ## simulate data
-#' plot(rbicop(500, "clay", 90, 3))
-#' plot(rbicop(500, bicop))
 #' @rdname bicop_methods
 #' @export
 rbicop <- function(n, family, rotation, parameters, U = NULL) {

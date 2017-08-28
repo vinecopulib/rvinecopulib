@@ -94,8 +94,4 @@ hbicop(c(0.1, 0.2), 2, joe_cop)
 hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5), inverse = TRUE)
 # h_2^{-1}(0.1 | 0.2)
 hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
-
-## simulate data
-plot(rbicop(500, "clay", 90, 3))
-plot(rbicop(500, bicop))
 }
