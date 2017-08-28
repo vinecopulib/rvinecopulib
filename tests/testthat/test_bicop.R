@@ -43,4 +43,5 @@ test_that("S3 generics work", {
     expect_equivalent(logLik(fit), sum(log(predict(fit, u, what = "pdf"))))
     expect_output(print(fit))
     expect_output(summary(fit))
+    expect_output(print(bicop(u, "nonp")))
 })
