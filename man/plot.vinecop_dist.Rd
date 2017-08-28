@@ -8,7 +8,7 @@
 \alias{contour.vinecop_dist}
 \title{Plotting \code{vinecop_dist} objects.}
 \usage{
-\method{plot}{vinecop_dist}(x, tree = 1, type = 0, edge.labels = NULL)
+\method{plot}{vinecop_dist}(x, tree = 1, type = 0, edge_labels = NULL)
 
 \method{contour}{vinecop_dist}(x, tree = "ALL", cex.nums = 1, ...)
 }
@@ -23,7 +23,7 @@ plotted.}
 used to annotate vertices, \cr \code{2} = uses numbers in plot and adds a
 legend for variable names.}
 
-\item{edge.labels}{character; either a vector of edge labels or one of the
+\item{edge_labels}{character; either a vector of edge labels or one of the
 following: \cr \code{"family"} = pair-copula family (see
 \code{\link[rvinecopulib:bicop_dist]{bicop_dist}}), \cr \code{"tau"} =
 pair-copula Kendall's tau\cr \code{"family_tau"} = pair-copula family and
@@ -32,7 +32,7 @@ Kendall's tau, \cr \code{"pair"} = for the name of the involved variables.}
 \item{cex.nums}{numeric; expansion factor for font of the numbers.}
 
 \item{\dots}{Arguments passed to
-\code{\link[rvinecopulib:contour.bicop]{contour.bicop}} respectively.}
+\code{\link[rvinecopulib:contour.bicop]{contour.bicop}}.}
 }
 \description{
 There are two plotting generics for \code{vinecop_dist} objects.
@@ -54,7 +54,7 @@ vc <- vinecop(u, "indep")
 
 # plot
 plot(vc, tree = c(1,2))
-plot(vc, edge.labels = "pair")
+plot(vc, edge_labels = "pair")
 
 # set up another vine copula model
 pcs <- lapply(1:3, function(j) # pair-copulas in tree j

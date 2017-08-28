@@ -21,14 +21,14 @@
 #' \code{0} = variable names are ignored, \cr \code{1} = variable names are
 #' used to annotate vertices, \cr \code{2} = uses numbers in plot and adds a
 #' legend for variable names.
-#' @param edge.labels character; either a vector of edge labels or one of the
+#' @param edge_labels character; either a vector of edge labels or one of the
 #' following: \cr \code{"family"} = pair-copula family (see
 #' \code{\link[rvinecopulib:bicop_dist]{bicop_dist}}), \cr \code{"tau"} = 
 #' pair-copula Kendall's tau\cr \code{"family_tau"} = pair-copula family and 
 #' Kendall's tau, \cr \code{"pair"} = for the name of the involved variables.
 #' @param cex.nums numeric; expansion factor for font of the numbers.
 #' @param \dots Arguments passed to 
-#' \code{\link[rvinecopulib:contour.bicop]{contour.bicop}} respectively.
+#' \code{\link[rvinecopulib:contour.bicop]{contour.bicop}}.
 #'
 #' @author Thomas Nagler, Thibault Vatter
 #'
@@ -46,7 +46,7 @@
 #' 
 #' # plot
 #' plot(vc, tree = c(1,2))
-#' plot(vc, edge.labels = "pair")
+#' plot(vc, edge_labels = "pair")
 #' 
 #' # set up another vine copula model
 #' pcs <- lapply(1:3, function(j) # pair-copulas in tree j
@@ -58,7 +58,7 @@
 #' contour(vc)
 #'
 #' @export
-plot.vinecop_dist <- function(x, tree = 1, type = 0, edge.labels = NULL) {
+plot.vinecop_dist <- function(x, tree = 1, type = 0, edge_labels = NULL) {
     if (!requireNamespace("ggraph", quietly = TRUE))
         stop("The 'ggraph' package must be installed to plot.")
     if (!requireNamespace("grid", quietly = TRUE))
@@ -87,9 +87,9 @@ plot.vinecop_dist <- function(x, tree = 1, type = 0, edge.labels = NULL) {
     }
     if (!all(type %in% c(0, 1, 2)))
         stop("type not implemented")
-    if (!(is.null(edge.labels) || 
-          any(edge.labels %in% c("pair","tau","family","family_tau"))))
-        stop("edge.labels not implemented")
+    if (!(is.null(edge_labels) || 
+          any(edge_labels %in% c("pair","tau","family","family_tau"))))
+        stop("edge_labels not implemented")
     
     ## set names if empty
     if (is.null(x$names))
@@ -100,13 +100,13 @@ plot.vinecop_dist <- function(x, tree = 1, type = 0, edge.labels = NULL) {
     }
     
     #### loop through the trees and create graph objects
-    g <- lapply(tree, get_graph, vc = x, edge.labels = edge.labels, type = type)
+    g <- lapply(tree, get_graph, vc = x, edge_labels = edge_labels, type = type)
     
     plots <- vector("list", length(tree))
     for (i in seq_along(tree)) {
         p <- ggraph::ggraph(g[[i]], 'igraph',
                             algorithm = 'tree', circular = TRUE)
-        if (!is.null(edge.labels)) {
+        if (!is.null(edge_labels)) {
             p <- p + 
                 ggraph::geom_edge_link(ggplot2::aes(label = name),
                                        fontface = 'bold',
@@ -140,7 +140,7 @@ plot.vinecop_dist <- function(x, tree = 1, type = 0, edge.labels = NULL) {
 
 
 ## creates a graph object for a tree in a given vinecop_dist
-get_graph <- function(tree, vc, edge.labels, type) {
+get_graph <- function(tree, vc, edge_labels, type) {
     M <- vc$matrix
     d <- ncol(M)
     
@@ -176,10 +176,10 @@ get_graph <- function(tree, vc, edge.labels, type) {
     g <- igraph::graph_from_adjacency_matrix(I, mode = "undirected")
     
     ## add edge labels
-    if (!is.null(edge.labels)) {
+    if (!is.null(edge_labels)) {
         igraph::E(g)$name <- sapply(tree, set_edge_labels,
                                     vc = vc,
-                                    edge.labels = edge.labels,
+                                    edge_labels = edge_labels,
                                     type = type)
     }
     
@@ -187,9 +187,9 @@ get_graph <- function(tree, vc, edge.labels, type) {
 }
 
 ## finds appropriate edge labels for the plot
-set_edge_labels <- function(tree, vc, edge.labels, type) {
+set_edge_labels <- function(tree, vc, edge_labels, type) {
     d <- nrow(vc$matrix)
-    get_edge_label <- switch(edge.labels,
+    get_edge_label <- switch(edge_labels,
                              family = get_family,
                              tau = get_tau,
                              family_tau = get_family_tau,
