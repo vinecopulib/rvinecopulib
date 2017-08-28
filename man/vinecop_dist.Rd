@@ -13,7 +13,7 @@ dvinecop(u, vinecop)
 
 pvinecop(u, vinecop, n_mc = 10^4)
 
-rvinecop(n, vinecop)
+rvinecop(n, vinecop, U = NULL)
 }
 \arguments{
 \item{pair_copulas}{A nested list of 'bicop_dist' objects, where
@@ -31,6 +31,11 @@ where d is the number of variables in the vine.}
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 
 \item{n}{number of observations.}
+
+\item{U}{optionally, an \eqn{n \times d} matrix of values in \eqn{(0,1)}.
+The result is then the inverse Rosenblatt transform of \code{U}; if \code{U} is a
+matrix of independent \eqn{U(0, 1)} variebls, this simulates data
+from \code{vinecop}.}
 }
 \description{
 Vine copula models
