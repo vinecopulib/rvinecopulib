@@ -41,6 +41,7 @@ test_that("plot functions work", {
     
     # we could check some values in the plot objects
     expect_silent(p <- plot(vc))
+    expect_silent(p <- plot(vc, 1:2))
     expect_silent(p <- contour(vc))
     expect_silent(p <- contour(vc, margins = "unif"))
 })
