@@ -32,9 +32,10 @@ where d is the number of variables in the vine.}
 
 \item{n}{number of observations.}
 
-\item{U}{optionally, an \eqn{n \times d} matrix of independent \eqn{U[0, 1]}
-variables. The result is then the inverse Rosenblatt transform of \code{U}
-which corresponds to simulated data from \code{vinecop}.}
+\item{U}{optionally, an \eqn{n \times d} matrix of values in \eqn{(0,1)}.
+The result is then the inverse Rosenblatt transform of \code{U}; if \code{U} is a
+matrix of independent \eqn{U(0, 1)} variebls, this simulates data
+from \code{vinecop}.}
 }
 \description{
 Vine copula models

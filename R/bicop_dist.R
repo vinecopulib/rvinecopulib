@@ -90,9 +90,10 @@ pbicop <- function(u, family, rotation, parameters) {
 #' @rdname bicop_dist
 #' @param n number of observations. If `length(n) > 1``, the length is taken to
 #'   be the number required.
-#' @param U optionally, an \eqn{n \times 2} matrix of independent \eqn{U[0, 1]}
-#'    variables. The result is then the inverse Rosenblatt transform of `U` 
-#'    which corresponds to simulated data from `bicop`.
+#' @param U optionally, an \eqn{n \times 2} matrix of values in \eqn{(0,1)}.
+#'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
+#'    matrix of independent \eqn{U(0, 1)} variebls, this simulates data 
+#'    from `vinecop`.
 #' @examples
 #' 
 #' ## simulate data
