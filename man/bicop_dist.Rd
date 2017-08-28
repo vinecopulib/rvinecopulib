@@ -14,7 +14,7 @@ dbicop(u, family, rotation, parameters)
 
 pbicop(u, family, rotation, parameters)
 
-rbicop(n, family, rotation, parameters)
+rbicop(n, family, rotation, parameters, U = NULL)
 
 hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
 }
@@ -30,6 +30,10 @@ hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
 
 \item{n}{number of observations. If `length(n) > 1``, the length is taken to
 be the number required.}
+
+\item{U}{optionally, an \eqn{n \times 2} matrix of independent \eqn{U[0, 1]}
+variables. The result is then the inverse Rosenblatt transform of \code{U}
+which corresponds to simulated data from \code{bicop}.}
 
 \item{cond_var}{either \code{1} or \code{2}; \code{cond_var = 1} conditions on the first
 variable, \code{cond_var = 2} on the second.}

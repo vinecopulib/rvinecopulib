@@ -90,17 +90,21 @@ pbicop <- function(u, family, rotation, parameters) {
 #' @rdname bicop_dist
 #' @param n number of observations. If `length(n) > 1``, the length is taken to
 #'   be the number required.
+#' @param U optionally, an \eqn{n \times 2} matrix of independent \eqn{U[0, 1]}
+#'    variables. The result is then the inverse Rosenblatt transform of `U` 
+#'    which corresponds to simulated data from `bicop`.
 #' @examples
 #' 
 #' ## simulate data
 #' plot(rbicop(500, "clay", 90, 3))
 #' plot(rbicop(500, bicop))
 #' @export
-rbicop <- function(n, family, rotation, parameters) {
+rbicop <- function(n, family, rotation, parameters, U = NULL) {
     if (length(n) > 1)
         n <- length(n)
     bicop <- args2bicop(family, rotation, parameters)
-    bicop_simulate_cpp(n, bicop)
+    U <- prep_uniform_data(n, 2, U)
+    bicop_hinv1_cpp(U, bicop)
 }
 
 
