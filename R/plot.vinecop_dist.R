@@ -38,29 +38,27 @@
 #' @keywords plot
 #'
 #' @examples
-#' # specify pair-copulas
-#' pcs <- list(
-#'     lapply(runif(3),  # pair-copulas in first tree
-#'           function(cor) bicop_dist("gaussian", 0, cor)),
-#'     lapply(runif(2),  # pair-copulas in second tree
-#'           function(cor) bicop_dist("gaussian", 0, cor)),
-#'     lapply(runif(1),  # pair-copulas in first tree
-#'           function(cor) bicop_dist("gaussian", 0, cor))
-#' )
-#' 
-#' # specify R-vine matrix
-#' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
-#' 
 #' # set up vine copula model
+#' d <- 20
+#' n <- 2e2
+#' u <- matrix(runif(n*d), n, d)
+#' vc <- vinecop(u, "indep")
+#' 
+#' # plot
+#' plot(vc, tree = c(1,2))
+#' plot(vc, edge.labels = "pair")
+#' 
+#' # set up another vine copula model
+#' pcs <- lapply(1:3, function(j) # pair-copulas in tree j
+#'     lapply(runif(4-j), function(cor) bicop_dist("gaussian", 0, cor)))
+#' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
 #' vc <- vinecop_dist(pcs, mat)
 #' 
-#'
-#' # plot trees
-#' \dontrun{plot(vc)}
+#' # contour plot
+#' contour(vc)
 #'
 #' @export
-plot.vinecop_dist <- function(x, tree = 1, type = 0, edge.labels = NULL,
-                              ...) {
+plot.vinecop_dist <- function(x, tree = 1, type = 0, edge.labels = NULL) {
     if (!requireNamespace("ggraph", quietly = TRUE))
         stop("The 'ggraph' package must be installed to plot.")
     if (!requireNamespace("grid", quietly = TRUE))
@@ -106,19 +104,21 @@ plot.vinecop_dist <- function(x, tree = 1, type = 0, edge.labels = NULL,
     
     plots <- vector("list", length(tree))
     for (i in seq_along(tree)) {
-        p <- ggraph::ggraph(g[[i]], 'igraph', algorithm = 'tree')
+        p <- ggraph::ggraph(g[[i]], 'igraph',
+                            algorithm = 'tree', circular = TRUE)
         if (!is.null(edge.labels)) {
             p <- p + 
                 ggraph::geom_edge_link(ggplot2::aes(label = name),
-                                       angle_calc = 'along',
-                                       label_dodge = grid::unit(5e-2, "native"))
+                                       fontface = 'bold',
+                                       colour = '#56B4E9',
+                                       angle_calc = 'along')
         } else {
-            p <- p + ggraph::geom_edge_link()
+            p <- p + ggraph::geom_edge_link(colour = '#56B4E9')
         }
         p <- p + 
-            ggraph::geom_node_point(col = 'steelblue', size = 3) + 
+            ggraph::geom_node_point(col = '#D55E00', size = 3) + 
             ggraph::geom_node_text(ggplot2::aes(label = name),
-                                   nudge_y = 0.05,
+                                   fontface = 'bold',
                                    repel = TRUE) + 
             ggplot2::theme_void() +
             ggplot2::labs(title = paste0("Tree ", tree[i]))
@@ -249,6 +249,7 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     if (!is.null(list(...)$type))
         stop("Only contour plots allowed. Don't use the type argument!")
     if (!is.null(list(...)$margins)) {
+        margins <- list(...)$margins
         if (!(margins %in% c("unif", "norm", "exp", "flexp")))
             stop("'margins' has to be one of 'unif', 'norm', 'exp', or 'flexp'.")
     } else {

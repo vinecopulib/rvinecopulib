@@ -8,8 +8,7 @@
 \alias{contour.vinecop_dist}
 \title{Plotting \code{vinecop_dist} objects.}
 \usage{
-\method{plot}{vinecop_dist}(x, tree = 1, type = 0, edge.labels = NULL,
-  ...)
+\method{plot}{vinecop_dist}(x, tree = 1, type = 0, edge.labels = NULL)
 
 \method{contour}{vinecop_dist}(x, tree = "ALL", cex.nums = 1, ...)
 }
@@ -30,10 +29,10 @@ following: \cr \code{"family"} = pair-copula family (see
 pair-copula Kendall's tau\cr \code{"family_tau"} = pair-copula family and
 Kendall's tau, \cr \code{"pair"} = for the name of the involved variables.}
 
+\item{cex.nums}{numeric; expansion factor for font of the numbers.}
+
 \item{\dots}{Arguments passed to
 \code{\link[rvinecopulib:contour.bicop]{contour.bicop}} respectively.}
-
-\item{cex.nums}{numeric; expansion factor for font of the numbers.}
 }
 \description{
 There are two plotting generics for \code{vinecop_dist} objects.
@@ -47,25 +46,24 @@ If you want the contour boxes to be perfect squares, the plot height should
 be \code{1.25/length(tree)*(d - min(tree))} times the plot width.
 }
 \examples{
-# specify pair-copulas
-pcs <- list(
-    lapply(runif(3),  # pair-copulas in first tree
-          function(cor) bicop_dist("gaussian", 0, cor)),
-    lapply(runif(2),  # pair-copulas in second tree
-          function(cor) bicop_dist("gaussian", 0, cor)),
-    lapply(runif(1),  # pair-copulas in first tree
-          function(cor) bicop_dist("gaussian", 0, cor))
-)
-
-# specify R-vine matrix
-mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
-
 # set up vine copula model
+d <- 20
+n <- 2e2
+u <- matrix(runif(n*d), n, d)
+vc <- vinecop(u, "indep")
+
+# plot
+plot(vc, tree = c(1,2))
+plot(vc, edge.labels = "pair")
+
+# set up another vine copula model
+pcs <- lapply(1:3, function(j) # pair-copulas in tree j
+    lapply(runif(4-j), function(cor) bicop_dist("gaussian", 0, cor)))
+mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
 vc <- vinecop_dist(pcs, mat)
 
-
-# plot trees
-\dontrun{plot(vc)}
+# contour plot
+contour(vc)
 
 }
 \seealso{
