@@ -4,7 +4,6 @@ sudo: required
 language: R
 warnings_are_errors: false
 
-
 apt_packages:
   - libcurl4-openssl-dev
   - libxml2-dev
@@ -12,6 +11,7 @@ apt_packages:
 
 r_packages:
   - BH
+  - covr
   - ggraph
   - Rcpp
   - RcppEigen
@@ -27,3 +27,6 @@ before_install:
 
 repos:
   CRAN: http://cran.rstudio.com
+
+after_success:
+  - Rscript -e 'covr::codecov(line_exclusion=list.files(recursive = TRUE)[grep("^(?!.*wrappers).*\\.(hpp|h|cpp|c)$", list.files(recursive = TRUE), perl = TRUE)])'
