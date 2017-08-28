@@ -73,7 +73,6 @@ print.bicop_dist <- function(x, ...) {
 #' 
 #' ## simulate data
 #' plot(rbicop(500, "clay", 90, 3))
-#' plot(rbicop(500, bicop))
 #' 
 #' ## h-functions
 #' joe_cop <- bicop_dist("joe", 0, 3)
