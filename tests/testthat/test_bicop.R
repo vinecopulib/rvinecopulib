@@ -19,6 +19,12 @@ test_that("returns proper 'bicop' object", {
         names(fit), 
         c("family", "rotation", "parameters", "npars", "controls", "nobs")
     )
+    
+    colnames(u) <- paste(1:2)
+    expect_identical(
+        names(bicop(u, "indep")), 
+        c("family", "rotation", "parameters", "npars", "names", "data", "controls", "nobs")
+    )
 })
 
 test_that("partial matching for family set names", {
