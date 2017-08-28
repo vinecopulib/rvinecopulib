@@ -26,6 +26,7 @@
 #' \code{\link[rvinecopulib:bicop_dist]{bicop_dist}}), \cr \code{"tau"} = 
 #' pair-copula Kendall's tau\cr \code{"family_tau"} = pair-copula family and 
 #' Kendall's tau, \cr \code{"pair"} = for the name of the involved variables.
+#' @param cex.nums numeric; expansion factor for font of the numbers.
 #' @param \dots Arguments passed to 
 #' \code{\link[rvinecopulib:contour.bicop]{contour.bicop}} respectively.
 #'
@@ -114,9 +115,11 @@ plot.vinecop_dist <- function(x, tree = 1, type = 0, edge.labels = NULL,
         } else {
             p <- p + ggraph::geom_edge_link()
         }
-        p <- p +
-            ggraph::geom_node_label(ggplot2::aes(label = name), 
-                                    bg = 'steelblue', col = 'white') + 
+        p <- p + 
+            ggraph::geom_node_point(col = 'steelblue', size = 3) + 
+            ggraph::geom_node_text(ggplot2::aes(label = name),
+                                   nudge_y = 0.05,
+                                   repel = TRUE) + 
             ggplot2::theme_void() +
             ggplot2::labs(title = paste0("Tree ", tree[i]))
         if (type == 2)
@@ -230,7 +233,7 @@ get_family_tau <- function(j, tree, vc) {
 #' @importFrom graphics par plot.new plot.window abline polygon
 #' @importFrom graphics strheight strwidth text
 #' @export
-contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, data = NULL, ...) {
+contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     
     ## check input
     d <- nrow(x$matrix)
@@ -264,19 +267,17 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, data = NULL, ...
         xylim <- range(c(list(...)$xlim, list(...)$ylim))
     }
     
+    if (is.null(x$names))
+        x$names <- as.character(1:d)
+    
     ## set up for plotting windows (restore settings on exit)
     usr <- par(mfrow = c(n.tree, d - min(tree)), mar = rep(0, 4))
     on.exit(par(usr))
-    
-    ## calculate pseudo-observations (if necessary)
-    #psobs <- if (!is.null(data)) vine_psobs(data, x) else NULL
-    psobs <- NULL
     
     # contours: adjust limits for headings
     offs <- 0.25
     mult <- 1.35
     ylim[2] <- ylim[2] + offs*diff(ylim)
-    
     
     ## run through trees -----------------------------------------------
     # initialize check variables
@@ -291,11 +292,7 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, data = NULL, ...
             for (i in rev(tree)) {
                 for (j in 1:(d - min(tree))) {
                     if (j <= d - i) {
-                        if (is.null(psobs)) {
-                            pcfit <- x$pair_copulas[[i]][[j]]
-                        } else {
-                            pcfit <- bicop(psobs[[i]][[j]], "tll")
-                        }
+                        pcfit <- x$pair_copulas[[i]][[j]]
                         
                         # set up list of contour arguments
                         args <- list(x = pcfit,
@@ -389,67 +386,4 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, data = NULL, ...
         message(paste(msg.space, msg.tree))
     }
 }
-
-# vine_psobs <- function (uev, object) {
-#     uev <- as.matrix(uev)
-#     if (ncol(uev) == 1)
-#         uev <- matrix(uev, 1, nrow(uev))
-#     if (any(uev > 1) || any(uev < 0))
-#         stop("Data has be in the interval [0,1].")
-#     n <- ncol(uev)
-#     N <- nrow(uev)
-#     if (ncol(uev) != ncol(object$matrix))
-#         stop("Dimensions of 'data' and 'object' do not match.")
-#     if (!is(object,"vinecop"))
-#         stop("'object' has to be an vinecop object")
-#     
-#     o <- diag(object$Matrix)
-#     oldobject <- object
-#     if (any(o != length(o):1)) {
-#         object <- normalizevinecop(object)
-#         uev <- matrix(uev[, o[length(o):1]], N, n)
-#     }
-#     
-#     ## initialize objects
-#     CondDistr <- neededCondDistr(object$Matrix)
-#     val <- array(1, dim = c(n, n, N))
-#     out <- lapply(1:(n - 1), list)
-#     V <- list()
-#     V$direct <- array(NA, dim = c(n, n, N))
-#     V$indirect <- array(NA, dim = c(n, n, N))
-#     V$direct[n, , ] <- t(uev[, n:1])
-#     
-#     for (i in (n - 1):1) {
-#         for (k in n:(i + 1)) {
-#             ## extract data for current tree
-#             m <- object$MaxMat[k, i]
-#             zr1 <- V$direct[k, i, ]
-#             if (m == object$Matrix[k, i]) {
-#                 zr2 <- V$direct[k, (n - m + 1), ]
-#             } else {
-#                 zr2 <- V$indirect[k, (n - m + 1), ]
-#             }
-#             
-#             ## store data
-#             out[[n - k + 1]][[i]] <- cbind(zr2, zr1)
-#             
-#             ## calculate pseudo-observations for next tree
-#             if (CondDistr$direct[k - 1, i])
-#                 V$direct[k - 1, i, ] <- bicopHfunc1(zr2, zr1,
-#                                                     object$family[k, i],
-#                                                     object$par[k, i],
-#                                                     object$par2[k, i],
-#                                                     check.pars = FALSE)
-#             if (CondDistr$indirect[k - 1, i])
-#                 V$indirect[k - 1, i, ] <- bicopHfunc2(zr2, zr1,
-#                                                       object$family[k, i],
-#                                                       object$par[k, i],
-#                                                       object$par2[k, i],
-#                                                       check.pars = FALSE)
-#         }
-#     }
-#     
-#     ## return list of pseudo-observations
-#     out
-# }
 

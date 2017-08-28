@@ -11,8 +11,7 @@
 \method{plot}{vinecop_dist}(x, tree = 1, type = 0, edge.labels = NULL,
   ...)
 
-\method{contour}{vinecop_dist}(x, tree = "ALL", cex.nums = 1, data = NULL,
-  ...)
+\method{contour}{vinecop_dist}(x, tree = "ALL", cex.nums = 1, ...)
 }
 \arguments{
 \item{x}{\code{vinecop_dist} object.}
@@ -33,6 +32,8 @@ Kendall's tau, \cr \code{"pair"} = for the name of the involved variables.}
 
 \item{\dots}{Arguments passed to
 \code{\link[rvinecopulib:contour.bicop]{contour.bicop}} respectively.}
+
+\item{cex.nums}{numeric; expansion factor for font of the numbers.}
 }
 \description{
 There are two plotting generics for \code{vinecop_dist} objects.
