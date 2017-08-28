@@ -104,7 +104,11 @@ rbicop <- function(n, family, rotation, parameters, U = NULL) {
         n <- length(n)
     bicop <- args2bicop(family, rotation, parameters)
     U <- prep_uniform_data(n, 2, U)
-    cbind(U[, 1], bicop_hinv1_cpp(U, bicop))
+    U <- cbind(U[, 1], bicop_hinv1_cpp(U, bicop))
+    if (!is.null(bicop$names)) 
+        colnames(U) <- bicop$names
+    
+    U
 }
 
 

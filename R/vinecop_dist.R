@@ -83,7 +83,11 @@ rvinecop <- function(n, vinecop, U = NULL) {
     d <- ncol(vinecop$matrix)
     U <- prep_uniform_data(n, d, U)
     stopifnot(inherits(vinecop, "vinecop_dist"))
-    vinecop_inverse_rosenblatt_cpp(U, vinecop)
+    U <- vinecop_inverse_rosenblatt_cpp(U, vinecop)
+    if (!is.null(vinecop$names))
+        colnames(U) <- vinecop$names
+    
+    U
 }
 
 #' @export
