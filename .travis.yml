@@ -4,7 +4,6 @@ sudo: required
 language: R
 warnings_are_errors: false
 
-
 apt_packages:
   - libgsl0-dbg
   - libgsl0-dev
