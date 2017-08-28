@@ -8,8 +8,8 @@
 \alias{contour.vinecop_dist}
 \title{Plotting \code{vinecop_dist} objects.}
 \usage{
-\method{plot}{vinecop_dist}(x, tree = 1, var_names = 0,
-  edge_labels = NULL)
+\method{plot}{vinecop_dist}(x, tree = 1, var_names = "ignore",
+  edge_labels = NULL, ...)
 
 \method{contour}{vinecop_dist}(x, tree = "ALL", cex.nums = 1, ...)
 }
@@ -20,9 +20,9 @@
 plotted.}
 
 \item{var_names}{integer; specifies how to make use of variable names: \cr
-\code{0} = variable names are ignored, \cr \code{1} = variable names are
-used to annotate vertices, \cr \code{2} = uses numbers in plot and adds a
-legend for variable names.}
+\code{"ignore"} = variable names are ignored,
+\cr \code{"use"} = variable names are used to annotate vertices,
+\cr \code{"legend"} = uses numbers in plot and adds a legend for variable names.}
 
 \item{edge_labels}{character; either a vector of edge labels or one of the
 following: \cr \code{"family"} = pair-copula family (see
@@ -30,10 +30,10 @@ following: \cr \code{"family"} = pair-copula family (see
 pair-copula Kendall's tau\cr \code{"family_tau"} = pair-copula family and
 Kendall's tau, \cr \code{"pair"} = for the name of the involved variables.}
 
-\item{cex.nums}{numeric; expansion factor for font of the numbers.}
+\item{\dots}{Unused for \code{plot} and passed to
+\code{\link[rvinecopulib:contour.bicop]{contour.bicop}} for \code{contour}.}
 
-\item{\dots}{Arguments passed to
-\code{\link[rvinecopulib:contour.bicop]{contour.bicop}}.}
+\item{cex.nums}{numeric; expansion factor for font of the numbers.}
 }
 \description{
 There are two plotting generics for \code{vinecop_dist} objects.

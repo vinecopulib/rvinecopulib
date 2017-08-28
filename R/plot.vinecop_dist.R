@@ -18,17 +18,17 @@
 #' @param tree \code{"ALL"} or integer vector; specifies which trees are
 #' plotted.
 #' @param var_names integer; specifies how to make use of variable names: \cr
-#' \code{0} = variable names are ignored, \cr \code{1} = variable names are
-#' used to annotate vertices, \cr \code{2} = uses numbers in plot and adds a
-#' legend for variable names.
+#' \code{"ignore"} = variable names are ignored, 
+#' \cr \code{"use"} = variable names are used to annotate vertices, 
+#' \cr \code{"legend"} = uses numbers in plot and adds a legend for variable names.
 #' @param edge_labels character; either a vector of edge labels or one of the
 #' following: \cr \code{"family"} = pair-copula family (see
 #' \code{\link[rvinecopulib:bicop_dist]{bicop_dist}}), \cr \code{"tau"} = 
 #' pair-copula Kendall's tau\cr \code{"family_tau"} = pair-copula family and 
 #' Kendall's tau, \cr \code{"pair"} = for the name of the involved variables.
 #' @param cex.nums numeric; expansion factor for font of the numbers.
-#' @param \dots Arguments passed to 
-#' \code{\link[rvinecopulib:contour.bicop]{contour.bicop}}.
+#' @param \dots Unused for \code{plot} and passed to 
+#' \code{\link[rvinecopulib:contour.bicop]{contour.bicop}} for \code{contour}.
 #'
 #' @author Thomas Nagler, Thibault Vatter
 #'
@@ -58,7 +58,8 @@
 #' contour(vc)
 #'
 #' @export
-plot.vinecop_dist <- function(x, tree = 1, var_names = 0, edge_labels = NULL) {
+plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore", 
+                              edge_labels = NULL, ...) {
     if (!requireNamespace("ggraph", quietly = TRUE))
         stop("The 'ggraph' package must be installed to plot.")
     if (!requireNamespace("grid", quietly = TRUE))
@@ -85,7 +86,7 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = 0, edge_labels = NULL) {
             tree <- 1:(d - 1)
         }
     }
-    if (!all(var_names %in% c(0, 1, 2)))
+    if (!all(var_names %in% c("ignore", "use", "legend")))
         stop("var_names not implemented")
     if (!(is.null(edge_labels) || 
           any(edge_labels %in% c("pair","tau","family","family_tau"))))
@@ -94,15 +95,19 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = 0, edge_labels = NULL) {
     ## set names if empty
     if (is.null(x$names))
         x$names <- as.character(1:d)
-    if (var_names %in% c(0, 2)) {
+    if (var_names %in% c("ignore", "legend")) {
         names <- x$names
         x$names <- as.character(1:d)
     }
     
     #### loop through the trees and create graph objects
-    g <- lapply(tree, get_graph, vc = x, edge_labels = edge_labels, var_names = var_names)
+    g <- lapply(tree, get_graph, 
+                vc = x, 
+                edge_labels = edge_labels, 
+                var_names = var_names)
     
     plots <- vector("list", length(tree))
+    name <- NULL # for the CRAN check
     for (i in seq_along(tree)) {
         p <- ggraph::ggraph(g[[i]], 'igraph',
                             algorithm = 'tree', circular = TRUE)
@@ -122,7 +127,7 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = 0, edge_labels = NULL) {
                                    repel = TRUE) + 
             ggplot2::theme_void() +
             ggplot2::labs(title = paste0("Tree ", tree[i]))
-        if (var_names == 2)
+        if (var_names == "legend")
             p <- p + ggplot2::labs(caption = paste(x$names, names, 
                                                    sep = " = ", 
                                                    collapse = ", "))
@@ -179,15 +184,14 @@ get_graph <- function(tree, vc, edge_labels, var_names) {
     if (!is.null(edge_labels)) {
         igraph::E(g)$name <- sapply(tree, set_edge_labels,
                                     vc = vc,
-                                    edge_labels = edge_labels,
-                                    var_names = var_names)
+                                    edge_labels = edge_labels)
     }
     
     g
 }
 
 ## finds appropriate edge labels for the plot
-set_edge_labels <- function(tree, vc, edge_labels, var_names) {
+set_edge_labels <- function(tree, vc, edge_labels) {
     d <- nrow(vc$matrix)
     get_edge_label <- switch(edge_labels,
                              family = get_family,
