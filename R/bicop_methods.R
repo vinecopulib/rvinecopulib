@@ -1,34 +1,3 @@
-#' @param family the copula family, a string containing the family name (see
-#' *Details* for all possible families).
-#' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
-#' @param parameters a vector or matrix of copula paramters.
-#' @rdname bicop
-#' @export
-bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {
-    stopifnot(length(family) == 1)
-    if (family %in% setdiff(family_set_nonparametric, "indep"))
-        stop("bicop_dist should not be used directly with nonparametric families.")
-    family <- family_set_all[pmatch(family, family_set_all)]
-    dist <- list(family     = family,
-                 rotation   = rotation,
-                 parameters = as.matrix(parameters),
-                 npars      = length(parameters))
-    bicop_check_cpp(dist)
-    structure(dist, class = "bicop_dist")
-}
-
-#' @export
-print.bicop_dist <- function(x, ...) {
-    if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
-        x$parameters <- "[30x30 grid]"
-    }
-    cat("Bivariate copula ('bicop_dist'): ",
-        "family = ", x$family,
-        ", rotation = ", x$rotation,
-        ", parameters = ", x$parameters,
-        sep = "")
-}
-
 #' Bivariate copula distributions
 #' 
 #' Density, distribution function, random generation and h-functions (with 
@@ -164,4 +133,120 @@ tau_to_par <- function(family, tau) {
     if (!(bicop$family %in% c(family_set_elliptical, family_set_nonparametric)))
         bicop$rotation <- ifelse(tau > 0, 0, 90)
     bicop_tau_to_par_cpp(bicop, tau)
+}
+
+#' Predictions and fitted values for a bivariate copula model
+#' 
+#' Predictions of the density, distribution function,  
+#' h-functions (with their inverses) for a bivariate copula model.
+#'
+#' @aliases predict.bicop fitted.bicop
+#' @param object a `bicop` object.
+#' @param newdata points where the fit shall be evaluated.
+#' @param what what to predict, one of `"pdf"`, `"cdf"`, `"hfunc1"`, `"hfunc2"`, 
+#'    `"hinv1"`, `"hinv2"`.
+#' @param ... unused.
+#' @return 
+#' `fitted()` and `logLik()` have return values similar to `\link{dbicop}`, 
+#' `\link{pbicop}`, and `\link{hbicop}`.
+#' @examples
+#' # Simulate and fit a bivariate copula model
+#' u <- rbicop(500, "gauss", 0, 0.5)
+#' fit <- bicop(u, "par")
+#' 
+#' # Predictions
+#' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
+#' @export
+predict.bicop <- function(object, newdata, what = "pdf", ...) {
+    stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
+    newdata <- if_vec_to_matrix(newdata)
+    switch(
+        what,
+        "pdf"    = bicop_pdf_cpp(newdata, object),
+        "cdf"    = bicop_cdf_cpp(newdata, object),
+        "hfunc1" = bicop_hfunc1_cpp(newdata, object),
+        "hfunc2" = bicop_hfunc2_cpp(newdata, object),
+        "hinv1"  = bicop_hinv1_cpp(newdata, object),
+        "hinv2"  = bicop_hinv2_cpp(newdata, object)
+    )
+}
+
+#' @rdname predict.bicop
+#' @export
+fitted.bicop <- function(object, what = "pdf", ...) {
+    if (is.null(object$data))
+        stop("data have not been stored, use keep_data = TRUE when fitting.")
+    stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
+    switch(
+        what,
+        "pdf"    = bicop_pdf_cpp(object$data, object),
+        "cdf"    = bicop_cdf_cpp(object$data, object),
+        "hfunc1" = bicop_hfunc1_cpp(object$data, object),
+        "hfunc2" = bicop_hfunc2_cpp(object$data, object),
+        "hinv1"  = bicop_hinv1_cpp(object$data, object),
+        "hinv2"  = bicop_hinv2_cpp(object$data, object)
+    )
+}
+
+#' @importFrom stats logLik
+#' @export
+logLik.bicop <- function(object, ...) {
+    if (is.null(object$data))
+        stop("data have not been stored, use keep_data = TRUE when fitting.")
+    structure(bicop_loglik_cpp(object$data, object), "df" = object$npars)
+}
+
+#' @export
+print.bicop_dist <- function(x, ...) {
+    if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
+        x$parameters <- "[30x30 grid]"
+    }
+    cat("Bivariate copula ('bicop_dist'): ",
+        "family = ", x$family,
+        ", rotation = ", x$rotation,
+        ", parameters = ", x$parameters,
+        sep = "")
+}
+
+#' @export
+summary.bicop_dist <- function(x, ...) {
+    print.bicop_dist(x, ...)
+}
+
+#' @export
+print.bicop <- function(x, ...) {
+    info <- bicop_fit_info(x)
+    if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
+        x$parameters <- "[30x30 grid]"
+    }
+    cat("Bivariate copula fit ('bicop'): ",
+        "family = ", x$family,
+        ", rotation = ", x$rotation,
+        ", parameters = ", x$parameters,
+        "\n",
+        sep = "")
+    cat("nobs =", info$nobs, "  ")
+    cat("logLik =", round(info$logLik, 2), "  ")
+    cat("npars =", round(info$npars, 2), "  ")
+    cat("AIC =", round(info$AIC, 2), "  ")
+    cat("BIC =", round(info$BIC, 2), "  ")
+    
+    attr(x, "info") <- info
+    invisible(x)
+}
+
+#' @export
+summary.bicop <- function(x, ...) {
+    print.bicop(x, ...)
+}
+
+bicop_fit_info <- function(bc) {
+    ll <- logLik(bc)
+    list(
+        nobs   = bc$nobs,
+        logLik = ll[1],
+        npars  = attr(ll, "df"),
+        AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
+        BIC    = -2 * ll[1] + log(bc$nobs) * attr(ll, "df")
+    )
 }
