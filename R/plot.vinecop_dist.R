@@ -11,7 +11,7 @@
 #'
 #' @method plot vinecop_dist
 #'
-#' @aliases vinecop_dist vinecop_dist plot.vinecop contour.vinecop
+#' @aliases contour.vinecop_dist plot.vinecop contour.vinecop
 #'
 #' @inheritParams plot.bicop_dist
 #' @param x \code{vinecop_dist} object.
@@ -38,14 +38,14 @@
 #'
 #' @examples
 #' # specify pair-copulas
-# pcs <- list(
-#     lapply(runif(3),  # pair-copulas in first tree
-#           function(cor) bicop_dist("gaussian", 0, cor)),
-#     lapply(runif(2),  # pair-copulas in second tree
-#           function(cor) bicop_dist("gaussian", 0, cor)),
-#     lapply(runif(1),  # pair-copulas in first tree
-#           function(cor) bicop_dist("gaussian", 0, cor))
-# )
+#' pcs <- list(
+#'     lapply(runif(3),  # pair-copulas in first tree
+#'           function(cor) bicop_dist("gaussian", 0, cor)),
+#'     lapply(runif(2),  # pair-copulas in second tree
+#'           function(cor) bicop_dist("gaussian", 0, cor)),
+#'     lapply(runif(1),  # pair-copulas in first tree
+#'           function(cor) bicop_dist("gaussian", 0, cor))
+#' )
 #' 
 #' # specify R-vine matrix
 #' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
@@ -69,7 +69,7 @@ plot.vinecop_dist <- function(x, tree = 1, type = 0, edge.labels = NULL,
     if (!requireNamespace("igraph", quietly = TRUE))
         stop("The 'igraph' package must be installed to plot.")
     
-    M <- vc$matrix
+    M <- x$matrix
     d <- nrow(M)
     
     ## sanity checks
@@ -224,4 +224,232 @@ get_tau <- function(j, tree, vc) {
 get_family_tau <- function(j, tree, vc) {
     paste0(get_family(j, tree, vc), "(", get_tau(j, tree, vc), ")")
 }
+
+#' @method contour vinecop_dist
+#' @rdname plot.vinecop_dist
+#' @importFrom graphics par plot.new plot.window abline polygon
+#' @importFrom graphics strheight strwidth text
+#' @export
+contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, data = NULL, ...) {
+    
+    ## check input
+    d <- nrow(x$matrix)
+    if (!inherits(x, "vinecop_dist"))
+        stop("'x' has to be an vinecop_dist object.")
+    if (tree != "ALL" && any(tree > d - 1))
+        stop("Selected tree does not exist.")
+    if (any(tree == "ALL")) {
+        tree <- 1:(d - 1)
+    }
+    n.tree <- length(tree)
+    
+    if (!is.null(list(...)$type))
+        stop("Only contour plots allowed. Don't use the type argument!")
+    if (!is.null(list(...)$margins)) {
+        if (!(margins %in% c("unif", "norm", "exp", "flexp")))
+            stop("'margins' has to be one of 'unif', 'norm', 'exp', or 'flexp'.")
+    } else {
+        margins <- "norm"
+    }
+    if (is.null(list(...)$xlim) & is.null(list(...)$ylim)) {
+        xylim <- switch(margins,
+                        "unif"  = c(1e-2, 1 - 1e-2),
+                        "norm"  = c(-3, 3),
+                        "exp"   = c(0, 6),
+                        "flexp" = c(-6, 0))
+        xlim <- ylim <- xylim
+    } else {
+        xlim <- list(...)$xlim
+        ylim <- list(...)$ylim
+        xylim <- range(c(list(...)$xlim, list(...)$ylim))
+    }
+    
+    ## set up for plotting windows (restore settings on exit)
+    usr <- par(mfrow = c(n.tree, d - min(tree)), mar = rep(0, 4))
+    on.exit(par(usr))
+    
+    ## calculate pseudo-observations (if necessary)
+    #psobs <- if (!is.null(data)) vine_psobs(data, x) else NULL
+    psobs <- NULL
+    
+    # contours: adjust limits for headings
+    offs <- 0.25
+    mult <- 1.35
+    ylim[2] <- ylim[2] + offs*diff(ylim)
+    
+    
+    ## run through trees -----------------------------------------------
+    # initialize check variables
+    cnt <- 0
+    k <- d
+    e <- numeric(0)
+    class(e) <- "try-error"
+    
+    while ("try-error" %in% class(e)) {
+        e <- try({
+            maxnums <- get_name(1, max(tree), x)
+            for (i in rev(tree)) {
+                for (j in 1:(d - min(tree))) {
+                    if (j <= d - i) {
+                        if (is.null(psobs)) {
+                            pcfit <- x$pair_copulas[[i]][[j]]
+                        } else {
+                            pcfit <- bicop(psobs[[i]][[j]], "tll")
+                        }
+                        
+                        # set up list of contour arguments
+                        args <- list(x = pcfit,
+                                     drawlabels = FALSE,
+                                     xlab = "",
+                                     ylab = "",
+                                     xlim = xlim,
+                                     ylim = ylim,
+                                     xaxt = "n",
+                                     yaxt = "n",
+                                     add  = TRUE)
+                        
+                        # create empty plot
+                        plot.new()
+                        plot.window(xlim = xlim, ylim = ylim,
+                                    xaxs = "i",  yaxs = "i")
+                        
+                        # call contour.bicop with ... arguments
+                        do.call(contour, modifyList(args, list(...)))
+                        
+                        # draw area for headings
+                        abline(h = ylim[2] - diff(ylim)/mult*offs)
+                        polygon(x = c(xlim[1] - diff(xlim),
+                                      xlim[1] - diff(xlim),
+                                      xlim[2] + diff(xlim),
+                                      xlim[2] + diff(xlim)),
+                                y = c(ylim[2] + diff(ylim)/mult*offs,
+                                      ylim[2] - diff(ylim)/mult*offs,
+                                      ylim[2] - diff(ylim)/mult*offs,
+                                      ylim[2] + diff(ylim)/mult*offs),
+                                col = "grey")
+                        
+                        # add separating lines
+                        abline(v = xlim)
+                        abline(h = ylim)
+                        
+                        # add pair-copula ID
+                        cx1 <- 0.75 * diff(xlim) / strwidth(maxnums)
+                        ty <- ylim[2] - diff(ylim)/mult*offs
+                        cx2 <- 0.75 * (ylim[2] - ty) / strheight(maxnums)
+                        cx <- min(cx1, cx2)
+                        text(x = sum(xlim)/2,
+                             y = ty + 0.225 / cex.nums * (ylim[2] - ty),
+                             cex    = cex.nums * cx,
+                             labels = get_name(j, i, x),
+                             pos    = 3,
+                             offset = 0)
+                    } else {
+                        plot.new()
+                    }
+                }
+            }
+        }
+        , silent = TRUE)
+        
+        ## adjust to figure margins if necessary
+        if (length(tree) < 1)
+            stop("Error in plot.new() : figure margins too large")
+        if ("try-error" %in% class(e)) {
+            cnt <- cnt + 1
+            tree <- tree[-which(tree == max(tree))]
+            par(mfrow = c(n.tree - cnt, d - min(tree)))
+        }
+    }
+    
+    ## message for the user if not all trees could be plotted -----------
+    if (length(tree) != n.tree) {
+        nmbr.msg <- as.character(tree[1])
+        if (length(tree) > 2) {
+            for (i in tree[-c(1, length(tree))]) {
+                nmbr.msg <- paste(nmbr.msg, i, sep=", ")
+            }
+        }
+        if (length(tree) > 1) {
+            s.msg <- "s "
+            nmbr.msg <- paste(nmbr.msg,
+                              "and",
+                              tree[length(tree)],
+                              "were plotted. ")
+        } else {
+            s.msg <- " "
+            nmbr.msg <- paste(nmbr.msg, "was plotted. ", sep=" ")
+        }
+        msg.space <- "There is not enough space."
+        msg.tree <- paste("Only Tree",
+                          s.msg,
+                          nmbr.msg,
+                          "Use the 'tree' argument or enlarge figure margins",
+                          " to see the others.",
+                          sep = "")
+        message(paste(msg.space, msg.tree))
+    }
+}
+
+# vine_psobs <- function (uev, object) {
+#     uev <- as.matrix(uev)
+#     if (ncol(uev) == 1)
+#         uev <- matrix(uev, 1, nrow(uev))
+#     if (any(uev > 1) || any(uev < 0))
+#         stop("Data has be in the interval [0,1].")
+#     n <- ncol(uev)
+#     N <- nrow(uev)
+#     if (ncol(uev) != ncol(object$matrix))
+#         stop("Dimensions of 'data' and 'object' do not match.")
+#     if (!is(object,"vinecop"))
+#         stop("'object' has to be an vinecop object")
+#     
+#     o <- diag(object$Matrix)
+#     oldobject <- object
+#     if (any(o != length(o):1)) {
+#         object <- normalizevinecop(object)
+#         uev <- matrix(uev[, o[length(o):1]], N, n)
+#     }
+#     
+#     ## initialize objects
+#     CondDistr <- neededCondDistr(object$Matrix)
+#     val <- array(1, dim = c(n, n, N))
+#     out <- lapply(1:(n - 1), list)
+#     V <- list()
+#     V$direct <- array(NA, dim = c(n, n, N))
+#     V$indirect <- array(NA, dim = c(n, n, N))
+#     V$direct[n, , ] <- t(uev[, n:1])
+#     
+#     for (i in (n - 1):1) {
+#         for (k in n:(i + 1)) {
+#             ## extract data for current tree
+#             m <- object$MaxMat[k, i]
+#             zr1 <- V$direct[k, i, ]
+#             if (m == object$Matrix[k, i]) {
+#                 zr2 <- V$direct[k, (n - m + 1), ]
+#             } else {
+#                 zr2 <- V$indirect[k, (n - m + 1), ]
+#             }
+#             
+#             ## store data
+#             out[[n - k + 1]][[i]] <- cbind(zr2, zr1)
+#             
+#             ## calculate pseudo-observations for next tree
+#             if (CondDistr$direct[k - 1, i])
+#                 V$direct[k - 1, i, ] <- bicopHfunc1(zr2, zr1,
+#                                                     object$family[k, i],
+#                                                     object$par[k, i],
+#                                                     object$par2[k, i],
+#                                                     check.pars = FALSE)
+#             if (CondDistr$indirect[k - 1, i])
+#                 V$indirect[k - 1, i, ] <- bicopHfunc2(zr2, zr1,
+#                                                       object$family[k, i],
+#                                                       object$par[k, i],
+#                                                       object$par2[k, i],
+#                                                       check.pars = FALSE)
+#         }
+#     }
+#     
+#     ## return list of pseudo-observations
+#     out
+# }
 

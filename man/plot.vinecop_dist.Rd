@@ -2,12 +2,16 @@
 % Please edit documentation in R/plot.vinecop_dist.R
 \name{plot.vinecop_dist}
 \alias{plot.vinecop_dist}
-\alias{vinecop_dist}
+\alias{contour.vinecop_dist}
 \alias{plot.vinecop}
 \alias{contour.vinecop}
+\alias{contour.vinecop_dist}
 \title{Plotting \code{vinecop_dist} objects.}
 \usage{
 \method{plot}{vinecop_dist}(x, tree = 1, type = 0, edge.labels = NULL,
+  ...)
+
+\method{contour}{vinecop_dist}(x, tree = "ALL", cex.nums = 1, data = NULL,
   ...)
 }
 \arguments{
@@ -43,6 +47,14 @@ be \code{1.25/length(tree)*(d - min(tree))} times the plot width.
 }
 \examples{
 # specify pair-copulas
+pcs <- list(
+    lapply(runif(3),  # pair-copulas in first tree
+          function(cor) bicop_dist("gaussian", 0, cor)),
+    lapply(runif(2),  # pair-copulas in second tree
+          function(cor) bicop_dist("gaussian", 0, cor)),
+    lapply(runif(1),  # pair-copulas in first tree
+          function(cor) bicop_dist("gaussian", 0, cor))
+)
 
 # specify R-vine matrix
 mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
