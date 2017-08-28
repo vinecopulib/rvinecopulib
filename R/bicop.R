@@ -23,29 +23,33 @@
 #' @param keep_data whether the data should be stored (necessary for computing
 #'   fit statistics and using `fitted()`).
 #' @details
+#' 
 #' The implemented families are:\cr
-#' `"indep"`: Independence copula.\cr
-#' `"gaussian"`: Gaussian copula.\cr
-#' `"t"`: Student t copula.\cr
-#' `"clayton"`: Clayton copula.\cr
-#' `"gumbel"`: Gumbel copula.\cr
-#' `"frank"`: Frank copula.\cr
-#' `"joe"`: Joe copula.\cr
-#' `"bb1"`: BB1 copula.\cr
-#' `"bb6"`: BB6 copula.\cr
-#' `"bb7"`: BB7 copula.\cr
-#' `"bb8"`: BB8 copula.\cr
-#' `"tll"`: transformation kernel local likelihood, only for `bicop()`.\cr
-#' In addition, the following convenience definition can be used (and combined) 
+#' 
+#' `"indep"` = Independence copula.\cr
+#' `"gaussian"` = Gaussian copula.\cr
+#' `"t"` = Student t copula.\cr
+#' `"clayton"` = Clayton copula.\cr
+#' `"gumbel"` = Gumbel copula.\cr
+#' `"frank"` = Frank copula.\cr
+#' `"joe"` = Joe copula.\cr
+#' `"bb1"` = BB1 copula.\cr
+#' `"bb6"` = BB6 copula.\cr
+#' `"bb7"` = BB7 copula.\cr
+#' `"bb8"` = BB8 copula.\cr
+#' `"tll"` = transformation kernel local likelihood, only for `bicop()`.\cr
+#' 
+#' In addition, the following convenience definitions can be used (and combined) 
 #' with `bicop`:\cr
-#' `"all"`:  all families.\cr
-#' `"parametric"`:  parametric families.\cr
-#' `"nonparametric"`:  nonparametric families.\cr
-#' `"archimedean"`:  archimedean families.\cr
-#' `"elliptical"`:  elliptical families.\cr
-#' `"bbs"`:  BB families.\cr
-#' `"oneparametric"`:  one parameter families.\cr
-#' `"twoparametric"`:  two parameter families.\cr
+#' 
+#' `"all"` =  all families.\cr
+#' `"parametric"` =  parametric families.\cr
+#' `"nonparametric"` =  nonparametric families.\cr
+#' `"archimedean"` =  archimedean families.\cr
+#' `"elliptical"` =  elliptical families.\cr
+#' `"bbs"` =  BB families.\cr
+#' `"oneparametric"` =  one parameter families.\cr
+#' `"twoparametric"` =  two parameter families.\cr
 #' Partial matching is activated. For example, `"gauss"` is equivalent to 
 #' `"gaussian"`, or you can write  `"nonpar"` instead of `"nonparametric"`.
 #'

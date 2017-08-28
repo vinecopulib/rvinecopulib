@@ -57,28 +57,31 @@ Bivariate copula models
 }
 \details{
 The implemented families are:\cr
-\code{"indep"}: Independence copula.\cr
-\code{"gaussian"}: Gaussian copula.\cr
-\code{"t"}: Student t copula.\cr
-\code{"clayton"}: Clayton copula.\cr
-\code{"gumbel"}: Gumbel copula.\cr
-\code{"frank"}: Frank copula.\cr
-\code{"joe"}: Joe copula.\cr
-\code{"bb1"}: BB1 copula.\cr
-\code{"bb6"}: BB6 copula.\cr
-\code{"bb7"}: BB7 copula.\cr
-\code{"bb8"}: BB8 copula.\cr
-\code{"tll"}: transformation kernel local likelihood, only for \code{bicop()}.\cr
-In addition, the following convenience definition can be used (and combined)
+
+\code{"indep"} = Independence copula.\cr
+\code{"gaussian"} = Gaussian copula.\cr
+\code{"t"} = Student t copula.\cr
+\code{"clayton"} = Clayton copula.\cr
+\code{"gumbel"} = Gumbel copula.\cr
+\code{"frank"} = Frank copula.\cr
+\code{"joe"} = Joe copula.\cr
+\code{"bb1"} = BB1 copula.\cr
+\code{"bb6"} = BB6 copula.\cr
+\code{"bb7"} = BB7 copula.\cr
+\code{"bb8"} = BB8 copula.\cr
+\code{"tll"} = transformation kernel local likelihood, only for \code{bicop()}.\cr
+
+In addition, the following convenience definitions can be used (and combined)
 with \code{bicop}:\cr
-\code{"all"}:  all families.\cr
-\code{"parametric"}:  parametric families.\cr
-\code{"nonparametric"}:  nonparametric families.\cr
-\code{"archimedean"}:  archimedean families.\cr
-\code{"elliptical"}:  elliptical families.\cr
-\code{"bbs"}:  BB families.\cr
-\code{"oneparametric"}:  one parameter families.\cr
-\code{"twoparametric"}:  two parameter families.\cr
+
+\code{"all"} =  all families.\cr
+\code{"parametric"} =  parametric families.\cr
+\code{"nonparametric"} =  nonparametric families.\cr
+\code{"archimedean"} =  archimedean families.\cr
+\code{"elliptical"} =  elliptical families.\cr
+\code{"bbs"} =  BB families.\cr
+\code{"oneparametric"} =  one parameter families.\cr
+\code{"twoparametric"} =  two parameter families.\cr
 Partial matching is activated. For example, \code{"gauss"} is equivalent to
 \code{"gaussian"}, or you can write  \code{"nonpar"} instead of \code{"nonparametric"}.
 }
