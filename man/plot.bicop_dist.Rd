@@ -5,12 +5,18 @@
 \alias{contour.bicop_dist}
 \alias{plot.bicop}
 \alias{contour.bicop}
+\alias{plot.bicop}
 \alias{contour.bicop_dist}
-\title{Plotting tools for bicop_dist objects}
+\alias{contour.bicop}
+\title{Plotting tools for \code{bicop_dist} and \code{bicop} objects}
 \usage{
 \method{plot}{bicop_dist}(x, type = "surface", margins, size, ...)
 
+\method{plot}{bicop}(x, type = "surface", margins, size, ...)
+
 \method{contour}{bicop_dist}(x, margins = "norm", size = 100L, ...)
+
+\method{contour}{bicop}(x, margins = "norm", size = 100L, ...)
 }
 \arguments{
 \item{x}{\code{bicop_dist object.}}
