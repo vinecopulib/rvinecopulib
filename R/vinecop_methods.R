@@ -55,10 +55,21 @@ pvinecop <- function(u, vinecop, n_mc = 10^4) {
 
 #' @rdname vinecop_methods
 #' @param n number of observations.
+#' @param U optionally, an \eqn{n \times d} matrix of values in \eqn{(0,1)}.
+#'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
+#'    matrix of independent \eqn{U(0, 1)} variebls, this simulates data 
+#'    from `vinecop`.
 #' @export
 rvinecop <- function(n, vinecop) {
     stopifnot(inherits(vinecop, "vinecop_dist"))
-    vinecop_sim_cpp(n, vinecop)
+    d <- ncol(vinecop$matrix)
+    U <- prep_uniform_data(n, d, U)
+    stopifnot(inherits(vinecop, "vinecop_dist"))
+    U <- vinecop_inverse_rosenblatt_cpp(U, vinecop)
+    if (!is.null(vinecop$names))
+        colnames(U) <- vinecop$names
+    
+    U
 }
 
 #' @export

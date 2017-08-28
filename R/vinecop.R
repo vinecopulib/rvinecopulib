@@ -108,6 +108,7 @@ vinecop <- function(data, family_set = "all", matrix = NA,
     )
 
     ## add information about the fit
+    vinecop$names <- colnames(data)
     if (keep_data) {
         vinecop$data <- data
     }

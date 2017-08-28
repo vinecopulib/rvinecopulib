@@ -64,6 +64,17 @@ check_family_set <- function(family_set) {
     }
 }
 
+prep_uniform_data <- function(n, d, U) {
+    if (is.null(U)) {
+        U <- matrix(runif(n * d), n, d)
+    } else {
+        stopifnot(is.matrix(U))
+        stopifnot(nrow(U) == n)
+        stopifnot(ncol(U) == d)
+    }
+    U
+}
+
 # Multiple plot function
 #
 # ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)

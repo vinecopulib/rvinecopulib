@@ -72,6 +72,7 @@
 bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic", 
                   presel = TRUE, keep_data = TRUE) {
+    stopifnot(ncol(data) == 2)
     # family_set can only use standard family names in cpp
     family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
     family_set <- expand_family_set(family_set)
@@ -89,6 +90,7 @@ bicop <- function(data, family_set = "all", par_method = "mle",
     )
     
     ## add information about the fit
+    bicop$names <- colnames(data)
     if (keep_data) {
         bicop$data <- data
     }

@@ -174,12 +174,6 @@ Eigen::VectorXd bicop_hinv2_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bico
 }
 
 // [[Rcpp::export()]]
-Eigen::MatrixXd bicop_simulate_cpp(int n, const Rcpp::List& bicop_r)
-{
-    return bicop_wrap(bicop_r).simulate(n);
-}
-
-// [[Rcpp::export()]]
 double bicop_loglik_cpp(Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).loglik(u);

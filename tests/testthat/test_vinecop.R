@@ -16,6 +16,12 @@ test_that("returns proper 'bicop' object", {
         names(fit_no_data), 
         c("pair_copulas", "matrix", "npars", "controls", "nobs")
     )
+    
+    colnames(u) <- paste(seq_len(ncol(u)))
+    expect_identical(
+        names(vinecop(u, "indep")), 
+        c("pair_copulas", "matrix", "npars", "names", "data", "controls", "nobs")
+    )
 })
 
 test_that("S3 generics work", {

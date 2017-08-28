@@ -22,6 +22,9 @@ test_that("partial matching for family names", {
 test_that("d/p/r/h functions work", {
     dist <- bicop_dist("bb1", 270, c(1, 2))
     u <- rbicop(50, "bb1", 270, c(1, 2))
+    u <- rbicop(50, dist, U = u)
+    expect_error(rbicop(50, dist, U = u[, -1]))
+    expect_error(rbicop(50, dist, U = u[-1, ]))
     expect_gte(min(dbicop(c(0.1, 0.2), dist)), 0)
     expect_gte(min(dbicop(u, dist)), 0)
     expect_gte(min(pbicop(u, dist)), 0)
