@@ -20,7 +20,7 @@ needs to satisfy several properties that can be checked by
 }
 \details{
 The R-vine matrix notation in vinecopulib is different from the one in
-\code{\link[VineCopula:RVineMatrix]{VineCopula::RVineMatrix()}}. An example matrix is\preformatted{1 1 1 1
+the VineCopula package. An example matrix is\preformatted{1 1 1 1
 2 2 2 0
 3 3 0 0
 4 0 0 0
