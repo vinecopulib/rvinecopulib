@@ -1,4 +1,4 @@
-#' Plotting \code{vinecop_dist} objects.
+#' Plotting \code{vinecop_dist} and `vinecop` objects.
 #'
 #' There are two plotting generics for \code{vinecop_dist} objects.
 #' \code{plot.vinecop_dist} plots one or all trees of a given R-vine copula
@@ -142,6 +142,9 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
     }
 }
 
+#' @rdname plot.vinecop_dist
+#' @export
+plot.vinecop <- plot.vinecop_dist
 
 ## creates a graph object for a tree in a given vinecop_dist
 get_graph <- function(tree, vc, edge_labels, var_names) {
@@ -391,3 +394,6 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     }
 }
 
+#' @rdname plot.vinecop_dist
+#' @export
+contour.vinecop <- contour.vinecop_dist

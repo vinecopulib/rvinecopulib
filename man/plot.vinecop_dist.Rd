@@ -5,13 +5,20 @@
 \alias{contour.vinecop_dist}
 \alias{plot.vinecop}
 \alias{contour.vinecop}
+\alias{plot.vinecop}
 \alias{contour.vinecop_dist}
-\title{Plotting \code{vinecop_dist} objects.}
+\alias{contour.vinecop}
+\title{Plotting \code{vinecop_dist} and \code{vinecop} objects.}
 \usage{
 \method{plot}{vinecop_dist}(x, tree = 1, var_names = "ignore",
   edge_labels = NULL, ...)
 
+\method{plot}{vinecop}(x, tree = 1, var_names = "ignore",
+  edge_labels = NULL, ...)
+
 \method{contour}{vinecop_dist}(x, tree = "ALL", cex.nums = 1, ...)
+
+\method{contour}{vinecop}(x, tree = "ALL", cex.nums = 1, ...)
 }
 \arguments{
 \item{x}{\code{vinecop_dist} object.}
