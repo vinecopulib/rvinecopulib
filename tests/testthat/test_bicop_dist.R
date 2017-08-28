@@ -60,3 +60,7 @@ test_that("parameter <-> tau conversion works", {
     tau <- par_to_tau("bb1", 0, c(1, 2))
     expect_error(tau_to_par("bb1", 0.5))
 })
+
+test_that("print method produces output", {
+    expect_output(print(bicop_dist("indep")))
+})
