@@ -3,6 +3,7 @@
 #' Density, distribution function, random generation and h-functions (with 
 #' their inverses) for the bivariate copula distribution.
 #' 
+#' @name bicop
 #' @aliases dbicop pbicop rbicop hbicop dbicop_dist pbicop_dist rbicop_dist hbicop_dist
 #' 
 #' @param u evaluation points, either a length 2 vector or a two-column matrix.
@@ -11,22 +12,23 @@
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
 #' @param parameters a vector or matrix of copula paramters.
 #'   
-#' @note The functions can optionally be used with a `bicop_dist`
+#' @note The functions can optionally be used with a [bicop_dist]
 #' object, e.g., `dbicop(c(0.1, 0.5), bicop_dist("indep"))`.
 #' 
 #' @details 
-#' See \code{\link{bicop}} for the various implemented copula families. 
+#' See [bicop] for the various implemented copula families. 
+#' 
 #' H-functions (`hbicop()`) are conditional distributions derived
 #' from a copula. If \eqn{C(u, v) = P(U \le u, V \le v)} is a copula, then 
 #' \deqn{h_1(v | u) = P(U \le u | V = v),} \deqn{h_2(u | v) = P(V \le v | U =
 #' u).}
 #' 
 #' @return 
-#' `dbicop` gives the density, `pbicop` gives the distribution function, 
-#' `rbicop` generates random deviates, and `hbicop` gives the h-functions 
+#' `dbicop()` gives the density, `pbicop()` gives the distribution function, 
+#' `rbicop()` generates random deviates, and `hbicop()` gives the h-functions 
 #' (and their inverses).
 #' 
-#' The length of the result is determined by `n` for `rbicop`, and 
+#' The length of the result is determined by `n` for `rbicop()`, and 
 #' the number of rows in `u` for the other functions.
 #' 
 #' The numerical arguments other than `n` are recycled to the length of the 
@@ -106,7 +108,7 @@ hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
 
 #' Conversion between Kendall's tau and parameters
 #'
-#' @param family a copula family (see `bicop_dist()`) or a `bicop_dist` object.
+#' @param family a copula family (see [bicop_dist()]) or a [bicop_dist] object.
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
 #' @param parameters vector or matrix of copula parameters, not used when 
 #'   `family` is a `bicop_dist` object.
@@ -120,6 +122,8 @@ hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
 #' 
 #' tau_to_par("clayton", 0.5)
 #' tau_to_par(bicop_dist("clayton", 0, 3), 0.5)
+#' @name bicop
+#' @rdname par_to_tau
 par_to_tau <- function(family, rotation, parameters) {
     bicop <- args2bicop(family, rotation, parameters)
     bicop_par_to_tau_cpp(bicop)
@@ -140,6 +144,7 @@ tau_to_par <- function(family, tau) {
 #' Predictions of the density, distribution function,  
 #' h-functions (with their inverses) for a bivariate copula model.
 #'
+#' @name bicop
 #' @aliases predict.bicop fitted.bicop
 #' @param object a `bicop` object.
 #' @param newdata points where the fit shall be evaluated.
@@ -147,8 +152,8 @@ tau_to_par <- function(family, tau) {
 #'    `"hinv1"`, `"hinv2"`.
 #' @param ... unused.
 #' @return 
-#' `fitted()` and `logLik()` have return values similar to `\link{dbicop}`, 
-#' `\link{pbicop}`, and `\link{hbicop}`.
+#' `fitted()` and `logLik()` have return values similar to [dbicop()], 
+#' [pbicop()], and [hbicop()].
 #' @examples
 #' # Simulate and fit a bivariate copula model
 #' u <- rbicop(500, "gauss", 0, 0.5)
@@ -156,6 +161,7 @@ tau_to_par <- function(family, tau) {
 #' 
 #' # Predictions
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
+#' @rdname predict_bicop
 #' @export
 predict.bicop <- function(object, newdata, what = "pdf", ...) {
     stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
@@ -171,7 +177,7 @@ predict.bicop <- function(object, newdata, what = "pdf", ...) {
     )
 }
 
-#' @rdname predict.bicop
+#' @rdname predict_bicop
 #' @export
 fitted.bicop <- function(object, what = "pdf", ...) {
     if (is.null(object$data))

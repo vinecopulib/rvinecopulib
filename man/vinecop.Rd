@@ -51,7 +51,7 @@ automatically by GIC.}
 threshold should be selected automatically by GIC.}
 
 \item{keep_data}{whether the data should be stored (necessary for computing
-fit statistics and using \code{fitted()}).}
+fit statistics and using \code{\link[=fitted]{fitted()}}).}
 
 \item{show_trace}{logical; whether a trace of the fitting progress should be
 printed.}

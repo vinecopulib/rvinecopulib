@@ -39,7 +39,7 @@ than 1 less smooth.}
 symmetry characteristics of the data.}
 
 \item{keep_data}{whether the data should be stored (necessary for computing
-fit statistics and using \code{fitted()}).}
+fit statistics and using \code{\link[=fitted]{fitted()}}).}
 
 \item{family}{the copula family, a string containing the family name (see
 \emph{Details} for all possible families).}

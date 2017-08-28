@@ -21,7 +21,7 @@
 #' @param presel whether the family set should be thinned out according to
 #'   symmetry characteristics of the data.
 #' @param keep_data whether the data should be stored (necessary for computing
-#'   fit statistics and using `fitted()`).
+#'   fit statistics and using [fitted()]).
 #' @details
 #' 
 #' The implemented families are:\cr
