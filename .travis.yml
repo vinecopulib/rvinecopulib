@@ -6,21 +6,14 @@ warnings_are_errors: false
 
 
 apt_packages:
-  - libgsl0-dbg
-  - libgsl0-dev
-  - libgsl0ldbl
-  - libboost-all-dev
-  - libnlopt-dev
-  - libeigen3-dev
   - libcurl4-openssl-dev
   - libxml2-dev
-  - r-cran-vinecopula
-  - r-cran-nloptr
-  - r-cran-rcpp
-  - r-cran-rcppeigen
-  - r-cran-testthat
-  - r-cran-bh
-  - r-cran-ggraph
+
+r_packages:
+  - graph
+  - Rcpp
+  - RcppEigen
+  - BH
 
 before_install:
   - sudo add-apt-repository ppa:marutter/c2d4u -y
