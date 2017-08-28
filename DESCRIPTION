@@ -20,8 +20,6 @@ Imports:
     utils
 Suggests:
     ggraph,
-    grid,
-    igraph,
     testthat
 LinkingTo: 
     BH,

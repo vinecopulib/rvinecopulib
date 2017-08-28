@@ -20,6 +20,7 @@ apt_packages:
   - r-cran-rcppeigen
   - r-cran-testthat
   - r-cran-bh
+  - r-cran-ggraph
 
 before_install:
   - sudo add-apt-repository ppa:marutter/c2d4u -y
