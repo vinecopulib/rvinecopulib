@@ -4,10 +4,10 @@
 #' 
 #' @aliases vinecop_dist
 #' @inheritParams bicop
-#' @param family_set a character vector of families; see \code{\link{bicop}} for 
+#' @param family_set a character vector of families; see [bicop] for 
 #' additional options.
 #' @param matrix an R-vine matrix specifying the structure matrix (see 
-#'   [`check_rvine_matrix()`]), or `NA` for
+#'   [check_rvine_matrix()]), or `NA` for
 #'   automatic structure selection (default).
 #' @param trunc_lvl the truncation level of the vine copula; `Inf` means no
 #'   truncation, `NA` indicates that the truncation level should be selected
@@ -25,7 +25,7 @@
 #' `bicop_dist` objects and a quadratic structure matrix. 
 #' 
 #' `vinecop()` provides automated fitting for vine copula models. 
-#' The function inherits the parameters of `bicop()`. 
+#' The function inherits the parameters of [bicop()]. 
 #' Optionally, a quadratic `matrix` can be used as
 #' input to pre-specify the vine structure. `tree_crit` describes the
 #' criterion for tree selection, one of `"tau"`, `"rho"`, `"hoeffd"` for
@@ -127,86 +127,29 @@ vinecop <- function(data, family_set = "all", matrix = NA,
     structure(vinecop, class = c("vinecop", "vinecop_dist"))
 }
 
-#' Predictions and fitted values for a vine copula model
-#'
-#' @param object a `vinecop` object.
-#' @param newdata points where the fit shall be evaluated.
-#' @param what what to predict, either `"pdf"` or `"cdf"`.
-#' @param n_mc number of samples used for quasi Monte Carlo integration when
-#'    `what = "cdf"`.
-#' @param ... unused.
-#'
+#' @param pair_copulas A nested list of 'bicop_dist' objects, where 
+#'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
+#'    tree `t`.
+#' @param matrix A quadratic structure matrix of dimension 
+#'   `length(pair_copulas) + 1` (see *Examples* and [check_rvine_matrix()]). 
+#' @rdname vinecop
 #' @export
-#'
-#' @examples
-#' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, "par")
-#' all.equal(predict(fit, u), fitted(fit))
-#' logLik(fit)
-predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4, ...) {
-    stopifnot(what %in% c("pdf", "cdf"))
-    newdata <- if_vec_to_matrix(newdata)
-    switch(
-        what,
-        "pdf" = vinecop_pdf_cpp(newdata, object),
-        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc)
+vinecop_dist <- function(pair_copulas, matrix) {
+    # create object
+    vinecop <- structure(
+        list(pair_copulas = pair_copulas, matrix = matrix),
+        class = "vinecop_dist"
     )
-}
-
-#' @rdname predict.vinecop
-#' @export
-fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, ...) {
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    stopifnot(what %in% c("pdf", "cdf"))
-    switch(
-        what,
-        "pdf" = vinecop_pdf_cpp(object$data, object),
-        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc)
-    )
-}
-
-#' @rdname predict.vinecop
-#' @export
-logLik.vinecop <- function(object, ...) {
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
-    npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
-    structure(vinecop_loglik_cpp(object$data, object), "df" = npars)
-}
-
-#' @export
-print.vinecop <- function(x, ...) {
-    info <- vinecop_fit_info(x)
-    print.vinecop_dist(x)
-    cat(" fit\n")
-    cat("nobs =", info$nobs, "  ")
-    cat("logLik =", round(info$logLik, 2), "  ")
-    cat("npars =", round(info$npars, 2), "  ")
-    cat("AIC =", round(info$AIC, 2), "  ")
-    cat("BIC =", round(info$BIC, 2), "  ")
-    attr(x, "info") <- info
-    invisible(x)
-}
-
-summary.vinecop <- function(object, ...) {
-    info <- attr(print.vinecop(object), "info")
-    cat("\n----\n")
-    s <- summary.vinecop_dist(object)
-    attr(s, "info") <- info
-    invisible(s)
-}
-
-
-vinecop_fit_info <- function(vc) {
-    stopifnot(inherits(vc, "vinecop"))
-    ll <- logLik(vc)
-    list(
-        nobs   = vc$nobs,
-        logLik = ll[1],
-        npars  = attr(ll, "df"),
-        AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
-        BIC    = -2 * ll[1] + log(vc$nobs) * attr(ll, "df")
-    )
+    
+    # sanity checks
+    stopifnot(is.list(pair_copulas))
+    pc_lst <- unlist(pair_copulas, recursive = FALSE)
+    if (!all(sapply(pc_lst, function(x) inherits(x, "bicop_dist")))) {
+        stop("some objects in pair_copulas aren't of class 'bicop_dist'")
+    }
+    vinecop_check_cpp(vinecop)
+    check_rvine_matrix(matrix)
+    vinecop$npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
+    
+    vinecop
 }
