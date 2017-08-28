@@ -19,6 +19,8 @@ Imports:
     stats,
     utils
 Suggests:
+    igraph,
+    ggplot2,
     ggraph,
     testthat
 LinkingTo: 
