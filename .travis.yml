@@ -10,10 +10,11 @@ apt_packages:
   - libxml2-dev
 
 r_packages:
+  - BH
   - ggraph
   - Rcpp
   - RcppEigen
-  - BH
+  - RcppProgress
 
 before_install:
   - sudo add-apt-repository ppa:marutter/c2d4u -y
