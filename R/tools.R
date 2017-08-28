@@ -33,6 +33,11 @@ args2bicop <- function(family, rotation, parameters) {
     }
 }
 
+process_family_set <- function(family_set) {
+    family_set <- check_and_match_family_set(family_set)
+    expand_family_set(family_set)
+}
+
 #' Internal: Expand shortcuts in the familyset.
 #' @noRd
 expand_family_set <- function(family_set) {
@@ -54,14 +59,14 @@ expand_family <- function(family) {
     )
 }
 
-check_family_set <- function(family_set) {
-    i_wrong <- which(!(family_set %in% family_set_all_defs))
-    if (length(i_wrong) > 0) {
-        stop(
-            "unknown families in family_set: ",
-            paste0('"', family_set[i_wrong], '"', collapse = ", ")
-        )
+#' Internal: Checks whether all families are known (including partial matching).
+check_and_match_family_set <- function(family_set) {
+    matched_fams <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
+    if (any(is.na(matched_fams))) {
+        stop("unknown families in family_set: ",
+            paste0('"', family_set[is.na(matched_fams)], '"', collapse = ", "))
     }
+    matched_fams
 }
 
 #' @importFrom stats runif
