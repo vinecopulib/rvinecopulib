@@ -28,10 +28,7 @@ pair-copula Kendall's tau\cr \code{"family_tau"} = pair-copula family and
 Kendall's tau, \cr \code{"pair"} = for the name of the involved variables.}
 
 \item{\dots}{Arguments passed to
-\code{\link[network:plot.network]{plot.network}} or
 \code{\link[rvinecopulib:contour.bicop]{contour.bicop}} respectively.}
-
-\item{data}{a data matrix for creating kernel density contours of each pair.}
 }
 \description{
 There are two plotting generics for \code{vinecop_dist} objects.
@@ -46,14 +43,9 @@ be \code{1.25/length(tree)*(d - min(tree))} times the plot width.
 }
 \examples{
 # specify pair-copulas
-bicop <- bicop_dist("bb1", 90, c(3, 2))
-pcs <- list(
-    list(bicop, bicop),  # pair-copulas in first tree 
-    list(bicop)          # pair-copulas in second tree 
-)
 
 # specify R-vine matrix
-mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
+mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
 
 # set up vine copula model
 vc <- vinecop_dist(pcs, mat)
@@ -61,9 +53,6 @@ vc <- vinecop_dist(pcs, mat)
 
 # plot trees
 \dontrun{plot(vc)}
-
-# show contour plots
-contour(vc)
 
 }
 \seealso{

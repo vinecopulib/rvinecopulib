@@ -34,4 +34,5 @@ test_that("S3 generics work", {
     expect_equal(predict(fit, u, what = "hfunc2"), fitted(fit, what = "hfunc2"))
     expect_equal(predict(fit, u, what = "hinv1"), fitted(fit, what = "hinv1"))
     expect_equal(predict(fit, u, what = "hinv2"), fitted(fit, what = "hinv2"))
+    expect_equivalent(logLik(fit), sum(log(predict(fit, u, what = "pdf"))))
 })
