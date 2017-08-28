@@ -1,6 +1,5 @@
 #include <RcppEigen.h>
 #include "bicop_wrappers.hpp"
-
 using namespace vinecopulib;
 
 
@@ -132,6 +131,7 @@ Rcpp::List bicop_select_cpp(
             selcrit,
             presel
     );
+    Progress p(0, false);
     Bicop bicop_cpp(data, controls);
 
     return bicop_wrap(bicop_cpp);
@@ -183,18 +183,6 @@ Eigen::MatrixXd bicop_simulate_cpp(int n, const Rcpp::List& bicop_r)
 double bicop_loglik_cpp(Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).loglik(u);
-}
-
-// [[Rcpp::export()]]
-double bicop_aic_cpp(Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
-{
-    return bicop_wrap(bicop_r).aic(u);
-}
-
-// [[Rcpp::export()]]
-double bicop_bic_cpp(Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
-{
-    return bicop_wrap(bicop_r).bic(u);
 }
 
 // [[Rcpp::export()]]
