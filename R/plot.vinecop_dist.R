@@ -114,14 +114,14 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
         if (!is.null(edge_labels)) {
             p <- p + 
                 ggraph::geom_edge_link(ggplot2::aes(label = name),
-                                       fontface = 'bold',
-                                       colour = '#56B4E9',
-                                       angle_calc = 'along')
+                                       colour = '#000000',
+                                       angle_calc = 'along',
+                                       label_dodge = grid::unit(7, "points"))
         } else {
-            p <- p + ggraph::geom_edge_link(colour = '#56B4E9')
+            p <- p + ggraph::geom_edge_link(colour = '#000000')
         }
         p <- p + 
-            ggraph::geom_node_point(col = '#D55E00', size = 3) + 
+            ggraph::geom_node_point(col = '#56B4E9', size = 3) + 
             ggraph::geom_node_text(ggplot2::aes(label = name),
                                    fontface = 'bold',
                                    repel = TRUE) + 
@@ -131,9 +131,8 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
             p <- p + ggplot2::labs(caption = paste(x$names, names, 
                                                    sep = " = ", 
                                                    collapse = ", "))
-        plots[[i]] <- p + ggplot2::theme(plot.margin = ggplot2::margin(5, 5, 
-                                                                       5, 5, 
-                                                                       "pt"))
+        plots[[i]] <- p + 
+            ggplot2::theme(plot.margin = ggplot2::margin(5, 5, 5, 5, "pt"))
     }
     
     if (length(tree) > 3) {
