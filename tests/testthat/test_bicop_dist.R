@@ -42,6 +42,8 @@ test_that("plot functions work", {
     expect_silent(p <- contour(dist))
     expect_silent(p <- plot(dist, margins = "norm"))
     expect_silent(p <- contour(dist, margins = "unif"))
+    expect_silent(p <- plot(dist, margins = "exp"))
+    expect_silent(p <- contour(dist, margins = "flexp"))
 })
 
 test_that("parameter <-> tau conversion works", {
