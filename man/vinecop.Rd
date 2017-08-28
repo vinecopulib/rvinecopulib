@@ -13,8 +13,8 @@ vinecop(data, family_set = "all", matrix = NA, par_method = "mle",
 \item{data}{a matrix or data.frame (copula data should have approximately
 uniform margins).}
 
-\item{family_set}{a character vector of families; as in \code{bicop_dist()},
-see \emph{Details} for additional options.}
+\item{family_set}{a character vector of families; see \code{\link{bicop}} for
+additional options.}
 
 \item{matrix}{an R-vine matrix specifying the structure matrix (see
 \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}), or \code{NA} for

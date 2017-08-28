@@ -1,11 +1,11 @@
 #' Bivariate copula models
 #' 
-#' @aliases bicop bicop
+#' @aliases bicop_dist
 #'
 #' @param data a matrix or data.frame (copula data should have approximately
 #'  uniform margins).
-#' @param family_set a character vector of families; as in `bicop_dist()`,
-#'   see *Details* for additional options.
+#' @param family_set a character vector of families; see *Details* for 
+#' additional options.
 #' @param par_method the estimation method for parametric models, either `"mle"` 
 #'   for maximum likelihood or `"itau"` for inversion of Kendall's tau (only 
 #'   available for one-parameter families and `"t"`.
@@ -22,27 +22,44 @@
 #'   symmetry characteristics of the data.
 #' @param keep_data whether the data should be stored (necessary for computing
 #'   fit statistics and using `fitted()`).
-#' 
 #' @details
-#' In addition, to the families in `bicop_dist()`, the following convenience
-#' defintion can be used (and combined):
-#' \describe{
-#' \item{"all"}{all families}.
-#' \item{"parametric"}{parametric families.}
-#' \item{"nonparametric"}{nonparametric families.}
-#' \item{"archimedean"}{archimedean families.}
-#' \item{"elliptical"}{elliptical families.}
-#' \item{"bbs"}{BB families.}
-#' \item{"oneparametric "}{one parameter families.}
-#' \item{"twoparametric "}{two parameter families.}
-#' }
-#' Partial matching is activated. For example, you can write `"nonpar"` instead 
-#' of the full name `"nonparametric"`.
+#' The implemented families are:\cr
+#' `"indep"`: Independence copula.\cr
+#' `"gaussian"`: Gaussian copula.\cr
+#' `"t"`: Student t copula.\cr
+#' `"clayton"`: Clayton copula.\cr
+#' `"gumbel"`: Gumbel copula.\cr
+#' `"frank"`: Frank copula.\cr
+#' `"joe"`: Joe copula.\cr
+#' `"bb1"`: BB1 copula.\cr
+#' `"bb6"`: BB6 copula.\cr
+#' `"bb7"`: BB7 copula.\cr
+#' `"bb8"`: BB8 copula.\cr
+#' `"tll"`: transformation kernel local likelihood, only for `bicop()`.\cr
+#' In addition, the following convenience definition can be used (and combined) 
+#' with `bicop`:\cr
+#' `"all"`:  all families.\cr
+#' `"parametric"`:  parametric families.\cr
+#' `"nonparametric"`:  nonparametric families.\cr
+#' `"archimedean"`:  archimedean families.\cr
+#' `"elliptical"`:  elliptical families.\cr
+#' `"bbs"`:  BB families.\cr
+#' `"oneparametric"`:  one parameter families.\cr
+#' `"twoparametric"`:  two parameter families.\cr
+#' Partial matching is activated. For example, `"gauss"` is equivalent to 
+#' `"gaussian"`, or you can write  `"nonpar"` instead of `"nonparametric"`.
 #'
 #'
-#' @return An object inherting from `bicop` and `bicop_dist`.
+#' @return Objects inherting from `bicop_dist` for `bicop_dist()`, and
+#' `bicop` and `bicop_dist` for `bicop()`.
 #'
 #' @examples
+#' ## bicop_dist objects
+#' bicop_dist("gaussian", 0, 0.5)
+#' str(bicop_dist("gauss", 0, 0.5))
+#' bicop <- bicop_dist("clayton", 90, 3)
+#' 
+#' ## bicop objects
 #' u <- rbicop(500, "gauss", 0, 0.5)
 #' fit1 <- bicop(u, "par")
 #' fit1

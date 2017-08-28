@@ -3,6 +3,8 @@
 #' Automated fitting for vine copula models
 #' 
 #' @inheritParams bicop
+#' @param family_set a character vector of families; see \code{\link{bicop}} for 
+#' additional options.
 #' @param matrix an R-vine matrix specifying the structure matrix (see 
 #'   [`check_rvine_matrix()`]), or `NA` for
 #'   automatic structure selection (default).
