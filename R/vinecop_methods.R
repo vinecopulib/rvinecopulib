@@ -60,7 +60,7 @@ pvinecop <- function(u, vinecop, n_mc = 10^4) {
 #'    matrix of independent \eqn{U(0, 1)} variebls, this simulates data 
 #'    from `vinecop`.
 #' @export
-rvinecop <- function(n, vinecop) {
+rvinecop <- function(n, vinecop, U = NULL) {
     stopifnot(inherits(vinecop, "vinecop_dist"))
     d <- ncol(vinecop$matrix)
     U <- prep_uniform_data(n, d, U)
