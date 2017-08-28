@@ -397,3 +397,4 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
 #' @rdname plot.vinecop_dist
 #' @export
 contour.vinecop <- contour.vinecop_dist
+
