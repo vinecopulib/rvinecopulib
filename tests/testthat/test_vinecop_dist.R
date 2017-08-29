@@ -34,9 +34,14 @@ test_that("print/summary generics work", {
 })
 
 test_that("plot functions work", {
-    pcs <- lapply(1:3, function(j) # pair-copulas in tree j
-        lapply(runif(4-j), function(cor) bicop_dist("gaussian", 0, cor)))
-    mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
+    pcs <- lapply(1:4, function(j) # pair-copulas in tree j
+        lapply(runif(5-j), function(cor) bicop_dist("gaussian", 0, cor)))
+    mat <- matrix(c(1, 2, 3, 4, 5, 
+                    1, 2, 3, 4, 0, 
+                    1, 2, 3, 0, 0, 
+                    1, 2, 0, 0, 0,
+                    1, 0, 0, 0, 0), 
+                  5, 5)
     vc <- vinecop_dist(pcs, mat)
     
     # we could check some values in the plot objects
@@ -46,7 +51,7 @@ test_that("plot functions work", {
     expect_silent(p <- plot(vc, edge_labels = "family_tau"))
     expect_error(p <- plot(vc, edge_labels = "no"))
     expect_error(p <- plot(vc, var_names = "isaidno"))
-    expect_silent(p <- plot(vc, 1:3))
+    expect_silent(p <- plot(vc, 1:4))
     expect_silent(p <- contour(vc))
     expect_silent(p <- contour(vc, margins = "unif"))
 })
