@@ -34,13 +34,27 @@ test_that("print/summary generics work", {
 })
 
 test_that("plot functions work", {
-    pcs <- lapply(1:3, function(j) # pair-copulas in tree j
-        lapply(runif(4-j), function(cor) bicop_dist("gaussian", 0, cor)))
-    mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
+    pcs <- lapply(1:4, function(j) # pair-copulas in tree j
+        lapply(runif(5-j), function(cor) bicop_dist("gaussian", 0, cor)))
+    mat <- matrix(c(1, 2, 3, 4, 5, 
+                    1, 2, 3, 4, 0, 
+                    1, 2, 3, 0, 0, 
+                    1, 2, 0, 0, 0,
+                    1, 0, 0, 0, 0), 
+                  5, 5)
     vc <- vinecop_dist(pcs, mat)
     
     # we could check some values in the plot objects
-    expect_silent(p <- plot(vc))
-    expect_silent(p <- contour(vc))
+    expect_silent(p <- plot(vc, edge_labels = "family", var_names = "legend"))
+    expect_silent(p <- plot(vc, edge_labels = "tau", var_names = "use"))
+    expect_silent(p <- plot(vc, edge_labels = "pair"))
+    expect_silent(p <- plot(vc, edge_labels = "family_tau"))
+    expect_error(p <- plot(vc, edge_labels = "no"))
+    expect_error(p <- plot(vc, var_names = "isaidno"))
+    expect_error(p <- plot(vc, tree = 10))
+    expect_silent(p <- plot(vc, "ALL"))
+    expect_silent(p <- contour(vc, xlim = c(0.2, 0.8), ylim = c(0.2, 0.8)))
     expect_silent(p <- contour(vc, margins = "unif"))
+    expect_error(p <- contour(vc, margins = "nonono"))
+    expect_error(p <- contour(vc, var_names = "comeon"))
 })

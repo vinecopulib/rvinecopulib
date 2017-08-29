@@ -193,6 +193,7 @@ print.vinecop <- function(x, ...) {
     invisible(x)
 }
 
+
 #' @export
 summary.vinecop <- function(object, ...) {
     info <- attr(print.vinecop(object), "info")
