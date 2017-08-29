@@ -46,7 +46,7 @@ test_that("plot functions work", {
     expect_silent(p <- plot(vc, edge_labels = "family_tau"))
     expect_error(p <- plot(vc, edge_labels = "no"))
     expect_error(p <- plot(vc, var_names = "isaidno"))
-    expect_silent(p <- plot(vc, 1:2))
+    expect_silent(p <- plot(vc, 1:3))
     expect_silent(p <- contour(vc))
     expect_silent(p <- contour(vc, margins = "unif"))
 })
