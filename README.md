@@ -18,7 +18,7 @@ vine copula models based on
 * [Eigen](http://www.boost.org/),
 * [NLopt](http://ab-initio.mit.edu/wiki/index.php/NLopt). 
 
-It provides high-perfomance implementations of the core features of the popular
+It provides high-performance implementations of the core features of the popular
 [VineCopula R library](https://github.com/tnagler/VineCopula), in particular
 inference algorithms for both vine copula and bivariate copula models.
 Advantages over VineCopula are  

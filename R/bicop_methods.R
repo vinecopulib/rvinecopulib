@@ -10,7 +10,7 @@
 #' @param family the copula family, a string containing the family name (see 
 #'   \code{\link{bicop}} for all possible families).
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
-#' @param parameters a vector or matrix of copula paramters.
+#' @param parameters a vector or matrix of copula parameters.
 #'   
 #' @note The functions can optionally be used with a [bicop_dist]
 #' object, e.g., `dbicop(c(0.1, 0.5), bicop_dist("indep"))`.

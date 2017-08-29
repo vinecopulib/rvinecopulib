@@ -66,7 +66,7 @@ printed.}
 tree \code{t}.}
 }
 \value{
-Objects inherting from \code{vinecop_dist} for \code{\link[=vinecop_dist]{vinecop_dist()}}, and
+Objects inheriting from \code{vinecop_dist} for \code{\link[=vinecop_dist]{vinecop_dist()}}, and
 \code{vinecop} and \code{vinecop_dist} for \code{\link[=vinecop]{vinecop()}}.
 }
 \description{

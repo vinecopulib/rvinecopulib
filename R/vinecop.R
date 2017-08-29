@@ -35,7 +35,7 @@
 #' the vine copula, with `threshold_sel` and `trunc_lvl_sel` to automatically 
 #' select both parameters.
 #'
-#' @return Objects inherting from `vinecop_dist` for [vinecop_dist()], and
+#' @return Objects inheriting from `vinecop_dist` for [vinecop_dist()], and
 #' `vinecop` and `vinecop_dist` for [vinecop()].
 #'
 #' @examples

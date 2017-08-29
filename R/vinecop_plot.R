@@ -2,7 +2,7 @@
 #'
 #' There are two plotting generics for \code{vinecop_dist} objects.
 #' \code{plot.vinecop_dist} plots one or all trees of a given R-vine copula
-#' model. Edges can be labeld with information about the corresponding
+#' model. Edges can be labeled with information about the corresponding
 #' pair-copula. \code{contour.vinecop_dist} produces a matrix of contour plots
 #' (using \code{\link[rvinecopulib:plot.bicop]{plot.bicop}}).
 #'
