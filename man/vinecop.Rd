@@ -2,23 +2,28 @@
 % Please edit documentation in R/vinecop.R
 \name{vinecop}
 \alias{vinecop}
-\title{Fit vine copula models}
+\alias{vinecop_dist}
+\alias{vinecop_dist}
+\title{Vine copula models}
 \usage{
 vinecop(data, family_set = "all", matrix = NA, par_method = "mle",
   nonpar_method = "constant", mult = 1, selcrit = "bic", presel = TRUE,
   trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = TRUE,
   show_trace = FALSE)
+
+vinecop_dist(pair_copulas, matrix)
 }
 \arguments{
 \item{data}{a matrix or data.frame (copula data should have approximately
 uniform margins).}
 
-\item{family_set}{a character vector of families; as in \code{bicop_dist()},
-see \emph{Details} for additional options.}
+\item{family_set}{a character vector of families; see \code{\link[=bicop]{bicop()}} for
+additional options.}
 
-\item{matrix}{an R-vine matrix specifying the structure matrix (see
-\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}), or \code{NA} for
-automatic structure selection (default).}
+\item{matrix}{a quadratic matrix specifying the structure matrix (see
+\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
+\code{length(pair_copulas)-1}; for \code{\link[=vinecop]{vinecop()}}, \code{matrix = NA} performs
+automatic structure selection.}
 
 \item{par_method}{the estimation method for parametric models, either \code{"mle"}
 for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
@@ -51,35 +56,57 @@ automatically by GIC.}
 threshold should be selected automatically by GIC.}
 
 \item{keep_data}{whether the data should be stored (necessary for computing
-fit statistics and using \code{fitted()}).}
+fit statistics and using \code{\link[=fitted]{fitted()}}).}
 
 \item{show_trace}{logical; whether a trace of the fitting progress should be
 printed.}
+
+\item{pair_copulas}{A nested list of 'bicop_dist' objects, where
+\code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
+tree \code{t}.}
 }
 \value{
-An object inherting from \code{bicop} and \code{bicop_dist}.
+Objects inherting from \code{vinecop_dist} for \code{\link[=vinecop_dist]{vinecop_dist()}}, and
+\code{vinecop} and \code{vinecop_dist} for \code{\link[=vinecop]{vinecop()}}.
 }
 \description{
-Automated fitting for vine copula models
+Automated fitting or creation of custom vine copula models
 }
 \details{
-In addition, to the families in \code{bicop_dist()}, the following convenience
-defintion can be used (and combined):
-\describe{
-\item{"all"}{all families}.
-\item{"parametric"}{parametric families.}
-\item{"nonparametric"}{nonparametric families.}
-\item{"archimedean"}{archimedean families.}
-\item{"elliptical"}{elliptical families.}
-\item{"bbs"}{BB families.}
-\item{"oneparametric "}{one parameter families.}
-\item{"twoparametric "}{two parameter families.}
-}
-Partial matching is activated. For example, you can write \code{"nonpar"} instead
-of the full name \code{"nonparametric"}.
+\code{vinecop_dist()} creates a vine copula by specifying a nested list of
+\code{bicop_dist} objects and a quadratic structure matrix.
+
+\code{vinecop()} provides automated fitting for vine copula models.
+The function inherits the parameters of \code{\link[=bicop]{bicop()}}.
+Optionally, a quadratic \code{matrix} can be used as
+input to pre-specify the vine structure. \code{tree_crit} describes the
+criterion for tree selection, one of \code{"tau"}, \code{"rho"}, \code{"hoeffd"} for
+Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
+\code{threshold} allows to threshold the \code{tree_crit} and \code{trunc_lvl} to truncate
+the vine copula, with \code{threshold_sel} and \code{trunc_lvl_sel} to automatically
+select both parameters.
 }
 \examples{
+# specify pair-copulas
+bicop <- bicop_dist("bb1", 90, c(3, 2))
+pcs <- list(
+    list(bicop, bicop),  # pair-copulas in first tree 
+    list(bicop)          # pair-copulas in second tree 
+ )
+ 
+# specify R-vine matrix
+mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
+
+# set up vine copula model
+vc <- vinecop_dist(pcs, mat)
+
+# show model
+summary(vc)
+
+# get some data
 u <- sapply(1:3, function(i) runif(50))
+
+# estimate a vine copula model
 fit <- vinecop(u, "par")
 fit
 summary(fit)

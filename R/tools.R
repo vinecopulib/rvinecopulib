@@ -64,6 +64,7 @@ check_family_set <- function(family_set) {
     }
 }
 
+#' @importFrom stats runif
 prep_uniform_data <- function(n, d, U) {
     if (is.null(U)) {
         U <- matrix(runif(n * d), n, d)
