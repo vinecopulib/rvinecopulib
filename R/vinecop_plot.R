@@ -290,107 +290,62 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     # initialize check variables
     cnt <- 0
     k <- d
-    e <- numeric(0)
-    class(e) <- "try-error"
-    
-    while ("try-error" %in% class(e)) {
-        e <- try({
-            maxnums <- get_name(1, max(tree), x)
-            for (i in rev(tree)) {
-                for (j in 1:(d - min(tree))) {
-                    if (j <= d - i) {
-                        pcfit <- x$pair_copulas[[i]][[j]]
-                        
-                        # set up list of contour arguments
-                        args <- list(x = pcfit,
-                                     drawlabels = FALSE,
-                                     xlab = "",
-                                     ylab = "",
-                                     xlim = xlim,
-                                     ylim = ylim,
-                                     xaxt = "n",
-                                     yaxt = "n",
-                                     add  = TRUE)
-                        
-                        # create empty plot
-                        plot.new()
-                        plot.window(xlim = xlim, ylim = ylim,
-                                    xaxs = "i",  yaxs = "i")
-                        
-                        # call contour.bicop with ... arguments
-                        do.call(contour, modifyList(args, list(...)))
-                        
-                        # draw area for headings
-                        abline(h = ylim[2] - diff(ylim)/mult*offs)
-                        polygon(x = c(xlim[1] - diff(xlim),
-                                      xlim[1] - diff(xlim),
-                                      xlim[2] + diff(xlim),
-                                      xlim[2] + diff(xlim)),
-                                y = c(ylim[2] + diff(ylim)/mult*offs,
-                                      ylim[2] - diff(ylim)/mult*offs,
-                                      ylim[2] - diff(ylim)/mult*offs,
-                                      ylim[2] + diff(ylim)/mult*offs),
-                                col = "grey")
-                        
-                        # add separating lines
-                        abline(v = xlim)
-                        abline(h = ylim)
-                        
-                        # add pair-copula ID
-                        cx1 <- 0.75 * diff(xlim) / strwidth(maxnums)
-                        ty <- ylim[2] - diff(ylim)/mult*offs
-                        cx2 <- 0.75 * (ylim[2] - ty) / strheight(maxnums)
-                        cx <- min(cx1, cx2)
-                        text(x = sum(xlim)/2,
-                             y = ty + 0.225 / cex.nums * (ylim[2] - ty),
-                             cex    = cex.nums * cx,
-                             labels = get_name(j, i, x),
-                             pos    = 3,
-                             offset = 0)
-                    } else {
-                        plot.new()
-                    }
-                }
+    maxnums <- get_name(1, max(tree), x)
+    for (i in rev(tree)) {
+        for (j in 1:(d - min(tree))) {
+            if (j <= d - i) {
+                pcfit <- x$pair_copulas[[i]][[j]]
+                
+                # set up list of contour arguments
+                args <- list(x = pcfit,
+                             drawlabels = FALSE,
+                             xlab = "",
+                             ylab = "",
+                             xlim = xlim,
+                             ylim = ylim,
+                             xaxt = "n",
+                             yaxt = "n",
+                             add  = TRUE)
+                
+                # create empty plot
+                plot.new()
+                plot.window(xlim = xlim, ylim = ylim,
+                            xaxs = "i",  yaxs = "i")
+                
+                # call contour.bicop with ... arguments
+                do.call(contour, modifyList(args, list(...)))
+                
+                # draw area for headings
+                abline(h = ylim[2] - diff(ylim)/mult*offs)
+                polygon(x = c(xlim[1] - diff(xlim),
+                              xlim[1] - diff(xlim),
+                              xlim[2] + diff(xlim),
+                              xlim[2] + diff(xlim)),
+                        y = c(ylim[2] + diff(ylim)/mult*offs,
+                              ylim[2] - diff(ylim)/mult*offs,
+                              ylim[2] - diff(ylim)/mult*offs,
+                              ylim[2] + diff(ylim)/mult*offs),
+                        col = "grey")
+                
+                # add separating lines
+                abline(v = xlim)
+                abline(h = ylim)
+                
+                # add pair-copula ID
+                cx1 <- 0.75 * diff(xlim) / strwidth(maxnums)
+                ty <- ylim[2] - diff(ylim)/mult*offs
+                cx2 <- 0.75 * (ylim[2] - ty) / strheight(maxnums)
+                cx <- min(cx1, cx2)
+                text(x = sum(xlim)/2,
+                     y = ty + 0.225 / cex.nums * (ylim[2] - ty),
+                     cex    = cex.nums * cx,
+                     labels = get_name(j, i, x),
+                     pos    = 3,
+                     offset = 0)
+            } else {
+                plot.new()
             }
         }
-        , silent = TRUE)
-        
-        ## adjust to figure margins if necessary
-        if (length(tree) < 1)
-            stop("Error in plot.new() : figure margins too large")
-        if ("try-error" %in% class(e)) {
-            cnt <- cnt + 1
-            tree <- tree[-which(tree == max(tree))]
-            par(mfrow = c(n.tree - cnt, d - min(tree)))
-        }
-    }
-    
-    ## message for the user if not all trees could be plotted -----------
-    if (length(tree) != n.tree) {
-        nmbr.msg <- as.character(tree[1])
-        if (length(tree) > 2) {
-            for (i in tree[-c(1, length(tree))]) {
-                nmbr.msg <- paste(nmbr.msg, i, sep=", ")
-            }
-        }
-        if (length(tree) > 1) {
-            s.msg <- "s "
-            nmbr.msg <- paste(nmbr.msg,
-                              "and",
-                              tree[length(tree)],
-                              "were plotted. ")
-        } else {
-            s.msg <- " "
-            nmbr.msg <- paste(nmbr.msg, "was plotted. ", sep=" ")
-        }
-        msg.space <- "There is not enough space."
-        msg.tree <- paste("Only Tree",
-                          s.msg,
-                          nmbr.msg,
-                          "Use the 'tree' argument or enlarge figure margins",
-                          " to see the others.",
-                          sep = "")
-        message(paste(msg.space, msg.tree))
     }
 }
 

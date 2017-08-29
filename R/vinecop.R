@@ -70,10 +70,8 @@ vinecop <- function(data, family_set = "all", matrix = NA,
                     mult = 1, selcrit = "bic", presel = TRUE, 
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
                     keep_data = TRUE, show_trace = FALSE) {
-    
-    ## family_set can only use standard family names in cpp
-    family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
-    family_set <- expand_family_set(family_set)
+    # check if families known (w/ partial matching) and expand convenience defs
+    family_set <- process_family_set(family_set)
     
     ## pre-process input
     data <- if_vec_to_matrix(data)

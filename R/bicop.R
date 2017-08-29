@@ -73,9 +73,8 @@ bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic", 
                   presel = TRUE, keep_data = TRUE) {
     stopifnot(ncol(data) == 2)
-    # family_set can only use standard family names in cpp
-    family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
-    family_set <- expand_family_set(family_set)
+    # check if families known (w/ partial matching) and expand convenience defs
+    family_set <- process_family_set(family_set)
     
     ## fit and select copula model
     data <- if_vec_to_matrix(data)

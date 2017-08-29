@@ -2,7 +2,7 @@ context("Fitting 'bicop' models")
 
 dist <- bicop_dist("gumbel", 90, 3)
 u <- rbicop(20, dist)
-fit <- bicop(u, "clayton")
+fit <- bicop(u)
 
 test_that("returns proper 'bicop' object", {
     expect_s3_class(fit, "bicop")
@@ -41,4 +41,7 @@ test_that("S3 generics work", {
     expect_equal(predict(fit, u, what = "hinv1"), fitted(fit, what = "hinv1"))
     expect_equal(predict(fit, u, what = "hinv2"), fitted(fit, what = "hinv2"))
     expect_equivalent(logLik(fit), sum(log(predict(fit, u, what = "pdf"))))
+    expect_output(print(fit))
+    expect_output(summary(fit))
+    expect_output(print(bicop(u, "nonp")))
 })
