@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>High Performance Algorithms for Vine Copula Modeling — rvinecopulib • rvinecopulib</title>
+<title>Vine copula distributions — vinecop_distributions • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -75,70 +75,110 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>High Performance Algorithms for Vine Copula Modeling</h1>
+    <h1>Vine copula distributions</h1>
     </div>
 
     
-    <p>'vinecopulib' is a high performance C++ library based on
-'Boost', 'Eigen' and 'NLopt'. It provides high-performance implementations of
-the core features of the popular VineCopula package, in particular
-inference algorithms for both vine copula and bivariate copula models.
-Advantages over VineCopula are a sleaker and more modern API, shorter runtimes,
-especially in high dimensions, nonparametric and multi-parameter families.</p>
+    <p>Density, distribution function and random generation
+for the vine copula distribution.</p>
     
 
-        
+    <pre class="usage"><span class='fu'>dvinecop</span>(<span class='no'>u</span>, <span class='no'>vinecop</span>)
+
+<span class='fu'>pvinecop</span>(<span class='no'>u</span>, <span class='no'>vinecop</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>)
+
+<span class='fu'>rvinecop</span>(<span class='no'>n</span>, <span class='no'>vinecop</span>, <span class='kw'>U</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>u</th>
+      <td><p>evaluation points, either a length d vector or a d-column matrix,
+where d is the number of variables in the vine.</p></td>
+    </tr>
+    <tr>
+      <th>vinecop</th>
+      <td><p>an object of class <code>"vinecop_dist"</code>.</p></td>
+    </tr>
+    <tr>
+      <th>n_mc</th>
+      <td><p>number of samples used for quasi Monte Carlo integration.</p></td>
+    </tr>
+    <tr>
+      <th>n</th>
+      <td><p>number of observations.</p></td>
+    </tr>
+    <tr>
+      <th>U</th>
+      <td><p>optionally, an \(n \times d\) matrix of values in \((0,1)\).
+The result is then the inverse Rosenblatt transform of <code>U</code>; if <code>U</code> is a
+matrix of independent \(U(0, 1)\) variables, this simulates data
+from <code>vinecop</code>.</p></td>
+    </tr>
+    </table>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p><code>dvinecop()</code> gives the density, <code>pvinecop()</code> gives the distribution function,
+and <code>rvinecop()</code> generates random deviates.</p>
+<p>The length of the result is determined by <code>n</code> for <code>rvinecop()</code>, and
+the number of rows in <code>u</code> for the other functions.</p>
+<p>The <code>vinecop</code> object is recycled to the length of the
+result.</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>See <a href='vinecop.html'>vinecop</a> for the estimation and construction of vine copula models.
+Here, the density, distribution function and random generation
+for the vine copulas are standard.</p>
+<p>The Rosenblatt transform (Rosenblatt, 1952) \(U = T(V)\) of a random vector
+\(V = (V_1,\ldots,V_d) ~ C\) is defined as
+$$ 
+  U_1 = V_1, U_2 = C(V_2|V_1), \ldots, U_d =C(V_d|V_1,\ldots,V_{d-1}), 
+$$
+where \(C(v_k|v_1,\ldots,v_{k-1})\) is the conditional distribution of
+\(V_k\) given \(V_1 \ldots, V_{k-1}, k = 2,\ldots,d\). The vector \(V\)
+are then independent standard uniform variables. The inverse operation
+$$ 
+  V_1 = U_1, V_2 = C^{-1}(U_2|U_1), \ldots, V_d =C^{-1}(U_d|U_1,\ldots,U_{d-1}), 
+$$
+can can be used to simulate from a copula. For any copula \(C\), if
+\(U\) is a vector of independent random variables, \(V = T^{-1}(U)\) has
+distribution \(C\).</p>
+    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'>## bicop_dist objects</span>
-<span class='fu'>bicop_dist</span>(<span class='st'>"gaussian"</span>, <span class='fl'>0</span>, <span class='fl'>0.5</span>)</div><div class='output co'>#&gt; Bivariate copula ('bicop_dist'): family = gaussian, rotation = 0, parameters = 0.5</div><div class='input'><span class='fu'>str</span>(<span class='fu'>bicop_dist</span>(<span class='st'>"gauss"</span>, <span class='fl'>0</span>, <span class='fl'>0.5</span>))</div><div class='output co'>#&gt; List of 4
-#&gt;  $ family    : chr "gaussian"
-#&gt;  $ rotation  : num 0
-#&gt;  $ parameters: num [1, 1] 0.5
-#&gt;  $ npars     : int 1
-#&gt;  - attr(*, "class")= chr "bicop_dist"</div><div class='input'><span class='no'>bicop</span> <span class='kw'>&lt;-</span> <span class='fu'>bicop_dist</span>(<span class='st'>"clayton"</span>, <span class='fl'>90</span>, <span class='fl'>3</span>)
-
-<span class='co'>## bicop objects</span>
-<span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>rbicop</span>(<span class='fl'>500</span>, <span class='st'>"gauss"</span>, <span class='fl'>0</span>, <span class='fl'>0.5</span>)
-<span class='no'>fit1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bicop.html'>bicop</a></span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
-<span class='no'>fit1</span></div><div class='output co'>#&gt; Bivariate copula fit ('bicop'): family = gaussian, rotation = 0, parameters = 0.4583389
-#&gt; nobs = 500   logLik = 58.69   npars = 1   AIC = -115.37   BIC = -111.16   </div><div class='input'>
-<span class='co'>## vinecop_dist objects</span>
-<span class='co'>## specify pair-copulas</span>
+    <pre class="examples"><div class='input'><span class='co'># specify pair-copulas</span>
 <span class='no'>bicop</span> <span class='kw'>&lt;-</span> <span class='fu'>bicop_dist</span>(<span class='st'>"bb1"</span>, <span class='fl'>90</span>, <span class='fu'>c</span>(<span class='fl'>3</span>, <span class='fl'>2</span>))
 <span class='no'>pcs</span> <span class='kw'>&lt;-</span> <span class='fu'>list</span>(
     <span class='fu'>list</span>(<span class='no'>bicop</span>, <span class='no'>bicop</span>),  <span class='co'># pair-copulas in first tree </span>
     <span class='fu'>list</span>(<span class='no'>bicop</span>)          <span class='co'># pair-copulas in second tree </span>
-)
-<span class='co'>## specify R-vine matrix</span>
+ )
+
+<span class='co'># specify R-vine matrix</span>
 <span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'>matrix</span>(<span class='fu'>c</span>(<span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>3</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>0</span>, <span class='fl'>0</span>), <span class='fl'>3</span>, <span class='fl'>3</span>)
-<span class='co'>## build the vinecop_dist object</span>
+
+<span class='co'># set up vine copula model</span>
 <span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop_dist</span>(<span class='no'>pcs</span>, <span class='no'>mat</span>)
-<span class='fu'>summary</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt;  tree edge conditioned conditioning family rotation parameters
-#&gt;     1    1        3, 1                 bb1       90       3, 2
-#&gt;     1    2        2, 1                 bb1       90       3, 2
-#&gt;     2    1        3, 2            1    bb1       90       3, 2</div><div class='input'>
-<span class='co'>## vinecop objects</span>
-<span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>sapply</span>(<span class='fl'>1</span>:<span class='fl'>3</span>, <span class='kw'>function</span>(<span class='no'>i</span>) <span class='fu'>runif</span>(<span class='fl'>50</span>))
-<span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vinecop.html'>vinecop</a></span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
-<span class='fu'>summary</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model fit
-#&gt; nobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   
-#&gt; ----
-#&gt;  tree edge conditioned conditioning family rotation parameters
-#&gt;     1    1        2, 3               indep        0           
-#&gt;     1    2        3, 1               indep        0           
-#&gt;     2    1        2, 1            3  indep        0           </div></pre>
+
+<span class='co'># simulate from the model</span>
+<span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>rvinecop</span>(<span class='fl'>200</span>, <span class='no'>vc</span>)
+<span class='fu'>pairs</span>(<span class='no'>u</span>)</div><div class='img'><img src='vinecop_methods-1.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='co'># evaluate the density and cdf</span>
+<span class='fu'>dvinecop</span>(<span class='no'>u</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 6321.893</div><div class='input'><span class='fu'>pvinecop</span>(<span class='no'>u</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 0</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-            
+      <li><a href="#arguments">Arguments</a></li>
+      
+      <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
+      
       <li><a href="#examples">Examples</a></li>
     </ul>
-
-    <h2>Author</h2>
-    
-Thomas Nagler, Thibault Vatter
 
   </div>
 </div>

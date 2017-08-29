@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Conversion between Kendall's tau and parameters — par_to_tau • rvinecopulib</title>
+<title>Predictions and fitted values for a vine copula model — vinecop_predict_and_fitted • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -75,52 +75,64 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Conversion between Kendall's tau and parameters</h1>
+    <h1>Predictions and fitted values for a vine copula model</h1>
     </div>
 
     
-    <p>Conversion between Kendall's tau and parameters</p>
+    <p>Predictions of the density and distribution function
+for a vine copula model.</p>
     
 
-    <pre class="usage"><span class='fu'>par_to_tau</span>(<span class='no'>family</span>, <span class='no'>rotation</span>, <span class='no'>parameters</span>)
+    <pre class="usage"><span class='co'># S3 method for vinecop</span>
+<span class='fu'>predict</span>(<span class='no'>object</span>, <span class='no'>newdata</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>, <span class='no'>...</span>)
 
-<span class='fu'>tau_to_par</span>(<span class='no'>family</span>, <span class='no'>tau</span>)</pre>
+<span class='co'># S3 method for vinecop</span>
+<span class='fu'>fitted</span>(<span class='no'>object</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>family</th>
-      <td><p>a copula family (see <code>bicop_dist()</code>) or a bicop_dist object.</p></td>
+      <th>object</th>
+      <td><p>a <code>vinecop</code> object.</p></td>
     </tr>
     <tr>
-      <th>rotation</th>
-      <td><p>the rotation of the copula, one of <code>0</code>, <code>90</code>, <code>180</code>, <code>270</code>.</p></td>
+      <th>newdata</th>
+      <td><p>points where the fit shall be evaluated.</p></td>
     </tr>
     <tr>
-      <th>parameters</th>
-      <td><p>vector or matrix of copula parameters, not used when
-<code>family</code> is a <code>bicop_dist</code> object.</p></td>
+      <th>what</th>
+      <td><p>what to predict, either <code>"pdf"</code> or <code>"cdf"</code>.</p></td>
     </tr>
     <tr>
-      <th>tau</th>
-      <td><p>Kendall's \(\tau\).</p></td>
+      <th>n_mc</th>
+      <td><p>number of samples used for quasi Monte Carlo integration when
+<code>what = "cdf"</code>.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>unused.</p></td>
     </tr>
     </table>
     
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p><code>fitted()</code> and <code>predict()</code> have return values similar to <code><a href='vinecop_methods.html'>dvinecop()</a></code>
+and <code>pvinecop()</code>.</p>
+    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># the following are equivalent</span>
-<span class='fu'>par_to_tau</span>(<span class='fu'>bicop_dist</span>(<span class='st'>"clayton"</span>, <span class='fl'>0</span>, <span class='fl'>3</span>))</div><div class='output co'>#&gt; [1] 0.6</div><div class='input'><span class='fu'>par_to_tau</span>(<span class='st'>"clayton"</span>, <span class='fl'>0</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; [1] 0.6</div><div class='input'>
-<span class='fu'>tau_to_par</span>(<span class='st'>"clayton"</span>, <span class='fl'>0.5</span>)</div><div class='output co'>#&gt;      [,1]
-#&gt; [1,]    2</div><div class='input'><span class='fu'>tau_to_par</span>(<span class='fu'>bicop_dist</span>(<span class='st'>"clayton"</span>, <span class='fl'>0</span>, <span class='fl'>3</span>), <span class='fl'>0.5</span>)</div><div class='output co'>#&gt;      [,1]
-#&gt; [1,]    2</div></pre>
+    <pre class="examples"><div class='input'><span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>sapply</span>(<span class='fl'>1</span>:<span class='fl'>5</span>, <span class='kw'>function</span>(<span class='no'>i</span>) <span class='fu'>runif</span>(<span class='fl'>50</span>))
+<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vinecop.html'>vinecop</a></span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
+<span class='fu'>all.equal</span>(<span class='fu'>predict</span>(<span class='no'>fit</span>, <span class='no'>u</span>), <span class='fu'>fitted</span>(<span class='no'>fit</span>))</div><div class='output co'>#&gt; [1] TRUE</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-            
+      
+      <li><a href="#value">Value</a></li>
+      
       <li><a href="#examples">Examples</a></li>
     </ul>
 
