@@ -2,44 +2,90 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include "misc/tools_interpolation.hpp"
-#include "misc/tools_stats.hpp"
-#include <exception>
+#include <vinecopulib/misc/tools_interpolation.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
+#include <stdexcept>
 #include <iostream>
 
-namespace vinecopulib
-{
+namespace vinecopulib {
+
+namespace tools_interpolation {
     //! Constructor
     //!
     //! @param grid_points an ascending sequence of grid_points; used in both
     //! dimensions.
     //! @param values a dxd matrix of copula density values evaluated at
     //! (grid_points_i, grid_points_j).
-    InterpolationGrid::InterpolationGrid(
-        const Eigen::VectorXd& grid_points, 
-        const Eigen::MatrixXd& values
-    )
+    //! @param norm_times how many times the normalization routine should run.
+    InterpolationGrid::InterpolationGrid(const Eigen::VectorXd& grid_points, 
+                                         const Eigen::MatrixXd& values,
+                                         int norm_times)
     {
         if (values.cols() != values.rows()) {
-            throw std::runtime_error(
-                    "values must be a quadratic matrix"
-            );
+            throw std::runtime_error("values must be a quadratic matrix");
         }
         if (grid_points.size() != values.rows()) {
             throw std::runtime_error(
-                    "number of grid_points must equal dimension of values"
-            );
+                    "number of grid_points must equal dimension of values");
         }
 
         grid_points_ = grid_points;
         values_ = values;
+        normalize_margins(norm_times);
+    }
+
+    Eigen::MatrixXd InterpolationGrid::get_values() const
+    {
+        return values_;
+    }
+
+    void InterpolationGrid::set_values(const Eigen::MatrixXd& values,
+                                       int norm_times)
+    {
+        if (values.size() != values_.size()) {
+            if (values.rows() != values_.rows()) {
+                std::stringstream message;
+                message <<
+                        "values have has wrong number of rows; " <<
+                        "expected: " << values_.rows() << ", " <<
+                        "actual: " << values.rows() << std::endl;
+                throw std::runtime_error(message.str().c_str());
+            }
+            if (values.cols() != values_.cols()) {
+                std::stringstream message;
+                message <<
+                        "values have wrong number of columns; " <<
+                        "expected: " << values_.cols() << ", " <<
+                        "actual: " << values.cols() << std::endl;
+                throw std::runtime_error(message.str().c_str());
+            }
+        }
+
+        values_ = values;
+        normalize_margins(norm_times);
     }
 
     void InterpolationGrid::flip()
     {
         values_.transposeInPlace();
+    }
+    
+    //! renormalizes the estimate to uniform margins
+    //! 
+    //! @param times how many times the normalization routine should run.
+    void InterpolationGrid::normalize_margins(int times)
+    {
+        size_t m = grid_points_.size();        
+        for(int k = 0; k < times; ++k) {
+            for (size_t i = 0; i < m; ++i) {
+                values_.row(i) /= int_on_grid(1.0, values_.row(i), grid_points_);
+            }
+            for (size_t j = 0; j < m; ++j) {
+                values_.col(j) /= int_on_grid(1.0, values_.col(j), grid_points_);
+            }
+        }
     }
 
     //! Interpolation in two dimensions
@@ -143,6 +189,39 @@ namespace vinecopulib
             tmpint = int_on_grid(upr, tmpvals, grid_points_);
             int1 = int_on_grid(1.0, tmpvals, grid_points_);
             out(i) = tmpint/int1;
+            out(i) = fmax(out(i), 1e-10);
+            out(i) = fmin(out(i), 1-1e-10);
+        }
+
+        return out;
+    }
+
+    //! Integrate the grid along the two axis
+    //!
+    //! @param u mx2 matrix of evaluation points
+    //!
+    Eigen::VectorXd InterpolationGrid::intergrate_2d(const Eigen::MatrixXd& u)
+    {
+
+        double upr, tmpint, tmpint1;
+        ptrdiff_t n = u.rows();
+        ptrdiff_t m = grid_points_.size();
+        Eigen::VectorXd tmpvals(m), tmpvals2(m), out(n);
+        Eigen::MatrixXd tmpgrid(m, 2);
+        tmpgrid.col(1) = grid_points_;
+
+        for (ptrdiff_t i = 0; i < n; ++i) {
+            upr = u(i, 1);
+            for (ptrdiff_t k = 0; k < m-1; ++k) {
+                tmpgrid.col(0) = Eigen::VectorXd::Constant(m,  grid_points_(k));
+                tmpvals = interpolate(tmpgrid);
+                tmpint = int_on_grid(upr, tmpvals, grid_points_);
+                tmpvals2(i) = tmpint;
+            }
+            upr = u(i, 0);
+            tmpint = int_on_grid(upr, tmpvals2, grid_points_);
+            tmpint1 = int_on_grid(1.0, tmpvals2, grid_points_);
+            out(i) = tmpint/tmpint1;
             out(i) = fmax(out(i), 1e-10);
             out(i) = fmin(out(i), 1-1e-10);
         }
@@ -290,4 +369,6 @@ namespace vinecopulib
 
         return tmpint;
     }
+}
+
 }

@@ -2,58 +2,42 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include "bicop/family.hpp"
+#include <vinecopulib/bicop/family.hpp>
 #include <stdexcept>
+#include <boost/bimap.hpp>
+#include <boost/assign.hpp>
 
 namespace vinecopulib {
+
+    typedef boost::bimap<BicopFamily, std::string> family_bimap;
+    const family_bimap family_names =
+            boost::assign::list_of< family_bimap::relation >
+                    (BicopFamily::indep, "Independence")
+                    (BicopFamily::gaussian, "Gaussian")
+                    (BicopFamily::student, "Student")
+                    (BicopFamily::clayton, "Clayton")
+                    (BicopFamily::gumbel, "Gumbel")
+                    (BicopFamily::frank, "Frank")
+                    (BicopFamily::joe, "Joe")
+                    (BicopFamily::bb1, "BB1")
+                    (BicopFamily::bb6, "BB6")
+                    (BicopFamily::bb7, "BB7")
+                    (BicopFamily::bb8, "BB8")
+                    (BicopFamily::tll, "TLL0");
+
     //! converts a BicopFamily into a string with its name.
     //! @param family the family.
     std::string get_family_name(BicopFamily family)
     {
-        std::string family_name;
-        switch (family) {
-            case BicopFamily::indep:
-                family_name = "Independence";
-                break;
-            case BicopFamily::gaussian:
-                family_name = "Gaussian";
-                break;
-            case BicopFamily::student:
-                family_name = "Student";
-                break;
-            case BicopFamily::clayton:
-                family_name = "Clayton";
-                break;
-            case BicopFamily::gumbel:
-                family_name = "Gumbel";
-                break;
-            case BicopFamily::frank:
-                family_name = "Frank";
-                break;
-            case BicopFamily::joe:
-                family_name = "Joe";
-                break;
-            case BicopFamily::bb1:
-                family_name = "BB1";
-                break;
-            case BicopFamily::bb6:
-                family_name = "BB6";
-                break;
-            case BicopFamily::bb7:
-                family_name = "BB7";
-                break;
-            case BicopFamily::bb8:
-                family_name = "BB8";
-                break;
-            case BicopFamily::tll0:
-                family_name = "TLL0";
-                break;
+        return family_names.left.at(family);
+    };
 
-            default:
-                throw std::runtime_error(std::string("Family not implemented"));
-        }
-        return family_name;
+    //! converts a string name into a BicopFamily.
+    //! @param family the family name.
+    BicopFamily get_family_enum(std::string family)
+    {
+        return family_names.right.at(family);
     };
 }

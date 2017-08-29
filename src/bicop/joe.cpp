@@ -2,12 +2,14 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include "bicop/joe.hpp"
+#include <vinecopulib/bicop/joe.hpp>
+#include <cmath>
 #include <boost/math/special_functions/digamma.hpp>
 #include <boost/math/special_functions/expm1.hpp>
 #include <boost/math/special_functions/log1p.hpp>
+#include <boost/math/special_functions/fpclassify.hpp> // isnan
 
 namespace vinecopulib
 {
@@ -72,7 +74,7 @@ namespace vinecopulib
         return tools_eigen::invert_f(tau2, f, 1+1e-6, 100);
     }
 
-    double JoeBicop::parameters_to_tau(const Eigen::VectorXd& parameters)
+    double JoeBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
     {
         double par = parameters(0);
         double tau = 2 / par + 1;
@@ -130,7 +132,8 @@ double qcondjoe(double* q, double* u, double* de)
         c21 = -t9*t15*t16;
         pdf = -t8/t19*t31+t8*(*de)*t2*t13*t23*t16+t9*t31;
         iter++;
-        if(std::isnan(pdf) || std::isnan(c21) ) { diff/=-2.; }  // added for de>=30
+        if((boost::math::isnan)(pdf) ||
+                (boost::math::isnan)(c21) ) { diff/=-2.; }  // added for de>=30
         else diff=(c21-*q)/pdf;
         v-=diff;
         int iter2 = 0;

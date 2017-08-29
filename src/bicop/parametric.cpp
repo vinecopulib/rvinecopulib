@@ -2,15 +2,44 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include "bicop/parametric.hpp"
-#include "misc/tools_optimization.hpp"
-#include "misc/tools_stl.hpp"
-#include "misc/tools_stats.hpp"
+#include <vinecopulib/bicop/parametric.hpp>
+#include <vinecopulib/misc/tools_optimization.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
+#include <iostream>
 
 namespace vinecopulib
 {
+    Eigen::MatrixXd ParBicop::get_parameters() const
+    {
+        return parameters_;
+    }
+
+    Eigen::MatrixXd ParBicop::get_parameters_lower_bounds() const
+    {
+        return parameters_lower_bounds_;
+    }
+
+    Eigen::MatrixXd ParBicop::get_parameters_upper_bounds() const
+    {
+        return parameters_upper_bounds_;
+    }
+
+    void ParBicop::set_parameters(const Eigen::MatrixXd& parameters)
+    {
+        check_parameters(parameters);
+        parameters_ = parameters;
+    }
+
+    void ParBicop::flip()
+    {
+        // Most parametric families can be flipped by changing the rotation.
+        // This is done in Bicop::flip() directly. All other families need to
+        // override this method.
+    }
+    
     // calculate number of parameters
     double ParBicop::calculate_npars() {
         // indepence copula has no parameters
@@ -43,7 +72,7 @@ namespace vinecopulib
             }
 
             auto temp_data = data;
-            double tau = tools_stats::pairwise_ktau(temp_data);
+            double tau = tools_stats::pairwise_tau(temp_data);
             auto newpar = get_start_parameters(tau);
             if (npars > 0) {
                 // Create optimizer
@@ -52,8 +81,19 @@ namespace vinecopulib
                 // Set bounds and starting values
                 auto lb = get_parameters_lower_bounds();
                 auto ub = get_parameters_upper_bounds();
-                auto initial_parameters = newpar;
-                ParBicopOptData my_data = {temp_data, this, newpar(0), 0};
+                
+                // ensure that starting values are sufficiently separated from 
+                // bounds
+                double sign = 1.0;
+                if (tau < 0) sign = -1.0;
+                if (std::abs(tau) < 0.01) {
+                    tau = 0.01 * sign;
+                } else if (std::abs(tau) > 0.9) {
+                    tau = 0.9 * sign;
+                }
+                auto initial_parameters = get_start_parameters(tau);
+                
+                ParBicopOptData my_data = {temp_data, this, initial_parameters(0), 0};
                 if (method == "itau") {
                       lb.resize(1, 1);
                       lb(0) = get_parameters_lower_bounds()(1);
@@ -86,6 +126,73 @@ namespace vinecopulib
             set_parameters(newpar);
         }
     }
+
+    //! Sanity checks
+    //! @{
+    void ParBicop::check_parameters(const Eigen::MatrixXd& parameters)
+    {
+        check_parameters_size(parameters);
+        check_parameters_lower(parameters);
+        check_parameters_upper(parameters);
+    }
+
+
+    void ParBicop::check_parameters_size(const Eigen::MatrixXd& parameters)
+    {
+        if (parameters.size() != parameters_.size()) {
+            if (parameters.rows() != parameters_.rows()) {
+                std::stringstream message;
+                message <<
+                        "parameters have has wrong number of rows " <<
+                        "for " << get_family_name() << " copula; " <<
+                        "expected: " << parameters_.rows() << ", " <<
+                        "actual: " << parameters.rows() << std::endl;
+                throw std::runtime_error(message.str().c_str());
+            }
+            if (parameters.cols() != parameters_.cols()) {
+                std::stringstream message;
+                message <<
+                        "parameters have wrong number of columns " <<
+                        "for " << get_family_name() << " copula; " <<
+                        "expected: " << parameters_.cols() << ", " <<
+                        "actual: " << parameters.cols() << std::endl;
+                throw std::runtime_error(message.str().c_str());
+            }
+        }
+    }
+
+
+    void ParBicop::check_parameters_lower(const Eigen::MatrixXd& parameters)
+    {
+        if (parameters_lower_bounds_.size() > 0) {
+            std::stringstream message;
+            if ((parameters.array() < parameters_lower_bounds_.array()).any()) {
+                message <<
+                        "parameters exceed lower bound " <<
+                        "for " << get_family_name() << " copula; " << std::endl <<
+                        "bound:" << std::endl << parameters_lower_bounds_ << std::endl <<
+                        "actual:" << std::endl << parameters << std::endl;
+                throw std::runtime_error(message.str().c_str());
+            }
+        }
+    }
+
+    void ParBicop::check_parameters_upper(const Eigen::MatrixXd& parameters)
+    {
+        if (parameters_upper_bounds_.size() > 0) {
+            std::stringstream message;
+            if ((parameters.array() > parameters_upper_bounds_.array()).any()) {
+                message <<
+                        "parameters exceed upper bound " <<
+                        "for " << get_family_name() << " copula; " << std::endl <<
+                        "bound:" << std::endl << parameters_upper_bounds_ << std::endl <<
+                        "actual:" << std::endl << parameters << std::endl;
+                throw std::runtime_error(message.str().c_str());
+            }
+        }
+    }
+
+    //! @}
     
 }
 

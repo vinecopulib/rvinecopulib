@@ -2,13 +2,15 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include "misc/tools_optimization.hpp"
-#include "misc/tools_stats.hpp"
+#include <vinecopulib/misc/tools_optimization.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
 
 #include <cmath>
 
+namespace vinecopulib {
+    
 //! Utilities for numerical optimization (based on NLopt)
 namespace tools_optimization {
 
@@ -99,7 +101,9 @@ namespace tools_optimization {
         maxeval_ = maxeval;
     }
 
-    void NLoptControls::check_parameters(double xtol_rel, double xtol_abs, double ftol_rel, double ftol_abs, int maxeval)
+    void NLoptControls::check_parameters(double xtol_rel, double xtol_abs, 
+                                         double ftol_rel, double ftol_abs, 
+                                         int maxeval)
     {
         if (xtol_rel <= 0 || xtol_rel > 1) {
             throw std::runtime_error("xtol_rel should be in (0,1]");
@@ -199,7 +203,7 @@ namespace tools_optimization {
     Eigen::VectorXd Optimizer::optimize(Eigen::VectorXd initial_parameters)
     {
         if (initial_parameters.size() != n_parameters_) {
-            throw std::string("The size of x should be n_parameters_.");
+            throw std::runtime_error("The size of x should be n_parameters_.");
         }
 
         double nll;
@@ -208,15 +212,15 @@ namespace tools_optimization {
         try {
             opt_.optimize(x, nll);
         } catch (nlopt::roundoff_limited err) {
-            throw std::string("Halted because roundoff errors limited progress! ") + err.what();
+            throw std::runtime_error(std::string("Halted because roundoff errors limited progress! ") + err.what());
         } catch (nlopt::forced_stop err) {
-            throw std::string("Halted because of a forced termination! ") + err.what();
+            throw std::runtime_error(std::string("Halted because of a forced termination! ") + err.what());
         } catch (std::invalid_argument err) {
-            throw std::string("Invalid arguments. ") + err.what();
+            throw std::runtime_error(std::string("Invalid arguments. ") + err.what());
         } catch (std::bad_alloc err) {
-            throw std::string("Ran out of memory. ") + err.what();
+            throw std::runtime_error(std::string("Ran out of memory. ") + err.what());
         } catch (std::runtime_error err) {
-            throw std::string("Generic failure. ") + err.what();
+            throw std::runtime_error(std::string("Generic failure. ") + err.what());
         } catch (...) {
             // do nothing for other errors (results are fine)
         }
@@ -224,4 +228,6 @@ namespace tools_optimization {
         Eigen::Map<const Eigen::VectorXd> optimized_parameters(&x[0], x.size());
         return optimized_parameters;
     }
+}
+
 }

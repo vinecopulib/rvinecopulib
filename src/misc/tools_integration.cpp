@@ -2,10 +2,12 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include "misc/tools_integration.hpp"
+#include <vinecopulib/misc/tools_integration.hpp>
 #include <boost/numeric/odeint.hpp>
+
+namespace vinecopulib {
 
 namespace tools_integration {
 
@@ -22,4 +24,6 @@ namespace tools_integration {
                            ifunc, x, lb, ub, lb);
         return x;
     }
+}
+
 }

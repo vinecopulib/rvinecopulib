@@ -2,10 +2,10 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include "bicop/bb6.hpp"
-#include "misc/tools_integration.hpp"
+#include <vinecopulib/bicop/bb6.hpp>
+#include <vinecopulib/misc/tools_integration.hpp>
 
 #include <boost/math/special_functions/expm1.hpp>
 #include <boost/math/special_functions/log1p.hpp>
@@ -55,7 +55,7 @@ namespace vinecopulib
         return res*delta*theta*std::pow(1-u, theta-2)/std::pow(tmp - 1,2);
     }
 
-    double Bb6Bicop::parameters_to_tau(const Eigen::VectorXd& parameters)
+    double Bb6Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
     {
         double theta = parameters(0);
         double delta = parameters(1);

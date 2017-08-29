@@ -2,10 +2,10 @@
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
-// vinecopulib or https://tvatter.github.io/vinecopulib/.
+// vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include "bicop/bb8.hpp"
-#include "misc/tools_integration.hpp"
+#include <vinecopulib/bicop/bb8.hpp>
+#include <vinecopulib/misc/tools_integration.hpp>
 
 namespace vinecopulib
 {
@@ -53,7 +53,7 @@ namespace vinecopulib
         return res*(theta-1+tmp)/std::pow(tmp-1,2);
     }
 
-    double Bb8Bicop::parameters_to_tau(const Eigen::VectorXd& parameters)
+    double Bb8Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
     {
         double theta = parameters(0);
         double delta = parameters(1);
