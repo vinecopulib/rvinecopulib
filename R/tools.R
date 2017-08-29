@@ -60,6 +60,7 @@ expand_family <- function(family) {
 }
 
 #' Internal: Checks whether all families are known (including partial matching).
+#' @noRd
 check_and_match_family_set <- function(family_set) {
     matched_fams <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
     if (any(is.na(matched_fams))) {

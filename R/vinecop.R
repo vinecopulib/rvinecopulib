@@ -4,11 +4,12 @@
 #' 
 #' @aliases vinecop_dist
 #' @inheritParams bicop
-#' @param family_set a character vector of families; see [bicop] for 
+#' @param family_set a character vector of families; see [bicop()] for 
 #' additional options.
-#' @param matrix an R-vine matrix specifying the structure matrix (see 
-#'   [check_rvine_matrix()]), or `NA` for
-#'   automatic structure selection (default).
+#' @param matrix a quadratic matrix specifying the structure matrix (see 
+#'   [check_rvine_matrix()]); for [vinecop_dist()], the dimension must be 
+#'   `length(pair_copulas)-1`; for [vinecop()], `matrix = NA` performs
+#'   automatic structure selection.
 #' @param trunc_lvl the truncation level of the vine copula; `Inf` means no
 #'   truncation, `NA` indicates that the truncation level should be selected
 #'   automatically by GIC.
@@ -34,8 +35,8 @@
 #' the vine copula, with `threshold_sel` and `trunc_lvl_sel` to automatically 
 #' select both parameters.
 #'
-#' @return Objects inherting from `vinecop_dist` for `vinecop_dist()`, and
-#' `vinecop` and `vinecop_dist` for `vinecop()`.
+#' @return Objects inherting from `vinecop_dist` for [vinecop_dist()], and
+#' `vinecop` and `vinecop_dist` for [vinecop()].
 #'
 #' @examples
 #' # specify pair-copulas
@@ -129,8 +130,6 @@ vinecop <- function(data, family_set = "all", matrix = NA,
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where 
 #'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
 #'    tree `t`.
-#' @param matrix A quadratic structure matrix of dimension 
-#'   `length(pair_copulas) + 1` (see *Examples* and [check_rvine_matrix()]). 
 #' @rdname vinecop
 #' @export
 vinecop_dist <- function(pair_copulas, matrix) {

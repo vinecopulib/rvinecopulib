@@ -3,7 +3,7 @@
 #' Density, distribution function and random generation 
 #' for the vine copula distribution.
 #' 
-#' @name vinecop
+#' @name vinecop_distributions
 #' @aliases dvinecop pvinecop rvinecop dvinecop_dist pvinecop_dist rvinecop_dist
 #' @param u evaluation points, either a length d vector or a d-column matrix,
 #'   where d is the number of variables in the vine.
@@ -129,7 +129,7 @@ summary.vinecop_dist <- function(object, ...) {
 #' Predictions of the density and distribution function
 #' for a vine copula model.
 #'
-#' @name vinecop
+#' @name vinecop_predict_and_fitted
 #' @aliases fitted.vinecop predict.vinecop
 #' @param object a `vinecop` object.
 #' @param newdata points where the fit shall be evaluated.
@@ -193,6 +193,8 @@ print.vinecop <- function(x, ...) {
     invisible(x)
 }
 
+
+#' @export
 summary.vinecop <- function(object, ...) {
     info <- attr(print.vinecop(object), "info")
     cat("\n----\n")

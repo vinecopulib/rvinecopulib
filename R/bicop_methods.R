@@ -3,7 +3,7 @@
 #' Density, distribution function, random generation and h-functions (with 
 #' their inverses) for the bivariate copula distribution.
 #' 
-#' @name bicop
+#' @name bicop_distributions
 #' @aliases dbicop pbicop rbicop hbicop dbicop_dist pbicop_dist rbicop_dist hbicop_dist
 #' 
 #' @param u evaluation points, either a length 2 vector or a two-column matrix.
@@ -74,11 +74,6 @@ pbicop <- function(u, family, rotation, parameters) {
 #'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
 #'    matrix of independent \eqn{U(0, 1)} variebls, this simulates data 
 #'    from `vinecop`.
-#' @examples
-#' 
-#' ## simulate data
-#' plot(rbicop(500, "clay", 90, 3))
-#' plot(rbicop(500, bicop))
 #' @rdname bicop_methods
 #' @export
 rbicop <- function(n, family, rotation, parameters, U = NULL) {
@@ -136,7 +131,7 @@ hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
 #' 
 #' tau_to_par("clayton", 0.5)
 #' tau_to_par(bicop_dist("clayton", 0, 3), 0.5)
-#' @name bicop
+#' @name par_to_tau
 #' @rdname par_to_tau
 par_to_tau <- function(family, rotation, parameters) {
     bicop <- args2bicop(family, rotation, parameters)
@@ -158,7 +153,7 @@ tau_to_par <- function(family, tau) {
 #' Predictions of the density, distribution function,  
 #' h-functions (with their inverses) for a bivariate copula model.
 #'
-#' @name bicop
+#' @name bicop_predict_and_fitted
 #' @aliases predict.bicop fitted.bicop
 #' @param object a `bicop` object.
 #' @param newdata points where the fit shall be evaluated.
@@ -229,8 +224,8 @@ print.bicop_dist <- function(x, ...) {
 }
 
 #' @export
-summary.bicop_dist <- function(x, ...) {
-    print.bicop_dist(x, ...)
+summary.bicop_dist <- function(object, ...) {
+    print.bicop_dist(object, ...)
 }
 
 #' @export
@@ -256,8 +251,8 @@ print.bicop <- function(x, ...) {
 }
 
 #' @export
-summary.bicop <- function(x, ...) {
-    print.bicop(x, ...)
+summary.bicop <- function(object, ...) {
+    print.bicop(object, ...)
 }
 
 bicop_fit_info <- function(bc) {
