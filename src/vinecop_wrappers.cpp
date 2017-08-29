@@ -1,4 +1,8 @@
 #include <RcppEigen.h>
+#include <R.h>
+#include <Rinternals.h>
+#include <stdlib.h> // for NULL
+#include <R_ext/Rdynload.h>
 #include "bicop_wrappers.hpp"
 
 using namespace vinecopulib;
