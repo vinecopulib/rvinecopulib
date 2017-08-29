@@ -54,7 +54,7 @@
 #' `"gaussian"`, or you can write  `"nonpar"` instead of `"nonparametric"`.
 #'
 #'
-#' @return Objects inherting from `bicop_dist` for `bicop_dist()`, and
+#' @return Objects inheriting from `bicop_dist` for `bicop_dist()`, and
 #' `bicop` and `bicop_dist` for `bicop()`.
 #'
 #' @examples
@@ -115,7 +115,7 @@ as.bicop <- function(object) {
 #' @param family the copula family, a string containing the family name (see
 #' *Details* for all possible families).
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
-#' @param parameters a vector or matrix of copula paramters.
+#' @param parameters a vector or matrix of copula parameters.
 #' @rdname bicop
 #' @export
 bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {

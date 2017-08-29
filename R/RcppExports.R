@@ -2,74 +2,74 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 bicop_check_cpp <- function(bicop_r) {
-    invisible(.Call('_rvinecopulib_bicop_check_cpp', PACKAGE = 'rvinecopulib', bicop_r))
+    invisible(.Call(`_rvinecopulib_bicop_check_cpp`, bicop_r))
 }
 
 bicop_select_cpp <- function(data, family_set, par_method, nonpar_method, mult, selcrit, presel) {
-    .Call('_rvinecopulib_bicop_select_cpp', PACKAGE = 'rvinecopulib', data, family_set, par_method, nonpar_method, mult, selcrit, presel)
+    .Call(`_rvinecopulib_bicop_select_cpp`, data, family_set, par_method, nonpar_method, mult, selcrit, presel)
 }
 
 bicop_pdf_cpp <- function(u, bicop_r) {
-    .Call('_rvinecopulib_bicop_pdf_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call(`_rvinecopulib_bicop_pdf_cpp`, u, bicop_r)
 }
 
 bicop_cdf_cpp <- function(u, bicop_r) {
-    .Call('_rvinecopulib_bicop_cdf_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call(`_rvinecopulib_bicop_cdf_cpp`, u, bicop_r)
 }
 
 bicop_hfunc1_cpp <- function(u, bicop_r) {
-    .Call('_rvinecopulib_bicop_hfunc1_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call(`_rvinecopulib_bicop_hfunc1_cpp`, u, bicop_r)
 }
 
 bicop_hfunc2_cpp <- function(u, bicop_r) {
-    .Call('_rvinecopulib_bicop_hfunc2_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call(`_rvinecopulib_bicop_hfunc2_cpp`, u, bicop_r)
 }
 
 bicop_hinv1_cpp <- function(u, bicop_r) {
-    .Call('_rvinecopulib_bicop_hinv1_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call(`_rvinecopulib_bicop_hinv1_cpp`, u, bicop_r)
 }
 
 bicop_hinv2_cpp <- function(u, bicop_r) {
-    .Call('_rvinecopulib_bicop_hinv2_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call(`_rvinecopulib_bicop_hinv2_cpp`, u, bicop_r)
 }
 
 bicop_loglik_cpp <- function(u, bicop_r) {
-    .Call('_rvinecopulib_bicop_loglik_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
+    .Call(`_rvinecopulib_bicop_loglik_cpp`, u, bicop_r)
 }
 
 bicop_par_to_tau_cpp <- function(bicop_r) {
-    .Call('_rvinecopulib_bicop_par_to_tau_cpp', PACKAGE = 'rvinecopulib', bicop_r)
+    .Call(`_rvinecopulib_bicop_par_to_tau_cpp`, bicop_r)
 }
 
 bicop_tau_to_par_cpp <- function(bicop_r, tau) {
-    .Call('_rvinecopulib_bicop_tau_to_par_cpp', PACKAGE = 'rvinecopulib', bicop_r, tau)
+    .Call(`_rvinecopulib_bicop_tau_to_par_cpp`, bicop_r, tau)
 }
 
 rvine_matrix_check_cpp <- function(matrix) {
-    invisible(.Call('_rvinecopulib_rvine_matrix_check_cpp', PACKAGE = 'rvinecopulib', matrix))
+    invisible(.Call(`_rvinecopulib_rvine_matrix_check_cpp`, matrix))
 }
 
 vinecop_check_cpp <- function(vinecop_r) {
-    invisible(.Call('_rvinecopulib_vinecop_check_cpp', PACKAGE = 'rvinecopulib', vinecop_r))
+    invisible(.Call(`_rvinecopulib_vinecop_check_cpp`, vinecop_r))
 }
 
 vinecop_inverse_rosenblatt_cpp <- function(U, vinecop_r) {
-    .Call('_rvinecopulib_vinecop_inverse_rosenblatt_cpp', PACKAGE = 'rvinecopulib', U, vinecop_r)
+    .Call(`_rvinecopulib_vinecop_inverse_rosenblatt_cpp`, U, vinecop_r)
 }
 
 vinecop_pdf_cpp <- function(u, vinecop_r) {
-    .Call('_rvinecopulib_vinecop_pdf_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
+    .Call(`_rvinecopulib_vinecop_pdf_cpp`, u, vinecop_r)
 }
 
 vinecop_cdf_cpp <- function(u, vinecop_r, N) {
-    .Call('_rvinecopulib_vinecop_cdf_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r, N)
+    .Call(`_rvinecopulib_vinecop_cdf_cpp`, u, vinecop_r, N)
 }
 
 vinecop_loglik_cpp <- function(u, vinecop_r) {
-    .Call('_rvinecopulib_vinecop_loglik_cpp', PACKAGE = 'rvinecopulib', u, vinecop_r)
+    .Call(`_rvinecopulib_vinecop_loglik_cpp`, u, vinecop_r)
 }
 
 vinecop_select_cpp <- function(data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, select_truncation_level, select_threshold, preselect_families, show_trace) {
-    .Call('_rvinecopulib_vinecop_select_cpp', PACKAGE = 'rvinecopulib', data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, select_truncation_level, select_threshold, preselect_families, show_trace)
+    .Call(`_rvinecopulib_vinecop_select_cpp`, data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, select_truncation_level, select_threshold, preselect_families, show_trace)
 }
 

@@ -46,10 +46,10 @@ fit statistics and using \code{\link[=fitted]{fitted()}}).}
 
 \item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
 
-\item{parameters}{a vector or matrix of copula paramters.}
+\item{parameters}{a vector or matrix of copula parameters.}
 }
 \value{
-Objects inherting from \code{bicop_dist} for \code{bicop_dist()}, and
+Objects inheriting from \code{bicop_dist} for \code{bicop_dist()}, and
 \code{bicop} and \code{bicop_dist} for \code{bicop()}.
 }
 \description{

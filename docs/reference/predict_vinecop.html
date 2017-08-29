@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Predictions and fitted values for a vine copula model — predict.vinecop • rvinecopulib</title>
+<title>Predictions and fitted values for a vine copula model — vinecop_predict_and_fitted • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -79,17 +79,15 @@
     </div>
 
     
-    <p>Predictions and fitted values for a vine copula model</p>
+    <p>Predictions of the density and distribution function
+for a vine copula model.</p>
     
 
     <pre class="usage"><span class='co'># S3 method for vinecop</span>
 <span class='fu'>predict</span>(<span class='no'>object</span>, <span class='no'>newdata</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>, <span class='no'>...</span>)
 
 <span class='co'># S3 method for vinecop</span>
-<span class='fu'>fitted</span>(<span class='no'>object</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>, <span class='no'>...</span>)
-
-<span class='co'># S3 method for vinecop</span>
-<span class='fu'>logLik</span>(<span class='no'>object</span>, <span class='no'>...</span>)</pre>
+<span class='fu'>fitted</span>(<span class='no'>object</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -117,19 +115,24 @@
     </tr>
     </table>
     
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p><code>fitted()</code> and <code>predict()</code> have return values similar to <code><a href='vinecop_methods.html'>dvinecop()</a></code>
+and <code>pvinecop()</code>.</p>
+    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>sapply</span>(<span class='fl'>1</span>:<span class='fl'>5</span>, <span class='kw'>function</span>(<span class='no'>i</span>) <span class='fu'>runif</span>(<span class='fl'>50</span>))
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vinecop.html'>vinecop</a></span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
-<span class='fu'>all.equal</span>(<span class='fu'>predict</span>(<span class='no'>fit</span>, <span class='no'>u</span>), <span class='fu'>fitted</span>(<span class='no'>fit</span>))</div><div class='output co'>#&gt; [1] TRUE</div><div class='input'><span class='fu'>logLik</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; [1] 0
-#&gt; attr(,"df")
-#&gt; [1] 0</div></pre>
+<span class='fu'>all.equal</span>(<span class='fu'>predict</span>(<span class='no'>fit</span>, <span class='no'>u</span>), <span class='fu'>fitted</span>(<span class='no'>fit</span>))</div><div class='output co'>#&gt; [1] TRUE</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-            
+      
+      <li><a href="#value">Value</a></li>
+      
       <li><a href="#examples">Examples</a></li>
     </ul>
 

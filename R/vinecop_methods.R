@@ -76,7 +76,7 @@ pvinecop <- function(u, vinecop, n_mc = 10^4) {
 #' @param n number of observations.
 #' @param U optionally, an \eqn{n \times d} matrix of values in \eqn{(0,1)}.
 #'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
-#'    matrix of independent \eqn{U(0, 1)} variebls, this simulates data 
+#'    matrix of independent \eqn{U(0, 1)} variables, this simulates data 
 #'    from `vinecop`.
 #' @export
 rvinecop <- function(n, vinecop, U = NULL) {

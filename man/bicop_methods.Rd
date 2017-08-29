@@ -31,7 +31,7 @@ hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
 
 \item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
 
-\item{parameters}{a vector or matrix of copula paramters.}
+\item{parameters}{a vector or matrix of copula parameters.}
 
 \item{n}{number of observations. If `length(n) > 1``, the length is taken to
 be the number required.}
