@@ -11,7 +11,7 @@
 #' @docType package
 #' @useDynLib rvinecopulib, .registration = TRUE
 #' @importFrom Rcpp evalCpp
-#'
+#' 
 #' @author Thomas Nagler, Thibault Vatter
 #
 #' @keywords package
