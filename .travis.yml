@@ -1,8 +1,13 @@
-dist: trusty
-sudo: required
-
 language: R
+sudo: required
 warnings_are_errors: false
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+    - os: osx
+      osx_image: xcode8.2
 
 apt_packages:
   - libcurl4-openssl-dev
@@ -18,15 +23,33 @@ r_packages:
   - RcppProgress
 
 before_install:
-  - sudo add-apt-repository ppa:marutter/c2d4u -y
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -q
-  - sudo apt-get install gcc-5 g++-5 gfortran-5
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100
-  - sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100
+  ### Linux
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo add-apt-repository ppa:marutter/c2d4u -y; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get update -q; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get install gcc-5 g++-5 gfortran-5; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100; fi
+  
+  ### OSX
+  - if [ $TRAVIS_OS_NAME == osx ]; then /usr/bin/yes | pip uninstall numpy; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then rm '/usr/local/bin/gfortran'; fi # otherwise gcc install fails
+  - if [ $TRAVIS_OS_NAME == osx ]; then sudo chown -R `whoami`:admin /usr/local/share/man/man7; fi       # same, see http://stackoverflow.com/questions/26647412/homebrew-could-not-symlink-usr-local-bin-is-not-writable
+  - if [ $TRAVIS_OS_NAME == osx ]; then sudo chown -R `whoami`:admin /usr/local/lib/gcc; fi       # same
+  - if [ $TRAVIS_OS_NAME == osx ]; then rm /usr/local/include/c++; fi # same, see https://github.com/Homebrew/brew/issues/1742#issuecomment-277308817
+  - if [ $TRAVIS_OS_NAME == osx ]; then brew update; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then brew install gcc || brew link --overwrite gcc; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then mkdir ~/.R; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then touch ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "CC=/usr/local/bin/gcc-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "CXX=/usr/local/bin/g++-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "CXX11=/usr/local/bin/g++-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "FC=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "F77=/usr/local/bin/gfortran-7" >> ~/.R/Makevars; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then brew install --without-numpy --HEAD nlopt; fi
 
 repos:
   CRAN: http://cran.rstudio.com
 
 after_success:
-  - Rscript -e 'covr::codecov(line_exclusion=list.files(recursive = TRUE)[grep("^(?!.*wrappers).*\\.(hpp|h|cpp|c)$", list.files(recursive = TRUE), perl = TRUE)])'
+  - if [ $TRAVIS_OS_NAME == linux ]; Rscript -e 'covr::codecov(line_exclusion=list.files(recursive = TRUE)[grep("^(?!.*wrappers).*\\.(hpp|h|cpp|c)$", list.files(recursive = TRUE), perl = TRUE)])'; fi
