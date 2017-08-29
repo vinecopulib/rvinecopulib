@@ -33,10 +33,6 @@ bicop_hinv2_cpp <- function(u, bicop_r) {
     .Call('_rvinecopulib_bicop_hinv2_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
 
-bicop_simulate_cpp <- function(n, bicop_r) {
-    .Call('_rvinecopulib_bicop_simulate_cpp', PACKAGE = 'rvinecopulib', n, bicop_r)
-}
-
 bicop_loglik_cpp <- function(u, bicop_r) {
     .Call('_rvinecopulib_bicop_loglik_cpp', PACKAGE = 'rvinecopulib', u, bicop_r)
 }
@@ -57,8 +53,8 @@ vinecop_check_cpp <- function(vinecop_r) {
     invisible(.Call('_rvinecopulib_vinecop_check_cpp', PACKAGE = 'rvinecopulib', vinecop_r))
 }
 
-vinecop_sim_cpp <- function(n, vinecop_r) {
-    .Call('_rvinecopulib_vinecop_sim_cpp', PACKAGE = 'rvinecopulib', n, vinecop_r)
+vinecop_inverse_rosenblatt_cpp <- function(U, vinecop_r) {
+    .Call('_rvinecopulib_vinecop_inverse_rosenblatt_cpp', PACKAGE = 'rvinecopulib', U, vinecop_r)
 }
 
 vinecop_pdf_cpp <- function(u, vinecop_r) {

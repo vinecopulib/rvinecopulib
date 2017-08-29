@@ -14,6 +14,7 @@ test_that("constructor creates proper vinecop_dist object", {
 
 test_that("d/p/r- functions work", {
     u <- rvinecop(50, vc)
+    u <- rvinecop(50, vc, u)
     expect_gte(min(dvinecop(u, vc)), 0)
     expect_gte(min(pvinecop(u, vc, 100)), 0)
     expect_lte(max(pvinecop(u, vc, 100)), 1)
@@ -30,4 +31,16 @@ test_that("print/summary generics work", {
     expect_is(s, "data.frame")
     expect_equal(nrow(s), 3)
     expect_equal(ncol(s), 7)
+})
+
+test_that("plot functions work", {
+    pcs <- lapply(1:3, function(j) # pair-copulas in tree j
+        lapply(runif(4-j), function(cor) bicop_dist("gaussian", 0, cor)))
+    mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
+    vc <- vinecop_dist(pcs, mat)
+    
+    # we could check some values in the plot objects
+    expect_silent(p <- plot(vc))
+    expect_silent(p <- contour(vc))
+    expect_silent(p <- contour(vc, margins = "unif"))
 })

@@ -1,11 +1,11 @@
 #' Bivariate copula models
 #' 
-#' @aliases bicop bicop
+#' @aliases bicop_dist
 #'
 #' @param data a matrix or data.frame (copula data should have approximately
 #'  uniform margins).
-#' @param family_set a character vector of families; as in `bicop_dist()`,
-#'   see *Details* for additional options.
+#' @param family_set a character vector of families; see *Details* for 
+#' additional options.
 #' @param par_method the estimation method for parametric models, either `"mle"` 
 #'   for maximum likelihood or `"itau"` for inversion of Kendall's tau (only 
 #'   available for one-parameter families and `"t"`.
@@ -21,28 +21,49 @@
 #' @param presel whether the family set should be thinned out according to
 #'   symmetry characteristics of the data.
 #' @param keep_data whether the data should be stored (necessary for computing
-#'   fit statistics and using `fitted()`).
-#' 
+#'   fit statistics and using [fitted()]).
 #' @details
-#' In addition, to the families in `bicop_dist()`, the following convenience
-#' defintion can be used (and combined):
-#' \describe{
-#' \item{"all"}{all families}.
-#' \item{"parametric"}{parametric families.}
-#' \item{"nonparametric"}{nonparametric families.}
-#' \item{"archimedean"}{archimedean families.}
-#' \item{"elliptical"}{elliptical families.}
-#' \item{"bbs"}{BB families.}
-#' \item{"oneparametric "}{one parameter families.}
-#' \item{"twoparametric "}{two parameter families.}
-#' }
-#' Partial matching is activated. For example, you can write `"nonpar"` instead 
-#' of the full name `"nonparametric"`.
+#' 
+#' The implemented families are:\cr
+#' 
+#' `"indep"` = Independence copula.\cr
+#' `"gaussian"` = Gaussian copula.\cr
+#' `"t"` = Student t copula.\cr
+#' `"clayton"` = Clayton copula.\cr
+#' `"gumbel"` = Gumbel copula.\cr
+#' `"frank"` = Frank copula.\cr
+#' `"joe"` = Joe copula.\cr
+#' `"bb1"` = BB1 copula.\cr
+#' `"bb6"` = BB6 copula.\cr
+#' `"bb7"` = BB7 copula.\cr
+#' `"bb8"` = BB8 copula.\cr
+#' `"tll"` = transformation kernel local likelihood, only for `bicop()`.\cr
+#' 
+#' In addition, the following convenience definitions can be used (and combined) 
+#' with `bicop`:\cr
+#' 
+#' `"all"` =  all families.\cr
+#' `"parametric"` =  parametric families.\cr
+#' `"nonparametric"` =  nonparametric families.\cr
+#' `"archimedean"` =  archimedean families.\cr
+#' `"elliptical"` =  elliptical families.\cr
+#' `"bbs"` =  BB families.\cr
+#' `"oneparametric"` =  one parameter families.\cr
+#' `"twoparametric"` =  two parameter families.\cr
+#' Partial matching is activated. For example, `"gauss"` is equivalent to 
+#' `"gaussian"`, or you can write  `"nonpar"` instead of `"nonparametric"`.
 #'
 #'
-#' @return An object inherting from `bicop` and `bicop_dist`.
+#' @return Objects inherting from `bicop_dist` for `bicop_dist()`, and
+#' `bicop` and `bicop_dist` for `bicop()`.
 #'
 #' @examples
+#' ## bicop_dist objects
+#' bicop_dist("gaussian", 0, 0.5)
+#' str(bicop_dist("gauss", 0, 0.5))
+#' bicop <- bicop_dist("clayton", 90, 3)
+#' 
+#' ## bicop objects
 #' u <- rbicop(500, "gauss", 0, 0.5)
 #' fit1 <- bicop(u, "par")
 #' fit1
@@ -51,6 +72,7 @@
 bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic", 
                   presel = TRUE, keep_data = TRUE) {
+    stopifnot(ncol(data) == 2)
     # family_set can only use standard family names in cpp
     family_set <- family_set_all_defs[pmatch(family_set, family_set_all_defs)]
     family_set <- expand_family_set(family_set)
@@ -68,6 +90,7 @@ bicop <- function(data, family_set = "all", par_method = "mle",
     )
     
     ## add information about the fit
+    bicop$names <- colnames(data)
     if (keep_data) {
         bicop$data <- data
     }
@@ -90,87 +113,21 @@ as.bicop <- function(object) {
     structure(object, class = c("bicop", "bicop_dist"))
 }
 
-
-#' Predictions and fitted values for a bivariate copula model
-#'
-#' @param object a `bicop` object.
-#' @param newdata points where the fit shall be evaluated.
-#' @param what what to predict, one of `"pdf"`, `"cdf"`, `"hfunc1"`, `"hfunc2"`, 
-#'    `"hinv1"`, `"hinv2"`.
-#' @param ... unused.
-#'
+#' @param family the copula family, a string containing the family name (see
+#' *Details* for all possible families).
+#' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
+#' @param parameters a vector or matrix of copula paramters.
+#' @rdname bicop
 #' @export
-#'
-#' @examples
-#' u <- rbicop(500, "gauss", 0, 0.5)
-#' fit <- bicop(u, "par")
-#' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
-predict.bicop <- function(object, newdata, what = "pdf", ...) {
-    stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
-    newdata <- if_vec_to_matrix(newdata)
-    switch(
-        what,
-        "pdf"    = bicop_pdf_cpp(newdata, object),
-        "cdf"    = bicop_cdf_cpp(newdata, object),
-        "hfunc1" = bicop_hfunc1_cpp(newdata, object),
-        "hfunc2" = bicop_hfunc2_cpp(newdata, object),
-        "hinv1"  = bicop_hinv1_cpp(newdata, object),
-        "hinv2"  = bicop_hinv2_cpp(newdata, object)
-    )
-}
-
-#' @rdname predict.bicop
-#' @export
-fitted.bicop <- function(object, what = "pdf", ...) {
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
-    switch(
-        what,
-        "pdf"    = bicop_pdf_cpp(object$data, object),
-        "cdf"    = bicop_cdf_cpp(object$data, object),
-        "hfunc1" = bicop_hfunc1_cpp(object$data, object),
-        "hfunc2" = bicop_hfunc2_cpp(object$data, object),
-        "hinv1"  = bicop_hinv1_cpp(object$data, object),
-        "hinv2"  = bicop_hinv2_cpp(object$data, object)
-    )
-}
-
-#' @importFrom stats logLik
-logLik.bicop <- function(object, ...) {
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    structure(bicop_loglik_cpp(object$data, object), "df" = object$npars)
-}
-
-print.bicop <- function(x, ...) {
-    info <- bicop_fit_info(x)
-    if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
-        x$parameters <- "[30x30 grid]"
-    }
-    cat("Bivariate copula fit ('bicop'): ",
-        "family = ", x$family,
-        ", rotation = ", x$rotation,
-        ", parameters = ", x$parameters,
-        "\n",
-        sep = "")
-    cat("nobs =", info$nobs, "  ")
-    cat("logLik =", round(info$logLik, 2), "  ")
-    cat("npars =", round(info$npars, 2), "  ")
-    cat("AIC =", round(info$AIC, 2), "  ")
-    cat("BIC =", round(info$BIC, 2), "  ")
-    
-    attr(x, "info") <- info
-    invisible(x)
-}
-
-bicop_fit_info <- function(bc) {
-    ll <- logLik(bc)
-    list(
-        nobs   = bc$nobs,
-        logLik = ll[1],
-        npars  = attr(ll, "df"),
-        AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
-        BIC    = -2 * ll[1] + log(bc$nobs) * attr(ll, "df")
-    )
+bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {
+    stopifnot(length(family) == 1)
+    if (family %in% setdiff(family_set_nonparametric, "indep"))
+        stop("bicop_dist should not be used directly with nonparametric families.")
+    family <- family_set_all[pmatch(family, family_set_all)]
+    dist <- list(family     = family,
+                 rotation   = rotation,
+                 parameters = as.matrix(parameters),
+                 npars      = length(parameters))
+    bicop_check_cpp(dist)
+    structure(dist, class = "bicop_dist")
 }

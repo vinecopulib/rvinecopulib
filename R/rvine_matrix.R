@@ -5,7 +5,7 @@
 #' `check_rvine_matrix()`, see *Details*.
 #' 
 #' The R-vine matrix notation in vinecopulib is different from the one in 
-#' [VineCopula::RVineMatrix()]. An example matrix is
+#' the VineCopula package. An example matrix is
 #' ```
 #' 1 1 1 1
 #' 2 2 2 0

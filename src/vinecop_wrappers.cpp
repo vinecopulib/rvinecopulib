@@ -56,10 +56,11 @@ void vinecop_check_cpp(Rcpp::List vinecop_r) {
 
 
 // [[Rcpp::export()]]
-Eigen::MatrixXd vinecop_sim_cpp(int n, const Rcpp::List& vinecop_r)
+Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
+                                               const Rcpp::List& vinecop_r)
 {
     Progress p(0, false);
-    return vinecop_wrap(vinecop_r).simulate(n);
+    return vinecop_wrap(vinecop_r).inverse_rosenblatt(U);
 }
 
 // [[Rcpp::export()]]

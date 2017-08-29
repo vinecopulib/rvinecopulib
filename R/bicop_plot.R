@@ -1,4 +1,4 @@
-#' Plotting tools for bicop_dist objects
+#' Plotting tools for `bicop_dist` and `bicop` objects
 #'
 #' There are several options for plotting bicop_dist objects. The density of a
 #' bivariate copula density can be visualized as surface/perspective or contour
@@ -205,9 +205,17 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
     invisible(plot_obj)
 }
 
+#' @rdname plot.bicop_dist
+#' @export
+plot.bicop <- plot.bicop_dist
+
 #' @method contour bicop_dist
 #' @rdname plot.bicop_dist
 #' @export
 contour.bicop_dist <- function(x, margins = "norm", size = 100L, ...) {
     plot(x, type = "contour", margins = margins, size = size, ...)
 }
+
+#' @rdname plot.bicop_dist
+#' @export
+contour.bicop <- contour.bicop_dist
