@@ -17,12 +17,13 @@ vinecop_dist(pair_copulas, matrix)
 \item{data}{a matrix or data.frame (copula data should have approximately
 uniform margins).}
 
-\item{family_set}{a character vector of families; see \link{bicop} for
+\item{family_set}{a character vector of families; see \code{\link[=bicop]{bicop()}} for
 additional options.}
 
-\item{matrix}{an R-vine matrix specifying the structure matrix (see
-\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}), or \code{NA} for
-automatic structure selection (default).}
+\item{matrix}{a quadratic matrix specifying the structure matrix (see
+\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
+\code{length(pair_copulas)-1}; for \code{\link[=vinecop]{vinecop()}}, \code{matrix = NA} performs
+automatic structure selection.}
 
 \item{par_method}{the estimation method for parametric models, either \code{"mle"}
 for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
@@ -63,13 +64,10 @@ printed.}
 \item{pair_copulas}{A nested list of 'bicop_dist' objects, where
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
 tree \code{t}.}
-
-\item{matrix}{A quadratic structure matrix of dimension
-\code{length(pair_copulas) + 1} (see \emph{Examples} and \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}).}
 }
 \value{
-Objects inherting from \code{vinecop_dist} for \code{vinecop_dist()}, and
-\code{vinecop} and \code{vinecop_dist} for \code{vinecop()}.
+Objects inherting from \code{vinecop_dist} for \code{\link[=vinecop_dist]{vinecop_dist()}}, and
+\code{vinecop} and \code{vinecop_dist} for \code{\link[=vinecop]{vinecop()}}.
 }
 \description{
 Automated fitting or creation of custom vine copula models
