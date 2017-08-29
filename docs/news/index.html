@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Predictions and fitted values for a bivariate copula model — predict.bicop • rvinecopulib</title>
+<title>All news • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -37,7 +37,7 @@
   </head>
 
   <body>
-    <div class="container template-reference-topic">
+    <div class="container template-news">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -60,6 +60,9 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">News</a>
+</li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
@@ -73,58 +76,30 @@
       </header>
 
       <div class="row">
-  <div class="col-md-9 contents">
+
+  <div class="col-md-9">
     <div class="page-header">
-    <h1>Predictions and fitted values for a bivariate copula model</h1>
+      <h1>Change log <small>All releases</small></h1>
     </div>
 
-    
-    <p>Predictions and fitted values for a bivariate copula model</p>
-    
-
-    <pre class="usage"><span class='co'># S3 method for bicop</span>
-<span class='fu'>predict</span>(<span class='no'>object</span>, <span class='no'>newdata</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='no'>...</span>)
-
-<span class='co'># S3 method for bicop</span>
-<span class='fu'>fitted</span>(<span class='no'>object</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='no'>...</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>object</th>
-      <td><p>a <code>bicop</code> object.</p></td>
-    </tr>
-    <tr>
-      <th>newdata</th>
-      <td><p>points where the fit shall be evaluated.</p></td>
-    </tr>
-    <tr>
-      <th>what</th>
-      <td><p>what to predict, one of <code>"pdf"</code>, <code>"cdf"</code>, <code>"hfunc1"</code>, <code>"hfunc2"</code>,
-<code>"hinv1"</code>, <code>"hinv2"</code>.</p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>unused.</p></td>
-    </tr>
-    </table>
-    
-
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bicop_dist.html'>rbicop</a></span>(<span class='fl'>500</span>, <span class='st'>"gauss"</span>, <span class='fl'>0</span>, <span class='fl'>0.5</span>)
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bicop.html'>bicop</a></span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
-<span class='fu'>all.equal</span>(<span class='fu'>predict</span>(<span class='no'>fit</span>, <span class='no'>u</span>, <span class='st'>"hfunc1"</span>), <span class='fu'>fitted</span>(<span class='no'>fit</span>, <span class='st'>"hfunc1"</span>))</div><div class='output co'>#&gt; [1] TRUE</div></pre>
+    <div class="contents">
+    <div id="rvinecopulib-0-1-0-1-0-august-29-2017" class="section level1">
+<h1 class="hasAnchor">
+<a href="#rvinecopulib-0-1-0-1-0-august-29-2017" class="anchor"></a>rvinecopulib 0.1.0.1.0 (August 29, 2017)</h1>
+<p>Initial release.</p>
+</div>
+    </div>
   </div>
+
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-            
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
+    <div id="tocnav">
+      <h2>Contents</h2>
+      <ul class="nav nav-pills nav-stacked">
+        <li><a href="#rvinecopulib-0-1-0-1-0-august-29-2017">0.1.0.1.0</a></li>
+      </ul>
+    </div>
   </div>
+
 </div>
 
       <footer>

@@ -41,10 +41,11 @@ Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp) {
         }
         pair_copulas[t] = tree_pcs;
     }
-
+    double npars = vinecop_cpp.calculate_npars();
     return Rcpp::List::create(
         Rcpp::Named("pair_copulas") = pair_copulas,
-        Rcpp::Named("matrix") = matrix
+        Rcpp::Named("matrix") = matrix,
+        Rcpp::Named("npars") = npars
     );
 }
 
@@ -55,39 +56,32 @@ void vinecop_check_cpp(Rcpp::List vinecop_r) {
 
 
 // [[Rcpp::export()]]
-Eigen::MatrixXd vinecop_sim_cpp(int n, const Rcpp::List& vinecop_r)
+Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
+                                               const Rcpp::List& vinecop_r)
 {
-    return vinecop_wrap(vinecop_r).simulate(n);
+    Progress p(0, false);
+    return vinecop_wrap(vinecop_r).inverse_rosenblatt(U);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
 {
+    Progress p(0, false);
     return vinecop_wrap(vinecop_r).pdf(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, size_t N)
 {
+    Progress p(0, false);
     return vinecop_wrap(vinecop_r).cdf(u, N);
 }
 
 // [[Rcpp::export()]]
 double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
 {
+    Progress p(0, false);
     return vinecop_wrap(vinecop_r).loglik(u);
-}
-
-// [[Rcpp::export()]]
-double vinecop_aic_cpp(Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
-{
-  return vinecop_wrap(vinecop_r).aic(u);
-}
-
-// [[Rcpp::export()]]
-double vinecop_bic_cpp(Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
-{
-  return vinecop_wrap(vinecop_r).bic(u);
 }
 
 // [[Rcpp::export()]]
@@ -102,7 +96,10 @@ Rcpp::List vinecop_select_cpp(
         std::string tree_criterion,
         double threshold,
         std::string selection_criterion,
-        bool preselect_families
+        bool select_truncation_level,
+        bool select_threshold,
+        bool preselect_families,
+        bool show_trace
 )
 {
     std::vector<BicopFamily> fam_set(family_set.size());
@@ -120,9 +117,12 @@ Rcpp::List vinecop_select_cpp(
             threshold,
             selection_criterion,
             preselect_families,
-            false  // show_trace
+            select_truncation_level,
+            select_threshold,
+            show_trace
     );
     Vinecop vinecop_cpp(data.cols());
+    Progress p(0, false);
     if (matrix.cols() > 1) {
         vinecop_cpp = Vinecop(matrix);
         vinecop_cpp.select_families(data, fit_controls);

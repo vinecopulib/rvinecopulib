@@ -20,7 +20,7 @@ needs to satisfy several properties that can be checked by
 }
 \details{
 The R-vine matrix notation in vinecopulib is different from the one in
-\code{\link[VineCopula:RVineMatrix]{VineCopula::RVineMatrix()}}. An example matrix is\preformatted{1 1 1 1
+the VineCopula package. An example matrix is\preformatted{1 1 1 1
 2 2 2 0
 3 3 0 0
 4 0 0 0
@@ -53,8 +53,8 @@ when \code{RVineMatrix()} is called:
 \enumerate{
 \item The lower right triangle must only contain zeros.
 \item The upper left triangle can only contain numbers between 1 and d.
-\item The antidiagonal must contain the numbers 1, ..., d.
-\item The antidiagonal entry of a column must not be contained in any
+\item The anti-diagonal must contain the numbers 1, ..., d.
+\item The anti-diagonal entry of a column must not be contained in any
 column further to the right.
 \item The entries of a column must be contained in all columns to the left.
 \item The proximity condition must hold: For all t = 1, ..., d - 2 and

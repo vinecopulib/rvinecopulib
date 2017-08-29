@@ -12,11 +12,15 @@ matrix:
 apt_packages:
   - libcurl4-openssl-dev
   - libxml2-dev
+  - libudunits2-dev
 
 r_packages:
+  - BH
+  - covr
+  - ggraph
   - Rcpp
   - RcppEigen
-  - BH
+  - RcppProgress
 
 before_install:
   ### Linux
@@ -46,3 +50,6 @@ before_install:
 
 repos:
   CRAN: http://cran.rstudio.com
+
+after_success:
+  - if [ $TRAVIS_OS_NAME == linux ]; Rscript -e 'covr::codecov(line_exclusion=list.files(recursive = TRUE)[grep("^(?!.*wrappers).*\\.(hpp|h|cpp|c)$", list.files(recursive = TRUE), perl = TRUE)])'; fi

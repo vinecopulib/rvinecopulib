@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fit vine copula models — vinecop • rvinecopulib</title>
+<title>Vine copula models — vinecop • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -60,6 +60,9 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">News</a>
+</li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
@@ -75,16 +78,19 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Fit vine copula models</h1>
+    <h1>Vine copula models</h1>
     </div>
 
     
-    <p>Automated fitting for vine copula models</p>
+    <p>Automated fitting or creation of custom vine copula models</p>
     
 
     <pre class="usage"><span class='fu'>vinecop</span>(<span class='no'>data</span>, <span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"all"</span>, <span class='kw'>matrix</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>par_method</span> <span class='kw'>=</span> <span class='st'>"mle"</span>,
   <span class='kw'>nonpar_method</span> <span class='kw'>=</span> <span class='st'>"constant"</span>, <span class='kw'>mult</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>selcrit</span> <span class='kw'>=</span> <span class='st'>"bic"</span>, <span class='kw'>presel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>trunc_lvl</span> <span class='kw'>=</span> <span class='fl'>Inf</span>, <span class='kw'>tree_crit</span> <span class='kw'>=</span> <span class='st'>"tau"</span>, <span class='kw'>threshold</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+  <span class='kw'>trunc_lvl</span> <span class='kw'>=</span> <span class='fl'>Inf</span>, <span class='kw'>tree_crit</span> <span class='kw'>=</span> <span class='st'>"tau"</span>, <span class='kw'>threshold</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>show_trace</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
+
+<span class='fu'>vinecop_dist</span>(<span class='no'>pair_copulas</span>, <span class='no'>matrix</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -96,14 +102,15 @@ uniform margins).</p></td>
     </tr>
     <tr>
       <th>family_set</th>
-      <td><p>a character vector of families; as in <code><a href='bicop_dist.html'>bicop_dist()</a></code>,
-see <em>Details</em> for additional options.</p></td>
+      <td><p>a character vector of families; see <code><a href='bicop.html'>bicop()</a></code> for
+additional options.</p></td>
     </tr>
     <tr>
       <th>matrix</th>
-      <td><p>an R-vine matrix specifying the structure matrix (see
-<code><a href='check_rvine_matrix.html'>check_rvine_matrix()</a></code>), or <code>NA</code> for
-automatic structure selection (default).</p></td>
+      <td><p>a quadratic matrix specifying the structure matrix (see
+<code><a href='check_rvine_matrix.html'>check_rvine_matrix()</a></code>); for <code>vinecop_dist()</code>, the dimension must be
+<code>length(pair_copulas)-1</code>; for <code>vinecop()</code>, <code>matrix = NA</code> performs
+automatic structure selection.</p></td>
     </tr>
     <tr>
       <th>par_method</th>
@@ -136,7 +143,9 @@ symmetry characteristics of the data.</p></td>
     </tr>
     <tr>
       <th>trunc_lvl</th>
-      <td><p>the truncation level of the vine copula.</p></td>
+      <td><p>the truncation level of the vine copula; <code>Inf</code> means no
+truncation, <code>NA</code> indicates that the truncation level should be selected
+automatically by GIC.</p></td>
     </tr>
     <tr>
       <th>tree_crit</th>
@@ -146,46 +155,79 @@ symmetry characteristics of the data.</p></td>
     </tr>
     <tr>
       <th>threshold</th>
-      <td><p>for thresholded vine copulas.</p></td>
+      <td><p>for thresholded vine copulas; <code>NA</code> indicates that the
+threshold should be selected automatically by GIC.</p></td>
     </tr>
     <tr>
       <th>keep_data</th>
       <td><p>whether the data should be stored (necessary for computing
 fit statistics and using <code>fitted()</code>).</p></td>
     </tr>
+    <tr>
+      <th>show_trace</th>
+      <td><p>logical; whether a trace of the fitting progress should be
+printed.</p></td>
+    </tr>
+    <tr>
+      <th>pair_copulas</th>
+      <td><p>A nested list of 'bicop_dist' objects, where
+<code>pair_copulas[[t]][[e]]</code> corresponds to the pair-copula at edge <code>e</code> in
+tree <code>t</code>.</p></td>
+    </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object inherting from <code>bicop</code> and <code>bicop_dist</code>.</p>
+    <p>Objects inheriting from <code>vinecop_dist</code> for <code>vinecop_dist()</code>, and
+<code>vinecop</code> and <code>vinecop_dist</code> for <code>vinecop()</code>.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>In addition, to the families in <code><a href='bicop_dist.html'>bicop_dist()</a></code>, the following convenience
-defintion can be used (and combined):</p><dl class='dl-horizontal'>
-<dt>"all"</dt><dd><p>all families</p></dd>.
-<dt>"parametric"</dt><dd><p>parametric families.</p></dd>
-<dt>"nonparametric"</dt><dd><p>nonparametric families.</p></dd>
-<dt>"archimedean"</dt><dd><p>archimedean families.</p></dd>
-<dt>"elliptical"</dt><dd><p>elliptical families.</p></dd>
-<dt>"bbs"</dt><dd><p>BB families.</p></dd>
-<dt>"oneparametric "</dt><dd><p>one parameter families.</p></dd>
-<dt>"twoparametric "</dt><dd><p>two parameter families.</p></dd>
-</dl><p>Partial matching is activated. For example, you can write <code>"nonpar"</code> instead
-of the full name <code>"nonparametric"</code>.</p>
+    <p><code>vinecop_dist()</code> creates a vine copula by specifying a nested list of
+<code>bicop_dist</code> objects and a quadratic structure matrix.
+    <code>vinecop()</code> provides automated fitting for vine copula models.
+The function inherits the parameters of <code><a href='bicop.html'>bicop()</a></code>.
+Optionally, a quadratic <code>matrix</code> can be used as
+input to pre-specify the vine structure. <code>tree_crit</code> describes the
+criterion for tree selection, one of <code>"tau"</code>, <code>"rho"</code>, <code>"hoeffd"</code> for
+Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
+<code>threshold</code> allows to threshold the <code>tree_crit</code> and <code>trunc_lvl</code> to truncate
+the vine copula, with <code>threshold_sel</code> and <code>trunc_lvl_sel</code> to automatically
+select both parameters.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>sapply</span>(<span class='fl'>1</span>:<span class='fl'>3</span>, <span class='kw'>function</span>(<span class='no'>i</span>) <span class='fu'>runif</span>(<span class='fl'>50</span>))
+    <pre class="examples"><div class='input'><span class='co'># specify pair-copulas</span>
+<span class='no'>bicop</span> <span class='kw'>&lt;-</span> <span class='fu'>bicop_dist</span>(<span class='st'>"bb1"</span>, <span class='fl'>90</span>, <span class='fu'>c</span>(<span class='fl'>3</span>, <span class='fl'>2</span>))
+<span class='no'>pcs</span> <span class='kw'>&lt;-</span> <span class='fu'>list</span>(
+    <span class='fu'>list</span>(<span class='no'>bicop</span>, <span class='no'>bicop</span>),  <span class='co'># pair-copulas in first tree </span>
+    <span class='fu'>list</span>(<span class='no'>bicop</span>)          <span class='co'># pair-copulas in second tree </span>
+ )
+
+<span class='co'># specify R-vine matrix</span>
+<span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'>matrix</span>(<span class='fu'>c</span>(<span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>3</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>0</span>, <span class='fl'>0</span>), <span class='fl'>3</span>, <span class='fl'>3</span>)
+
+<span class='co'># set up vine copula model</span>
+<span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop_dist</span>(<span class='no'>pcs</span>, <span class='no'>mat</span>)
+
+<span class='co'># show model</span>
+<span class='fu'>summary</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt;  tree edge conditioned conditioning family rotation parameters
+#&gt;     1    1        3, 1                 bb1       90       3, 2
+#&gt;     1    2        2, 1                 bb1       90       3, 2
+#&gt;     2    1        3, 2            1    bb1       90       3, 2</div><div class='input'>
+<span class='co'># get some data</span>
+<span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>sapply</span>(<span class='fl'>1</span>:<span class='fl'>3</span>, <span class='kw'>function</span>(<span class='no'>i</span>) <span class='fu'>runif</span>(<span class='fl'>50</span>))
+
+<span class='co'># estimate a vine copula model</span>
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
 <span class='no'>fit</span></div><div class='output co'>#&gt; 3-dimensional vine copula model fit
-#&gt; nobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   </div><div class='input'><span class='fu'>summary</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model fit
-#&gt; nobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   
+#&gt; nobs = 50   logLik = 2.38   npars = 1   AIC = -2.76   BIC = -0.85   </div><div class='input'><span class='fu'>summary</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model fit
+#&gt; nobs = 50   logLik = 2.38   npars = 1   AIC = -2.76   BIC = -0.85   
 #&gt; ----
-#&gt;  tree edge conditioned conditioning family rotation parameters
-#&gt;     1    1        2, 3               indep        0           
-#&gt;     1    2        3, 1               indep        0           
-#&gt;     2    1        2, 1            3  indep        0           </div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 5
+#&gt;  tree edge conditioned conditioning  family rotation parameters
+#&gt;     1    1        3, 1              clayton      270        0.4
+#&gt;     1    2        2, 1                indep        0           
+#&gt;     2    1        3, 2            1   indep        0           </div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 6
 #&gt;  $ pair_copulas:List of 2
 #&gt;   ..$ :List of 2
 #&gt;   .. ..$ :List of 4
@@ -195,8 +237,9 @@ of the full name <code>"nonparametric"</code>.</p>
 #&gt;   ..$ :List of 1
 #&gt;   .. ..$ :List of 4
 #&gt;   .. .. ..- attr(*, "class")= chr [1:2] "bicop" "bicop_dist"
-#&gt;  $ matrix      : num [1:3, 1:3] 3 1 2 1 3 0 1 0 0
-#&gt;  $ data        : num [1:50, 1:3] 0.334 0.749 0.913 0.204 0.472 ...
+#&gt;  $ matrix      : num [1:3, 1:3] 1 2 3 1 2 0 1 0 0
+#&gt;  $ npars       : num 1
+#&gt;  $ data        : num [1:50, 1:3] 0.175 0.134 0.395 0.328 0.614 ...
 #&gt;  $ controls    :List of 9
 #&gt;   ..$ family_set   : chr [1:11] "indep" "gaussian" "clayton" "gumbel" ...
 #&gt;   ..$ par_method   : chr "mle"

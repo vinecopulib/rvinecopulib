@@ -5,7 +5,7 @@
 #' `check_rvine_matrix()`, see *Details*.
 #' 
 #' The R-vine matrix notation in vinecopulib is different from the one in 
-#' [VineCopula::RVineMatrix()]. An example matrix is
+#' the VineCopula package. An example matrix is
 #' ```
 #' 1 1 1 1
 #' 2 2 2 0
@@ -36,8 +36,8 @@
 #' when `RVineMatrix()` is called:
 #' 1. The lower right triangle must only contain zeros.
 #' 2. The upper left triangle can only contain numbers between 1 and d.
-#' 3. The antidiagonal must contain the numbers 1, ..., d.
-#' 4. The antidiagonal entry of a column must not be contained in any
+#' 3. The anti-diagonal must contain the numbers 1, ..., d.
+#' 4. The anti-diagonal entry of a column must not be contained in any
 #' column further to the right.
 #' 5. The entries of a column must be contained in all columns to the left.
 #' 6. The proximity condition must hold: For all t = 1, ..., d - 2 and

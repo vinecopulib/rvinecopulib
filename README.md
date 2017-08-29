@@ -3,6 +3,7 @@ rvinecopulib
 
 [![Build status Linux](https://travis-ci.org/vinecopulib/rvinecopulib.svg?branch=master)](https://travis-ci.org/vinecopulib/rvinecopulib)
 [![Windows Build status](http://ci.appveyor.com/api/projects/status/github/vinecopulib/rvinecopulib?svg=true)](https://ci.appveyor.com/project/vinecopulib/rvinecopulib)
+[![Coverage Status](https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/master.svg)](https://codecov.io/github/vinecopulib/rvinecopulib?branch=master)
 [![CRAN version](http://www.r-pkg.org/badges/version/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib) 
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib)
 
@@ -17,7 +18,7 @@ vine copula models based on
 * [Eigen](http://www.boost.org/),
 * [NLopt](http://ab-initio.mit.edu/wiki/index.php/NLopt). 
 
-It provides high-perfomance implementations of the core features of the popular
+It provides high-performance implementations of the core features of the popular
 [VineCopula R library](https://github.com/tnagler/VineCopula), in particular
 inference algorithms for both vine copula and bivariate copula models.
 Advantages over VineCopula are  
