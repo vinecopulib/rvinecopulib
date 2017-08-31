@@ -60,7 +60,7 @@ namespace tools_select {
         if (npars == 0.0) {
             log_npars = 0.0;
         }
-        return -2 * loglik + std::log(std::log(n)) * log_npars * npars;
+        return -2 * loglik + std::log(std::log((double) n)) * log_npars * npars;
     }
     
     // needs to be defined
