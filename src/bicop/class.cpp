@@ -291,7 +291,7 @@ namespace vinecopulib
     //! @param u \f$n \times 2\f$ matrix of observations.
     double Bicop::bic(const Eigen::Matrix<double, Eigen::Dynamic, 2>& u) const
     {
-        return -2 * loglik(u) + calculate_npars() * log(u.rows());
+        return -2 * loglik(u) + calculate_npars() * std::log((double) u.rows());
     }
 
     //! calculates the effective number of parameters.
