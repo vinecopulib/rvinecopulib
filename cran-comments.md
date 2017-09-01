@@ -1,3 +1,14 @@
+## Answers to Prof Brian Ripley
+### Portable C and C++ code
+We spotted two ambiguous calls to mathematical functions that we 
+corrected. We also tried to use the r-hub builder to ensure that the package 
+could now properly build on Solaris, but libunits2 is unfortunately not 
+available there and one of our dependencies (ggraph) rely on it.
+
+### Improved description
+We made clear that vinecopulib is included in the R package and 
+confined our description to facts as requested.
+
 ## Non-standard version number
 The version (0.1.0.1.0) does not have three components. Since the package is 
 an interface to the C++ library vinecopulib, we decided to adopt the convention 
