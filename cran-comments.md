@@ -1,4 +1,4 @@
-## Answers to Prof Brian Ripley
+## Concerning comments made by Prof Brian Ripley for the previous release
 ### Portable C and C++ code
 We spotted two ambiguous calls to mathematical functions that we 
 corrected. We also tried to use the r-hub builder to ensure that the package 
@@ -10,7 +10,7 @@ We made clear that vinecopulib is included in the R package and
 confined our description to facts as requested.
 
 ## Non-standard version number
-The version (0.1.0.1.0) does not have three components. Since the package is 
+The version (0.1.0.1.1) does not have three components. Since the package is 
 an interface to the C++ library vinecopulib, we decided to adopt the convention 
 of e.g. RcppEigen, where the first three components are related to 
 vinecopulib's version.
