@@ -38,7 +38,7 @@ be the number required.}
 
 \item{U}{optionally, an \eqn{n \times 2} matrix of values in \eqn{(0,1)}.
 The result is then the inverse Rosenblatt transform of \code{U}; if \code{U} is a
-matrix of independent \eqn{U(0, 1)} variebls, this simulates data
+matrix of independent \eqn{U(0, 1)} variables, this simulates data
 from \code{vinecop}.}
 
 \item{cond_var}{either \code{1} or \code{2}; \code{cond_var = 1} conditions on the first
