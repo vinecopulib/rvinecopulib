@@ -6,12 +6,17 @@
 \alias{rvinecopulib-package}
 \title{High Performance Algorithms for Vine Copula Modeling}
 \description{
-'vinecopulib' is a high performance C++ library based on
-'Boost', 'Eigen' and 'NLopt'. It provides high-performance implementations of
-the core features of the popular VineCopula package, in particular
-inference algorithms for both vine copula and bivariate copula models.
-Advantages over VineCopula are a sleaker and more modern API, shorter runtimes,
-especially in high dimensions, nonparametric and multi-parameter families.
+Provides an interface to 'vinecopulib', a C++ library for vine
+copula modeling based on 'Boost', 'Eigen' and 'NLopt'. The 'rvinecopulib'
+package implements the core features of the popular 'VineCopula' package, in
+particular inference algorithms for both vine copula and bivariate copula
+models. Advantages over 'VineCopula' are a sleeker and more modern API,
+improved performances, especially in high dimensions, nonparametric and
+multi-parameter families. The 'rvinecopulib' package includes headers and
+sources from the 'vinecopulib' C++ library (currently version 0.1.0). Thus
+users do not need to install 'vinecopulib' itself in order to use
+'rvinecopulib'. Since their initial releases, 'vinecopulib' is licensed under
+the MIT License, and 'rvinecopulib' is licensed under the GNU GPL version 3.
 }
 \examples{
 ## bicop_dist objects

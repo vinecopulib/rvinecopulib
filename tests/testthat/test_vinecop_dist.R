@@ -1,5 +1,6 @@
 context("Class 'vinecop_dist'")
 
+set.seed(0)
 bicop <- bicop_dist("bb1", 90, c(3, 2))
 pcs <- list(list(bicop, bicop), list(bicop))
 mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)

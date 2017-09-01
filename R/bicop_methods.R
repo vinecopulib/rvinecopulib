@@ -72,7 +72,7 @@ pbicop <- function(u, family, rotation, parameters) {
 #'   be the number required.
 #' @param U optionally, an \eqn{n \times 2} matrix of values in \eqn{(0,1)}.
 #'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
-#'    matrix of independent \eqn{U(0, 1)} variebls, this simulates data 
+#'    matrix of independent \eqn{U(0, 1)} variables, this simulates data 
 #'    from `vinecop`.
 #' @rdname bicop_methods
 #' @export
