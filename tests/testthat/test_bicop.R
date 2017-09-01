@@ -1,5 +1,6 @@
 context("Fitting 'bicop' models")
 
+set.seed(0)
 dist <- bicop_dist("gumbel", 90, 3)
 u <- rbicop(20, dist)
 fit <- bicop(u)
