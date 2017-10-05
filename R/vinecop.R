@@ -133,14 +133,17 @@ vinecop <- function(data, family_set = "all", matrix = NA,
 #' @rdname vinecop
 #' @export
 vinecop_dist <- function(pair_copulas, matrix) {
-    # create object
+    ## create object
     vinecop <- structure(
         list(pair_copulas = pair_copulas, matrix = matrix),
         class = "vinecop_dist"
     )
     
-    # sanity checks
+    ## sanity checks
     stopifnot(is.list(pair_copulas))
+    d <- ncol(matrix)
+    stopifnot(length(pair_copulas) == d - 1)
+    stopifnot(identical(sapply(pair_copulas, length), rev(seq_len(d - 1))))
     pc_lst <- unlist(pair_copulas, recursive = FALSE)
     if (!all(sapply(pc_lst, function(x) inherits(x, "bicop_dist")))) {
         stop("some objects in pair_copulas aren't of class 'bicop_dist'")
