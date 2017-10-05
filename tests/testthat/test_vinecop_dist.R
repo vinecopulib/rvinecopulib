@@ -21,7 +21,20 @@ test_that("d/p/r- functions work", {
     expect_lte(max(pvinecop(u, vc, 100)), 1)
 })
 
-test_that("constructor catches wrong R-vine matrix", {
+test_that("constructor catches wrong input", {
+    # wrong number of trees
+    expect_error(vinecop_dist(pcs[-1], mat))
+    
+    # wrong number of pcs
+    pcs2 <- pcs
+    pcs2[[1]][[2]] <- NULL
+    expect_error(vinecop_dist(pcs[-1], mat))
+    
+    # not all pcs are of class 'bicop_dist'
+    pcs2[[1]][[2]] <- list(this = "stupid")
+    expect_error(vinecop_dist(pcs2, mat))
+    
+    # wrong R-vine matrix
     mat[3, 3] <- 5
     expect_error(vinecop_dist(pcs, mat))
 })
