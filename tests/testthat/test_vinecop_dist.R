@@ -21,9 +21,30 @@ test_that("d/p/r- functions work", {
     expect_lte(max(pvinecop(u, vc, 100)), 1)
 })
 
-test_that("constructor catches wrong R-vine matrix", {
+
+test_that("constructor catches wrong input", {
+    # wrong number of pcs
+    pcs2 <- pcs
+    pcs2[[1]][[2]] <- NULL
+    expect_error(vinecop_dist(pcs[-1], mat))
+    
+    # not all pcs are of class 'bicop_dist'
+    pcs2[[1]][[2]] <- list(this = "stupid")
+    expect_error(vinecop_dist(pcs2, mat))
+    
+    # wrong R-vine matrix
     mat[3, 3] <- 5
     expect_error(vinecop_dist(pcs, mat))
+})
+
+test_that("works with truncated vines", {
+    # takes and returns truncated pair_copulas list
+    trunc_vine <- vinecop_dist(pcs[-2], mat)
+    expect_length(trunc_vine$pair_copulas, 1)
+    
+    # summary table is truncated too
+    expect_output(smr <- summary(vinecop_dist(pcs[-2], mat)))
+    expect_equal(nrow(smr), 2)
 })
 
 test_that("print/summary generics work", {
@@ -36,7 +57,7 @@ test_that("print/summary generics work", {
 
 test_that("plot functions work", {
     pcs <- lapply(1:4, function(j) # pair-copulas in tree j
-        lapply(runif(5-j), function(cor) bicop_dist("gaussian", 0, cor)))
+        lapply(runif(5 - j), function(cor) bicop_dist("gaussian", 0, cor)))
     mat <- matrix(c(1, 2, 3, 4, 5, 
                     1, 2, 3, 4, 0, 
                     1, 2, 3, 0, 0, 

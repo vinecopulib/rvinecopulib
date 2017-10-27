@@ -1,6 +1,9 @@
 #!/bin/bash
 
 git clone https://github.com/vinecopulib/vinecopulib/
+cd vinecopulib
+git checkout dev
+cd ..
 
 rm -rf ../inst/include/vinecopulib*
 mv ./vinecopulib/include/* ../inst/include

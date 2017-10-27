@@ -95,18 +95,25 @@ rvinecop <- function(n, vinecop, U = NULL) {
 print.vinecop_dist <- function(x, ...) {
     d <- nrow(x$matrix)
     cat(d, "-dimensional vine copula model", sep = "")
+    n_trees <- length(x$pair_copulas)
+    if (n_trees < d - 1)
+        cat(" (", n_trees, "-truncated)", sep = "")
+    cat("\n")
 }
 
+#' @importFrom utils capture.output
 #' @export
 summary.vinecop_dist <- function(object, ...) {
     mat <- object$matrix
     d <- nrow(mat)
-    mdf <- as.data.frame(matrix(NA, choose(d, 2), 7))
+    n_trees <- length(object$pair_copulas)
+    n_pcs <- length(unlist(object$pair_copulas, recursive = FALSE))
+    mdf <- as.data.frame(matrix(NA, n_pcs, 7))
     names(mdf) <- c("tree", "edge", 
                     "conditioned", "conditioning", 
                     "family", "rotation", "parameters")
     k <- 1
-    for (t in seq.int(d - 1)) {
+    for (t in n_trees) {
         for (e in seq.int(d - t)) {
             mdf$tree[k] <- t
             mdf$edge[k] <- e
@@ -119,8 +126,10 @@ summary.vinecop_dist <- function(object, ...) {
             k <- k + 1
         }
     }
+    pr <- capture.output(print(object))
+    cat(pr,  "\n", strrep("-", nchar(pr)), "\n", sep = "")
     print(mdf, digits = 2, row.names = FALSE)
-    
+
     invisible(mdf)
 }
 
