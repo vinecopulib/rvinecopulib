@@ -15,8 +15,9 @@ test_that("checks for family/rotation/parameters consistency", {
 })
 
 test_that("partial matching for family names", {
-    bicop_dist("ind")
-    bicop_dist("gauss")
+    expect_equal(bicop_dist("ind")$family, "indep")
+    expect_equal(bicop_dist("gauss")$family, "gaussian")
+    expect_error(bicop_dist("g"))
 })
 
 test_that("d/p/r/h functions work", {
