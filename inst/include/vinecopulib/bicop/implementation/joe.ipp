@@ -19,7 +19,7 @@ inline JoeBicop::JoeBicop()
     parameters_upper_bounds_ = Eigen::VectorXd(1);
     parameters_ << 1;
     parameters_lower_bounds_ << 1;
-    parameters_upper_bounds_ << 200;
+    parameters_upper_bounds_ << 70;
 }
 
 inline double JoeBicop::generator(const double &u)

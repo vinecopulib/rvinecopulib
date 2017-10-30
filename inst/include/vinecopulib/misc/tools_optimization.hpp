@@ -66,7 +66,8 @@ public:
                       int maxeval);
 
     Eigen::VectorXd optimize(Eigen::VectorXd initial_parameters,
-                             tools_bobyqa::BobyqaClosureFunction objective,
+                             std::function<double(void *, long,
+                                                  const double *)> objective,
                              void *f_data);
 
 private:

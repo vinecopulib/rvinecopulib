@@ -479,59 +479,55 @@ inline Eigen::MatrixXd ghalton(size_t n, size_t d)
 inline Eigen::VectorXd pbvt(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
                             int nu, double rho)
 {
-    size_t i1;
-    double d1, d2, d3;
-    static int hs, ks;
-    static double hkn, hpk, hrk, krh, bvt, ors, snu, gmph, gmpk, hkrn,
-        qhrk, xnkh, xnhk, btnckh, btnchk, btpdkh, btpdhk;
+    double snu = sqrt((double) nu);
+    double ors = 1 - pow(rho, 2.0);
 
-    snu = sqrt((double) nu);
-    ors = 1 - pow(rho, 2.0);
+    auto f = [snu, nu, ors, rho](double h, double k) {
 
-    size_t n = z.rows();
-    Eigen::VectorXd p(n);
+        double d1, d2, d3, hkn, hpk, bvt, gmph, gmpk, hkrn,
+            qhrk, xnkh, xnhk, btnckh, btnchk, btpdkh, btpdhk;
+        int hs, ks;
 
-    for (size_t l = 0; l < n; l++) {
-        hrk = z(l, 0) - rho * z(l, 1);
-        krh = z(l, 1) - rho * z(l, 0);
+        double hrk = h - rho * k;
+        double krh = k - rho * h;
         if (fabs(hrk) + ors > 0.) {
             /* Computing 2nd power */
             d1 = hrk;
             /* Computing 2nd power */
             d2 = hrk;
             /* Computing 2nd power */
-            d3 = z(l, 1);
+            d3 = k;
             xnhk = d1 * d1 / (d2 * d2 + ors * (nu + d3 * d3));
             /* Computing 2nd power */
             d1 = krh;
             /* Computing 2nd power */
             d2 = krh;
             /* Computing 2nd power */
-            d3 = z(l, 0);
+            d3 = h;
             xnkh = d1 * d1 / (d2 * d2 + ors * (nu + d3 * d3));
         } else {
             xnhk = 0.;
             xnkh = 0.;
         }
-        d1 = z(l, 0) - rho * z(l, 1);
+        d1 = h - rho * k;
         hs = (int) (d1 >= 0 ? 1 : -1);//d_sign(&c_b91, &d1);
-        d1 = z(l, 1) - rho * z(l, 0);
+        d1 = k - rho * h;
         ks = (int) (d1 >= 0 ? 1 : -1);
         if (nu % 2 == 0) {
             bvt = atan2(sqrt(ors), -rho) / 6.2831853071795862;
             /* Computing 2nd power */
-            d1 = z(l, 0);
-            gmph = z(l, 0) / sqrt((nu + d1 * d1) * 16);
+            d1 = h;
+            gmph = h / sqrt((nu + d1 * d1) * 16);
             /* Computing 2nd power */
-            d1 = z(l, 1);
-            gmpk = z(l, 1) / sqrt((nu + d1 * d1) * 16);
+            d1 = k;
+            gmpk = k / sqrt((nu + d1 * d1) * 16);
             btnckh = atan2(sqrt(xnkh), sqrt(1 - xnkh)) * 2 /
                      3.14159265358979323844;
             btpdkh = sqrt(xnkh * (1 - xnkh)) * 2 / 3.14159265358979323844;
             btnchk = atan2(sqrt(xnhk), sqrt(1 - xnhk)) * 2 /
                      3.14159265358979323844;
             btpdhk = sqrt(xnhk * (1 - xnhk)) * 2 / 3.14159265358979323844;
-            i1 = nu / 2;
+            size_t i1 = (size_t) (nu / 2);
             for (size_t j = 1; j <= i1; ++j) {
                 bvt += gmph * (ks * btnckh + 1);
                 bvt += gmpk * (hs * btnchk + 1);
@@ -540,24 +536,24 @@ inline Eigen::VectorXd pbvt(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
                 btnchk += btpdhk;
                 btpdhk = (j << 1) * btpdhk * (1 - xnhk) / ((j << 1) + 1);
                 /* Computing 2nd power */
-                d1 = z(l, 0);
+                d1 = h;
                 gmph = gmph * ((j << 1) - 1) / ((j << 1) * (d1 * d1 / nu + 1)
                 );
                 /* Computing 2nd power */
-                d1 = z(l, 1);
+                d1 = k;
                 gmpk = gmpk * ((j << 1) - 1) / ((j << 1) * (d1 * d1 / nu + 1)
                 );
             }
         } else {
             /* Computing 2nd power */
-            d1 = z(l, 0);
+            d1 = h;
             /* Computing 2nd power */
-            d2 = z(l, 1);
+            d2 = k;
             qhrk = sqrt(
-                d1 * d1 + d2 * d2 - rho * 2 * z(l, 0) * z(l, 1) + nu * ors);
-            hkrn = z(l, 0) * z(l, 1) + rho * nu;
-            hkn = z(l, 0) * z(l, 1) - nu;
-            hpk = z(l, 0) + z(l, 1);
+                d1 * d1 + d2 * d2 - rho * 2 * h * k + nu * ors);
+            hkrn = h * k + rho * nu;
+            hkn = h * k - nu;
+            hpk = h + k;
             bvt =
                 atan2(-snu * (hkn * qhrk + hpk * hkrn), hkn * hkrn - nu * hpk *
                                                                      qhrk) /
@@ -566,16 +562,16 @@ inline Eigen::VectorXd pbvt(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
                 bvt += 1;
             }
             /* Computing 2nd power */
-            d1 = z(l, 0);
-            gmph = z(l, 0) / (snu * 6.2831853071795862 * (d1 * d1 / nu + 1));
+            d1 = h;
+            gmph = h / (snu * 6.2831853071795862 * (d1 * d1 / nu + 1));
             /* Computing 2nd power */
-            d1 = z(l, 1);
-            gmpk = z(l, 1) / (snu * 6.2831853071795862 * (d1 * d1 / nu + 1));
+            d1 = k;
+            gmpk = k / (snu * 6.2831853071795862 * (d1 * d1 / nu + 1));
             btnckh = sqrt(xnkh);
             btpdkh = btnckh;
             btnchk = sqrt(xnhk);
             btpdhk = btnchk;
-            i1 = (nu - 1) / 2;
+            size_t i1 = (size_t) ((nu - 1) / 2);
             for (size_t j = 1; j <= i1; ++j) {
                 bvt += gmph * (ks * btnckh + 1);
                 bvt += gmpk * (hs * btnchk + 1);
@@ -584,19 +580,19 @@ inline Eigen::VectorXd pbvt(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
                 btpdhk = ((j << 1) - 1) * btpdhk * (1 - xnhk) / (j << 1);
                 btnchk += btpdhk;
                 /* Computing 2nd power */
-                d1 = z(l, 0);
+                d1 = h;
                 gmph = (j << 1) * gmph / (((j << 1) + 1) * (d1 * d1 / nu + 1)
                 );
                 /* Computing 2nd power */
-                d1 = z(l, 1);
+                d1 = k;
                 gmpk = (j << 1) * gmpk / (((j << 1) + 1) * (d1 * d1 / nu + 1)
                 );
             }
         }
-        p(l) = bvt;
-    }
+        return bvt;
+    };
 
-    return p;
+    return tools_eigen::binaryExpr_or_nan(z, f);
 }
 
 //! Compute bivariate normal probabilities

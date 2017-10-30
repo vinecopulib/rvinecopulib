@@ -4,6 +4,9 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <boost/math/special_functions/expm1.hpp>
+#include <boost/math/special_functions/log1p.hpp>
+
 namespace vinecopulib {
 
 inline FrankBicop::FrankBicop()
@@ -13,33 +16,33 @@ inline FrankBicop::FrankBicop()
     parameters_lower_bounds_ = Eigen::VectorXd(1);
     parameters_upper_bounds_ = Eigen::VectorXd(1);
     parameters_ << 0;
-    parameters_lower_bounds_ << -200;
-    parameters_upper_bounds_ << 200;
+    parameters_lower_bounds_ << -35;
+    parameters_upper_bounds_ << 35;
 }
 
 inline double FrankBicop::generator(const double &u)
 {
     double theta = double(this->parameters_(0));
-    return (-1) * std::log((std::exp(-theta * u) - 1) / (std::exp(-theta) - 1));
+    return -std::log(boost::math::expm1(-theta * u) / boost::math::expm1(-theta));
 }
 
 inline double FrankBicop::generator_inv(const double &u)
 {
     double theta = double(this->parameters_(0));
-    return (-1 / theta) * std::log(1 + std::exp(-theta - u) - std::exp(-u));
+    return -boost::math::log1p(boost::math::expm1(-theta) * std::exp(-u)) / theta;
 }
 
 inline double FrankBicop::generator_derivative(const double &u)
 {
     double theta = double(this->parameters_(0));
-    return theta / (1 - std::exp(theta * u));
+    return -theta / boost::math::expm1(theta * u);
 }
 
 inline double FrankBicop::generator_derivative2(const double &u)
 {
     double theta = double(this->parameters_(0));
     return std::pow(theta, 2) /
-           std::pow(std::exp(theta * u / 2) - std::exp(-theta * u / 2), 2);
+           std::pow(boost::math::expm1(theta * u) * std::exp(-theta * u / 2), 2);
 }
 
 inline Eigen::MatrixXd FrankBicop::tau_to_parameters(const double &tau)

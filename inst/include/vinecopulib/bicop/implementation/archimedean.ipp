@@ -13,9 +13,11 @@ inline Eigen::VectorXd ArchimedeanBicop::pdf(
 {
     auto f = [this](const double &u, const double &v) {
         double temp = generator_inv(generator(u) + generator(v));
-        temp = generator_derivative2(temp) /
-               std::pow(generator_derivative(temp), 3.0);
-        return (-1) * generator_derivative(u) * generator_derivative(v) * temp;
+        temp = log(std::abs(generator_derivative2(temp))) - 
+            3.0 * log(std::abs(generator_derivative(temp)));
+        temp += std::log(std::abs(generator_derivative(u)));
+        temp += std::log(std::abs(generator_derivative(v)));
+        return std::exp(temp);
     };
     return tools_eigen::binaryExpr_or_nan(u, f);
 }

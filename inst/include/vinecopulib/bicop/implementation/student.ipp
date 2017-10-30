@@ -45,9 +45,26 @@ inline Eigen::VectorXd StudentBicop::cdf(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {
-    int nu = (int) double(this->parameters_(1));
-    return tools_stats::pbvt(tools_stats::qt(u, nu),
-                             nu, double(this->parameters_(0)));
+    using namespace tools_stats;
+
+    double rho = double(this->parameters_(0));
+    double nu = double(this->parameters_(1));
+    double rnu = round(nu);
+
+    if (nu == rnu) {
+        return pbvt(qt(u, (int) nu), (int) nu, rho);
+    } else {
+        int nu1, nu2;
+        if (nu > round(nu)) {
+            nu1 = (int) round(nu);
+            nu2 = nu1 + 1;
+        } else {
+            nu2 = (int) round(nu);
+            nu1 = nu2 - 1;
+        }
+        return pbvt(qt(u, nu1), nu1, rho) +
+               (((double) nu2) - nu) * pbvt(qt(u, nu2), nu2, rho);
+    }
 }
 
 inline Eigen::VectorXd StudentBicop::hfunc1(

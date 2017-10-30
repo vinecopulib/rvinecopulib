@@ -15,7 +15,7 @@ inline Bb8Bicop::Bb8Bicop()
     parameters_upper_bounds_ = Eigen::VectorXd(2);
     parameters_ << 1, 1;
     parameters_lower_bounds_ << 1, 0;
-    parameters_upper_bounds_ << 200, 1;
+    parameters_upper_bounds_ << 8, 1;
 }
 
 inline double Bb8Bicop::generator(const double &u)

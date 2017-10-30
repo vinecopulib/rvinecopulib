@@ -5,7 +5,8 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/misc/tools_stats.hpp>
-
+#include <boost/math/tools/minima.hpp>
+#include <iostream>
 namespace vinecopulib {
 
 //! Utilities for numerical optimization (based on Bobyqa)
@@ -156,67 +157,41 @@ inline double pmle_objective(void *f_data, long n, const double *x)
 //!     algorithm.
 //! @return the optimal parameters.
 inline Eigen::VectorXd Optimizer::optimize(Eigen::VectorXd initial_parameters,
-                                           tools_bobyqa::BobyqaClosureFunction objective,
+                                           std::function<double(void *, long,
+                                                                const double *)>
+                                           objective,
                                            void *data)
 {
     if (initial_parameters.size() != n_parameters_) {
-        throw std::runtime_error("The size of x should be n_parameters_.");
+        throw std::runtime_error("initial_parameters.size() should be n_parameters_.");
     }
 
-    //const int number_interpolation_conditions = (n_parameters_ + 1) *
-    //        (n_parameters_ + 2)/2;
-    int number_interpolation_conditions = n_parameters_ + 3;
-    std::size_t ws_size = (number_interpolation_conditions + 5) *
-                          (number_interpolation_conditions
-                           + n_parameters_) +
-                          3 * n_parameters_ * (n_parameters_ + 5) / 2;
-    double *working_space = new double[ws_size];
-
-    double *lb = new double[n_parameters_];
-    double *ub = new double[n_parameters_];
-    double eps = 1e-6;
-    Eigen::VectorXd::Map(lb, n_parameters_) = lb_.array() + eps;
-    Eigen::VectorXd::Map(ub, n_parameters_) = ub_.array() - eps;
-
-    double *x = new double[n_parameters_];
-    Eigen::VectorXd::Map(x, n_parameters_) = initial_parameters;
-    Eigen::VectorXd optimized_parameters(n_parameters_);
-    std::string err_msg = "";
-    try {
-        auto f = [&](long n, const double *x) -> double {
+    Eigen::VectorXd optimized_parameters = initial_parameters;
+    if (n_parameters_ > 1) {
+        //const int number_interpolation_conditions = (n_parameters_ + 1) *
+        //        (n_parameters_ + 2)/2;
+        int number_interpolation_conditions = n_parameters_ + 3;
+        auto f = [data, objective](long n, const double *x) -> double {
             return objective(data, n, x);
         };
-        tools_bobyqa::impl(f, n_parameters_,
-                           number_interpolation_conditions,
-                           x, lb, ub,
-                           controls_.get_initial_trust_region(),
-                           controls_.get_final_trust_region(),
-                           controls_.get_maxeval(),
-                           working_space);
-
-        // convert result to VectorXd
-        for (size_t i = 0; i < n_parameters_; i++) {
-            optimized_parameters(i) = x[i];
-        }
-    } catch (std::invalid_argument err) {
-        err_msg = std::string("Invalid arguments. ") + err.what();
-    } catch (std::bad_alloc err) {
-        err_msg = std::string("Ran out of memory. ") + err.what();
-    } catch (std::runtime_error err) {
-        err_msg = std::string("Generic failure. ") + err.what();
-    } catch (...) {
-        // do nothing for other errors (results are fine)
-    }
-
-    // delete dynamically allocated objects
-    delete[] x;
-    delete[] lb;
-    delete[] ub;
-    delete[] working_space;
-
-    // throw error if optimization failed
-    if (err_msg != "") {
-        throw std::runtime_error(err_msg);
+        auto result =
+            tools_bobyqa::bobyqa(f, n_parameters_,
+                               number_interpolation_conditions,
+                               initial_parameters, lb_, ub_,
+                               controls_.get_initial_trust_region(),
+                               controls_.get_final_trust_region(),
+                               controls_.get_maxeval());
+        optimized_parameters = result.first;
+    } else {
+        double eps = 1e-6;
+        auto f = [data, objective](double x) -> double {
+            return objective(data, 1, &x);
+        };
+        auto result =
+            boost::math::tools::brent_find_minima(f, (double) lb_(0) + eps,
+                                                  (double) ub_(0) - eps,
+                                                  20);
+        optimized_parameters(0) = result.first;
     }
 
     return optimized_parameters;

@@ -15,7 +15,7 @@ inline ClaytonBicop::ClaytonBicop()
     parameters_upper_bounds_ = Eigen::VectorXd(1);
     parameters_ << 0;
     parameters_lower_bounds_ << 0;
-    parameters_upper_bounds_ << 200;
+    parameters_upper_bounds_ << 28;
 }
 
 inline double ClaytonBicop::generator(const double &u)

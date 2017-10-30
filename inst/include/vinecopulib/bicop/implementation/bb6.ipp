@@ -18,7 +18,7 @@ inline Bb6Bicop::Bb6Bicop()
     parameters_upper_bounds_ = Eigen::VectorXd(2);
     parameters_ << 1, 1;
     parameters_lower_bounds_ << 1, 1;
-    parameters_upper_bounds_ << 200, 200;
+    parameters_upper_bounds_ << 6, 8;
 }
 
 inline double Bb6Bicop::generator(const double &u)

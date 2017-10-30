@@ -17,7 +17,7 @@ inline GumbelBicop::GumbelBicop()
     parameters_upper_bounds_ = Eigen::VectorXd(1);
     parameters_ << 1;
     parameters_lower_bounds_ << 1;
-    parameters_upper_bounds_ << 200;
+    parameters_upper_bounds_ << 70;
 }
 
 inline double GumbelBicop::generator(const double &u)

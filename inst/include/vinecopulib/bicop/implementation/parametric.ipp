@@ -93,7 +93,8 @@ inline void ParBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
 
             ParBicopOptData my_data = {temp_data, this, initial_parameters(0),
                                        0};
-            tools_bobyqa::BobyqaClosureFunction objective = mle_objective;
+            std::function<double(void *, long, const double *)> objective =
+                mle_objective;
             if (method == "itau") {
                 lb.resize(1, 1);
                 lb(0) = get_parameters_lower_bounds()(1);
@@ -107,7 +108,23 @@ inline void ParBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
                 }
                 objective = pmle_objective;
             }
-
+            
+            // refine search interval for Brent algorithm        
+            if (tools_stl::is_member(family_, bicop_families::one_par)) {
+                auto lb2 = lb;
+                auto ub2 = ub;
+                if (tools_stl::is_member(family_, bicop_families::rotationless)) {
+                    lb = tau_to_parameters(std::max(std::fabs(tau)-0.1, 1e-10));
+                    ub = tau_to_parameters(std::min(std::fabs(tau)+0.1, 0.95));
+                } else {
+                    lb = tau_to_parameters(std::max(tau-0.1, -0.99));
+                    ub = tau_to_parameters(std::min(tau+0.1, 0.99));                    
+                }
+                // make sure that parameter bounds are respected
+                lb = lb2.cwiseMax(lb);
+                ub = ub2.cwiseMin(ub);
+            }
+            
             // create optimizer
             Optimizer optimizer(npars, lb, ub);
 
@@ -198,14 +215,3 @@ ParBicop::check_parameters_upper(const Eigen::MatrixXd &parameters)
 //! @}
 
 }
-
-/*void remove_row(Eigen::MatrixXd& matrix, unsigned int to_remove)
-{
-    unsigned int n = matrix.rows()-1;
-    unsigned int m = matrix.cols();
-
-    if(to_remove < numRows )
-        matrix.block(to_remove,0,numRows-to_remove,numCols) = matrix.block(to_remove+1,0,numRows-to_remove,numCols);
-
-    matrix.conservativeResize(numRows,numCols);
-}*/
