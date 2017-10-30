@@ -8,33 +8,40 @@
 
 #include <vinecopulib/bicop/archimedean.hpp>
 
-namespace vinecopulib
+namespace vinecopulib {
+//! @brief The Frank copula
+//!
+//! This class is used in the implementation underlying the Bicop class.
+//! Users should not use AbstractBicop or derived classes directly, but
+//! always work with the Bicop interface.
+//!
+//! @literature
+//! Joe, Harry. Dependence modeling with copulas. CRC Press, 2014.
+class FrankBicop : public ArchimedeanBicop
 {
-    //! @brief The Frank copula
-    //!
-    //! This class is used in the implementation underlying the Bicop class. 
-    //! Users should not use AbstractBicop or derived classes directly, but 
-    //! always work with the Bicop interface.
-    //! 
-    //! @literature
-    //! Joe, Harry. Dependence modeling with copulas. CRC Press, 2014.
-    class FrankBicop : public ArchimedeanBicop
-    {
-    public:
-        // constructor
-        FrankBicop();
+public:
+    // constructor
+    FrankBicop();
 
-    private:
-        // generator, its inverse and derivatives for the archimedean copula
-        double generator(const double& u);
-        double generator_inv(const double& u);
-        double generator_derivative(const double& u);
-        double generator_derivative2(const double& u);
+private:
+    // generator, its inverse and derivatives for the archimedean copula
+    double generator(const double &u);
 
-        // link between Kendall's tau and the par_bicop parameter
-        Eigen::MatrixXd tau_to_parameters(const double& tau);
-        double parameters_to_tau(const Eigen::MatrixXd& par);
+    double generator_inv(const double &u);
 
-        Eigen::VectorXd get_start_parameters(const double tau);
-    };
+    double generator_derivative(const double &u);
+
+    double generator_derivative2(const double &u);
+
+    // link between Kendall's tau and the par_bicop parameter
+    Eigen::MatrixXd tau_to_parameters(const double &tau);
+
+    double parameters_to_tau(const Eigen::MatrixXd &par);
+
+    Eigen::VectorXd get_start_parameters(const double tau);
+};
 }
+
+double debyen(const double x, const int n);
+
+#include <vinecopulib/bicop/implementation/frank.ipp>

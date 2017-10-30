@@ -13,35 +13,42 @@
 
 // interface specific headers
 #ifdef INTERFACED_FROM_R
-    #include <RcppEigen.h>
-    // [[Rcpp::depends(RcppProgress)]]
-    #include <progress.hpp>
+    #include <RcppThread.h>
 #else
+
     #include <iostream>
+
 #endif
 
+// parallel backend
+#ifdef INTERFACED_FROM_R
+namespace tools_parallel { typedef RcppThread::ThreadPool ThreadPool; }
+#else
+
+    #include <vinecopulib/misc/tools_parallel.hpp>
+
+#endif
 
 namespace vinecopulib {
+namespace tools_interface {
 
-    namespace tools_interface {
-        inline void print(std::string text)
-        {
-            #ifndef INTERFACED_FROM_R
-                std::cout << text;
-            #else
-                Rcpp::Rcout << text;
-            #endif
-        }
-    
-        inline void check_user_interrupt(bool do_check = true)
-        {
-            if (do_check) {
-                #ifdef INTERFACED_FROM_R
-                    if (Progress::check_abort()) {
-                        throw std::runtime_error("C++ call interrupted by user");
-                    }
-                #endif
-            }
-        }
+inline void print(std::string text)
+{
+#ifndef INTERFACED_FROM_R
+    std::cout << text;
+#else
+    RcppThread::Rcout << text;
+#endif
+}
+
+inline void check_user_interrupt(bool do_check = true)
+{
+    if (do_check) {
+#ifdef INTERFACED_FROM_R
+        RcppThread::checkUserInterrupt();
+#endif
     }
+}
+
+}
 }

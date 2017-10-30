@@ -3,7 +3,7 @@ family_set_archimedean <- c(
 )
 
 family_set_elliptical <- c(
-    "gaussian", "student"
+    "gaussian", "t"
 )
 
 family_set_bb <- c(

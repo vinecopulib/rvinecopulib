@@ -20,6 +20,8 @@
 #'   threshold should be selected automatically by GIC.
 #' @param show_trace logical; whether a trace of the fitting progress should be 
 #'    printed.
+#' @param cores number of cores to use; if more than 1, estimation of pair 
+#'    copulas within a tree is done in parallel.
 #' 
 #' @details
 #' `vinecop_dist()` creates a vine copula by specifying a nested list of 
@@ -69,7 +71,7 @@ vinecop <- function(data, family_set = "all", matrix = NA,
                     par_method = "mle", nonpar_method = "constant",
                     mult = 1, selcrit = "bic", presel = TRUE, 
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
-                    keep_data = TRUE, show_trace = FALSE) {
+                    keep_data = TRUE, show_trace = FALSE, cores = 1) {
     # check if families known (w/ partial matching) and expand convenience defs
     family_set <- process_family_set(family_set)
     
@@ -97,7 +99,8 @@ vinecop <- function(data, family_set = "all", matrix = NA,
         threshold = threshold,
         select_truncation_level = is.na(trunc_lvl),
         select_threshold = is.na(threshold),
-        show_trace = show_trace
+        show_trace = show_trace,
+        num_threads = cores
     )
     
     ## make all pair-copulas bicop objects

@@ -9,7 +9,7 @@
 vinecop(data, family_set = "all", matrix = NA, par_method = "mle",
   nonpar_method = "constant", mult = 1, selcrit = "bic", presel = TRUE,
   trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = TRUE,
-  show_trace = FALSE)
+  show_trace = FALSE, cores = 1)
 
 vinecop_dist(pair_copulas, matrix)
 }
@@ -60,6 +60,9 @@ fit statistics and using \code{\link[=fitted]{fitted()}}).}
 
 \item{show_trace}{logical; whether a trace of the fitting progress should be
 printed.}
+
+\item{cores}{number of cores to use; if more than 1, estimation of pair
+copulas within a tree is done in parallel.}
 
 \item{pair_copulas}{A nested list of 'bicop_dist' objects, where
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in

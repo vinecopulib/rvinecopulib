@@ -8,7 +8,7 @@
 \usage{
 bicop(data, family_set = "all", par_method = "mle",
   nonpar_method = "quadratic", mult = 1, selcrit = "bic", presel = TRUE,
-  keep_data = TRUE)
+  keep_data = TRUE, cores = 1)
 
 bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
 }
@@ -40,6 +40,9 @@ symmetry characteristics of the data.}
 
 \item{keep_data}{whether the data should be stored (necessary for computing
 fit statistics and using \code{\link[=fitted]{fitted()}}).}
+
+\item{cores}{number of cores to use; if more than 1, estimation for multiple
+families is done in parallel.}
 
 \item{family}{the copula family, a string containing the family name (see
 \emph{Details} for all possible families).}

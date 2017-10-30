@@ -8,28 +8,30 @@
 
 #include <vinecopulib/bicop/parametric.hpp>
 
-namespace vinecopulib
+namespace vinecopulib {
+//! @brief An abstract class for elliptical copula families
+//!
+//! This class is used in the implementation underlying the Bicop class.
+//! Users should not use AbstractBicop or derived classes directly, but
+//! always work with the Bicop interface.
+//!
+//! @literature
+//! Joe, Harry. Dependence modeling with copulas. CRC Press, 2014.
+class EllipticalBicop : public ParBicop
 {
-    //! @brief An abstract class for elliptical copula families
-    //!
-    //! This class is used in the implementation underlying the Bicop class. 
-    //! Users should not use AbstractBicop or derived classes directly, but 
-    //! always work with the Bicop interface.
-    //! 
-    //! @literature
-    //! Joe, Harry. Dependence modeling with copulas. CRC Press, 2014.
-    class EllipticalBicop : public ParBicop
-    {
-    private:
-        // hfunction and its inverse
-        Eigen::VectorXd hfunc2(
-            const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
-        );
-        Eigen::VectorXd hinv2(
-            const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
-        );
+private:
+    // hfunction and its inverse
+    Eigen::VectorXd hfunc2(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
+    );
 
-        // link between Kendall's tau and the par_bicop parameter
-        double parameters_to_tau(const Eigen::MatrixXd& parameters);
-    };
+    Eigen::VectorXd hinv2(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
+    );
+
+    // link between Kendall's tau and the par_bicop parameter
+    double parameters_to_tau(const Eigen::MatrixXd &parameters);
+};
 }
+
+#include <vinecopulib/bicop/implementation/elliptical.ipp>
