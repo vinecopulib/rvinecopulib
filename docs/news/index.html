@@ -52,7 +52,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="..//index.html">
+  <a href="../index.html">
     <span class="fa fa-home fa-lg"></span>
      
   </a>
@@ -83,6 +83,33 @@
     </div>
 
     <div class="contents">
+    <div id="vinecopulib-0-2-0-1-0-october-30-2017" class="section level1">
+<h1 class="hasAnchor">
+<a href="#vinecopulib-0-2-0-1-0-october-30-2017" class="anchor"></a>vinecopulib 0.2.0.1.0 (October 30, 2017)</h1>
+<p>Release following the update of vinecopulib to 0.2.0, see <a href="https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.0" class="uri">https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.0</a>. The most relevant changes are summarized below.</p>
+<p>PACKAGING/DEPENDECY</p>
+<ul>
+<li><p>the C++ core of the library (besides wrappers) is now header only, so other R packages can access its functionality easily via LinkingTo.</p></li>
+<li><p>removed dependency on <code>NLopt</code>.</p></li>
+</ul>
+<p>NEW FEATURES</p>
+<ul>
+<li><p>NA handling.</p></li>
+<li><p>parallelized selection/estimation of (pair-) copulas, see the <code>cores</code> argument in <code><a href="../reference/bicop.html">bicop()</a></code> and <code><a href="../reference/vinecop.html">vinecop()</a></code>.</p></li>
+<li><p>efficient storage and fitting of truncated vines.</p></li>
+<li><p>Brent line search for (profile-) maximum-likelihood estimation of one-parameter families.</p></li>
+<li><p>more restrictive parameter bounds for Archimedean families, ensuring their numerical stability.</p></li>
+</ul>
+<p>BUG FIXES</p>
+<ul>
+<li><p>error thrown whenever <code><a href="../reference/vinecop.html">vinecop()</a></code> or <code><a href="../reference/bicop.html">bicop()</a></code> are called with data sets containing a single row.</p></li>
+<li><p>made order of <code>rvinecop(..., U)</code> consistent for d = 2 and d &gt; 2.</p></li>
+<li><p>fixed bug in interpolation of kernel estimators near upper right corner.</p></li>
+<li><p>interpolation grid is now symmetric around (0.5, 0.5).</p></li>
+<li><p>stabilized quadratic tll estimator near zero.</p></li>
+<li><p>stabilized Archimedean pdfs.</p></li>
+</ul>
+</div>
     <div id="rvinecopulib-0-1-0-1-1-september-1-2017" class="section level1">
 <h1 class="hasAnchor">
 <a href="#rvinecopulib-0-1-0-1-1-september-1-2017" class="anchor"></a>rvinecopulib 0.1.0.1.1 (September 1, 2017)</h1>
@@ -103,6 +130,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
+        <li><a href="#vinecopulib-0-2-0-1-0-october-30-2017">0.2.0.1.0</a></li>
         <li><a href="#rvinecopulib-0-1-0-1-1-september-1-2017">0.1.0.1.1</a></li>
         <li><a href="#rvinecopulib-0-1-0-1-0-august-29-2017">0.1.0.1.0</a></li>
       </ul>
