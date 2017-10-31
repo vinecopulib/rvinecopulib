@@ -10,19 +10,22 @@ void rvine_matrix_check_cpp(Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic
 
 Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
 {
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix = vinecop_r["matrix"];
+    size_t d = matrix.cols();
+    
     Rcpp::List pair_copulas = vinecop_r["pair_copulas"];
-    size_t d = pair_copulas.size() + 1;
-    auto pc_store = Vinecop::make_pair_copula_store(d);
+    auto pc_store = Vinecop::make_pair_copula_store(d, pair_copulas.size());
     Rcpp::List tree_pcs, pc;
-    for (size_t t = 0; t < d - 1; ++t) {
+    for (size_t t = 0; t < pc_store.size(); ++t) {
         tree_pcs = pair_copulas[t];
+        if (tree_pcs.size() != d - 1 - t) {
+            throw std::runtime_error("length(pair_copulas[[t]]) must be d-t");
+        }
         for(size_t e = 0; e < d - 1 - t; ++e) {
             pc = tree_pcs[e];
             pc_store[t][e] = bicop_wrap(pc);
         }
     }
-
-    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix = vinecop_r["matrix"];
     
     // omit R-vine matrix check, already done in R
     return Vinecop(pc_store, matrix, false);
@@ -31,13 +34,15 @@ Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
 
 Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp) {
     auto matrix = vinecop_cpp.get_matrix();
+    auto pcs = vinecop_cpp.get_all_pair_copulas();
     size_t d = matrix.cols();
-    Rcpp::List pair_copulas(d - 1);
+    
+    Rcpp::List pair_copulas(pcs.size());
 
-    for (size_t t = 0; t < d - 1; ++t) {
+    for (size_t t = 0; t < pcs.size(); ++t) {
         Rcpp::List tree_pcs(d - 1 - t);
         for(size_t e = 0; e < d - 1 - t; ++e) {
-            tree_pcs[e] = bicop_wrap(vinecop_cpp.get_pair_copula(t, e));
+            tree_pcs[e] = bicop_wrap(pcs[t][e]);
         }
         pair_copulas[t] = tree_pcs;
     }
@@ -59,28 +64,24 @@ void vinecop_check_cpp(Rcpp::List vinecop_r) {
 Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
                                                const Rcpp::List& vinecop_r)
 {
-    Progress p(0, false);
     return vinecop_wrap(vinecop_r).inverse_rosenblatt(U);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
 {
-    Progress p(0, false);
     return vinecop_wrap(vinecop_r).pdf(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, size_t N)
 {
-    Progress p(0, false);
     return vinecop_wrap(vinecop_r).cdf(u, N);
 }
 
 // [[Rcpp::export()]]
 double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
 {
-    Progress p(0, false);
     return vinecop_wrap(vinecop_r).loglik(u);
 }
 
@@ -99,7 +100,8 @@ Rcpp::List vinecop_select_cpp(
         bool select_truncation_level,
         bool select_threshold,
         bool preselect_families,
-        bool show_trace
+        bool show_trace,
+        size_t num_threads
 )
 {
     std::vector<BicopFamily> fam_set(family_set.size());
@@ -119,10 +121,10 @@ Rcpp::List vinecop_select_cpp(
             preselect_families,
             select_truncation_level,
             select_threshold,
-            show_trace
+            show_trace,
+            num_threads
     );
     Vinecop vinecop_cpp(data.cols());
-    Progress p(0, false);
     if (matrix.cols() > 1) {
         vinecop_cpp = Vinecop(matrix);
         vinecop_cpp.select_families(data, fit_controls);

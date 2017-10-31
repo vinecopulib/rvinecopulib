@@ -22,6 +22,9 @@
 #'   symmetry characteristics of the data.
 #' @param keep_data whether the data should be stored (necessary for computing
 #'   fit statistics and using [fitted()]).
+#' @param cores number of cores to use; if more than 1, estimation for multiple
+#'   families is done in parallel.
+#' 
 #' @details
 #' 
 #' The implemented families are:\cr
@@ -71,7 +74,7 @@
 #' @export
 bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic", 
-                  presel = TRUE, keep_data = TRUE) {
+                  presel = TRUE, keep_data = TRUE, cores = 1) {
     stopifnot(ncol(data) == 2)
     # check if families known (w/ partial matching) and expand convenience defs
     family_set <- process_family_set(family_set)
@@ -85,7 +88,8 @@ bicop <- function(data, family_set = "all", par_method = "mle",
         nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
-        presel = presel
+        presel = presel,
+        num_threads = cores
     )
     
     ## add information about the fit

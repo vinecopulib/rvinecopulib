@@ -10,15 +10,29 @@
 
 #include <vinecopulib/misc/tools_eigen.hpp>
 #include <vinecopulib/bicop/family.hpp>
+#include <vinecopulib/bicop/class.hpp>
+
+namespace vinecopulib {
+namespace tools_select {
+
+std::vector <Bicop> create_candidate_bicops(
+    Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
+    const FitControlsBicop &controls);
+
+std::vector <BicopFamily> get_candidate_families(
+    const FitControlsBicop &controls);
+
+void preselect_candidates(
+    std::vector <Bicop> &bicops,
+    const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
+    double tau);
 
 std::vector<double> get_c1c2(
-    const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
-    double tau
- );
-bool preselect_family(
-    std::vector<double> c, 
-    double tau, 
-    vinecopulib::BicopFamily family, 
-    int rotation, 
-    bool is_rotationless
-);
+    const Eigen::Matrix<double, Eigen::Dynamic, 2> &data, double tau);
+
+bool preselect_family(std::vector<double> c, double tau, const Bicop &bicop);
+
+}
+}
+
+#include <vinecopulib/bicop/implementation/tools_select.ipp>

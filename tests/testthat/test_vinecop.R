@@ -26,7 +26,11 @@ test_that("returns proper 'bicop' object", {
 
 test_that("works with matrix", {
     u <- sapply(1:2, function(i) runif(30))
-    fit <- vinecop(u, matrix = matrix(c(1:2, 1:0), 2, 2))
+    expect_silent(fit <- vinecop(u, matrix = matrix(c(1:2, 1:0), 2, 2)))
+})
+
+test_that("runs in parallel", {
+    expect_silent(fit <- vinecop(u, cores = 2))
 })
 
 test_that("S3 generics work", {
