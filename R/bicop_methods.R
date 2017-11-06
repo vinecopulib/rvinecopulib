@@ -232,12 +232,14 @@ summary.bicop_dist <- function(object, ...) {
 print.bicop <- function(x, ...) {
     info <- bicop_fit_info(x)
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
-        x$parameters <- "[30x30 grid]"
+        pars_formatted <- "[30x30 grid]"
+    } else {
+        pars_formatted <- paste(round(x$parameters, 2), collapse = ", ")
     }
     cat("Bivariate copula fit ('bicop'): ",
         "family = ", x$family,
         ", rotation = ", x$rotation,
-        ", parameters = ", x$parameters,
+        ", parameters = ", pars_formatted,
         "\n",
         sep = "")
     cat("nobs =", info$nobs, "  ")
