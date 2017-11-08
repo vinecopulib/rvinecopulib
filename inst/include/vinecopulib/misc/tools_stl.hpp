@@ -34,7 +34,7 @@ V unaryFunc_or_nan(T f, V y)
     } else {
         return f(y);
     }
-};
+}
 
 template<typename T, typename V>
 V binaryFunc_or_nan(T f, V u1, V u2)
@@ -44,7 +44,7 @@ V binaryFunc_or_nan(T f, V u1, V u2)
     } else {
         return f(u1, u2);
     }
-};
+}
 
 template<typename T>
 std::vector <size_t> get_order(const std::vector <T> &x)

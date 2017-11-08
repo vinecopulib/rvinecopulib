@@ -105,7 +105,7 @@ inline BicopFamily AbstractBicop::get_family() const
 inline std::string AbstractBicop::get_family_name() const
 {
     return vinecopulib::get_family_name(family_);
-};
+}
 //! @}
 
 

@@ -45,7 +45,8 @@ inline Eigen::MatrixXd
 to_pseudo_obs(Eigen::MatrixXd x, std::string ties_method)
 {
     for (int j = 0; j < x.cols(); ++j)
-        x.col(j) = to_pseudo_obs_1d((Eigen::VectorXd) x.col(j), ties_method);
+        x.col(j) = to_pseudo_obs_1d(static_cast<Eigen::VectorXd>(x.col(j)),
+                                    ties_method);
 
     return x;
 }
@@ -67,7 +68,7 @@ to_pseudo_obs_1d(Eigen::VectorXd x, std::string ties_method)
     auto order = tools_stl::get_order(xvec);
     if (ties_method == "first") {
         for (auto i : order)
-            x[order[i]] = (double) (i + 1);
+            x[order[i]] = static_cast<double>(i + 1);
     } else if (ties_method == "average") {
         for (size_t i = 0, reps; i < n; i += reps) {
             // find replications
@@ -96,7 +97,7 @@ to_pseudo_obs_1d(Eigen::VectorXd x, std::string ties_method)
             std::iota(rvals.begin(), rvals.end(), 0);  // 0, 1, 2, ...
             std::random_shuffle(rvals.begin(), rvals.end(), sim);
             for (size_t k = 0; k < reps; ++k)
-                x[order[i + k]] = (double) (i + 1 + rvals[k]);
+                x[order[i + k]] = static_cast<double>(i + 1 + rvals[k]);
         }
     } else {
         std::stringstream msg;
@@ -112,7 +113,7 @@ to_pseudo_obs_1d(Eigen::VectorXd x, std::string ties_method)
 //! @{
 
 //! calculates the pairwise Kendall's \f$ \tau \f$.
-inline double pairwise_tau(Eigen::Matrix<double, Eigen::Dynamic, 2> &x)
+inline double pairwise_tau(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x)
 {
     // C++ translation of a C code given by Shing (Eric) Fu, Feng Zhu, Guang
     // (Jack) Yang, and Harry Joe, based on work of the method by Knight (1966)
@@ -122,8 +123,9 @@ inline double pairwise_tau(Eigen::Matrix<double, Eigen::Dynamic, 2> &x)
     bool Iflag, Jflag, Xflag;
     size_t T = 0, U = 0, V = 0;
     double tau = 0., S = 0., D = 0.;
+    auto x1 = x;
 
-    size_t N = x.rows();
+    size_t N = x1.rows();
     Eigen::Matrix<double, Eigen::Dynamic, 2> x2(N, 2);
 
     /* 1.1 Sort X and Y in X order */
@@ -140,20 +142,20 @@ inline double pairwise_tau(Eigen::Matrix<double, Eigen::Dynamic, 2> &x)
                 Iflag = (I < Iend);
                 Jflag = (J < Jend);
                 if (Iflag & Jflag) {
-                    Xflag = ((x(I, 0) > x(J, 0)) |
-                             ((x(I, 0) == x(J, 0)) & (x(I, 1) > x(J, 1))));
+                    Xflag = ((x1(I, 0) > x1(J, 0)) |
+                             ((x1(I, 0) == x1(J, 0)) & (x1(I, 1) > x1(J, 1))));
                 } else {
                     Xflag = false;
                 }
                 if ((Iflag & !Jflag) | (Iflag & Jflag & !Xflag)) {
-                    x2(L, 0) = x(I, 0);
-                    x2(L, 1) = x(I, 1);
+                    x2(L, 0) = x1(I, 0);
+                    x2(L, 1) = x1(I, 1);
                     I++;
                     L++;
                 };
                 if ((!Iflag && Jflag) | (Iflag && Jflag && Xflag)) {
-                    x2(L, 0) = x(J, 0);
-                    x2(L, 1) = x(J, 1);
+                    x2(L, 0) = x1(J, 0);
+                    x2(L, 1) = x1(J, 1);
                     J++;
                     L++;
                 };
@@ -161,8 +163,8 @@ inline double pairwise_tau(Eigen::Matrix<double, Eigen::Dynamic, 2> &x)
         } while (L < N);
 
         // Swap columns
-        x.col(0).swap(x2.col(0));
-        x.col(1).swap(x2.col(1));
+        x1.col(0).swap(x2.col(0));
+        x1.col(1).swap(x2.col(1));
         K *= 2;
     } while (K < N);
 
@@ -170,9 +172,9 @@ inline double pairwise_tau(Eigen::Matrix<double, Eigen::Dynamic, 2> &x)
     j = 1;
     m = 1;
     for (i = 1; i < N; i++)
-        if (x(i, 0) == x(i - 1, 0)) {
+        if (x1(i, 0) == x1(i - 1, 0)) {
             j++;
-            if (x(i, 1) == x(i - 1, 1))
+            if (x1(i, 1) == x1(i - 1, 1))
                 m++;
         } else if (j > 1) {
             T += j * (j - 1) / 2;
@@ -198,19 +200,19 @@ inline double pairwise_tau(Eigen::Matrix<double, Eigen::Dynamic, 2> &x)
                 Iflag = (I < Iend);
                 Jflag = (J < Jend);
                 if (Iflag & Jflag) {
-                    Xflag = (x(I, 1) > x(J, 1));
+                    Xflag = (x1(I, 1) > x1(J, 1));
                 } else {
                     Xflag = false;
                 }
                 if ((Iflag & !Jflag) | (Iflag & Jflag & !Xflag)) {
-                    x2(L, 0) = x(I, 0);
-                    x2(L, 1) = x(I, 1);
+                    x2(L, 0) = x1(I, 0);
+                    x2(L, 1) = x1(I, 1);
                     I++;
                     L++;
                 };
                 if ((!Iflag && Jflag) | (Iflag && Jflag && Xflag)) {
-                    x2(L, 0) = x(J, 0);
-                    x2(L, 1) = x(J, 1);
+                    x2(L, 0) = x1(J, 0);
+                    x2(L, 1) = x1(J, 1);
                     S += Iend - I;
                     J++;
                     L++;
@@ -219,15 +221,15 @@ inline double pairwise_tau(Eigen::Matrix<double, Eigen::Dynamic, 2> &x)
         } while (L < N);
 
         // Swap columns
-        x.col(0).swap(x2.col(0));
-        x.col(1).swap(x2.col(1));
+        x1.col(0).swap(x2.col(0));
+        x1.col(1).swap(x2.col(1));
         K *= 2;
     } while (K < N);
 
     /* 2.2 Count pairs of tied Y, U */
     j = 1;
     for (i = 1; i < N; i++)
-        if (x(i, 1) == x(i - 1, 1))
+        if (x1(i, 1) == x1(i - 1, 1))
             j++;
         else if (j > 1) {
             U += j * (j - 1) / 2;
@@ -258,11 +260,11 @@ inline double pairwise_cor(const Eigen::Matrix<double, Eigen::Dynamic, 2> &x)
 }
 
 //! calculates the pairwise Spearman's \f$ \rho \f$.
-inline double pairwise_rho(Eigen::Matrix<double, Eigen::Dynamic, 2> x)
+inline double pairwise_rho(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x)
 {
-    x = to_pseudo_obs(x);
+    auto z = to_pseudo_obs(x);
     double rho;
-    auto z = x.rowwise() - x.colwise().mean();
+    z = x.rowwise() - x.colwise().mean();
     Eigen::MatrixXd sigma = z.adjoint() * z;
     rho = sigma(1, 0) / sqrt(sigma(0, 0) * sigma(1, 1));
 
@@ -270,7 +272,7 @@ inline double pairwise_rho(Eigen::Matrix<double, Eigen::Dynamic, 2> x)
 }
 
 //! calculates the pair-wise Hoeffding's D.
-inline double pairwise_hoeffd(Eigen::Matrix<double, Eigen::Dynamic, 2> x)
+inline double pairwise_hoeffd(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x)
 {
     size_t n = x.rows();
 
@@ -435,11 +437,11 @@ inline Eigen::MatrixXd ghalton(size_t n, size_t d)
     Eigen::MatrixXi coeff(d, 32);
     Eigen::VectorXi tmp(d);
     int k;
-    auto mod = [](const int &u, const int &v) { return u % v; };
+    auto mod = [](const int &u1, const int &u2) { return u1 % u2; };
     for (size_t i = 1; i < n; i++) {
 
         // Find i in the prime base
-        tmp = Eigen::VectorXi::Constant(d, (int) i);
+        tmp = Eigen::VectorXi::Constant(d, static_cast<int>(i));
         coeff = Eigen::MatrixXi::Zero(d, 32);
         k = 0;
         while ((tmp.maxCoeff() > 0) && (k < 32)) {
@@ -479,7 +481,7 @@ inline Eigen::MatrixXd ghalton(size_t n, size_t d)
 inline Eigen::VectorXd pbvt(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
                             int nu, double rho)
 {
-    double snu = sqrt((double) nu);
+    double snu = sqrt(static_cast<double>(nu));
     double ors = 1 - pow(rho, 2.0);
 
     auto f = [snu, nu, ors, rho](double h, double k) {
@@ -510,9 +512,9 @@ inline Eigen::VectorXd pbvt(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
             xnkh = 0.;
         }
         d1 = h - rho * k;
-        hs = (int) (d1 >= 0 ? 1 : -1);//d_sign(&c_b91, &d1);
+        hs = static_cast<int>(d1 >= 0 ? 1 : -1);//d_sign(&c_b91, &d1);
         d1 = k - rho * h;
-        ks = (int) (d1 >= 0 ? 1 : -1);
+        ks = static_cast<int>(d1 >= 0 ? 1 : -1);
         if (nu % 2 == 0) {
             bvt = atan2(sqrt(ors), -rho) / 6.2831853071795862;
             /* Computing 2nd power */
@@ -527,7 +529,7 @@ inline Eigen::VectorXd pbvt(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
             btnchk = atan2(sqrt(xnhk), sqrt(1 - xnhk)) * 2 /
                      3.14159265358979323844;
             btpdhk = sqrt(xnhk * (1 - xnhk)) * 2 / 3.14159265358979323844;
-            size_t i1 = (size_t) (nu / 2);
+            size_t i1 = static_cast<size_t>(nu / 2);
             for (size_t j = 1; j <= i1; ++j) {
                 bvt += gmph * (ks * btnckh + 1);
                 bvt += gmpk * (hs * btnchk + 1);
@@ -571,7 +573,7 @@ inline Eigen::VectorXd pbvt(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
             btpdkh = btnckh;
             btnchk = sqrt(xnhk);
             btpdhk = btnchk;
-            size_t i1 = (size_t) ((nu - 1) / 2);
+            size_t i1 = static_cast<size_t>((nu - 1) / 2);
             for (size_t j = 1; j <= i1; ++j) {
                 bvt += gmph * (ks * btnckh + 1);
                 bvt += gmpk * (hs * btnchk + 1);
@@ -632,7 +634,7 @@ pbvnorm(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
                        .1019301198172404, .1181945319615184,
                        .1316886384491766, .1420961093183821,
                        .1491729864726037, .1527533871307259}};
-    auto w = ((double *) &equiv_112);
+    auto w = reinterpret_cast<double *>(&equiv_112);
 
     static struct
     {
@@ -651,7 +653,7 @@ pbvnorm(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
                                                                                                     -.7463319064601508, -.636053680726515,
                        -.5108670019508271, -.3737060887154196,
                        -.2277858511416451, -.07652652113349733}};
-    auto x = ((double *) &equiv_113);
+    auto x = reinterpret_cast<double *>(&equiv_113);
 
 
     boost::math::normal dist;
