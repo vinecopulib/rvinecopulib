@@ -20,8 +20,7 @@ namespace vinecopulib {
 //!     `"linear"`, `"quadratic"`.
 //! @param nonparametric_mult a factor with which the smoothing parameters
 //!     are multiplied.
-//! @param selection_criterion the selection criterion (`"loglik"`, `"aic"` 
-//!     or `"bic"`).
+//! @param selection_criterion the selection criterion (`"aic"` or `"bic"`).
 //! @param preselect_families whether to exclude families before fitting
 //!     based on symmetry properties of the data.
 //! @param num_threads number of concurrent threads to use while fitting
@@ -96,9 +95,8 @@ FitControlsBicop::check_nonparametric_mult(double nonparametric_mult)
 inline void
 FitControlsBicop::check_selection_criterion(std::string selection_criterion)
 {
-    if (!tools_stl::is_member(selection_criterion, {"loglik", "aic", "bic"})) {
-        throw std::runtime_error(
-            "selection_criterion should be 'loglik', 'aic', or 'bic'");
+    if (!tools_stl::is_member(selection_criterion, {"aic", "bic"})) {
+        throw std::runtime_error("selection_criterion should be aic or bic");
     }
 }
 //! @}
