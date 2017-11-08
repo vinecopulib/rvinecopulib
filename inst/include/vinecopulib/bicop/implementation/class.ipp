@@ -470,7 +470,7 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
 
         // Compute the selection criterion
         double new_criterion;
-        if (controls.get_selection_criterion() == "loglok") {
+        if (controls.get_selection_criterion() == "loglik") {
             new_criterion = -cop.loglik(data);
         } else if (controls.get_selection_criterion() == "aic") {
             new_criterion = cop.aic(data);
