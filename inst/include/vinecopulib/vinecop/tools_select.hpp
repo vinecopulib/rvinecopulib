@@ -30,7 +30,7 @@ namespace vinecopulib {
 
 namespace tools_select {
 
-double calculate_criterion(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
+double calculate_criterion(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
                            std::string tree_criterion);
 
 Eigen::MatrixXd calculate_criterion_matrix(const Eigen::MatrixXd &data,
