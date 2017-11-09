@@ -52,18 +52,18 @@ inline Eigen::VectorXd StudentBicop::cdf(
     double rnu = round(nu);
 
     if (nu == rnu) {
-        return pbvt(qt(u, (int) nu), (int) nu, rho);
+        return pbvt(qt(u, static_cast<int>(nu)), static_cast<int>(nu), rho);
     } else {
         int nu1, nu2;
         if (nu > round(nu)) {
-            nu1 = (int) round(nu);
+            nu1 = static_cast<int>(round(nu));
             nu2 = nu1 + 1;
         } else {
-            nu2 = (int) round(nu);
+            nu2 = static_cast<int>(round(nu));
             nu1 = nu2 - 1;
         }
         return pbvt(qt(u, nu1), nu1, rho) +
-               (((double) nu2) - nu) * pbvt(qt(u, nu2), nu2, rho);
+               (static_cast<double>(nu2) - nu) * pbvt(qt(u, nu2), nu2, rho);
     }
 }
 

@@ -122,7 +122,7 @@ inline Eigen::Matrix<double, Eigen::Dynamic, 2> expand_grid(
         }
     }
     return grid_2d;
-};
+}
 
 //! reads data from a file to an Eigen matrix of integers.
 //!
@@ -188,7 +188,7 @@ inline Eigen::MatrixXd read_matxd(const char *filename, int max_buffer_size)
 
     delete[] buff;
     return result;
-};
+}
 
 //! @}
 }

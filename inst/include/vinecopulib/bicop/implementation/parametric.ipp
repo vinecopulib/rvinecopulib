@@ -47,7 +47,7 @@ inline double ParBicop::calculate_npars()
         return 0.0;
     }
     // otherwise, return length of parameter vector
-    return (double) parameters_.size();
+    return static_cast<double>(parameters_.size());
 }
 
 // fit
@@ -62,7 +62,7 @@ inline void ParBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
             throw std::runtime_error("Method not implemented.");
         }
 
-        int npars = (int) calculate_npars();
+        int npars = static_cast<int>(calculate_npars());
         if (method == "itau") {
             npars = npars - 1;
             if ((npars > 0) & (family_ != BicopFamily::student)) {

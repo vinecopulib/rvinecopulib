@@ -13,7 +13,7 @@ inline KernelBicop::KernelBicop()
     size_t m = 30;
     Eigen::VectorXd grid_points(m);
     for (size_t i = 0; i < m; ++i)
-        grid_points(i) = -3.25 + i * (6.25 / (double) m);
+        grid_points(i) = -3.25 + i * (6.5 / static_cast<double>(m - 1));
     interp_grid_ = tools_interpolation::InterpolationGrid(
         tools_stats::pnorm(grid_points),
         Eigen::MatrixXd::Constant(m, m, 1.0)  // independence
@@ -67,7 +67,7 @@ KernelBicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
 {
     set_parameters(parameters);
     Eigen::Matrix<double, Eigen::Dynamic, 2> U =
-        tools_stats::ghalton((size_t) 1e3, (size_t) 2);
+        tools_stats::ghalton(static_cast<size_t>(1e3), static_cast<size_t>(2));
     U.col(1) = hinv1(U);
     return tools_stats::pairwise_tau(U);
 }
