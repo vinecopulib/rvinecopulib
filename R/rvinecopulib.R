@@ -7,7 +7,7 @@
 #' models. Advantages over 'VineCopula' are a sleeker and more modern API, 
 #' improved performances, especially in high dimensions, nonparametric and 
 #' multi-parameter families. The 'rvinecopulib' package includes headers and 
-#' sources from the 'vinecopulib' C++ library (currently version 0.1.0). Thus 
+#' sources from the 'vinecopulib' C++ library (currently version 0.2.2). Thus 
 #' users do not need to install 'vinecopulib' itself in order to use 
 #' 'rvinecopulib'. Since their initial releases, 'vinecopulib' is licensed under 
 #' the MIT License, and 'rvinecopulib' is licensed under the GNU GPL version 3.
