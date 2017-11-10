@@ -1,4 +1,4 @@
-# vinecopulib 0.2.2.1.0 (November 9, 2017)
+# vinecopulib 0.2.2.1.0 (November 10, 2017)
 
 Release following the updates of vinecopulib to 0.2.1 and 0.2.2, see 
 https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.1 and
@@ -17,6 +17,9 @@ NEW FEATURES
    * allow `"loglik"` as selection criterion.
    
 BUG FIXES
+
+   * fixed formatting issues in `print.bicop()` and `summary.vinecop()` (#59, 
+     #62).
    
    * fixed `itau` estimation method for Frank copulas (only allowed for positive
      parameters).
