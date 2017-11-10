@@ -94,7 +94,8 @@ public:
 
     static void complete_matrix(
         Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> &mat,
-        size_t t_start);
+        size_t t_start,
+        size_t num_threads = 1);
 
 private:
     void check_if_quadratic() const;

@@ -23,7 +23,7 @@ Eigen::MatrixXd unaryExpr_or_nan(const Eigen::MatrixXd &x, T func)
     return x.unaryExpr([&func](double y) {
         return tools_stl::unaryFunc_or_nan(func, y);
     });
-};
+}
 
 template<typename T>
 Eigen::VectorXd binaryExpr_or_nan(
@@ -36,7 +36,7 @@ Eigen::VectorXd binaryExpr_or_nan(
                                                                        u1,
                                                                        u2);
                                });
-};
+}
 
 Eigen::MatrixXd nan_omit(const Eigen::MatrixXd &x);
 
@@ -58,10 +58,10 @@ Eigen::Matrix<double, Eigen::Dynamic, 2> expand_grid(
 );
 
 Eigen::MatrixXd read_matxd(const char *filename,
-                           int max_buffer_size = (int) 1e6);
+                           int max_buffer_size = static_cast<int>(1e6));
 
 Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> read_matxs(
-    const char *filename, int max_buffer_size = (int) 1e6);
+    const char *filename, int max_buffer_size = static_cast<int>(1e6));
 }
 
 }

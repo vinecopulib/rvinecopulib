@@ -108,7 +108,7 @@ inline Eigen::MatrixXd TllBicop::fit_local_likelihood(
             b = f1 / f0;
             if (method == "quadratic") {
                 zz2 = zz.cwiseProduct(kernels.replicate(1, 2)) /
-                      (f0 * (double) n);
+                      (f0 * static_cast<double>(n));
                 b = B * b;
                 S = (B * (zz.transpose() * zz2) * B -
                      b * b.transpose()).inverse();
@@ -192,7 +192,7 @@ inline double TllBicop::calculate_infl(const size_t &n,
     }
 
     double infl = gaussian_kernel_2d(Eigen::MatrixXd::Zero(1, 2))(0) * det_irB;
-    infl *= M.inverse()(0, 0) / ((double) n);
+    infl *= M.inverse()(0, 0) / static_cast<double>(n);
     return infl;
 }
 
@@ -204,7 +204,7 @@ inline void TllBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
     size_t m = 30;
     Eigen::VectorXd grid_points(m);
     for (size_t i = 0; i < m; ++i)
-        grid_points(i) = -3.25 + i * (6.5 / (double) (m - 1));
+        grid_points(i) = -3.25 + i * (6.5 / static_cast<double>(m - 1));
     grid_points = tools_stats::pnorm(grid_points);
 
     // expand the interpolation grid; a matrix with two columns where each row

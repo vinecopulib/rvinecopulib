@@ -49,13 +49,13 @@ inline void Optimizer::set_controls(double initial_trust_region,
 //!
 //! The defaults are
 //! ```
-//! initial_trust_region_ = 1e-3;
+//! initial_trust_region_ = 1e-4;
 //! final_trust_region_ = 1e3;
 //! maxeval_ = 1000;
 //! ```
 inline BobyqaControls::BobyqaControls()
 {
-    initial_trust_region_ = 1e-3;
+    initial_trust_region_ = 1e-4;
     final_trust_region_ = 1e3;
     maxeval_ = 1000;
 }
@@ -99,20 +99,20 @@ inline double
 BobyqaControls::get_initial_trust_region()
 {
     return initial_trust_region_;
-};
+}
 
 //! @return the final trust region.
 inline double
 BobyqaControls::get_final_trust_region()
 {
     return final_trust_region_;
-};
+}
 
 //! @return the maximal number of evaluations of the objective.
 inline int BobyqaControls::get_maxeval()
 {
     return maxeval_;
-};
+}
 
 //! @}
 
@@ -125,7 +125,7 @@ inline int BobyqaControls::get_maxeval()
 //! evaluates the objective function for maximum likelihood estimation.
 inline double mle_objective(void *f_data, long n, const double *x)
 {
-    ParBicopOptData *newdata = (ParBicopOptData *) f_data;
+    ParBicopOptData *newdata = static_cast<ParBicopOptData *>(f_data);
     ++newdata->objective_calls;
     Eigen::Map<const Eigen::VectorXd> par(&x[0], n);
     newdata->bicop->set_parameters(par);
@@ -136,7 +136,7 @@ inline double mle_objective(void *f_data, long n, const double *x)
 //! estimation.
 inline double pmle_objective(void *f_data, long n, const double *x)
 {
-    ParBicopOptData *newdata = (ParBicopOptData *) f_data;
+    ParBicopOptData *newdata = static_cast<ParBicopOptData *>(f_data);
     ++newdata->objective_calls;
     Eigen::VectorXd par = Eigen::VectorXd::Ones(n + 1);
     par(0) = newdata->par0;
@@ -188,8 +188,9 @@ inline Eigen::VectorXd Optimizer::optimize(Eigen::VectorXd initial_parameters,
             return objective(data, 1, &x);
         };
         auto result =
-            boost::math::tools::brent_find_minima(f, (double) lb_(0) + eps,
-                                                  (double) ub_(0) - eps,
+            boost::math::tools::brent_find_minima(f,
+                                                  static_cast<double>(lb_(0)) + eps,
+                                                  static_cast<double>(ub_(0)) - eps,
                                                   20);
         optimized_parameters(0) = result.first;
     }

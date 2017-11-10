@@ -8,6 +8,7 @@
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
 #include <vinecopulib/misc/tools_interface.hpp>
+#include <vinecopulib/misc/tools_parallel.hpp>
 #include <mutex>
 
 //! Tools for bivariate and vine copula modeling
@@ -300,7 +301,7 @@ Bicop::aic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
 inline double
 Bicop::bic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
 {
-    return -2 * loglik(u) + calculate_npars() * log(u.rows());
+    return -2 * loglik(u) + calculate_npars() * log(static_cast<double>(u.rows()));
 }
 
 //! Returns the actual number of parameters for parameteric families. For
@@ -346,7 +347,7 @@ inline BicopFamily Bicop::get_family() const
 inline std::string Bicop::get_family_name() const
 {
     return bicop_->get_family_name();
-};
+}
 
 inline int Bicop::get_rotation() const
 {
@@ -409,8 +410,7 @@ inline std::string Bicop::str() const
 inline BicopPtr Bicop::get_bicop() const
 {
     return bicop_;
-};
-
+}
 
 //! fits a bivariate copula (with fixed family) to data.
 //!
@@ -470,7 +470,9 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
 
         // Compute the selection criterion
         double new_criterion;
-        if (controls.get_selection_criterion() == "aic") {
+        if (controls.get_selection_criterion() == "loglik") {
+            new_criterion = -cop.loglik(data);
+        } else if (controls.get_selection_criterion() == "aic") {
             new_criterion = cop.aic(data);
         } else {
             new_criterion = cop.bic(data);
@@ -489,18 +491,10 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
             }
         }
     };
-
-    if (controls.get_num_threads() <= 1) {
-        for (auto &cop : bicops) {
-            fit_and_compare(cop);
-        }
-    } else {
-        tools_parallel::ThreadPool pool(controls.get_num_threads());
-        for (auto cop : bicops) {
-            pool.push(fit_and_compare, cop);
-        }
-        pool.join();
-    }
+    
+    tools_parallel::map_on_pool(fit_and_compare, 
+                                bicops, 
+                                controls.get_num_threads());
 }
 
 //! Data manipulations for rotated families

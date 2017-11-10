@@ -31,12 +31,12 @@ const family_bimap family_names =
 inline std::string get_family_name(BicopFamily family)
 {
     return family_names.left.at(family);
-};
+}
 
 //! converts a string name into a BicopFamily.
 //! @param family the family name.
 inline BicopFamily get_family_enum(std::string family)
 {
     return family_names.right.at(family);
-};
+}
 }

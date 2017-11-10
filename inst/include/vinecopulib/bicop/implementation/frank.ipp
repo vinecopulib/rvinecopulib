@@ -47,16 +47,22 @@ inline double FrankBicop::generator_derivative2(const double &u)
 
 inline Eigen::MatrixXd FrankBicop::tau_to_parameters(const double &tau)
 {
-    Eigen::VectorXd tau2 = Eigen::VectorXd::Constant(1, std::fabs(tau));
-    auto f = [&](const Eigen::VectorXd &v) {
-        return Eigen::VectorXd::Constant(1, std::fabs(parameters_to_tau(v)));
+    Eigen::VectorXd tau0 = Eigen::VectorXd::Constant(1, tau);
+    auto f = [&](const Eigen::VectorXd &par) {
+        return Eigen::VectorXd::Constant(1, parameters_to_tau(par));
     };
-    return tools_eigen::invert_f(tau2, f, -100 + 1e-6, 100);
+    return tools_eigen::invert_f(tau0, 
+                                 f, 
+                                 parameters_lower_bounds_(0) + 1e-6, 
+                                 parameters_upper_bounds_(0) - 1e-5);
 }
 
 inline double FrankBicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
 {
     double par = parameters(0);
+    if (std::fabs(par) < 1e-5) {
+        return 0.0;
+    }
     double tau = 1 - 4 / par;
     double d = debyen(std::fabs(par), 1) / std::fabs(par);
     if (par < 0) {
@@ -135,7 +141,7 @@ inline double debyen(const double x, const int n)
         };
 
         /* constrained to the list of nzetan[] given above */
-        if ((unsigned long) n >= sizeof(nzetan) / sizeof(double))
+        if (static_cast<unsigned long>(n) >= sizeof(nzetan) / sizeof(double))
             return -1.;
 
         /* n!*zeta(n) is the integral for x=infinity , 27.1.3 */
@@ -146,8 +152,8 @@ inline double debyen(const double x, const int n)
         */
         static int kLim[] = {0, 0, 0, 13, 10, 8, 7, 6, 5, 5, 4, 4, 4, 3};
 
-        const int kmax = ((unsigned long) x < sizeof(kLim) / sizeof(int))
-                         ? kLim[(int) x] : 3;
+        const int kmax = (static_cast<unsigned long>(x) < sizeof(kLim) / sizeof(int))
+                         ? kLim[static_cast<int>(x)] : 3;
         /* Abramowitz Stegun 27.1.2 */
         int k;
         for (k = 1; k <= kmax; k++) {
@@ -258,6 +264,6 @@ inline double debyen(const double x, const int n)
                 break;
         }
         sum += 1. / n - x / (2 * (1 + n));
-        return sum * pow(x, (double) n);
+        return sum * pow(x, static_cast<double>(n));
     }
 }

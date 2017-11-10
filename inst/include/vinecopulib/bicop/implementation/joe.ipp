@@ -70,11 +70,14 @@ inline Eigen::VectorXd JoeBicop::hinv1(
 // link between Kendall's tau and the par_bicop parameter
 inline Eigen::MatrixXd JoeBicop::tau_to_parameters(const double &tau)
 {
-    Eigen::VectorXd tau2 = Eigen::VectorXd::Constant(1, std::fabs(tau));
+    Eigen::VectorXd tau0 = Eigen::VectorXd::Constant(1, std::fabs(tau));
     auto f = [&](const Eigen::VectorXd &v) {
         return Eigen::VectorXd::Constant(1, std::fabs(parameters_to_tau(v)));
     };
-    return tools_eigen::invert_f(tau2, f, 1 + 1e-6, 100);
+    return tools_eigen::invert_f(tau0, 
+                                 f, 
+                                 parameters_lower_bounds_(0) + 1e-6, 
+                                 parameters_upper_bounds_(0) - 1e-6);
 }
 
 inline double JoeBicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
