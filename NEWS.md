@@ -17,6 +17,9 @@ NEW FEATURES
    * allow `"loglik"` as selection criterion.
    
 BUG FIXES
+
+   * fixed formatting issues in `print.bicop()` and `summary.vinecop()` (#59, 
+     #62).
    
    * fixed `itau` estimation method for Frank copulas (only allowed for positive
      parameters).
