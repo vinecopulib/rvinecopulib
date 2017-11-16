@@ -220,7 +220,8 @@ print.bicop_dist <- function(x, ...) {
         "family = ", x$family,
         ", rotation = ", x$rotation,
         ", parameters = ", ifelse(length(x$parameters) > 1, 
-                                  paste0(x$parameters, collapse = ", "),
+                                  paste(round(x$parameters, 2), 
+                                        collapse = ", "),
                                   x$parameters),
         sep = "")
 }
