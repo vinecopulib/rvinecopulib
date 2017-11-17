@@ -45,6 +45,21 @@ inline double FrankBicop::generator_derivative2(const double &u)
            std::pow(boost::math::expm1(theta * u) * std::exp(-theta * u / 2), 2);
 }
 
+inline Eigen::VectorXd FrankBicop::pdf(
+    const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
+)
+{
+    double theta = static_cast<double>(parameters_(0));
+    auto f = [theta](const double &u1, const double &u2) {
+        return (theta*(std::exp(theta)-1.0) *
+            std::exp(theta*u2+theta*u1+theta)) /
+            std::pow(std::exp(theta*u2+theta*u1)
+                     - std::exp(theta*u2+theta)
+                     - std::exp(theta*u1+theta)+std::exp(theta), 2.0);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, f);
+}
+
 inline Eigen::MatrixXd FrankBicop::tau_to_parameters(const double &tau)
 {
     Eigen::VectorXd tau0 = Eigen::VectorXd::Constant(1, tau);
@@ -74,7 +89,10 @@ inline double FrankBicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
 
 inline Eigen::VectorXd FrankBicop::get_start_parameters(const double tau)
 {
-    return tau_to_parameters(tau);
+    Eigen::VectorXd par = tau_to_parameters(tau);
+    par = par.cwiseMax(parameters_lower_bounds_);
+    par = par.cwiseMin(parameters_upper_bounds_);
+    return par;
 }
 }
 

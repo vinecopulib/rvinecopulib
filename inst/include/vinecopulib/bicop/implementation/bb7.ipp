@@ -51,6 +51,52 @@ inline double Bb7Bicop::generator_derivative2(const double &u)
     return res * (theta - 1 + (1 + delta * theta) * tmp);
 }
 
+
+inline Eigen::VectorXd Bb7Bicop::pdf(
+    const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
+)
+{
+    double theta = static_cast<double>(parameters_(0));
+    double delta = static_cast<double>(parameters_(1));
+
+    auto f = [theta, delta](const double &u1, const double &u2) {
+
+        double t1 = 1.0 - u1;
+        double t2 = std::pow(t1,theta);
+        double t3 = 1.0 - t2;
+        double t4 = std::pow(t3,-delta);
+        double t5 = 1.0 - u2;
+        double t6 = std::pow(t5,theta);
+        double t7 = 1.0 - t6;
+        double t8 = std::pow(t7,-delta);
+        double t9 = t4 + t8 - 1.0;
+        double t11 = std::pow(t9,-1.0/delta);
+        double t12 = 1.0 - t11;
+        double t14 = std::pow(t12,1.0/theta);
+        double t15 = t11 * t11;
+        double t16 = t14 * t15;
+        double t18 = 1.0 / t5;
+        double t20 = 1.0 / t7;
+        double t23 = t9 * t9;
+        double t24 = 1.0 / t23;
+        double t25 = t12 * t12;
+        double t27 = t24 / t25;
+        double t30 = t2 / t1;
+        double t31 = 1.0 / t3;
+        double t32 = t30 * t31;
+        double t35 = t14 * t11;
+        double t37 = t6 * theta;
+        double t42 = 1.0 / t12;
+        double t54 = t37 * t18 * t20;
+
+        return - t16 * t8 * t6 * t18 * t20 * t27 * t4 * t32
+               + t35 * t8 * t37 * t18 * t20 * t24 * t4 * t30 * t31 * t42
+               + t35 * t4 * t30 * t31 * t24 * t42 * t8 * delta * t54
+               + t16 * t4 * t32 * t27 * t8 * t54;
+    };
+    return tools_eigen::binaryExpr_or_nan(u, f);
+}
+
 inline double Bb7Bicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
 {
     double theta = parameters(0);

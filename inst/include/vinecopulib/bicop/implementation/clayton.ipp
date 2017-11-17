@@ -5,6 +5,7 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/misc/tools_stl.hpp>
+#include <boost/math/special_functions/log1p.hpp>
 
 namespace vinecopulib {
 inline ClaytonBicop::ClaytonBicop()
@@ -41,6 +42,20 @@ inline double ClaytonBicop::generator_derivative2(const double &u)
     return (1 + theta) * std::pow(u, -2 - theta);
 }
 
+inline Eigen::VectorXd ClaytonBicop::pdf(
+    const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
+)
+{
+    double theta = static_cast<double>(parameters_(0));
+    auto f = [theta](const double &u1, const double &u2) {
+        double temp = boost::math::log1p(theta)-(1.0+theta)*std::log(u1*u2);
+        temp = temp - (2.0+1.0/(theta))*std::log(std::pow(u1,-theta) +
+                                                     std::pow(u2,-theta)-1.0);
+        return std::exp(temp);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, f);
+}
+
 inline Eigen::VectorXd ClaytonBicop::hinv1(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
@@ -75,6 +90,9 @@ ClaytonBicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
 
 inline Eigen::VectorXd ClaytonBicop::get_start_parameters(const double tau)
 {
-    return tau_to_parameters(tau);
+    Eigen::VectorXd par = tau_to_parameters(tau);
+    par = par.cwiseMax(parameters_lower_bounds_);
+    par = par.cwiseMin(parameters_upper_bounds_);
+    return par;
 }
 }
