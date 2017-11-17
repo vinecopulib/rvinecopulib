@@ -219,7 +219,10 @@ print.bicop_dist <- function(x, ...) {
     cat("Bivariate copula ('bicop_dist'): ",
         "family = ", x$family,
         ", rotation = ", x$rotation,
-        ", parameters = ", x$parameters,
+        ", parameters = ", ifelse(length(x$parameters) > 1, 
+                                  paste(round(x$parameters, 2), 
+                                        collapse = ", "),
+                                  x$parameters),
         sep = "")
 }
 
