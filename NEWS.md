@@ -1,4 +1,4 @@
-# vinecopulib 0.2.3.1.0 (November 17, 2017)
+# vinecopulib 0.2.3.1.0 (November 18, 2017)
 
 Release following the update of vinecopulib to 0.2.3, see 
 https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.3. The most 
@@ -6,15 +6,17 @@ relevant changes are summarized below.
 
 NEW FEATURES
 
-   * direct implementation of archimedean pdfs
+   * faster implementation of Archimedean pdfs.
 
 BUG FIXES
 
-   * add safeguards for bicop/vinecop when not enough data
+   * add safeguards for `bicop()`/`vinecop()` called with 
+     insufficient data.
 
-   * fix segfault problem in complete_matrix()
+   * fix segfault issue in completing a truncated vine fit.
 
-   * make get_start_parameters() respect the bounds
+   * make `par_method = "itau"` respect the parameter bounds.
+
 
 # vinecopulib 0.2.2.1.0 (November 9, 2017)
 
