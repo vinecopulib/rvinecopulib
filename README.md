@@ -12,11 +12,9 @@ building blocks (see e.g., Aas et al., 2009). You can find a comprehensive
 list of publications and other materials on [vine-copula.org](http://www.statistics.ma.tum.de/en/research/vine-copula-models/).
 
 This package is the [R](https://cran.r-project.org/) API to the C++ library 
-[vinecopulib](https://github.com/vinecopulib/vinecopulib), a C++ library for 
-vine copula models based on
-* [Boost](http://eigen.tuxfamily.org/index.php?title=Main_Page), 
-* [Eigen](http://www.boost.org/),
-* [NLopt](http://ab-initio.mit.edu/wiki/index.php/NLopt). 
+[vinecopulib](https://github.com/vinecopulib/vinecopulib), a header-only 
+C++ library for vine copula models based on [Boost](http://eigen.tuxfamily.org/index.php?title=Main_Page) and 
+[Eigen](http://www.boost.org/). 
 
 It provides high-performance implementations of the core features of the popular
 [VineCopula R library](https://github.com/tnagler/VineCopula), in particular

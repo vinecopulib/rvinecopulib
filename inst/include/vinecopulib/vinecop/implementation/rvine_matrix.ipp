@@ -404,8 +404,11 @@ inline void RVineMatrix::complete_matrix(
                 if (ned_set.size() == 2) {
                     // allowed entry in column e0 is the element of the
                     // conditioned set that is not contained in column e0
-                    mat(t, e0) = set_diff(ned_set, all_indices[e0])[0];
-                    break;  // continue with next column
+                    auto new_ind = set_diff(ned_set, all_indices[e0]);
+                    if (new_ind.size() == 1) {
+                        mat(t, e0) = new_ind[0];
+                        break;  // continue with next column
+                    }
                 }
             }
         };

@@ -219,9 +219,9 @@ select both parameters.</p>
 <span class='fu'>summary</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model
 #&gt; -------------------------------
 #&gt;  tree edge conditioned conditioning family rotation parameters
-#&gt;     2    1        3, 2            1    bb1       90       3, 2
-#&gt;    NA   NA          NA           NA   &lt;NA&gt;       NA         NA
-#&gt;    NA   NA          NA           NA   &lt;NA&gt;       NA         NA</div><div class='input'>
+#&gt;     1    1        3, 1                 bb1       90       3, 2
+#&gt;     1    2        2, 1                 bb1       90       3, 2
+#&gt;     2    1        3, 2            1    bb1       90       3, 2</div><div class='input'>
 <span class='co'># get some data</span>
 <span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>sapply</span>(<span class='fl'>1</span>:<span class='fl'>3</span>, <span class='kw'>function</span>(<span class='no'>i</span>) <span class='fu'>runif</span>(<span class='fl'>50</span>))
 
@@ -236,9 +236,9 @@ select both parameters.</p>
 #&gt; 3-dimensional vine copula model fitnobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   
 #&gt; --------------------------------------------------------------------------------------------
 #&gt;  tree edge conditioned conditioning family rotation parameters
-#&gt;     2    1        1, 3            2  indep        0           
-#&gt;    NA   NA          NA           NA   &lt;NA&gt;       NA         NA
-#&gt;    NA   NA          NA           NA   &lt;NA&gt;       NA         NA</div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 6
+#&gt;     1    1        1, 3               indep        0           
+#&gt;     1    2        2, 3               indep        0           
+#&gt;     2    1        1, 2            3  indep        0           </div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 6
 #&gt;  $ pair_copulas:List of 2
 #&gt;   ..$ :List of 2
 #&gt;   .. ..$ :List of 4
@@ -248,9 +248,9 @@ select both parameters.</p>
 #&gt;   ..$ :List of 1
 #&gt;   .. ..$ :List of 4
 #&gt;   .. .. ..- attr(*, "class")= chr [1:2] "bicop" "bicop_dist"
-#&gt;  $ matrix      : num [1:3, 1:3] 2 3 1 3 2 0 3 0 0
+#&gt;  $ matrix      : num [1:3, 1:3] 3 2 1 3 2 0 3 0 0
 #&gt;  $ npars       : num 0
-#&gt;  $ data        : num [1:50, 1:3] 0.8319 0.2027 0.1387 0.0661 0.0431 ...
+#&gt;  $ data        : num [1:50, 1:3] 0.969 0.976 0.77 0.731 0.833 ...
 #&gt;  $ controls    :List of 9
 #&gt;   ..$ family_set   : chr [1:11] "indep" "gaussian" "clayton" "gumbel" ...
 #&gt;   ..$ par_method   : chr "mle"

@@ -451,50 +451,53 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
 {
     using namespace tools_select;
     data = tools_eigen::nan_omit(data);
-    if (data.rows() == 1) {
-        throw std::runtime_error("data must have more than one (non-nan) row");
-    }
-    rotation_ = 0;
-    data = cut_and_rotate(data);
-    std::vector <Bicop> bicops = create_candidate_bicops(data, controls);
 
-    // Estimate all models and select the best one using the
-    // selection_criterion
-    double fitted_criterion = 1e6;
-    std::mutex m;
-    auto fit_and_compare = [&](Bicop cop) {
-        tools_interface::check_user_interrupt();
+    if (data.rows() < 10) {
+        bicop_ = AbstractBicop::create();
+        rotation_ = 0;
+    } else {
+        rotation_ = 0;
+        data = cut_and_rotate(data);
+        std::vector <Bicop> bicops = create_candidate_bicops(data, controls);
 
-        // Estimate the model
-        cop.fit(data, controls);
+        // Estimate all models and select the best one using the
+        // selection_criterion
+        double fitted_criterion = 1e6;
+        std::mutex m;
+        auto fit_and_compare = [&](Bicop cop) {
+            tools_interface::check_user_interrupt();
 
-        // Compute the selection criterion
-        double new_criterion;
-        if (controls.get_selection_criterion() == "loglik") {
-            new_criterion = -cop.loglik(data);
-        } else if (controls.get_selection_criterion() == "aic") {
-            new_criterion = cop.aic(data);
-        } else {
-            new_criterion = cop.bic(data);
-        }
+            // Estimate the model
+            cop.fit(data, controls);
 
-        // the following block modifies thread-external variables
-        // and is thus shielded by a mutex
-        {
-            std::lock_guard <std::mutex> lk(m);
-            // If the new model is better than the current one,
-            // then replace the current model by the new one
-            if (new_criterion < fitted_criterion) {
-                fitted_criterion = new_criterion;
-                bicop_ = cop.get_bicop();
-                rotation_ = cop.get_rotation();
+            // Compute the selection criterion
+            double new_criterion;
+            if (controls.get_selection_criterion() == "loglik") {
+                new_criterion = -cop.loglik(data);
+            } else if (controls.get_selection_criterion() == "aic") {
+                new_criterion = cop.aic(data);
+            } else {
+                new_criterion = cop.bic(data);
             }
-        }
-    };
-    
-    tools_parallel::map_on_pool(fit_and_compare, 
-                                bicops, 
-                                controls.get_num_threads());
+
+            // the following block modifies thread-external variables
+            // and is thus shielded by a mutex
+            {
+                std::lock_guard <std::mutex> lk(m);
+                // If the new model is better than the current one,
+                // then replace the current model by the new one
+                if (new_criterion < fitted_criterion) {
+                    fitted_criterion = new_criterion;
+                    bicop_ = cop.get_bicop();
+                    rotation_ = cop.get_rotation();
+                }
+            }
+        };
+
+        tools_parallel::map_on_pool(fit_and_compare,
+                                    bicops,
+                                    controls.get_num_threads());
+    }
 }
 
 //! Data manipulations for rotated families
