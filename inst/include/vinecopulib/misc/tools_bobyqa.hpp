@@ -371,7 +371,7 @@ inline void altmov(
         cauchy = csave;
     }
     L200:;
-};
+}
 
 template<class Function>
 void prelim(
@@ -399,7 +399,7 @@ void prelim(
 )
 {
     /* Local variables */
-    long ih, nfm;
+    long nfm;
     long nfx = 0, ipt = 0, jpt = 0;
     double fbeg = 0, diff = 0, temp = 0, stepa = 0, stepb = 0;
     long itemp;
@@ -540,7 +540,7 @@ void prelim(
                 bmat[npt + nfm + nfm * bmat_dim1] = -0.5 * rhosq;
             }
         } else if (nf >= n + 2) {
-            ih = nfx * (nfx + 1) / 2;
+            long ih = nfx * (nfx + 1) / 2;
             temp = (f - fbeg) / stepb;
             diff = stepb - stepa;
             hq[ih] = 2.0 * (temp - gopt[nfx]) / diff;
@@ -574,7 +574,7 @@ void prelim(
         /*     the initial quadratic model. */
 
     } else {
-        ih = ipt * (ipt - 1) / 2 + jpt;
+        long ih = ipt * (ipt - 1) / 2 + jpt;
         zmat[nfx * zmat_dim1 + 1] = recip;
         zmat[nf + nfx * zmat_dim1] = recip;
         zmat[ipt + 1 + nfx * zmat_dim1] = -recip;
@@ -591,7 +591,7 @@ void prelim(
 inline double less_abs(double lhs, double rhs)
 {
     return std::abs(lhs) < std::abs(rhs);
-};
+}
 
 inline void update(
     const long n,
@@ -636,13 +636,13 @@ inline void update(
 
     for (long j = 2; j <= nptm; ++j) {
         if (std::abs(zmat[knew + j * zmat_dim1]) > ztest) {
-            const double temp = std::hypot(zmat[knew + zmat_dim1],
-                                           zmat[knew + j * zmat_dim1]);
+            double temp = std::hypot(zmat[knew + zmat_dim1],
+                                     zmat[knew + j * zmat_dim1]);
             const double tempa = zmat[knew + zmat_dim1] / temp;
             const double tempb = zmat[knew + j * zmat_dim1] / temp;
             for (long i = 1; i <= npt; ++i) {
-                const double temp = tempa * zmat[i + zmat_dim1] +
-                                    tempb * zmat[i + j * zmat_dim1];
+                temp = tempa * zmat[i + zmat_dim1] +
+                       tempb * zmat[i + j * zmat_dim1];
                 zmat[i + j * zmat_dim1] =
                     tempa * zmat[i + j * zmat_dim1] -
                     tempb * zmat[i + zmat_dim1];
@@ -664,8 +664,8 @@ inline void update(
 
     /*     Complete the updating of ZMAT. */
     const double temp = std::sqrt(denom);
-    const double tempb = zmat[knew + zmat_dim1] / temp;
-    const double tempa = tau / temp;
+    double tempb = zmat[knew + zmat_dim1] / temp;
+    double tempa = tau / temp;
     for (long i = 1; i <= npt; ++i) {
         zmat[i + zmat_dim1] =
             tempa * zmat[i + zmat_dim1] - tempb * vlag[i];
@@ -676,8 +676,8 @@ inline void update(
     for (long j = 1; j <= n; ++j) {
         const long jp = npt + j;
         w[jp] = bmat[knew + j * bmat_dim1];
-        const double tempa = (alpha * vlag[jp] - tau * w[jp]) / denom;
-        const double tempb = (-(beta) * w[jp] - tau * vlag[jp]) / denom;
+        tempa = (alpha * vlag[jp] - tau * w[jp]) / denom;
+        tempb = (-(beta) * w[jp] - tau * vlag[jp]) / denom;
         for (long i = 1; i <= jp; ++i) {
             bmat[i + j * bmat_dim1] =
                 bmat[i + j * bmat_dim1] + tempa * vlag[i] +
@@ -688,7 +688,7 @@ inline void update(
             }
         }
     }
-};
+}
 
 inline void trsbox(
     const long n,
@@ -1164,7 +1164,7 @@ inline void trsbox(
         hred[i] = hs[i];
     }
     goto L120;
-};
+}
 
 template<class Function>
 double bobyqb(
@@ -2143,7 +2143,7 @@ std::pair<Eigen::VectorXd, double> bobyqa(
     try {
         optimum = tools_bobyqa::impl(function, n, npt, x, xl, xu,
                                      rhobeg, rhoend, maxfun, w);
-        for (size_t i = 0; i < (size_t) n; i++) {
+        for (size_t i = 0; i < static_cast<size_t>(n); i++) {
             optimized_parameters(i) = x[i];
         }
     } catch (std::invalid_argument err) {

@@ -7,27 +7,27 @@
 #include <vinecopulib/misc/tools_stl.hpp>
 
 namespace vinecopulib {
-inline Eigen::VectorXd ArchimedeanBicop::pdf(
-    const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
-)
-{
-    auto f = [this](const double &u, const double &v) {
-        double temp = generator_inv(generator(u) + generator(v));
-        temp = log(std::abs(generator_derivative2(temp))) - 
-            3.0 * log(std::abs(generator_derivative(temp)));
-        temp += std::log(std::abs(generator_derivative(u)));
-        temp += std::log(std::abs(generator_derivative(v)));
-        return std::exp(temp);
-    };
-    return tools_eigen::binaryExpr_or_nan(u, f);
-}
+//inline Eigen::VectorXd ArchimedeanBicop::pdf(
+//    const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
+//)
+//{
+//    auto f = [this](const double &u1, const double &u2) {
+//        double temp = generator_inv(generator(u1) + generator(u2));
+//        temp = log(std::abs(generator_derivative2(temp))) -
+//            3.0 * log(std::abs(generator_derivative(temp)));
+//        temp += std::log(std::abs(generator_derivative(u1)));
+//        temp += std::log(std::abs(generator_derivative(u2)));
+//        return std::exp(temp);
+//    };
+//    return tools_eigen::binaryExpr_or_nan(u, f);
+//}
 
 inline Eigen::VectorXd ArchimedeanBicop::cdf(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {
-    auto f = [this](const double &u, const double &v) {
-        return generator_inv(generator(u) + generator(v));
+    auto f = [this](const double &u1, const double &u2) {
+        return generator_inv(generator(u1) + generator(u2));
     };
     return tools_eigen::binaryExpr_or_nan(u, f);
 }
@@ -36,9 +36,9 @@ inline Eigen::VectorXd ArchimedeanBicop::hfunc1(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {
-    auto f = [this](const double &u, const double &v) {
-        double temp = generator_inv(generator(u) + generator(v));
-        return generator_derivative(u) / generator_derivative(temp);
+    auto f = [this](const double &u1, const double &u2) {
+        double temp = generator_inv(generator(u1) + generator(u2));
+        return generator_derivative(u1) / generator_derivative(temp);
     };
     return tools_eigen::binaryExpr_or_nan(u, f);
 }

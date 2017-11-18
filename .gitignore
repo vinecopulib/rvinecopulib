@@ -34,3 +34,6 @@ vignettes/*.pdf
 *.gcno
 # CLion stuff
 *.idea
+# Autoconf files
+config.log
+config.status

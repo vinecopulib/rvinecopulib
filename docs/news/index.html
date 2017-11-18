@@ -83,6 +83,38 @@
     </div>
 
     <div class="contents">
+    <div id="vinecopulib-0-2-3-1-0-november-18-2017" class="section level1">
+<h1 class="hasAnchor">
+<a href="#vinecopulib-0-2-3-1-0-november-18-2017" class="anchor"></a>vinecopulib 0.2.3.1.0 (November 18, 2017)</h1>
+<p>Release following the update of vinecopulib to 0.2.3, see <a href="https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.3" class="uri">https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.3</a>. The most relevant changes are summarized below.</p>
+<p>NEW FEATURES</p>
+<ul>
+<li>faster implementation of Archimedean pdfs.</li>
+</ul>
+<p>BUG FIXES</p>
+<ul>
+<li><p>add safeguards for <code><a href="../reference/bicop.html">bicop()</a></code>/<code><a href="../reference/vinecop.html">vinecop()</a></code> called with insufficient data.</p></li>
+<li><p>fix segfault issue in completing a truncated vine fit.</p></li>
+<li><p>make <code>par_method = "itau"</code> respect the parameter bounds.</p></li>
+</ul>
+</div>
+    <div id="vinecopulib-0-2-2-1-0-november-9-2017" class="section level1">
+<h1 class="hasAnchor">
+<a href="#vinecopulib-0-2-2-1-0-november-9-2017" class="anchor"></a>vinecopulib 0.2.2.1.0 (November 9, 2017)</h1>
+<p>Release following the updates of vinecopulib to 0.2.1 and 0.2.2, see <a href="https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.1" class="uri">https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.1</a> and <a href="https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.2" class="uri">https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.2</a>. The most relevant changes are summarized below.</p>
+<p>NEW FEATURES</p>
+<ul>
+<li><p>faster vine copula estimation and selection by parallelizing further sub-routines.</p></li>
+<li><p>enhanced cross-platform compatibility.</p></li>
+<li><p>increased precision of maximum-likelihood estimators.</p></li>
+<li><p>allow <code>"loglik"</code> as selection criterion.</p></li>
+</ul>
+<p>BUG FIXES</p>
+<ul>
+<li><p>fixed <code>itau</code> estimation method for Frank copulas (only allowed for positive parameters).</p></li>
+<li><p>make interpolation grid symmetric around (0.5, 0.5) again (for <code>"tll"</code> estimator).</p></li>
+</ul>
+</div>
     <div id="vinecopulib-0-2-0-1-0-october-30-2017" class="section level1">
 <h1 class="hasAnchor">
 <a href="#vinecopulib-0-2-0-1-0-october-30-2017" class="anchor"></a>vinecopulib 0.2.0.1.0 (October 30, 2017)</h1>
@@ -130,6 +162,8 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
+        <li><a href="#vinecopulib-0-2-3-1-0-november-18-2017">0.2.3.1.0</a></li>
+        <li><a href="#vinecopulib-0-2-2-1-0-november-9-2017">0.2.2.1.0</a></li>
         <li><a href="#vinecopulib-0-2-0-1-0-october-30-2017">0.2.0.1.0</a></li>
         <li><a href="#rvinecopulib-0-1-0-1-1-september-1-2017">0.1.0.1.1</a></li>
         <li><a href="#rvinecopulib-0-1-0-1-0-august-29-2017">0.1.0.1.0</a></li>

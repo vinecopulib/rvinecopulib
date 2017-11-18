@@ -113,8 +113,8 @@ summary.vinecop_dist <- function(object, ...) {
                     "conditioned", "conditioning", 
                     "family", "rotation", "parameters")
     k <- 1
-    for (t in n_trees) {
-        for (e in seq.int(d - t)) {
+    for (t in seq_len(n_trees)) {
+        for (e in seq_len(d - t)) {
             mdf$tree[k] <- t
             mdf$edge[k] <- e
             mdf$conditioned[k]  <- list(c(mat[d - e + 1, e], mat[t, e]))

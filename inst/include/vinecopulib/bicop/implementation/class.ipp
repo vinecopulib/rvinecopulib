@@ -8,6 +8,7 @@
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
 #include <vinecopulib/misc/tools_interface.hpp>
+#include <vinecopulib/misc/tools_parallel.hpp>
 #include <mutex>
 
 //! Tools for bivariate and vine copula modeling
@@ -300,7 +301,7 @@ Bicop::aic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
 inline double
 Bicop::bic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
 {
-    return -2 * loglik(u) + calculate_npars() * log(u.rows());
+    return -2 * loglik(u) + calculate_npars() * log(static_cast<double>(u.rows()));
 }
 
 //! Returns the actual number of parameters for parameteric families. For
@@ -346,7 +347,7 @@ inline BicopFamily Bicop::get_family() const
 inline std::string Bicop::get_family_name() const
 {
     return bicop_->get_family_name();
-};
+}
 
 inline int Bicop::get_rotation() const
 {
@@ -409,8 +410,7 @@ inline std::string Bicop::str() const
 inline BicopPtr Bicop::get_bicop() const
 {
     return bicop_;
-};
-
+}
 
 //! fits a bivariate copula (with fixed family) to data.
 //!
@@ -451,55 +451,52 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
 {
     using namespace tools_select;
     data = tools_eigen::nan_omit(data);
-    if (data.rows() == 1) {
-        throw std::runtime_error("data must have more than one (non-nan) row");
-    }
-    rotation_ = 0;
-    data = cut_and_rotate(data);
-    std::vector <Bicop> bicops = create_candidate_bicops(data, controls);
 
-    // Estimate all models and select the best one using the
-    // selection_criterion
-    double fitted_criterion = 1e6;
-    std::mutex m;
-    auto fit_and_compare = [&](Bicop cop) {
-        tools_interface::check_user_interrupt();
-
-        // Estimate the model
-        cop.fit(data, controls);
-
-        // Compute the selection criterion
-        double new_criterion;
-        if (controls.get_selection_criterion() == "aic") {
-            new_criterion = cop.aic(data);
-        } else {
-            new_criterion = cop.bic(data);
-        }
-
-        // the following block modifies thread-external variables
-        // and is thus shielded by a mutex
-        {
-            std::lock_guard <std::mutex> lk(m);
-            // If the new model is better than the current one,
-            // then replace the current model by the new one
-            if (new_criterion < fitted_criterion) {
-                fitted_criterion = new_criterion;
-                bicop_ = cop.get_bicop();
-                rotation_ = cop.get_rotation();
-            }
-        }
-    };
-
-    if (controls.get_num_threads() <= 1) {
-        for (auto &cop : bicops) {
-            fit_and_compare(cop);
-        }
+    if (data.rows() < 10) {
+        bicop_ = AbstractBicop::create();
+        rotation_ = 0;
     } else {
-        tools_parallel::ThreadPool pool(controls.get_num_threads());
-        for (auto cop : bicops) {
-            pool.push(fit_and_compare, cop);
-        }
-        pool.join();
+        rotation_ = 0;
+        data = cut_and_rotate(data);
+        std::vector <Bicop> bicops = create_candidate_bicops(data, controls);
+
+        // Estimate all models and select the best one using the
+        // selection_criterion
+        double fitted_criterion = 1e6;
+        std::mutex m;
+        auto fit_and_compare = [&](Bicop cop) {
+            tools_interface::check_user_interrupt();
+
+            // Estimate the model
+            cop.fit(data, controls);
+
+            // Compute the selection criterion
+            double new_criterion;
+            if (controls.get_selection_criterion() == "loglik") {
+                new_criterion = -cop.loglik(data);
+            } else if (controls.get_selection_criterion() == "aic") {
+                new_criterion = cop.aic(data);
+            } else {
+                new_criterion = cop.bic(data);
+            }
+
+            // the following block modifies thread-external variables
+            // and is thus shielded by a mutex
+            {
+                std::lock_guard <std::mutex> lk(m);
+                // If the new model is better than the current one,
+                // then replace the current model by the new one
+                if (new_criterion < fitted_criterion) {
+                    fitted_criterion = new_criterion;
+                    bicop_ = cop.get_bicop();
+                    rotation_ = cop.get_rotation();
+                }
+            }
+        };
+
+        tools_parallel::map_on_pool(fit_and_compare,
+                                    bicops,
+                                    controls.get_num_threads());
     }
 }
 

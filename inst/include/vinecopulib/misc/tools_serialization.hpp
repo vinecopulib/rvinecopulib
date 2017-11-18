@@ -38,7 +38,7 @@ inline boost::property_tree::ptree matrix_to_ptree(
     }
 
     return output;
-};
+}
 
 //! conversion from boost::property_tree::ptree to Eigen::Matrix
 //!
@@ -78,14 +78,14 @@ inline Eigen::Matrix <T, Eigen::Dynamic, Eigen::Dynamic> ptree_to_matrix(
     }
 
     return matrix.cast<T>();
-};
+}
 
 inline boost::property_tree::ptree json_to_ptree(const char *filename)
 {
     boost::property_tree::ptree output;
     boost::property_tree::read_json(filename, output);
     return output;
-};
+}
 
 }
 

@@ -5,6 +5,7 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/misc/tools_stl.hpp>
+#include <vinecopulib/misc/tools_parallel.hpp>
 
 namespace vinecopulib {
 //! instantiates an RVineMatrix object.
@@ -377,7 +378,8 @@ inline Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> relabel_elements(
 //!     checks in `RVineMatrix()`).
 inline void RVineMatrix::complete_matrix(
     Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> &mat,
-    size_t t_start)
+    size_t t_start,
+    size_t num_threads)
 {
     using namespace tools_stl;
     size_t d = mat.cols();
@@ -393,20 +395,27 @@ inline void RVineMatrix::complete_matrix(
         }
 
         // fill row t column by column
-        for (size_t e0 = 0; e0 < d - t; e0++) {
+        auto complete_column = [&] (size_t e0) {
             // check all columns to the right of e0
             for (size_t e1 = e0 + 1; e1 < d - t; e1++) {
                 // get possible conditioned sets joining edges e0 and e1
                 auto ned_set = set_sym_diff(all_indices[e0], all_indices[e1]);
                 // a valid conditioned set has two elements
                 if (ned_set.size() == 2) {
-                    // allowed entry in column e0 is the element of the 
+                    // allowed entry in column e0 is the element of the
                     // conditioned set that is not contained in column e0
-                    mat(t, e0) = set_diff(ned_set, all_indices[e0])[0];
-                    break;  // continue with next column
+                    auto new_ind = set_diff(ned_set, all_indices[e0]);
+                    if (new_ind.size() == 1) {
+                        mat(t, e0) = new_ind[0];
+                        break;  // continue with next column
+                    }
                 }
             }
-        }
+        };
+        
+        tools_parallel::map_on_pool(complete_column, 
+                                    seq_int(0, d - t), 
+                                    num_threads);
     }
 }
 }

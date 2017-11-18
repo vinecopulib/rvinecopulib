@@ -54,6 +54,7 @@ expand_family <- function(family) {
         "twoparametric" = family_set_twopar,
         "parametric"    = family_set_parametric,
         "nonparametric" = family_set_nonparametric,
+        "itau"          = family_set_itau,
         "all"           = family_set_all,
         family  # default is no expansion
     )

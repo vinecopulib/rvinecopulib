@@ -14,32 +14,25 @@
 // interface specific headers
 #ifdef INTERFACED_FROM_R
     #include <RcppThread.h>
+    #define cout Rcout
+    namespace std {
+        extern RcppThread::RPrinter Rcout;
+    }
 #else
-
     #include <iostream>
-
 #endif
 
 // parallel backend
 #ifdef INTERFACED_FROM_R
-namespace tools_parallel { typedef RcppThread::ThreadPool ThreadPool; }
+    namespace tools_parallel { 
+        typedef RcppThread::ThreadPool ThreadPool; 
+    }
 #else
-
-    #include <vinecopulib/misc/tools_parallel.hpp>
-
+    #include <vinecopulib/misc/tools_thread.hpp>
 #endif
 
 namespace vinecopulib {
 namespace tools_interface {
-
-inline void print(std::string text)
-{
-#ifndef INTERFACED_FROM_R
-    std::cout << text;
-#else
-    RcppThread::Rcout << text;
-#endif
-}
 
 inline void check_user_interrupt(bool do_check = true)
 {

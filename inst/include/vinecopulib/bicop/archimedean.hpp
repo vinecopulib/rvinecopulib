@@ -20,8 +20,8 @@ namespace vinecopulib {
 class ArchimedeanBicop : public ParBicop
 {
 private:
-    // pdf, hfunctions and inverses
-    Eigen::VectorXd pdf(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u);
+    // cdf, hfunctions and inverses
+    //Eigen::VectorXd pdf(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u);
 
     Eigen::VectorXd cdf(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u);
 

@@ -127,7 +127,7 @@ InterpolationGrid::interpolate(const Eigen::MatrixXd &x)
 
         Eigen::Matrix<ptrdiff_t, 1, 2> ij = this->get_ij(x0, x1, m);
         // construct grid for first direction
-        i0 = std::max(ij(0) - 1, (ptrdiff_t) 0);
+        i0 = std::max(ij(0) - 1, static_cast<ptrdiff_t>(0));
         i3 = std::min(ij(0) + 2, m - 1);
         tmpgrid(0) = this->grid_points_(i0);
         tmpgrid(1) = this->grid_points_(ij(0));
@@ -136,10 +136,10 @@ InterpolationGrid::interpolate(const Eigen::MatrixXd &x)
 
         // interpolate in one direction (four times)
         for (ptrdiff_t s = 0; s < 4; ++s) {
-            i0 = std::max(ij(0) - 1, (ptrdiff_t) 0);
+            i0 = std::max(ij(0) - 1, static_cast<ptrdiff_t>(0));
             i3 = std::min(ij(0) + 2, m - 1);
             ptrdiff_t jj = std::min(m - 1, ij(1) - 1 + s);
-            jj = std::max((ptrdiff_t) 0, jj);
+            jj = std::max(static_cast<ptrdiff_t>(0), jj);
 
             tmpvals(0) = this->values_(i0, jj);
             tmpvals(1) = this->values_(ij(0), jj);
@@ -151,7 +151,7 @@ InterpolationGrid::interpolate(const Eigen::MatrixXd &x)
         }
 
         // use these four points to interpolate in the remaining direction#
-        i0 = std::max(ij(1) - 1, (ptrdiff_t) 0);
+        i0 = std::max(ij(1) - 1, static_cast<ptrdiff_t>(0));
         i3 = std::min(ij(1) + 2, m - 1);
         tmpgrid(0) = this->grid_points_(i0);
         tmpgrid(1) = this->grid_points_(ij(1));
@@ -355,12 +355,12 @@ inline double InterpolationGrid::int_on_grid(const double &upr,
                 break;
 
             // select length 4 subvectors and calculate spline coefficients
-            tmpvals(0) = vals(std::max(k - 1, (ptrdiff_t) 0));
+            tmpvals(0) = vals(std::max(k - 1, static_cast<ptrdiff_t>(0)));
             tmpvals(1) = vals(k);
             tmpvals(2) = vals(k + 1);
             tmpvals(3) = vals(std::min(k + 2, m - 1));
 
-            tmpgrid(0) = grid(std::max(k - 1, (ptrdiff_t) 0));
+            tmpgrid(0) = grid(std::max(k - 1, static_cast<ptrdiff_t>(0)));
             tmpgrid(1) = grid(k);
             tmpgrid(2) = grid(k + 1);
             tmpgrid(3) = grid(std::min(k + 2, m - 1));
