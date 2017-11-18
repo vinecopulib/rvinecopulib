@@ -26,13 +26,17 @@ family_set_nonparametric <- c(
     "indep", "tll"
 )
 
+family_set_itau <- c(
+    "t", family_set_onepar
+)
+
 family_set_all <- unique(
     c(family_set_parametric, family_set_nonparametric)
 )
 
 family_set_defs <- c(
     "archimedean", "elliptical", "bbs", "oneparametric", "twoparametric", 
-    "parametric", "nonparametric", "all"
+    "parametric", "nonparametric", "itau", "all"
 )
 
 family_set_all_defs <- c(
