@@ -4,38 +4,12 @@ platform:
 
 init:
   - ps: |
-        If ($env:platform -Match "x86") {
-          $env:NLOPT_ZIP="nlopt-2.4.2-dll32.zip"
-          $env:CMAKE_GEN_PLAT="Win32"
-          $env:R_ARCH="i386"
-        } Else {
-          $env:NLOPT_ZIP="nlopt-2.4.2-dll64.zip"
-          $env:CMAKE_GEN_PLAT="x64"
-          $env:R_ARCH="x64"
-        }
-  - cmd: C:/"Program Files (x86)"/"Microsoft Visual Studio 12.0"/VC/vcvarsall.bat
-
-  - ps: |
         $ErrorActionPreference = "Stop"
         Invoke-WebRequest http://raw.github.com/krlmlr/r-appveyor/master/scripts/appveyor-tool.ps1 -OutFile "..\appveyor-tool.ps1"
         Import-Module '..\appveyor-tool.ps1'
 
 install:
-  - set path=C:\Program Files\CMake\bin;%path%
   - ps: Bootstrap
-  - cd ..
-  - git clone git://github.com/stevengj/nlopt
-  - cd nlopt
-  - sed -i '26i#define NLOPT_DLL' .\api\nlopt.h
-  - sed -i '27i#define NLOPT_DLL_EXPORT' .\api\nlopt.h
-  - sed -i '$i\#undef NLOPT_DLL' .\api\nlopt.h
-  - sed -i '$i\#undef NLOPT_DLL_EXPORT' .\api\nlopt.h
-  - cmake -DCMAKE_GENERATOR_PLATFORM="%CMAKE_GEN_PLAT%" -DWITH_CXX=ON -DCMAKE_INSTALL_PREFIX=C:\projects\nlopt-install\%R_ARCH% -DCMAKE_INSTALL_BINDIR=c:\projects\nlopt-install\%R_ARCH%\lib .
-  - cmake --build . --config Release --target install
-  - cd ..
-  - cd rvinecopulib
-  - set path=%path%;C:\projects\nlopt-install\%R_ARCH%\lib
-  - set NLOPT_HOME=C:/projects/nlopt-install/
 
 build_script:
   - travis-tool.sh install_deps
