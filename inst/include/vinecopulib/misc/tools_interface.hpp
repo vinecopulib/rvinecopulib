@@ -16,7 +16,7 @@
     #include <RcppThread.h>
     #define cout Rcout
     namespace std {
-        extern RcppThread::RPrinter Rcout;
+        static RcppThread::RPrinter Rcout = RcppThread::RPrinter();
     }
 #else
     #include <iostream>
