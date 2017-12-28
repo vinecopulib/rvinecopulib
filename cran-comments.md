@@ -1,5 +1,5 @@
 ## Non-standard version number
-The version (0.2.3.1.0) does not have three components. Since the package is 
+The version (0.2.4.1.0) does not have three components. Since the package is 
 an interface to the C++ library vinecopulib, we decided to adopt the convention 
 of e.g. RcppEigen, where the first three components are related to 
 vinecopulib's version.
