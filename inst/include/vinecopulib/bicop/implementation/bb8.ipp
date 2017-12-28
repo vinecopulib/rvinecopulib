@@ -14,7 +14,7 @@ inline Bb8Bicop::Bb8Bicop()
     parameters_lower_bounds_ = Eigen::VectorXd(2);
     parameters_upper_bounds_ = Eigen::VectorXd(2);
     parameters_ << 1, 1;
-    parameters_lower_bounds_ << 1, 1e-4;
+    parameters_lower_bounds_ << 1, 1e-5;
     parameters_upper_bounds_ << 8, 1;
 }
 
