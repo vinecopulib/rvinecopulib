@@ -418,8 +418,9 @@ inline Eigen::VectorXd Vinecop::pdf(const Eigen::MatrixXd &u) const
     // points have to be reordered to correspond to natural order
     for (size_t j = 0; j < d; ++j)
         hfunc2.col(j) = u.col(revorder(j) - 1);
-
-    for (size_t tree = 0; tree < d - 1; ++tree) {
+        
+    size_t trunc_lvl = pair_copulas_.size();
+    for (size_t tree = 0; tree < trunc_lvl; ++tree) {
         tools_interface::check_user_interrupt(n * d > 1e5);
         for (size_t edge = 0; edge < d - tree - 1; ++edge) {
             tools_interface::check_user_interrupt(edge % 100 == 0);
@@ -618,9 +619,14 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd &u) const
         hfunc1(0, d - 1) = hinv2(0, d - 1);
 
         // loop through variables (0 is just the inital uniform)
+        size_t trunc_lvl = pair_copulas_.size();
         for (ptrdiff_t var = d - 2; var >= 0; --var) {
             tools_interface::check_user_interrupt(n * d > 1e5);
-            for (ptrdiff_t tree = d - var - 2; tree >= 0; --tree) {
+            if (trunc_lvl < d_ - 1) {
+                hinv2(trunc_lvl, var) = hinv2(d - var - 1, var);
+            }
+            size_t tree_start = std::min(trunc_lvl - 1, d - var - 2);
+            for (ptrdiff_t tree = tree_start; tree >= 0; --tree) {
                 Bicop edge_copula = get_pair_copula(tree, var);
 
                 // extract data for conditional pair
