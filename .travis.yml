@@ -19,7 +19,6 @@ r_packages:
   - covr
   - ggraph
   - ggplot2
-  - graph
   - Rcpp
   - RcppEigen
   - RcppThread
