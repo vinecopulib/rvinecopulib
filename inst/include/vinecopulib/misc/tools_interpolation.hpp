@@ -9,43 +9,63 @@
 #include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
-    
+
 namespace tools_interpolation {
-    //! A class for cubic spline interpolation of bivariate copulas
-    //!
-    //! The class is used for implementing kernel estimators. It makes storing the
-    //! observations obsolete and allows for fast numerical integration.
-    class InterpolationGrid
+//! A class for cubic spline interpolation of bivariate copulas
+//!
+//! The class is used for implementing kernel estimators. It makes storing the
+//! observations obsolete and allows for fast numerical integration.
+class InterpolationGrid
+{
+public:
+    InterpolationGrid()
     {
-    public:
-        InterpolationGrid() {}
-        InterpolationGrid(const Eigen::VectorXd& grid_points, 
-                          const Eigen::MatrixXd& values,
-                          int norm_times = 3);
+    }
 
-        Eigen::MatrixXd get_values() const;
-        void set_values(const Eigen::MatrixXd& values, int norm_times = 3);
-        void flip();
-        void normalize_margins(int times);
+    InterpolationGrid(const Eigen::VectorXd &grid_points,
+                      const Eigen::MatrixXd &values,
+                      int norm_times = 3);
 
-        Eigen::VectorXd interpolate(const Eigen::MatrixXd& x);
-        Eigen::VectorXd intergrate_1d(const Eigen::MatrixXd& u, size_t cond_var);
-        Eigen::VectorXd intergrate_2d(const Eigen::MatrixXd& u);
+    Eigen::MatrixXd get_values() const;
 
-    private:
-        // Utility functions for spline Interpolation
-        double cubic_poly(const double& x, const Eigen::VectorXd& a);
-        double cubic_indef_integral(const double& x, const Eigen::VectorXd& a);
-        double cubic_integral(const double& lower, const double& upper, const Eigen::VectorXd& a);
-        Eigen::VectorXd find_coefs(const Eigen::VectorXd& vals, const Eigen::VectorXd& grid);
-        double interp_on_grid(const double& x, const Eigen::VectorXd& vals, const Eigen::VectorXd& grid);
+    void set_values(const Eigen::MatrixXd &values, int norm_times = 3);
 
-        // Utility functions for integration
-        double int_on_grid(const double& upr, const Eigen::VectorXd& vals, const Eigen::VectorXd& grid);
+    void flip();
 
-        Eigen::VectorXd grid_points_;
-        Eigen::MatrixXd values_;
-    };
+    void normalize_margins(int times);
+
+    Eigen::VectorXd interpolate(const Eigen::MatrixXd &x);
+
+    Eigen::VectorXd intergrate_1d(const Eigen::MatrixXd &u, size_t cond_var);
+
+    Eigen::VectorXd intergrate_2d(const Eigen::MatrixXd &u);
+
+private:
+    // Utility functions for spline Interpolation
+    double cubic_poly(const double &x, const Eigen::VectorXd &a);
+
+    double cubic_indef_integral(const double &x, const Eigen::VectorXd &a);
+
+    double cubic_integral(const double &lower, const double &upper,
+                          const Eigen::VectorXd &a);
+
+    Eigen::VectorXd
+    find_coefs(const Eigen::VectorXd &vals, const Eigen::VectorXd &grid);
+
+    double interp_on_grid(const double &x, const Eigen::VectorXd &vals,
+                          const Eigen::VectorXd &grid);
+
+    Eigen::Matrix<ptrdiff_t, 1, 2> get_ij(double x0, double x1, ptrdiff_t m);
+
+    // Utility functions for integration
+    double int_on_grid(const double &upr, const Eigen::VectorXd &vals,
+                       const Eigen::VectorXd &grid);
+
+    Eigen::VectorXd grid_points_;
+    Eigen::MatrixXd values_;
+};
 }
 
 }
+
+#include <vinecopulib/misc/implementation/tools_interpolation.ipp>

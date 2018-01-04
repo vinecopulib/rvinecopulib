@@ -116,7 +116,8 @@ Rcpp::List bicop_select_cpp(
         std::string nonpar_method,
         double mult,
         std::string selcrit,
-        bool presel
+        bool presel,
+        size_t num_threads
 )
 {
     std::vector<BicopFamily> fam_set(family_set.size());
@@ -129,9 +130,9 @@ Rcpp::List bicop_select_cpp(
             nonpar_method,
             mult,
             selcrit,
-            presel
+            presel,
+            num_threads
     );
-    Progress p(0, false);
     Bicop bicop_cpp(data, controls);
 
     return bicop_wrap(bicop_cpp);

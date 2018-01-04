@@ -72,7 +72,7 @@ pbicop <- function(u, family, rotation, parameters) {
 #'   be the number required.
 #' @param U optionally, an \eqn{n \times 2} matrix of values in \eqn{(0,1)}.
 #'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
-#'    matrix of independent \eqn{U(0, 1)} variebls, this simulates data 
+#'    matrix of independent \eqn{U(0, 1)} variables, this simulates data 
 #'    from `vinecop`.
 #' @rdname bicop_methods
 #' @export
@@ -219,7 +219,10 @@ print.bicop_dist <- function(x, ...) {
     cat("Bivariate copula ('bicop_dist'): ",
         "family = ", x$family,
         ", rotation = ", x$rotation,
-        ", parameters = ", x$parameters,
+        ", parameters = ", ifelse(length(x$parameters) > 1, 
+                                  paste(round(x$parameters, 2), 
+                                        collapse = ", "),
+                                  x$parameters),
         sep = "")
 }
 
@@ -232,12 +235,14 @@ summary.bicop_dist <- function(object, ...) {
 print.bicop <- function(x, ...) {
     info <- bicop_fit_info(x)
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
-        x$parameters <- "[30x30 grid]"
+        pars_formatted <- "[30x30 grid]"
+    } else {
+        pars_formatted <- paste(round(x$parameters, 2), collapse = ", ")
     }
     cat("Bivariate copula fit ('bicop'): ",
         "family = ", x$family,
         ", rotation = ", x$rotation,
-        ", parameters = ", x$parameters,
+        ", parameters = ", pars_formatted,
         "\n",
         sep = "")
     cat("nobs =", info$nobs, "  ")

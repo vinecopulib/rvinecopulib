@@ -8,45 +8,46 @@
 
 #include <vinecopulib/bicop/elliptical.hpp>
 
-namespace vinecopulib
+namespace vinecopulib {
+//! @brief The Student t copula
+//!
+//! This class is used in the implementation underlying the Bicop class.
+//! Users should not use AbstractBicop or derived classes directly, but
+//! always work with the Bicop interface.
+//!
+//! @literature
+//! Joe, Harry. Dependence modeling with copulas. CRC Press, 2014.
+class StudentBicop : public EllipticalBicop
 {
-    //! @brief The Student t copula
-    //!
-    //! This class is used in the implementation underlying the Bicop class. 
-    //! Users should not use AbstractBicop or derived classes directly, but 
-    //! always work with the Bicop interface.
-    //! 
-    //! @literature
-    //! Joe, Harry. Dependence modeling with copulas. CRC Press, 2014.
-    class StudentBicop : public EllipticalBicop
-    {
-    public:
-        // constructor
-        StudentBicop();
+public:
+    // constructor
+    StudentBicop();
 
-    private:
-        // PDF
-        Eigen::VectorXd pdf(
-            const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
-        );
+private:
+    // PDF
+    Eigen::VectorXd pdf(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
+    );
 
-        // CDF
-        Eigen::VectorXd cdf(
-                const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
-        );
+    // CDF
+    Eigen::VectorXd cdf(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
+    );
 
-        // hfunction
-        Eigen::VectorXd hfunc1(
-            const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
-        );
+    // hfunction
+    Eigen::VectorXd hfunc1(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
+    );
 
-        // inverse hfunction
-        Eigen::VectorXd hinv1(
-            const Eigen::Matrix<double, Eigen::Dynamic, 2>& u
-        );
+    // inverse hfunction
+    Eigen::VectorXd hinv1(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
+    );
 
-        Eigen::MatrixXd tau_to_parameters(const double& tau);
+    Eigen::MatrixXd tau_to_parameters(const double &tau);
 
-        Eigen::VectorXd get_start_parameters(const double tau);
-    };
+    Eigen::VectorXd get_start_parameters(const double tau);
+};
 }
+
+#include <vinecopulib/bicop/implementation/student.ipp>

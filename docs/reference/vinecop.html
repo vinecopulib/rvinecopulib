@@ -52,7 +52,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="..//index.html">
+  <a href="../index.html">
     <span class="fa fa-home fa-lg"></span>
      
   </a>
@@ -88,7 +88,7 @@
     <pre class="usage"><span class='fu'>vinecop</span>(<span class='no'>data</span>, <span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"all"</span>, <span class='kw'>matrix</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>par_method</span> <span class='kw'>=</span> <span class='st'>"mle"</span>,
   <span class='kw'>nonpar_method</span> <span class='kw'>=</span> <span class='st'>"constant"</span>, <span class='kw'>mult</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>selcrit</span> <span class='kw'>=</span> <span class='st'>"bic"</span>, <span class='kw'>presel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='kw'>trunc_lvl</span> <span class='kw'>=</span> <span class='fl'>Inf</span>, <span class='kw'>tree_crit</span> <span class='kw'>=</span> <span class='st'>"tau"</span>, <span class='kw'>threshold</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>show_trace</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
+  <span class='kw'>show_trace</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
 <span class='fu'>vinecop_dist</span>(<span class='no'>pair_copulas</span>, <span class='no'>matrix</span>)</pre>
     
@@ -169,6 +169,11 @@ fit statistics and using <code>fitted()</code>).</p></td>
 printed.</p></td>
     </tr>
     <tr>
+      <th>cores</th>
+      <td><p>number of cores to use; if more than 1, estimation of pair
+copulas within a tree is done in parallel.</p></td>
+    </tr>
+    <tr>
       <th>pair_copulas</th>
       <td><p>A nested list of 'bicop_dist' objects, where
 <code>pair_copulas[[t]][[e]]</code> corresponds to the pair-copula at edge <code>e</code> in
@@ -211,7 +216,9 @@ select both parameters.</p>
 <span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop_dist</span>(<span class='no'>pcs</span>, <span class='no'>mat</span>)
 
 <span class='co'># show model</span>
-<span class='fu'>summary</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt;  tree edge conditioned conditioning family rotation parameters
+<span class='fu'>summary</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model
+#&gt; -------------------------------
+#&gt;  tree edge conditioned conditioning family rotation parameters
 #&gt;     1    1        3, 1                 bb1       90       3, 2
 #&gt;     1    2        2, 1                 bb1       90       3, 2
 #&gt;     2    1        3, 2            1    bb1       90       3, 2</div><div class='input'>
@@ -220,14 +227,18 @@ select both parameters.</p>
 
 <span class='co'># estimate a vine copula model</span>
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
-<span class='no'>fit</span></div><div class='output co'>#&gt; 3-dimensional vine copula model fit
-#&gt; nobs = 50   logLik = 2.38   npars = 1   AIC = -2.76   BIC = -0.85   </div><div class='input'><span class='fu'>summary</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model fit
-#&gt; nobs = 50   logLik = 2.38   npars = 1   AIC = -2.76   BIC = -0.85   
+<span class='no'>fit</span></div><div class='output co'>#&gt; 3-dimensional vine copula model
+#&gt;  fit
+#&gt; nobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   </div><div class='input'><span class='fu'>summary</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model
+#&gt;  fit
+#&gt; nobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   
 #&gt; ----
-#&gt;  tree edge conditioned conditioning  family rotation parameters
-#&gt;     1    1        3, 1              clayton      270        0.4
-#&gt;     1    2        2, 1                indep        0           
-#&gt;     2    1        3, 2            1   indep        0           </div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 6
+#&gt; 3-dimensional vine copula model fitnobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   
+#&gt; --------------------------------------------------------------------------------------------
+#&gt;  tree edge conditioned conditioning family rotation parameters
+#&gt;     1    1        1, 3               indep        0           
+#&gt;     1    2        2, 3               indep        0           
+#&gt;     2    1        1, 2            3  indep        0           </div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 6
 #&gt;  $ pair_copulas:List of 2
 #&gt;   ..$ :List of 2
 #&gt;   .. ..$ :List of 4
@@ -237,9 +248,9 @@ select both parameters.</p>
 #&gt;   ..$ :List of 1
 #&gt;   .. ..$ :List of 4
 #&gt;   .. .. ..- attr(*, "class")= chr [1:2] "bicop" "bicop_dist"
-#&gt;  $ matrix      : num [1:3, 1:3] 1 2 3 1 2 0 1 0 0
-#&gt;  $ npars       : num 1
-#&gt;  $ data        : num [1:50, 1:3] 0.175 0.134 0.395 0.328 0.614 ...
+#&gt;  $ matrix      : num [1:3, 1:3] 3 2 1 3 2 0 3 0 0
+#&gt;  $ npars       : num 0
+#&gt;  $ data        : num [1:50, 1:3] 0.969 0.976 0.77 0.731 0.833 ...
 #&gt;  $ controls    :List of 9
 #&gt;   ..$ family_set   : chr [1:11] "indep" "gaussian" "clayton" "gumbel" ...
 #&gt;   ..$ par_method   : chr "mle"

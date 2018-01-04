@@ -1,15 +1,3 @@
 CXX_STD      = CXX11
-PKG_CPPFLAGS = -I"$(NLOPT_HOME)$(R_ARCH)/include" -I"../inst/include"
-PKG_LIBS = -L"$(NLOPT_HOME)$(R_ARCH)/lib" -lnlopt_cxx
+PKG_CPPFLAGS = -I"../inst/include"
 
-SOURCES_CPP = ./bicop/abstract.cpp	  ./bicop/bb7.cpp      ./bicop/elliptical.cpp  ./bicop/gumbel.cpp  ./bicop/parametric.cpp \
-              ./bicop/archimedean.cpp ./bicop/bb8.cpp      ./bicop/family.cpp      ./bicop/indep.cpp   ./bicop/student.cpp \
-              ./bicop/bb1.cpp		  ./bicop/class.cpp    ./bicop/frank.cpp       ./bicop/joe.cpp	   ./bicop/tools_select.cpp  ./bicop/fit_controls.cpp  \
-              ./bicop/bb6.cpp		  ./bicop/clayton.cpp  ./bicop/gaussian.cpp    ./bicop/kernel.cpp  ./bicop/tll.cpp \
-              ./misc/tools_interpolation.cpp  ./misc/tools_eigen.cpp        ./misc/tools_optimization.cpp \
-              ./misc/tools_integration.cpp  ./misc/tools_stats.cpp \
-              ./vinecop/class.cpp  ./vinecop/rvine_matrix.cpp  ./vinecop/tools_select.cpp  ./vinecop/fit_controls.cpp  \
-              ./RcppExports.cpp ./bicop_wrappers.cpp ./vinecop_wrappers.cpp
-SOURCES_C   = ./misc/tools_c.c
-
-OBJECTS = $(SOURCES_CPP:.cpp=.o) $(SOURCES_C:.c=.o)

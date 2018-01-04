@@ -52,7 +52,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="..//index.html">
+  <a href="../index.html">
     <span class="fa fa-home fa-lg"></span>
      
   </a>
@@ -87,7 +87,7 @@
 
     <pre class="usage"><span class='fu'>bicop</span>(<span class='no'>data</span>, <span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"all"</span>, <span class='kw'>par_method</span> <span class='kw'>=</span> <span class='st'>"mle"</span>,
   <span class='kw'>nonpar_method</span> <span class='kw'>=</span> <span class='st'>"quadratic"</span>, <span class='kw'>mult</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>selcrit</span> <span class='kw'>=</span> <span class='st'>"bic"</span>, <span class='kw'>presel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+  <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
 <span class='fu'>bicop_dist</span>(<span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"indep"</span>, <span class='kw'>rotation</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>parameters</span> <span class='kw'>=</span> <span class='fu'>numeric</span>(<span class='fl'>0</span>))</pre>
     
@@ -137,6 +137,11 @@ symmetry characteristics of the data.</p></td>
       <th>keep_data</th>
       <td><p>whether the data should be stored (necessary for computing
 fit statistics and using <code>fitted()</code>).</p></td>
+    </tr>
+    <tr>
+      <th>cores</th>
+      <td><p>number of cores to use; if more than 1, estimation for multiple
+families is done in parallel.</p></td>
     </tr>
     <tr>
       <th>family</th>
@@ -199,8 +204,8 @@ Partial matching is activated. For example, <code>"gauss"</code> is equivalent t
 <span class='co'>## bicop objects</span>
 <span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>rbicop</span>(<span class='fl'>500</span>, <span class='st'>"gauss"</span>, <span class='fl'>0</span>, <span class='fl'>0.5</span>)
 <span class='no'>fit1</span> <span class='kw'>&lt;-</span> <span class='fu'>bicop</span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
-<span class='no'>fit1</span></div><div class='output co'>#&gt; Bivariate copula fit ('bicop'): family = gaussian, rotation = 0, parameters = 0.5026874
-#&gt; nobs = 500   logLik = 70.68   npars = 1   AIC = -139.37   BIC = -135.15   </div><div class='input'>
+<span class='no'>fit1</span></div><div class='output co'>#&gt; Bivariate copula fit ('bicop'): family = gaussian, rotation = 0, parameters = 0.52
+#&gt; nobs = 500   logLik = 70.84   npars = 1   AIC = -139.67   BIC = -135.46   </div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
