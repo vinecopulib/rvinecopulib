@@ -79,4 +79,8 @@ test_that("plot functions work", {
     expect_silent(p <- contour(vc, margins = "unif"))
     expect_error(p <- contour(vc, margins = "nonono"))
     expect_error(p <- contour(vc, var_names = "comeon"))
+    
+    # contour for truncated vines
+    vc$pair_copulas[[4]] <- NULL
+    expect_silent(p <- contour(vc, margins = "unif"))
 })
