@@ -294,7 +294,11 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     for (i in rev(tree)) {
         for (j in 1:(d - min(tree))) {
             if (j <= d - i) {
-                pcfit <- x$pair_copulas[[i]][[j]]
+                if (length(x$pair_copulas) >= i) {
+                    pcfit <- x$pair_copulas[[i]][[j]]
+                } else {
+                    pcfit <- bicop_dist()
+                }
                 
                 # set up list of contour arguments
                 args <- list(x = pcfit,
