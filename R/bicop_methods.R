@@ -224,6 +224,7 @@ print.bicop_dist <- function(x, ...) {
                                         collapse = ", "),
                                   x$parameters),
         sep = "")
+    cat("\n")
 }
 
 #' @export
@@ -233,7 +234,6 @@ summary.bicop_dist <- function(object, ...) {
 
 #' @export
 print.bicop <- function(x, ...) {
-    info <- bicop_fit_info(x)
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
         pars_formatted <- "[30x30 grid]"
     } else {
@@ -245,19 +245,27 @@ print.bicop <- function(x, ...) {
         ", parameters = ", pars_formatted,
         "\n",
         sep = "")
-    cat("nobs =", info$nobs, "  ")
-    cat("logLik =", round(info$logLik, 2), "  ")
-    cat("npars =", round(info$npars, 2), "  ")
-    cat("AIC =", round(info$AIC, 2), "  ")
-    cat("BIC =", round(info$BIC, 2), "  ")
     
-    attr(x, "info") <- info
     invisible(x)
 }
 
 #' @export
 summary.bicop <- function(object, ...) {
     print.bicop(object, ...)
+    cat("nobs =", object$nobs, "  ")
+    if (!is.null(object$dat))
+        info <- bicop_fit_info(object)
+    if (!is.null(object$dat)) {
+        cat("logLik =", round(info$logLik, 2), "  ")
+        cat("npars =", round(info$npars, 2), "  ")
+        cat("AIC =", round(info$AIC, 2), "  ")
+        cat("BIC =", round(info$BIC, 2), "  ")
+        attr(object, "info") <- info
+    } else {
+        cat("(for mor information, fit model with keep_data = TRUE)")
+    }
+    cat("\n")
+    invisible(object)
 }
 
 bicop_fit_info <- function(bc) {
