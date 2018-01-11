@@ -94,10 +94,10 @@ rvinecop <- function(n, vinecop, U = NULL) {
 #' @export
 print.vinecop_dist <- function(x, ...) {
     d <- nrow(x$matrix)
-    cat(d, "-dimensional vine copula model", sep = "")
+    cat(d, "-dimensional vine copula model ('vinecop_dist')", sep = "")
     n_trees <- length(x$pair_copulas)
     if (n_trees < d - 1)
-        cat(" (", n_trees, "-truncated)", sep = "")
+        cat(", ", n_trees, "-truncated", sep = "")
     cat("\n")
 }
 
@@ -126,11 +126,9 @@ summary.vinecop_dist <- function(object, ...) {
             k <- k + 1
         }
     }
-    pr <- capture.output(print(object))
-    cat(pr,  "\n", strrep("-", nchar(pr)), "\n", sep = "")
-    print(mdf, digits = 2, row.names = FALSE)
-
-    invisible(mdf)
+    print.vinecop_dist(object)
+    cat(strrep("-", 63), "\n", sep = "")
+    mdf
 }
 
 #' Predictions and fitted values for a vine copula model
@@ -190,15 +188,24 @@ logLik.vinecop <- function(object, ...) {
 
 #' @export
 print.vinecop <- function(x, ...) {
-    info <- vinecop_fit_info(x)
-    print.vinecop_dist(x)
-    cat(" fit\n")
-    cat("nobs =", info$nobs, "  ")
-    cat("logLik =", round(info$logLik, 2), "  ")
-    cat("npars =", round(info$npars, 2), "  ")
-    cat("AIC =", round(info$AIC, 2), "  ")
-    cat("BIC =", round(info$BIC, 2), "  ")
-    attr(x, "info") <- info
+    d <- nrow(x$matrix)
+    cat(d, "-dimensional vine copula fit ('vinecop')", sep = "")
+    n_trees <- length(x$pair_copulas)
+    if (n_trees < d - 1)
+        cat(", ", n_trees, "-truncated", sep = "")
+    cat("\n")
+    cat("nobs =", x$nobs, "  ")
+    if (!is.null(x$data)) {
+        info <- vinecop_fit_info(x)
+        cat("logLik =", round(info$logLik, 2), "  ")
+        cat("npars =", round(info$npars, 2), "  ")
+        cat("AIC =", round(info$AIC, 2), "  ")
+        cat("BIC =", round(info$BIC, 2), "  ")
+        attr(x, "info") <- info
+    } else {
+        cat("(for mor information, fit model with keep_data = TRUE)")
+    }
+    cat("\n")
     invisible(x)
 }
 
@@ -206,10 +213,10 @@ print.vinecop <- function(x, ...) {
 #' @export
 summary.vinecop <- function(object, ...) {
     info <- attr(print.vinecop(object), "info")
-    cat("\n----\n")
-    s <- summary.vinecop_dist(object)
+    capture.output(s <- summary.vinecop_dist(object))
+    cat(strrep("-", 63), "\n", sep = "")
     attr(s, "info") <- info
-    invisible(s)
+    s
 }
 
 
