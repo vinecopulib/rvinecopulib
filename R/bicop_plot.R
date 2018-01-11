@@ -135,6 +135,8 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
     
     ## adjust for margins
     dens <- cop * adj
+    if (length(unique(c(dens))) == 1)
+        dens[1] = 1.000001 * dens[1]
     
     if (margins %in% c("exp", "flexp"))
         dens <- pmin(dens, 6)
