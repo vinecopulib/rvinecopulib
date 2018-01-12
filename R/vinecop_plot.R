@@ -215,8 +215,9 @@ get_name <-  function(j, tree, vc) {
     bef <- paste0(vc$names[M[c(d - j + 1, tree), j]], 
                   collapse = ",")
     # conditioning set
-    aft <- ifelse (tree > 1, paste0(vc$names[M[(tree-1):1, j]], 
-                                    collapse = ","), "")
+    aft <- ifelse(tree > 1, 
+                  paste0(vc$names[M[(tree - 1):1, j]],  collapse = ","), 
+                  "")
     # paste together
     sep <- ifelse(tree > 1, ";", "")
     paste(bef, aft, sep = sep, collapse = "")
@@ -290,12 +291,16 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     # initialize check variables
     cnt <- 0
     k <- d
-    maxnums <- get_name(1, max(tree), x)
+    maxnums <- get_name(1, max(tree, length(x$pair_copulas)), x)
     for (i in rev(tree)) {
         for (j in 1:(d - min(tree))) {
             if (j <= d - i) {
-                pcfit <- x$pair_copulas[[i]][[j]]
-                
+                if (length(x$pair_copulas) >= i) {
+                    pcfit <- x$pair_copulas[[i]][[j]]
+                } else {
+                    pcfit <- bicop_dist()
+                }
+
                 # set up list of contour arguments
                 args <- list(x = pcfit,
                              drawlabels = FALSE,
