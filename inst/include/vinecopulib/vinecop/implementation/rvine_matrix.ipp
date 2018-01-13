@@ -1,4 +1,4 @@
-// Copyright © 2017 Thomas Nagler and Thibault Vatter
+// Copyright © 2018 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -18,6 +18,10 @@ inline RVineMatrix::RVineMatrix(
 {
     d_ = matrix.rows();
     matrix_ = matrix;
+    no_matrix_ = this->compute_natural_order();
+    needed_hfunc1_ = this->compute_needed_hfunc1();
+    needed_hfunc2_ = this->compute_needed_hfunc2();
+    
     if (check) {
         check_if_quadratic();
         check_lower_tri();
@@ -123,7 +127,15 @@ RVineMatrix::belongs_to_structure(const std::vector <size_t> conditioned,
 //! convert to natural order by relabeling the variables. Most algorithms for
 //! estimation and evaluation assume that the R-vine matrix is in natural order.
 inline Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic>
-RVineMatrix::in_natural_order() const
+RVineMatrix::get_natural_order() const
+{
+    return no_matrix_;
+}
+
+
+//! computes the R-vine matrix in natural order.
+inline Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic>
+RVineMatrix::compute_natural_order() const
 {
     // create vector of new variable labels: d, ..., 1
     std::vector <size_t> ivec = tools_stl::seq_int(1, d_);
@@ -142,7 +154,7 @@ RVineMatrix::in_natural_order() const
 inline Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic>
 RVineMatrix::get_max_matrix() const
 {
-    auto max_matrix = this->in_natural_order();
+    auto max_matrix = no_matrix_;
     for (size_t i = 0; i < d_ - 1; ++i) {
         for (size_t j = 0; j < d_ - i - 1; ++j) {
             max_matrix(i + 1, j) = max_matrix.block(i, j, 2, 1).maxCoeff();
@@ -156,15 +168,20 @@ RVineMatrix::get_max_matrix() const
 //! pair-copula).
 inline MatrixXb RVineMatrix::get_needed_hfunc1() const
 {
-    MatrixXb needed_hfunc1 = MatrixXb::Constant(d_, d_, false);
+    return needed_hfunc1_;
+}
 
-    auto no_matrix = this->in_natural_order();
+// computes the needed first h-functions.
+inline MatrixXb RVineMatrix::compute_needed_hfunc1() const
+{
+    MatrixXb needed_hfunc1 = MatrixXb::Constant(d_, d_, false);
     auto max_matrix = this->get_max_matrix();
+    MatrixXb isnt_mat_j, is_max_j, is_different;
     for (size_t i = 1; i < d_ - 1; ++i) {
         size_t j = d_ - i;
-        MatrixXb isnt_mat_j = (no_matrix.block(0, 0, j, i).array() != j);
-        MatrixXb is_max_j = (max_matrix.block(0, 0, j, i).array() == j);
-        MatrixXb is_different = (isnt_mat_j.array() && is_max_j.array());
+        isnt_mat_j = (no_matrix_.block(0, 0, j, i).array() != j);
+        is_max_j = (max_matrix.block(0, 0, j, i).array() == j);
+        is_different = (isnt_mat_j.array() && is_max_j.array());
         needed_hfunc1.block(0, i, j, 1) = is_different.rowwise().any();
     }
     return needed_hfunc1;
@@ -175,21 +192,26 @@ inline MatrixXb RVineMatrix::get_needed_hfunc1() const
 //! pair-copula).
 inline MatrixXb RVineMatrix::get_needed_hfunc2() const
 {
+    return needed_hfunc2_;
+}
+
+inline MatrixXb RVineMatrix::compute_needed_hfunc2() const
+{
+    MatrixXb needed_hfunc1 = MatrixXb::Constant(d_, d_, false);
     MatrixXb needed_hfunc2 = MatrixXb::Constant(d_, d_, false);
     needed_hfunc2.block(0, 0, d_ - 1, 1) = MatrixXb::Constant(d_ - 1, 1, true);
-    auto no_matrix = this->in_natural_order();
     auto max_matrix = this->get_max_matrix();
+    MatrixXb is_mat_j, is_max_j;
     for (size_t i = 1; i < d_ - 1; ++i) {
         size_t j = d_ - i;
         // fill column i with true above the diagonal
         needed_hfunc2.block(0, i, d_ - i, 1) = MatrixXb::Constant(d_ - i, 1,
                                                                   true);
         // for diagonal, check whether matrix and maximum matrix coincide
-        MatrixXb is_mat_j = (no_matrix.block(j - 1, 0, 1, i).array() == j);
-        MatrixXb is_max_j = (max_matrix.block(j - 1, 0, 1, i).array() == j);
+        is_mat_j = (no_matrix_.block(j - 1, 0, 1, i).array() == j);
+        is_max_j = (max_matrix.block(j - 1, 0, 1, i).array() == j);
         needed_hfunc2(j - 1, i) = (is_mat_j.array() && is_max_j.array()).any();
     }
-
     return needed_hfunc2;
 }
 //! @}
@@ -247,7 +269,6 @@ inline void RVineMatrix::check_antidiagonal() const
 inline void RVineMatrix::check_columns() const
 {
     using namespace tools_stl;
-    auto no_matrix = in_natural_order();
     std::string problem;
     problem += "the antidiagonal entry of a column must not be ";
     problem += "contained in any column further to the right; ";
@@ -259,7 +280,7 @@ inline void RVineMatrix::check_columns() const
     for (size_t j = 0; j < d_; ++j) {
         std::vector <size_t> col_vec(d_ - j);
         Eigen::Matrix<size_t, Eigen::Dynamic, 1>::Map(&col_vec[0], d_ - j) =
-            no_matrix.col(j).head(d_ - j);
+            no_matrix_.col(j).head(d_ - j);
         ok = ok & is_same_set(col_vec, seq_int(1, d_ - j));
         if (!ok) {
             throw std::runtime_error("not a valid R-vine matrix: " + problem);
@@ -389,8 +410,10 @@ inline void RVineMatrix::complete_matrix(
         std::vector <std::vector<size_t>> all_indices(d - t);
         std::vector <size_t> tmp(t);
         for (size_t e = 0; e < d - t; e++) {
-            Eigen::Matrix<size_t, Eigen::Dynamic, 1>::Map(&tmp[0], t) =
-                mat.col(e).head(t);
+            if (t > 0) {
+                Eigen::Matrix<size_t, Eigen::Dynamic, 1>::Map(&tmp[0], t) =
+                    mat.col(e).head(t);
+            }
             all_indices[e] = cat(mat(d - 1 - e, e), tmp);
         }
 
@@ -412,7 +435,6 @@ inline void RVineMatrix::complete_matrix(
                 }
             }
         };
-        
         tools_parallel::map_on_pool(complete_column, 
                                     seq_int(0, d - t), 
                                     num_threads);
