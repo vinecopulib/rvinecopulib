@@ -1,4 +1,4 @@
-// Copyright © 2017 Thomas Nagler and Thibault Vatter
+// Copyright © 2018 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -29,6 +29,7 @@ inline Vinecop::Vinecop(size_t d)
     vine_matrix_ = RVineMatrix(mat, false);
 
     // pair_copulas_ empty = everything independence 
+    threshold_ = 0.0;
 }
 
 //! creates a vine copula with structure specified by an R-vine matrix; all
@@ -43,7 +44,7 @@ inline Vinecop::Vinecop(
     d_ = matrix.rows();
     vine_matrix_ = RVineMatrix(matrix, check_matrix);
     // pair_copulas_ empty = everything independence
-
+    threshold_ = 0.0;
 }
 
 //! creates an arbitrary vine copula model.
@@ -79,6 +80,7 @@ inline Vinecop::Vinecop(const std::vector <std::vector<Bicop>> &pair_copulas,
 
     vine_matrix_ = RVineMatrix(matrix, check_matrix);
     pair_copulas_ = pair_copulas;
+    threshold_ = 0.0;
 }
 
 //! creates from a boost::property_tree::ptree object
@@ -229,6 +231,7 @@ inline void Vinecop::select_all(const Eigen::MatrixXd &data,
     tools_select::StructureSelector selector(data, controls);
     if (controls.needs_sparse_select()) {
         selector.sparse_select_all_trees(data);
+        threshold_ = selector.get_threshold();
     } else {
         selector.select_all_trees(data);
     }
@@ -247,6 +250,7 @@ inline void Vinecop::select_families(const Eigen::MatrixXd &data,
     tools_select::FamilySelector selector(data, vine_matrix_, controls);
     if (controls.needs_sparse_select()) {
         selector.sparse_select_all_trees(data);
+        threshold_ = selector.get_threshold();
     } else {
         selector.select_all_trees(data);
     }
@@ -382,6 +386,14 @@ Vinecop::get_matrix() const
     return vine_matrix_.get_matrix();
 }
 
+//! extracts the threshold (usually zero except `select_threshold == TRUE` in
+//! `FitControlsVinecop()`).
+inline double Vinecop::get_threshold() const
+{
+    return threshold_;
+}
+
+
 //! @}
 
 //! calculates the density function of the vine copula model.
@@ -401,7 +413,7 @@ inline Eigen::VectorXd Vinecop::pdf(const Eigen::MatrixXd &u) const
 
     // info about the vine structure (reverse rows (!) for more natural indexing)
     Eigen::Matrix<size_t, Eigen::Dynamic, 1> revorder = vine_matrix_.get_order().reverse();
-    auto no_matrix = vine_matrix_.in_natural_order();
+    auto no_matrix = vine_matrix_.get_natural_order();
     auto max_matrix = vine_matrix_.get_max_matrix();
     MatrixXb needed_hfunc1 = vine_matrix_.get_needed_hfunc1();
     MatrixXb needed_hfunc2 = vine_matrix_.get_needed_hfunc2();
@@ -602,7 +614,7 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd &u) const
     if (d > 2) {
         // info about the vine structure (in upper triangular matrix notation)
         Eigen::Matrix<size_t, Eigen::Dynamic, 1> revorder = vine_matrix_.get_order().reverse();
-        auto no_matrix = vine_matrix_.in_natural_order();
+        auto no_matrix = vine_matrix_.get_natural_order();
         auto max_matrix = vine_matrix_.get_max_matrix();
         MatrixXb needed_hfunc1 = vine_matrix_.get_needed_hfunc1();
         MatrixXb needed_hfunc2 = vine_matrix_.get_needed_hfunc2();

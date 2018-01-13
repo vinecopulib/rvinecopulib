@@ -10,17 +10,17 @@ test_that("returns proper 'bicop' object", {
     expect_s3_class(fit, "vinecop_dist")
     expect_identical(
         names(fit),  
-        c("pair_copulas", "matrix", "npars", "data", "controls", "nobs")
+        c("pair_copulas", "matrix", "npars", "threshold", "data", "controls", "nobs")
     )
     expect_identical(
         names(fit_no_data), 
-        c("pair_copulas", "matrix", "npars", "controls", "nobs")
+        c("pair_copulas", "matrix", "npars", "threshold", "controls", "nobs")
     )
     
     colnames(u) <- paste(seq_len(ncol(u)))
     expect_identical(
         names(vinecop(u, "indep")), 
-        c("pair_copulas", "matrix", "npars", "names", "data", "controls", "nobs")
+        c("pair_copulas", "matrix", "npars", "threshold", "names", "data", "controls", "nobs")
     )
 })
 
