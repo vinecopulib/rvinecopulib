@@ -193,7 +193,7 @@ tree <code>t</code>.</p></td>
     <code>vinecop()</code> provides automated fitting for vine copula models.
 The function inherits the parameters of <code><a href='bicop.html'>bicop()</a></code>.
 Optionally, a quadratic <code>matrix</code> can be used as
-input to pre-specify the vine structure. <code>tree_crit</code> describes the
+input to prespecify the vine structure. <code>tree_crit</code> describes the
 criterion for tree selection, one of <code>"tau"</code>, <code>"rho"</code>, <code>"hoeffd"</code> for
 Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
 <code>threshold</code> allows to threshold the <code>tree_crit</code> and <code>trunc_lvl</code> to truncate
@@ -216,29 +216,23 @@ select both parameters.</p>
 <span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop_dist</span>(<span class='no'>pcs</span>, <span class='no'>mat</span>)
 
 <span class='co'># show model</span>
-<span class='fu'>summary</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model
-#&gt; -------------------------------
-#&gt;  tree edge conditioned conditioning family rotation parameters
-#&gt;     1    1        3, 1                 bb1       90       3, 2
-#&gt;     1    2        2, 1                 bb1       90       3, 2
-#&gt;     2    1        3, 2            1    bb1       90       3, 2</div><div class='input'>
+<span class='fu'>summary</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model ('vinecop_dist')
+#&gt; ---------------------------------------------------------------</div><div class='output co'>#&gt;   tree edge conditioned conditioning family rotation parameters
+#&gt; 1    1    1        3, 1                 bb1       90       3, 2
+#&gt; 2    1    2        2, 1                 bb1       90       3, 2
+#&gt; 3    2    1        3, 2            1    bb1       90       3, 2</div><div class='input'>
 <span class='co'># get some data</span>
 <span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>sapply</span>(<span class='fl'>1</span>:<span class='fl'>3</span>, <span class='kw'>function</span>(<span class='no'>i</span>) <span class='fu'>runif</span>(<span class='fl'>50</span>))
 
 <span class='co'># estimate a vine copula model</span>
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
-<span class='no'>fit</span></div><div class='output co'>#&gt; 3-dimensional vine copula model
-#&gt;  fit
-#&gt; nobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   </div><div class='input'><span class='fu'>summary</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model
-#&gt;  fit
+<span class='no'>fit</span></div><div class='output co'>#&gt; 3-dimensional vine copula fit ('vinecop')
+#&gt; nobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   </div><div class='input'><span class='fu'>summary</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula fit ('vinecop')
 #&gt; nobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   
-#&gt; ----
-#&gt; 3-dimensional vine copula model fitnobs = 50   logLik = 0   npars = 0   AIC = 0   BIC = 0   
-#&gt; --------------------------------------------------------------------------------------------
-#&gt;  tree edge conditioned conditioning family rotation parameters
-#&gt;     1    1        1, 3               indep        0           
-#&gt;     1    2        2, 3               indep        0           
-#&gt;     2    1        1, 2            3  indep        0           </div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 6
+#&gt; ---------------------------------------------------------------</div><div class='output co'>#&gt;   tree edge conditioned conditioning family rotation parameters
+#&gt; 1    1    1        1, 3               indep        0           
+#&gt; 2    1    2        2, 3               indep        0           
+#&gt; 3    2    1        1, 2            3  indep        0           </div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 7
 #&gt;  $ pair_copulas:List of 2
 #&gt;   ..$ :List of 2
 #&gt;   .. ..$ :List of 4
@@ -250,6 +244,7 @@ select both parameters.</p>
 #&gt;   .. .. ..- attr(*, "class")= chr [1:2] "bicop" "bicop_dist"
 #&gt;  $ matrix      : num [1:3, 1:3] 3 2 1 3 2 0 3 0 0
 #&gt;  $ npars       : num 0
+#&gt;  $ threshold   : num 0
 #&gt;  $ data        : num [1:50, 1:3] 0.969 0.976 0.77 0.731 0.833 ...
 #&gt;  $ controls    :List of 9
 #&gt;   ..$ family_set   : chr [1:11] "indep" "gaussian" "clayton" "gumbel" ...
@@ -286,7 +281,7 @@ select both parameters.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
