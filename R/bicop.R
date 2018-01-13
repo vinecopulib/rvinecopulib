@@ -48,7 +48,7 @@
 #' `"all"` =  all families.\cr
 #' `"parametric"` =  parametric families.\cr
 #' `"nonparametric"` =  nonparametric families.\cr
-#' `"archimedean"` =  archimedean families.\cr
+#' `"archimedean"` =  Archimedean families.\cr
 #' `"elliptical"` =  elliptical families.\cr
 #' `"bbs"` =  BB families.\cr
 #' `"oneparametric"` =  one parameter families.\cr

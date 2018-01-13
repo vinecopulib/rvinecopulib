@@ -80,7 +80,7 @@ with \code{bicop}:\cr
 \code{"all"} =  all families.\cr
 \code{"parametric"} =  parametric families.\cr
 \code{"nonparametric"} =  nonparametric families.\cr
-\code{"archimedean"} =  archimedean families.\cr
+\code{"archimedean"} =  Archimedean families.\cr
 \code{"elliptical"} =  elliptical families.\cr
 \code{"bbs"} =  BB families.\cr
 \code{"oneparametric"} =  one parameter families.\cr

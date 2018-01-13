@@ -30,7 +30,7 @@
 #' `vinecop()` provides automated fitting for vine copula models. 
 #' The function inherits the parameters of [bicop()]. 
 #' Optionally, a quadratic `matrix` can be used as
-#' input to pre-specify the vine structure. `tree_crit` describes the
+#' input to prespecify the vine structure. `tree_crit` describes the
 #' criterion for tree selection, one of `"tau"`, `"rho"`, `"hoeffd"` for
 #' Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally, 
 #' `threshold` allows to threshold the `tree_crit` and `trunc_lvl` to truncate 

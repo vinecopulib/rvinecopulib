@@ -1,22 +1,17 @@
-# vinecopulib 0.2.3.1.0 (November 18, 2017)
+# vinecopulib 0.2.4.1.0 (November 28, 2017)
 
-Release following the update of vinecopulib to 0.2.3, see 
-https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.3. The most 
+Release following the update of vinecopulib to 0.2.4, see 
+https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.4. The most 
 relevant changes are summarized below.
-
-NEW FEATURES
-
-   * faster implementation of Archimedean pdfs.
 
 BUG FIXES
 
-   * add safeguards for `bicop()`/`vinecop()` called with 
-     insufficient data.
+   * adapt Vinecop's `simulate()` and `pdf()` to truncated vines (#279) 
 
-   * fix segfault issue in completing a truncated vine fit.
+   * make bb8 lower bound ensure feasible computations in `parameters_to_tau()` 
+   (#278 and #280)
 
-   * make `par_method = "itau"` respect the parameter bounds.
-
+   * default initialize Rcout (#277).
 
 # vinecopulib 0.2.2.1.0 (November 9, 2017)
 
