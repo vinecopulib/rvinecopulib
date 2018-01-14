@@ -1,11 +1,17 @@
 language: R
+cache: packages
 sudo: required
 warnings_are_errors: false
 
 matrix:
   include:
     - os: linux
-      dist: trusty
+      r: oldrel
+    - os: linux
+      r: release
+    - os: linux
+      r: devel
+      env: R_CODECOV=true
     - os: osx
       osx_image: xcode8.3
 
@@ -15,6 +21,7 @@ apt_packages:
   - libudunits2-dev
 
 r_packages:
+  - devtools
   - BH
   - covr
   - ggraph
@@ -26,15 +33,18 @@ r_packages:
 
 before_install:
   ### Linux
-  - if [ $TRAVIS_OS_NAME == linux ]; then sudo add-apt-repository ppa:marutter/c2d4u -y; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get update -q; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get install gcc-5 g++-5 gfortran-5; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100; fi
- 
+
+  ### OSX
+  - if [ $TRAVIS_OS_NAME == osx ]; then touch ~/.Rprofile; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then echo "options(pkgType = 'source')" >> ~/.Rprofile; fi
+
 repos:
   CRAN: http://cran.rstudio.com
 
 after_success:
-  - if [ $TRAVIS_OS_NAME == linux ]; Rscript -e 'covr::codecov(line_exclusion=list.files(recursive = TRUE)[grep("^(?!.*wrappers).*\\.(hpp|h|cpp|c|ipp)$", list.files(recursive = TRUE), perl = TRUE)])'; fi
+  - if [ "${R_CODECOV}" ]; Rscript -e 'covr::codecov(line_exclusion=list.files(recursive = TRUE)[grep("^(?!.*wrappers).*\\.(hpp|h|cpp|c|ipp)$", list.files(recursive = TRUE), perl = TRUE)])'; fi
