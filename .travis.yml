@@ -12,8 +12,8 @@ matrix:
     - os: linux
       r: devel
       env: R_CODECOV=true
-    - os: osx
-      osx_image: xcode8.3
+    #- os: osx
+    #  osx_image: xcode8.3
 
 apt_packages:
   - libcurl4-openssl-dev
