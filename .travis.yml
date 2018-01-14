@@ -1,11 +1,17 @@
 language: R
+cache: packages
 sudo: required
 warnings_are_errors: false
 
 matrix:
   include:
     - os: linux
-      dist: trusty
+      r: oldrel
+    - os: linux
+      r: release
+    - os: linux
+      r: devel
+      env: R_CODECOV=true
     - os: osx
       osx_image: xcode8.3
 
