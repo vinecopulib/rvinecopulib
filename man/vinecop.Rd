@@ -82,7 +82,7 @@ Automated fitting or creation of custom vine copula models
 \code{vinecop()} provides automated fitting for vine copula models.
 The function inherits the parameters of \code{\link[=bicop]{bicop()}}.
 Optionally, a quadratic \code{matrix} can be used as
-input to pre-specify the vine structure. \code{tree_crit} describes the
+input to prespecify the vine structure. \code{tree_crit} describes the
 criterion for tree selection, one of \code{"tau"}, \code{"rho"}, \code{"hoeffd"} for
 Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
 \code{threshold} allows to threshold the \code{tree_crit} and \code{trunc_lvl} to truncate

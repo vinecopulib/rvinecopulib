@@ -1,4 +1,4 @@
-// Copyright © 2017 Thomas Nagler and Thibault Vatter
+// Copyright © 2018 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -16,7 +16,7 @@
     #include <RcppThread.h>
     #define cout Rcout
     namespace std {
-        extern RcppThread::RPrinter Rcout;
+        static RcppThread::RPrinter Rcout = RcppThread::RPrinter();
     }
 #else
     #include <iostream>

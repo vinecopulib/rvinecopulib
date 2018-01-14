@@ -1,4 +1,4 @@
-// Copyright © 2017 Thomas Nagler and Thibault Vatter
+// Copyright © 2018 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -14,7 +14,7 @@ inline Bb8Bicop::Bb8Bicop()
     parameters_lower_bounds_ = Eigen::VectorXd(2);
     parameters_upper_bounds_ = Eigen::VectorXd(2);
     parameters_ << 1, 1;
-    parameters_lower_bounds_ << 1, 0;
+    parameters_lower_bounds_ << 1, 1e-4;
     parameters_upper_bounds_ << 8, 1;
 }
 

@@ -1,4 +1,4 @@
-// Copyright © 2017 Thomas Nagler and Thibault Vatter
+// Copyright © 2018 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -75,6 +75,9 @@ public:
     std::vector <std::vector<int>> get_all_rotations() const;
 
     std::vector <std::vector<Eigen::VectorXd>> get_all_parameters() const;
+    
+    // getter for the threshold
+    double get_threshold() const;
 
     // Stats methods
     Eigen::VectorXd pdf(const Eigen::MatrixXd &u) const;
@@ -102,6 +105,7 @@ private:
     size_t d_;
     RVineMatrix vine_matrix_;
     std::vector <std::vector<Bicop>> pair_copulas_;
+    double threshold_;
 
     void check_data_dim(const Eigen::MatrixXd &data);
 

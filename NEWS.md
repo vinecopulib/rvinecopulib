@@ -1,3 +1,30 @@
+# vinecopulib 0.2.5.1.0 (January 14, 2017)
+
+Release following the updates of vinecopulib to 0.2.4 and 0.2.5, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+NEW FEATURES
+
+   * faster simulation and pdf functions for truncated vines.
+
+   * speed up vine copula algorithms by pre-computing information related to 
+     the vine structure.
+     
+   * the selected threshold parameter can be returned from an `vinecop` 
+     object.
+     
+BUG FIXES
+
+   * make bb8 lower bound ensure feasible computations in `par_to_tau()`.
+
+   * default initialize `Rcout` (#277).
+
+   * fix storage order of pair copulas when structure is fixed.
+   
+   * fixed selection algorithm for threshold and truncation level.
+
+
 # vinecopulib 0.2.3.1.0 (November 18, 2017)
 
 Release following the update of vinecopulib to 0.2.3, see 

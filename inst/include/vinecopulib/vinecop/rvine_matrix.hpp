@@ -1,4 +1,4 @@
-// Copyright © 2017 Thomas Nagler and Thibault Vatter
+// Copyright © 2018 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -76,7 +76,7 @@ public:
     Eigen::Matrix<size_t, Eigen::Dynamic, 1> get_order() const;
 
     Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic>
-    in_natural_order() const;
+    get_natural_order() const;
 
     Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic>
     get_max_matrix() const;
@@ -109,9 +109,19 @@ private:
     void check_columns() const;
 
     void check_proximity_condition() const;
+    
+    Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic>
+        compute_natural_order() const;
+    
+    MatrixXb compute_needed_hfunc1() const;
+    
+    MatrixXb compute_needed_hfunc2() const;
 
     size_t d_;
     Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> matrix_;
+    Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> no_matrix_;
+    MatrixXb needed_hfunc1_;
+    MatrixXb needed_hfunc2_;
 };
 
 int relabel_one(const int &x,
