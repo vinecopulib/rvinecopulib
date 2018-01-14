@@ -21,6 +21,7 @@ apt_packages:
   - libudunits2-dev
 
 r_packages:
+  - devtools
   - BH
   - covr
   - ggraph
