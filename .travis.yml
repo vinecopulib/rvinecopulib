@@ -33,13 +33,13 @@ r_packages:
 
 before_install:
   ### Linux
-  - if [ $TRAVIS_OS_NAME == linux ]; then sudo add-apt-repository ppa:marutter/c2d4u -y; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get update -q; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get install gcc-5 g++-5 gfortran-5; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100; fi
   - if [ $TRAVIS_OS_NAME == linux ]; then sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100; fi
- 
+
+
 repos:
   CRAN: http://cran.rstudio.com
 
