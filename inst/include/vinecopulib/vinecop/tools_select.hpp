@@ -1,4 +1,4 @@
-// Copyright © 2017 Thomas Nagler and Thibault Vatter
+// Copyright © 2018 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -90,6 +90,8 @@ public:
     void select_all_trees(const Eigen::MatrixXd &data);
 
     void sparse_select_all_trees(const Eigen::MatrixXd &data);
+    
+    double get_threshold() const;
 
 protected:
     void select_tree(size_t t);
@@ -124,7 +126,9 @@ protected:
     RVineMatrix vine_matrix_;
     std::vector<std::vector<Bicop>> pair_copulas_;
     std::vector<VineTree> trees_;
-    std::vector<VineTree> trees_opt_;  // for sparse selction
+    // for sparse selction
+    std::vector<VineTree> trees_opt_;
+    double threshold_;
 
 private:
     double get_next_threshold(std::vector<double> &thresholded_crits);
@@ -190,6 +194,9 @@ private:
                               const VineTree &vine_tree);
 
     void finalize(size_t trunc_lvl);
+    
+    size_t find_column_in_matrix(const std::vector<size_t>& conditioned);
+
 };
 
 }

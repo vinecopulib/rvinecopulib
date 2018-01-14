@@ -13,8 +13,8 @@ list of publications and other materials on [vine-copula.org](http://www.statist
 
 This package is the [R](https://cran.r-project.org/) API to the C++ library 
 [vinecopulib](https://github.com/vinecopulib/vinecopulib), a header-only 
-C++ library for vine copula models based on [Boost](http://eigen.tuxfamily.org/index.php?title=Main_Page) and 
-[Eigen](http://www.boost.org/). 
+C++ library for vine copula models based on [Boost](http://www.boost.org/) and 
+[Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page).
 
 It provides high-performance implementations of the core features of the popular
 [VineCopula R library](https://github.com/tnagler/VineCopula), in particular
