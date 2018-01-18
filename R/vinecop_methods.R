@@ -182,7 +182,8 @@ logLik.vinecop <- function(object, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
-    npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
+    npars <- ifelse(length(pc_lst) == 0, 0, 
+                    sum(sapply(pc_lst, function(x) x[["npars"]])))
     structure(vinecop_loglik_cpp(object$data, object), "df" = npars)
 }
 
