@@ -121,7 +121,7 @@ summary.vinecop_dist <- function(object, ...) {
             mdf$conditioning[k] <- list(mat[rev(seq_len(t - 1)), e])
             pc <- object$pair_copulas[[t]][[e]]
             if (pc$family %in% setdiff(family_set_nonparametric, "indep")) {
-                pc$parameters <- "[30x30 grid]"
+                pc$parameters <- paste0(round(pc$npars, 2), sep = " d.f.")
             }
             mdf$family[k]     <- pc$family
             mdf$rotation[k]   <- pc$rotation
