@@ -120,6 +120,9 @@ summary.vinecop_dist <- function(object, ...) {
             mdf$conditioned[k]  <- list(c(mat[d - e + 1, e], mat[t, e]))
             mdf$conditioning[k] <- list(mat[rev(seq_len(t - 1)), e])
             pc <- object$pair_copulas[[t]][[e]]
+            if (pc$family %in% setdiff(family_set_nonparametric, "indep")) {
+                pc$parameters <- paste0(round(pc$npars, 2), sep = " d.f.")
+            }
             mdf$family[k]     <- pc$family
             mdf$rotation[k]   <- pc$rotation
             mdf$parameters[k] <- list(pc$parameters)
@@ -182,7 +185,8 @@ logLik.vinecop <- function(object, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
-    npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
+    npars <- ifelse(length(pc_lst) == 0, 0, 
+                    sum(sapply(pc_lst, function(x) x[["npars"]])))
     structure(vinecop_loglik_cpp(object$data, object), "df" = npars)
 }
 

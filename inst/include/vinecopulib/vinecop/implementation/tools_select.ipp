@@ -31,16 +31,15 @@ inline double calculate_criterion(const Eigen::Matrix<double, Eigen::Dynamic, 2>
     double freq = static_cast<double>(data_no_nan.rows()) / static_cast<double>(data.rows());
     if (data_no_nan.rows() > 10) {
         if (tree_criterion == "tau") {
-            w = std::fabs(tools_stats::pairwise_tau(data_no_nan));
+            w = tools_stats::pairwise_tau(data_no_nan);
         } else if (tree_criterion == "hoeffd") {
-            // scale to [0,1]
-            w = (30 * tools_stats::pairwise_hoeffd(data_no_nan) + 0.5) / 1.5;
+            w = tools_stats::pairwise_hoeffd(data_no_nan);
         } else if (tree_criterion == "rho") {
-            w = std::fabs(tools_stats::pairwise_cor(data_no_nan));
+            w = tools_stats::pairwise_cor(data_no_nan);
         }
     }
 
-    return w * std::sqrt(freq);
+    return std::fabs(w) * std::sqrt(freq);
 }
 
 //! Calculates maximal criterion for tree selection.
