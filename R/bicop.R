@@ -53,6 +53,7 @@
 #' `"bbs"` =  BB families.\cr
 #' `"oneparametric"` =  one parameter families.\cr
 #' `"twoparametric"` =  two parameter families.\cr
+#' `"itau"` =  one parameter families and Student t copula.\cr
 #' Partial matching is activated. For example, `"gauss"` is equivalent to 
 #' `"gaussian"`, or you can write  `"nonpar"` instead of `"nonparametric"`.
 #'
