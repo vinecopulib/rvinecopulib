@@ -85,6 +85,7 @@ with \code{bicop}:\cr
 \code{"bbs"} =  BB families.\cr
 \code{"oneparametric"} =  one parameter families.\cr
 \code{"twoparametric"} =  two parameter families.\cr
+\code{"itau"} =  one parameter families and Student t copula.\cr
 Partial matching is activated. For example, \code{"gauss"} is equivalent to
 \code{"gaussian"}, or you can write  \code{"nonpar"} instead of \code{"nonparametric"}.
 }
