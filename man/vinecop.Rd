@@ -7,9 +7,9 @@
 \title{Vine copula models}
 \usage{
 vinecop(data, family_set = "all", matrix = NA, par_method = "mle",
-  nonpar_method = "constant", mult = 1, selcrit = "bic", presel = TRUE,
-  trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = TRUE,
-  show_trace = FALSE, cores = 1)
+  nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9,
+  presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
+  keep_data = TRUE, show_trace = FALSE, cores = 1)
 
 vinecop_dist(pair_copulas, matrix)
 }
@@ -38,22 +38,25 @@ one/two.}
 families. Values larger than 1 make the estimate more smooth, values less
 than 1 less smooth.}
 
-\item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"}, or
-\code{"bic"}.}
+\item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"},
+\code{"bic"}, \code{"mbic"}. For \code{vinecop()} there is the additional option \code{"mbicv"}.}
+
+\item{psi0}{prior probability of a non-independence copula (only used for
+\code{selcrit = "mbic"} and \code{selcrit = "mbicv"}).}
 
 \item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
 
 \item{trunc_lvl}{the truncation level of the vine copula; \code{Inf} means no
 truncation, \code{NA} indicates that the truncation level should be selected
-automatically by GIC.}
+automatically by \code{\link[=mBICV]{mBICV()}}.}
 
 \item{tree_crit}{the criterion for tree selection, one of \code{"tau"}, \code{"rho"},
 \code{"hoeffd"} for Kendall's \eqn{tau}, Spearman's \eqn{rho}, and Hoeffding's
 \eqn{D}, respectively.}
 
 \item{threshold}{for thresholded vine copulas; \code{NA} indicates that the
-threshold should be selected automatically by GIC.}
+threshold should be selected automatically by \code{\link[=mBICV]{mBICV()}}.}
 
 \item{keep_data}{whether the data should be stored (necessary for computing
 fit statistics and using \code{\link[=fitted]{fitted()}}).}
@@ -82,7 +85,7 @@ Automated fitting or creation of custom vine copula models
 \code{vinecop()} provides automated fitting for vine copula models.
 The function inherits the parameters of \code{\link[=bicop]{bicop()}}.
 Optionally, a quadratic \code{matrix} can be used as
-input to prespecify the vine structure. \code{tree_crit} describes the
+input to pre-specify the vine structure. \code{tree_crit} describes the
 criterion for tree selection, one of \code{"tau"}, \code{"rho"}, \code{"hoeffd"} for
 Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
 \code{threshold} allows to threshold the \code{tree_crit} and \code{trunc_lvl} to truncate
@@ -106,8 +109,8 @@ vc <- vinecop_dist(pcs, mat)
 # show model
 summary(vc)
 
-# get some data
-u <- sapply(1:3, function(i) runif(50))
+# simulate some data
+u <- rvinecop(50, vc)
 
 # estimate a vine copula model
 fit <- vinecop(u, "par")

@@ -88,6 +88,14 @@ double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
 }
 
 // [[Rcpp::export()]]
+double vinecop_mbicv_cpp(const Eigen::MatrixXd& u, 
+                         const Rcpp::List& vinecop_r,
+                         double psi0)
+{
+    return vinecop_wrap(vinecop_r).mbicv(u, psi0);
+}
+
+// [[Rcpp::export()]]
 Rcpp::List vinecop_select_cpp(
         const Eigen::MatrixXd& data,
         Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix,
@@ -99,6 +107,7 @@ Rcpp::List vinecop_select_cpp(
         std::string tree_criterion,
         double threshold,
         std::string selection_criterion,
+        double psi0,
         bool select_truncation_level,
         bool select_threshold,
         bool preselect_families,
@@ -120,6 +129,7 @@ Rcpp::List vinecop_select_cpp(
             tree_criterion,
             threshold,
             selection_criterion,
+            psi0,
             preselect_families,
             select_truncation_level,
             select_threshold,
