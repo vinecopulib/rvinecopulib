@@ -393,8 +393,9 @@ inline Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> relabel_elements(
 //! completes an R-vine matrix that has only been filled for the first couple
 //! of trees.
 //! @param mat R-vine matrix where counter-diagonal and upper block have been 
-//!     filled; entries in between may still be 0.
+//!     filled; entries in between may still be 0 for truncated vines.
 //! @param t_start the tree level from where the matrix needs to be filled.
+//! @param num_threads number of parallel threads to use.
 //! @return a valid R-vine structure matrix (= passing all 
 //!     checks in `RVineMatrix()`).
 inline void RVineMatrix::complete_matrix(

@@ -57,6 +57,19 @@ inline Eigen::MatrixXd nan_omit(const Eigen::MatrixXd &x)
     return out;*/
 }
 
+//! check if all elements are contained in the unit cube.
+//! @param u copula data.
+//! @return `true` if all data lie in the unit cube; throws an error otherwise.
+inline bool check_if_in_unit_cube(const Eigen::MatrixXd &u)
+{
+    bool any_outside = (u.array() < 0.0).any() | (u.array() > 1.0).any();
+    if (any_outside) {
+        throw std::runtime_error("all data must be contained in [0, 1]^d.");
+    }
+    return !any_outside;
+}
+
+
 //! swap the columns of a two-column matrix
 //! @param u the matrix.
 //! @return a new matrix v with `v.col(0) = u.col(1)`, `v.col(1) = u.col(0)`.

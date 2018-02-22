@@ -86,6 +86,9 @@ public:
 
     double bic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
 
+    double mbic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u, 
+                const double pi) const;
+    
     // Misc
     std::string str() const;
 

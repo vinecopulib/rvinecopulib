@@ -22,6 +22,8 @@ namespace vinecopulib {
 //!     are multiplied.
 //! @param selection_criterion the selection criterion (`"loglik"`, `"aic"` 
 //!     or `"bic"`).
+//! @param psi0 only for `selection_criterion = "mbic"): prior probability of
+//!     non-independence.
 //! @param preselect_families whether to exclude families before fitting
 //!     based on symmetry properties of the data.
 //! @param num_threads number of concurrent threads to use while fitting
@@ -32,6 +34,7 @@ inline FitControlsBicop::FitControlsBicop(std::vector <BicopFamily> family_set,
                                           std::string nonparametric_method,
                                           double nonparametric_mult,
                                           std::string selection_criterion,
+                                          double psi0,
                                           bool preselect_families,
                                           size_t num_threads)
 {
@@ -41,6 +44,7 @@ inline FitControlsBicop::FitControlsBicop(std::vector <BicopFamily> family_set,
     set_nonparametric_mult(nonparametric_mult);
     set_selection_criterion(selection_criterion);
     set_preselect_families(preselect_families);
+    set_psi0(psi0);
     set_num_threads(num_threads);
 }
 
@@ -96,9 +100,19 @@ FitControlsBicop::check_nonparametric_mult(double nonparametric_mult)
 inline void
 FitControlsBicop::check_selection_criterion(std::string selection_criterion)
 {
-    if (!tools_stl::is_member(selection_criterion, {"loglik", "aic", "bic"})) {
+    std::vector<std::string> allowed_crits = 
+        {"loglik", "aic", "bic", "mbic", "mbicv"};
+    if (!tools_stl::is_member(selection_criterion, allowed_crits)) {
         throw std::runtime_error(
-            "selection_criterion should be 'loglik', 'aic', or 'bic'");
+            "selection_criterion should be 'loglik', 'aic', 'bic', or 'mbic'");
+    }
+}
+
+inline void
+FitControlsBicop::check_psi0(double psi0)
+{
+    if (!(psi0 > 0.0) | !(psi0 < 1.0)) {
+        throw std::runtime_error("psi0 must be in the interval (0, 1)");
     }
 }
 //! @}
@@ -140,6 +154,11 @@ inline bool FitControlsBicop::get_preselect_families() const
     return preselect_families_;
 }
 
+inline double FitControlsBicop::get_psi0() const
+{
+    return psi0_;
+}
+
 inline void
 FitControlsBicop::set_family_set(std::vector <BicopFamily> family_set)
 {
@@ -177,6 +196,12 @@ FitControlsBicop::set_selection_criterion(std::string selection_criterion)
 inline void FitControlsBicop::set_preselect_families(bool preselect_families)
 {
     preselect_families_ = preselect_families;
+}
+
+inline void FitControlsBicop::set_psi0(double psi0)
+{
+    check_psi0(psi0);
+    psi0_ = psi0;
 }
 
 inline void FitControlsBicop::set_num_threads(size_t num_threads)

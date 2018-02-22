@@ -40,17 +40,17 @@ Eigen::VectorXd binaryExpr_or_nan(
 
 Eigen::MatrixXd nan_omit(const Eigen::MatrixXd &x);
 
+bool check_if_in_unit_cube(const Eigen::MatrixXd &u);
+
 Eigen::Matrix<double, Eigen::Dynamic, 2> swap_cols(
     Eigen::Matrix<double, Eigen::Dynamic, 2> u);
 
 Eigen::VectorXd invert_f(
     const Eigen::VectorXd &x,
-    std::function< Eigen::VectorXd(const Eigen::VectorXd &)
-
-> f,
-const double lb = 1e-20,
-const double ub = 1 - 1e-20,
-int n_iter = 35
+    std::function< Eigen::VectorXd(const Eigen::VectorXd &)> f,
+    const double lb = 1e-20,
+    const double ub = 1 - 1e-20,
+    int n_iter = 35
 );
 
 Eigen::Matrix<double, Eigen::Dynamic, 2> expand_grid(

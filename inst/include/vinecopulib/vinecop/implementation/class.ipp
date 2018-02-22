@@ -227,14 +227,16 @@ inline std::vector <std::vector<Bicop>> Vinecop::make_pair_copula_store(
 inline void Vinecop::select_all(const Eigen::MatrixXd &data,
                                 FitControlsVinecop controls)
 {
+    tools_eigen::check_if_in_unit_cube(data);
     check_data_dim(data);
+    
     tools_select::StructureSelector selector(data, controls);
     if (controls.needs_sparse_select()) {
         selector.sparse_select_all_trees(data);
-        threshold_ = selector.get_threshold();
     } else {
         selector.select_all_trees(data);
     }
+    threshold_ = selector.get_threshold();
     vine_matrix_ = selector.get_rvine_matrix();
     pair_copulas_ = selector.get_pair_copulas();
 }
@@ -246,14 +248,16 @@ inline void Vinecop::select_all(const Eigen::MatrixXd &data,
 inline void Vinecop::select_families(const Eigen::MatrixXd &data,
                                      FitControlsVinecop controls)
 {
+    tools_eigen::check_if_in_unit_cube(data);
     check_data_dim(data);
+    
     tools_select::FamilySelector selector(data, vine_matrix_, controls);
     if (controls.needs_sparse_select()) {
         selector.sparse_select_all_trees(data);
-        threshold_ = selector.get_threshold();
     } else {
         selector.select_all_trees(data);
     }
+    threshold_ = selector.get_threshold();
     pair_copulas_ = selector.get_pair_copulas();
 }
 
@@ -401,16 +405,11 @@ inline double Vinecop::get_threshold() const
 //! @param u \f$ n \times d \f$ matrix of evaluation points.
 inline Eigen::VectorXd Vinecop::pdf(const Eigen::MatrixXd &u) const
 {
+    tools_eigen::check_if_in_unit_cube(u);
+    check_data_dim(u);
     size_t d = u.cols();
     size_t n = u.rows();
-    if (d != d_) {
-        std::stringstream message;
-        message << "u has wrong number of columns. " <<
-                "expected: " << d_ <<
-                ", actual: " << d << std::endl;
-        throw std::runtime_error(message.str().c_str());
-    }
-
+    
     // info about the vine structure (reverse rows (!) for more natural indexing)
     Eigen::Matrix<size_t, Eigen::Dynamic, 1> revorder = vine_matrix_.get_order().reverse();
     auto no_matrix = vine_matrix_.get_natural_order();
@@ -470,6 +469,8 @@ inline Eigen::VectorXd Vinecop::pdf(const Eigen::MatrixXd &u) const
 inline Eigen::VectorXd
 Vinecop::cdf(const Eigen::MatrixXd &u, const size_t N) const
 {
+    tools_eigen::check_if_in_unit_cube(u);
+    check_data_dim(u);
     if (d_ > 360) {
         std::stringstream message;
         message << "cumulative distribution available for models of " <<
@@ -553,6 +554,55 @@ inline double Vinecop::bic(const Eigen::MatrixXd &u) const
     return -2 * loglik(u) + calculate_npars() * log(static_cast<double>(u.rows()));
 }
 
+//! calculates the modified Bayesian information criterion for vines (mBICV), 
+//! which is defined as
+//! \f[ \mathrm{mBICV} = -2\, \mathrm{loglik} +  \ln(n) \nu, - 2 * 
+//! \sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 -\psi_0^t)\}\f]
+//! where \f$ \mathrm{loglik} \f$ is the log-liklihood, \f$ \nu \f$ is the
+//! (effective) number of parameters of the model, \f$ t \f$ is the tree level 
+//! \f$ \psi_0 \f$ is the prior probability of having a non-independence copula 
+//! in the first tree, and \f$ q_t \f$ is the number of non-independence copulas
+//! in tree \f$ t \f$; The vBIC is a consistent model selection criterion for 
+//! parametric sparse vine copula models when \f$ d = o(\sqrt{n \ln n})\f.
+//!
+//! @param u \f$n \times 2\f$ matrix of observations.
+//! @param pi baseline prior probability of a non-independence copula.
+inline double Vinecop::mbicv(const Eigen::MatrixXd &u, double pi) const
+{
+    if (!(pi > 0.0) | !(pi < 1.0)) {
+        throw std::runtime_error("pi must be in the interval (0, 1)");
+    }    
+    auto all_fams = get_all_families();
+    Eigen::Matrix<size_t, Eigen::Dynamic, 1> non_indeps(d_ - 1);
+    non_indeps.setZero();
+    for (size_t t = 0; t < d_ - 1; t++) {
+        if (t == all_fams.size()) {
+            break;
+        }
+        for (size_t e = 0; e < d_ - 1 - t; e++) {
+            if (all_fams[t][e] != BicopFamily::indep) {
+                non_indeps(t)++;
+            }
+        }
+    }
+    auto sq0 = tools_stl::seq_int(1, d_ - 1);
+    Eigen::Matrix<size_t, Eigen::Dynamic, 1> sq(d_ - 1);
+    auto pis = Eigen::VectorXd(d_ - 1);
+    for (size_t i = 0; i < d_ - 1; i++) {
+        sq(i) = sq0[i];
+        pis(i) = std::pow(pi, sq0[i]);
+    }
+    double npars = this->calculate_npars();
+    double n = static_cast<double>(u.rows());
+    double ll = this->loglik(u);
+    double log_prior = (
+        non_indeps.cast<double>().array() * pis.array().log() +
+        (d_ - non_indeps.array() - sq.array()).cast<double>() * 
+        (1 - pis.array()).log()
+    ).sum();
+    return -2 * ll + std::log(n) * npars - 2 * log_prior;       
+}
+
 //! returns sum of the number of parameters for all pair copulas (see
 //! Bicop::calculate_npars()).
 inline double Vinecop::calculate_npars() const
@@ -582,18 +632,13 @@ inline double Vinecop::calculate_npars() const
 inline Eigen::MatrixXd
 Vinecop::inverse_rosenblatt(const Eigen::MatrixXd &u) const
 {
+    tools_eigen::check_if_in_unit_cube(u);
+    check_data_dim(u);
     size_t n = u.rows();
     if (n < 1) {
         throw std::runtime_error("n must be at least one");
     }
     size_t d = u.cols();
-    if (d != d_) {
-        std::stringstream message;
-        message << "U has wrong number of columns; " <<
-                "expected: " << d_ <<
-                ", actual: " << d << std::endl;
-        throw std::runtime_error(message.str().c_str());
-    }
 
     Eigen::MatrixXd U_vine = u;  // output matrix
 
@@ -676,7 +721,7 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd &u) const
 }
 
 //! checks if dimension d of the data matches the dimension of the vine.
-inline void Vinecop::check_data_dim(const Eigen::MatrixXd &data)
+inline void Vinecop::check_data_dim(const Eigen::MatrixXd &data) const
 {
     size_t d_data = data.cols();
     if (d_data != d_) {
