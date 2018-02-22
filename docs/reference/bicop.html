@@ -18,6 +18,8 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -25,6 +27,7 @@
 <script src="../pkgdown.js"></script>
   
   
+<meta property="og:title" content="Bivariate copula models — bicop" />
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -86,8 +89,8 @@
     
 
     <pre class="usage"><span class='fu'>bicop</span>(<span class='no'>data</span>, <span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"all"</span>, <span class='kw'>par_method</span> <span class='kw'>=</span> <span class='st'>"mle"</span>,
-  <span class='kw'>nonpar_method</span> <span class='kw'>=</span> <span class='st'>"quadratic"</span>, <span class='kw'>mult</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>selcrit</span> <span class='kw'>=</span> <span class='st'>"bic"</span>, <span class='kw'>presel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>)
+  <span class='kw'>nonpar_method</span> <span class='kw'>=</span> <span class='st'>"quadratic"</span>, <span class='kw'>mult</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>selcrit</span> <span class='kw'>=</span> <span class='st'>"bic"</span>, <span class='kw'>psi0</span> <span class='kw'>=</span> <span class='fl'>0.9</span>,
+  <span class='kw'>presel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
 <span class='fu'>bicop_dist</span>(<span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"indep"</span>, <span class='kw'>rotation</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>parameters</span> <span class='kw'>=</span> <span class='fu'>numeric</span>(<span class='fl'>0</span>))</pre>
     
@@ -125,8 +128,12 @@ than 1 less smooth.</p></td>
     </tr>
     <tr>
       <th>selcrit</th>
-      <td><p>criterion for family selection, either <code>"loglik"</code>, <code>"aic"</code>, or
-<code>"bic"</code>.</p></td>
+      <td><p>criterion for family selection, either <code>"loglik"</code>, <code>"aic"</code>,
+<code>"bic"</code>, <code>"mbic"</code>. For <code><a href='vinecop.html'>vinecop()</a></code> there is the additional option <code>"mbicv"</code>.</p></td>
+    </tr>
+    <tr>
+      <th>psi0</th>
+      <td><p>see <code><a href='mBICV.html'>mBICV()</a></code>.</p></td>
     </tr>
     <tr>
       <th>presel</th>
@@ -183,7 +190,7 @@ with <code>bicop</code>:
     <code>"all"</code> =  all families.
 <code>"parametric"</code> =  parametric families.
 <code>"nonparametric"</code> =  nonparametric families.
-<code>"archimedean"</code> =  Archimedean families.
+<code>"archimedean"</code> =  archimedean families.
 <code>"elliptical"</code> =  elliptical families.
 <code>"bbs"</code> =  BB families.
 <code>"oneparametric"</code> =  one parameter families.
