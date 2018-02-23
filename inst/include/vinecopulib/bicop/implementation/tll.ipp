@@ -45,8 +45,10 @@ inline Eigen::Matrix2d TllBicop::select_bandwidth(
         }
         mult = 1.5 * std::pow(n, -1.0 / (2.0 * degree + 1.0));
     }
+    double scale = std::fabs(tools_stats::pairwise_cor(x) /
+                             tools_stats::pairwise_mcor(x));
 
-    return mult * cov;
+    return mult * cov * scale;
 }
 
 //! calculates the cholesky root of a 2x2 matrix.

@@ -16,8 +16,9 @@
 #' @param mult multiplier for the smoothing parameters of nonparametric 
 #'   families. Values larger than 1 make the estimate more smooth, values less
 #'   than 1 less smooth.
-#' @param selcrit criterion for family selection, either `"loglik"`, `"aic"`, or 
-#'   `"bic"`.
+#' @param selcrit criterion for family selection, either `"loglik"`, `"aic"`, 
+#'   `"bic"`, `"mbic"`. For `vinecop()` there is the additional option `"mbicv"`.
+#' @param psi0 see [mBICV()].
 #' @param presel whether the family set should be thinned out according to
 #'   symmetry characteristics of the data.
 #' @param keep_data whether the data should be stored (necessary for computing
@@ -48,7 +49,7 @@
 #' `"all"` =  all families.\cr
 #' `"parametric"` =  parametric families.\cr
 #' `"nonparametric"` =  nonparametric families.\cr
-#' `"archimedean"` =  Archimedean families.\cr
+#' `"archimedean"` =  archimedean families.\cr
 #' `"elliptical"` =  elliptical families.\cr
 #' `"bbs"` =  BB families.\cr
 #' `"oneparametric"` =  one parameter families.\cr
@@ -75,7 +76,7 @@
 #' @export
 bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic", 
-                  presel = TRUE, keep_data = TRUE, cores = 1) {
+                  psi0 = 0.9, presel = TRUE, keep_data = TRUE, cores = 1) {
     stopifnot(ncol(data) == 2)
     # check if families known (w/ partial matching) and expand convenience defs
     family_set <- process_family_set(family_set)
@@ -89,6 +90,7 @@ bicop <- function(data, family_set = "all", par_method = "mle",
         nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
+        psi0 = psi0,
         presel = presel,
         num_threads = cores
     )
@@ -104,6 +106,7 @@ bicop <- function(data, family_set = "all", par_method = "mle",
         nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
+        psi0 = psi0,
         presel = presel
     )
     bicop$nobs <- nrow(data)

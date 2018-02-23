@@ -10,14 +10,16 @@
 #'   [check_rvine_matrix()]); for [vinecop_dist()], the dimension must be 
 #'   `length(pair_copulas)-1`; for [vinecop()], `matrix = NA` performs
 #'   automatic structure selection.
+#' @param psi0 prior probability of a non-independence copula (only used for
+#'     `selcrit = "mbic"` and `selcrit = "mbicv"`).
 #' @param trunc_lvl the truncation level of the vine copula; `Inf` means no
 #'   truncation, `NA` indicates that the truncation level should be selected
-#'   automatically by GIC.
+#'   automatically by [mBICV()].
 #' @param tree_crit the criterion for tree selection, one of `"tau"`, `"rho"`,
 #'    `"hoeffd"` for Kendall's \eqn{tau}, Spearman's \eqn{rho}, and Hoeffding's
 #'    \eqn{D}, respectively.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the 
-#'   threshold should be selected automatically by GIC.
+#'   threshold should be selected automatically by [mBICV()].
 #' @param show_trace logical; whether a trace of the fitting progress should be 
 #'    printed.
 #' @param cores number of cores to use; if more than 1, estimation of pair 
@@ -30,7 +32,7 @@
 #' `vinecop()` provides automated fitting for vine copula models. 
 #' The function inherits the parameters of [bicop()]. 
 #' Optionally, a quadratic `matrix` can be used as
-#' input to prespecify the vine structure. `tree_crit` describes the
+#' input to pre-specify the vine structure. `tree_crit` describes the
 #' criterion for tree selection, one of `"tau"`, `"rho"`, `"hoeffd"` for
 #' Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally, 
 #' `threshold` allows to threshold the `tree_crit` and `trunc_lvl` to truncate 
@@ -57,8 +59,8 @@
 #' # show model
 #' summary(vc)
 #' 
-#' # get some data
-#' u <- sapply(1:3, function(i) runif(50))
+#' # simulate some data
+#' u <- rvinecop(50, vc)
 #' 
 #' # estimate a vine copula model
 #' fit <- vinecop(u, "par")
@@ -69,7 +71,7 @@
 #' @export
 vinecop <- function(data, family_set = "all", matrix = NA, 
                     par_method = "mle", nonpar_method = "constant",
-                    mult = 1, selcrit = "bic", presel = TRUE, 
+                    mult = 1, selcrit = "bic", psi0 = 0.9, presel = TRUE, 
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
                     keep_data = TRUE, show_trace = FALSE, cores = 1) {
     # check if families known (w/ partial matching) and expand convenience defs
@@ -89,6 +91,7 @@ vinecop <- function(data, family_set = "all", matrix = NA,
         nonpar_method = nonpar_method,
         mult = mult,
         selection_criterion = selcrit,
+        psi0 = psi0,
         preselect_families = presel,
         truncation_level = ifelse(  # Inf cannot be passed to C++
             is.finite(trunc_lvl),
@@ -108,7 +111,7 @@ vinecop <- function(data, family_set = "all", matrix = NA,
         vinecop$pair_copulas, 
         function(tree) lapply(tree, as.bicop)
     )
-
+    
     ## add information about the fit
     vinecop$names <- colnames(data)
     if (keep_data) {

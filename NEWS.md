@@ -1,3 +1,24 @@
+# vinecopulib 0.2.6.1.0 (February 23, 2018)
+
+Release following the updates of vinecopulib to 0.2.6, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+NEW FEATURES
+
+   * add checks for data in (0, 1).
+
+   * improved bandwidth selection for method `"tll"` by scaling with 
+     maximum-correlation coefficient.
+     
+   * add mBICV criterion to select the truncation level and threshold along with
+     new function `mBICV()`.
+
+BUG FIXES
+   
+   * fix calculation of Hoeffding's D.
+
+
 # vinecopulib 0.2.5.1.0 (January 14, 2017)
 
 Release following the updates of vinecopulib to 0.2.4 and 0.2.5, see 

@@ -21,6 +21,7 @@ public:
                      std::string nonparametric_method = "quadratic",
                      double nonparametric_mult = 1.0,
                      std::string selection_criterion = "bic",
+                     double psi0 = 0.9,
                      bool preselect_families = true,
                      size_t num_threads = 1);
 
@@ -41,6 +42,8 @@ public:
     std::string get_selection_criterion() const;
 
     bool get_preselect_families() const;
+    
+    double get_psi0() const;
 
     size_t get_num_threads();
 
@@ -56,6 +59,8 @@ public:
     void set_selection_criterion(std::string selection_criterion);
 
     void set_preselect_families(bool preselect_families);
+    
+    void set_psi0(double psi0);
 
     void set_num_threads(size_t num_threads);
 
@@ -66,6 +71,7 @@ private:
     double nonparametric_mult_;
     std::string selection_criterion_;
     bool preselect_families_;
+    double psi0_;
     size_t num_threads_;
 
     void check_parametric_method(std::string parametric_method);
@@ -75,6 +81,8 @@ private:
     void check_nonparametric_mult(double nonparametric_mult);
 
     void check_selection_criterion(std::string selection_criterion);
+    
+    void check_psi0(double psi0);
 
     size_t process_num_threads(size_t num_threads);
 };

@@ -27,6 +27,7 @@ public:
                        std::string tree_criterion = "tau",
                        double threshold = 0.0,
                        std::string selection_criterion = "bic",
+                       double psi0 = 0.9,
                        bool preselect_families = true,
                        bool select_truncation_level = false,
                        bool select_threshold = false,
@@ -43,21 +44,21 @@ public:
                        size_t num_threads = 1);
 
     // Getters
-    size_t get_truncation_level();
+    size_t get_truncation_level() const;
 
-    std::string get_tree_criterion();
+    std::string get_tree_criterion() const;
 
-    double get_threshold();
+    double get_threshold() const;
 
-    bool get_show_trace();
+    bool get_show_trace() const;
 
-    bool get_select_truncation_level();
+    bool get_select_truncation_level() const;
 
-    bool get_select_threshold();
+    bool get_select_threshold() const;
 
-    bool needs_sparse_select();
+    bool needs_sparse_select() const;
 
-    FitControlsBicop get_fit_controls_bicop();
+    FitControlsBicop get_fit_controls_bicop() const;
 
     // Setters
     void set_truncation_level(size_t truncation_level);

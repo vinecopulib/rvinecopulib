@@ -190,6 +190,28 @@ logLik.vinecop <- function(object, ...) {
     structure(vinecop_loglik_cpp(object$data, object), "df" = npars)
 }
 
+#' calculates the vine copula Bayesian information criterion (vBIC), which is 
+#' defined as
+#' \deqn{\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
+#' \sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
+#' }
+#' where \eqn{\mathrm{loglik}} is the log-liklihood and \eqn{\nu} is the
+#' (effective) number of parameters of the model, \eqn{t} is the tree level 
+#' \eqn{\psi_0} is the priorprobability of having a non-independence copula and 
+#' \eqn{q_t} is the number of non-independence copulas in tree \eqn{t}.
+#' The vBIC is a consistent model 
+#' selection criterion for parametric sparse vine copula models.
+#'
+#' @param object a fitted `vinecop` object.
+#' @param psi0 baseline prior probability of a non-independence copula.
+#' @export mBICV
+mBICV <- function(object, psi0 = 0.9) {
+    stopifnot(inherits(object, "vinecop_dist"))
+    if (is.null(object$data))
+        stop("data have not been stored, use keep_data = TRUE when fitting.")
+    vinecop_mbicv_cpp(object$data, object, psi0)
+}
+
 #' @export
 print.vinecop <- function(x, ...) {
     d <- nrow(x$matrix)
