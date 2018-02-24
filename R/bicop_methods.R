@@ -214,7 +214,7 @@ logLik.bicop <- function(object, ...) {
 #' @export
 print.bicop_dist <- function(x, ...) {
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
-        x$parameters <- "[30x30 grid]"
+        x$parameters <- paste0(round(x$npars, 2), sep = " d.f.")
     }
     cat("Bivariate copula ('bicop_dist'): ",
         "family = ", x$family,
@@ -235,7 +235,7 @@ summary.bicop_dist <- function(object, ...) {
 #' @export
 print.bicop <- function(x, ...) {
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
-        pars_formatted <- "[30x30 grid]"
+        pars_formatted <- paste0(round(x$npars, 2), sep = " d.f.")
     } else {
         pars_formatted <- paste(round(x$parameters, 2), collapse = ", ")
     }

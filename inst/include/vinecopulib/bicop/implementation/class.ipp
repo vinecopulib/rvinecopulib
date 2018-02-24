@@ -104,6 +104,7 @@ inline Eigen::VectorXd
 Bicop::pdf(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u)
 const
 {
+    tools_eigen::check_if_in_unit_cube(u);
     Eigen::VectorXd f = bicop_->pdf(cut_and_rotate(u));
     f = f.unaryExpr([](const double x) { return std::min(x, 1e16); });
     return f;
@@ -117,6 +118,7 @@ inline Eigen::VectorXd
 Bicop::cdf(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u)
 const
 {
+    tools_eigen::check_if_in_unit_cube(u);
     Eigen::VectorXd p = bicop_->cdf(cut_and_rotate(u));
     switch (rotation_) {
         case 0:
@@ -148,6 +150,7 @@ inline Eigen::VectorXd
 Bicop::hfunc1(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u)
 const
 {
+    tools_eigen::check_if_in_unit_cube(u);
     switch (rotation_) {
         case 0:
             return bicop_->hfunc1(cut_and_rotate(u));
@@ -175,6 +178,7 @@ inline Eigen::VectorXd
 Bicop::hfunc2(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u)
 const
 {
+    tools_eigen::check_if_in_unit_cube(u);
     switch (rotation_) {
         case 0:
             return bicop_->hfunc2(cut_and_rotate(u));
@@ -202,6 +206,7 @@ inline Eigen::VectorXd
 Bicop::hinv1(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u)
 const
 {
+    tools_eigen::check_if_in_unit_cube(u);
     switch (rotation_) {
         case 0:
             return bicop_->hinv1(cut_and_rotate(u));
@@ -229,6 +234,7 @@ inline Eigen::VectorXd
 Bicop::hinv2(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u)
 const
 {
+    tools_eigen::check_if_in_unit_cube(u);
     switch (rotation_) {
         case 0:
             return bicop_->hinv2(cut_and_rotate(u));
@@ -295,13 +301,39 @@ Bicop::aic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
 //! where \f$ \mathrm{loglik} \f$ is the log-liklihood and \f$ p \f$ is the
 //! (effective) number of parameters of the model, see loglik() and
 //! calculate_npars(). The BIC is a consistent model selection criterion
-//! for nonparametric models.
+//! for parametric models.
 //!
 //! @param u \f$n \times 2\f$ matrix of observations.
 inline double
 Bicop::bic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
 {
     return -2 * loglik(u) + calculate_npars() * log(static_cast<double>(u.rows()));
+}
+
+//! calculates the modified Bayesian information criterion
+//! (mBIC), defined as
+//! \f[ \mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n)
+//!  - 2 (I log(\psi_0) + (1 - I) log(1 - \psi_0) \f]
+//! where \f$ \mathrm{loglik} \f$ is the log-liklihood and \f$ \nu \f$ is the
+//! (effective) number of parameters of the model, \f$ \psi_0 \f$ is the prior
+//! probability of having a non-independence copula and \f$ I \f$ is an indicator
+//! for the family being non-independence; see loglik() and
+//! calculate_npars().
+//!
+//! @param u \f$n \times 2\f$ matrix of observations.
+//! @param psi0 prior probability of a non-independence copula.
+inline double
+Bicop::mbic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u, const double psi0) 
+const
+{
+    bool is_indep = (this->get_family() == BicopFamily::indep);
+    double npars = this->calculate_npars();
+    double n = static_cast<double>(u.rows());
+    double ll = this->loglik(u);
+    double log_prior = 
+        static_cast<double>(!is_indep) * std::log(psi0) +
+        static_cast<double>(is_indep) * std::log(1.0 - psi0);
+    return -2 * ll + std::log(n) * npars - 2 * log_prior;
 }
 
 //! Returns the actual number of parameters for parameteric families. For
@@ -435,6 +467,7 @@ inline void Bicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
     } else {
         method = controls.get_nonparametric_method();
     }
+    tools_eigen::check_if_in_unit_cube(data);
     bicop_->fit(tools_eigen::nan_omit(cut_and_rotate(data)), method,
                 controls.get_nonparametric_mult());
 }
@@ -451,6 +484,7 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
 {
     using namespace tools_select;
     data = tools_eigen::nan_omit(data);
+    tools_eigen::check_if_in_unit_cube(data);
 
     if (data.rows() < 10) {
         bicop_ = AbstractBicop::create();
@@ -476,8 +510,10 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
                 new_criterion = -cop.loglik(data);
             } else if (controls.get_selection_criterion() == "aic") {
                 new_criterion = cop.aic(data);
-            } else {
+            } else if (controls.get_selection_criterion() == "bic") {
                 new_criterion = cop.bic(data);
+            } else {
+                new_criterion = cop.mbic(data, controls.get_psi0());
             }
 
             // the following block modifies thread-external variables

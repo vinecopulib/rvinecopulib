@@ -102,6 +102,8 @@ double pairwise_tau(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
 
 double pairwise_cor(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
 
+double pairwise_mcor(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
+
 double pairwise_rho(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
 
 double pairwise_hoeffd(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);

@@ -38,7 +38,8 @@ inline Eigen::VectorXd ArchimedeanBicop::hfunc1(
 {
     auto f = [this](const double &u1, const double &u2) {
         double temp = generator_inv(generator(u1) + generator(u2));
-        return generator_derivative(u1) / generator_derivative(temp);
+        temp = generator_derivative(u1) / generator_derivative(temp);
+        return std::min(temp, 1.0);
     };
     return tools_eigen::binaryExpr_or_nan(u, f);
 }

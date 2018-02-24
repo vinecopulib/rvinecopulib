@@ -5,8 +5,8 @@ bicop_check_cpp <- function(bicop_r) {
     invisible(.Call(`_rvinecopulib_bicop_check_cpp`, bicop_r))
 }
 
-bicop_select_cpp <- function(data, family_set, par_method, nonpar_method, mult, selcrit, presel, num_threads) {
-    .Call(`_rvinecopulib_bicop_select_cpp`, data, family_set, par_method, nonpar_method, mult, selcrit, presel, num_threads)
+bicop_select_cpp <- function(data, family_set, par_method, nonpar_method, mult, selcrit, psi0, presel, num_threads) {
+    .Call(`_rvinecopulib_bicop_select_cpp`, data, family_set, par_method, nonpar_method, mult, selcrit, psi0, presel, num_threads)
 }
 
 bicop_pdf_cpp <- function(u, bicop_r) {
@@ -69,7 +69,11 @@ vinecop_loglik_cpp <- function(u, vinecop_r) {
     .Call(`_rvinecopulib_vinecop_loglik_cpp`, u, vinecop_r)
 }
 
-vinecop_select_cpp <- function(data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads) {
-    .Call(`_rvinecopulib_vinecop_select_cpp`, data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads)
+vinecop_mbicv_cpp <- function(u, vinecop_r, psi0) {
+    .Call(`_rvinecopulib_vinecop_mbicv_cpp`, u, vinecop_r, psi0)
+}
+
+vinecop_select_cpp <- function(data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads) {
+    .Call(`_rvinecopulib_vinecop_select_cpp`, data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads)
 }
 

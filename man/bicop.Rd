@@ -7,8 +7,8 @@
 \title{Bivariate copula models}
 \usage{
 bicop(data, family_set = "all", par_method = "mle",
-  nonpar_method = "quadratic", mult = 1, selcrit = "bic", presel = TRUE,
-  keep_data = TRUE, cores = 1)
+  nonpar_method = "quadratic", mult = 1, selcrit = "bic", psi0 = 0.9,
+  presel = TRUE, keep_data = TRUE, cores = 1)
 
 bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
 }
@@ -32,8 +32,10 @@ one/two.}
 families. Values larger than 1 make the estimate more smooth, values less
 than 1 less smooth.}
 
-\item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"}, or
-\code{"bic"}.}
+\item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"},
+\code{"bic"}, \code{"mbic"}. For \code{vinecop()} there is the additional option \code{"mbicv"}.}
+
+\item{psi0}{see \code{\link[=mBICV]{mBICV()}}.}
 
 \item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
@@ -80,11 +82,12 @@ with \code{bicop}:\cr
 \code{"all"} =  all families.\cr
 \code{"parametric"} =  parametric families.\cr
 \code{"nonparametric"} =  nonparametric families.\cr
-\code{"archimedean"} =  Archimedean families.\cr
+\code{"archimedean"} =  archimedean families.\cr
 \code{"elliptical"} =  elliptical families.\cr
 \code{"bbs"} =  BB families.\cr
 \code{"oneparametric"} =  one parameter families.\cr
 \code{"twoparametric"} =  two parameter families.\cr
+\code{"itau"} =  one parameter families and Student t copula.\cr
 Partial matching is activated. For example, \code{"gauss"} is equivalent to
 \code{"gaussian"}, or you can write  \code{"nonpar"} instead of \code{"nonparametric"}.
 }

@@ -120,6 +120,9 @@ summary.vinecop_dist <- function(object, ...) {
             mdf$conditioned[k]  <- list(c(mat[d - e + 1, e], mat[t, e]))
             mdf$conditioning[k] <- list(mat[rev(seq_len(t - 1)), e])
             pc <- object$pair_copulas[[t]][[e]]
+            if (pc$family %in% setdiff(family_set_nonparametric, "indep")) {
+                pc$parameters <- paste0(round(pc$npars, 2), sep = " d.f.")
+            }
             mdf$family[k]     <- pc$family
             mdf$rotation[k]   <- pc$rotation
             mdf$parameters[k] <- list(pc$parameters)
@@ -182,8 +185,31 @@ logLik.vinecop <- function(object, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
-    npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
+    npars <- ifelse(length(pc_lst) == 0, 0, 
+                    sum(sapply(pc_lst, function(x) x[["npars"]])))
     structure(vinecop_loglik_cpp(object$data, object), "df" = npars)
+}
+
+#' calculates the vine copula Bayesian information criterion (vBIC), which is 
+#' defined as
+#' \deqn{\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
+#' \sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
+#' }
+#' where \eqn{\mathrm{loglik}} is the log-liklihood and \eqn{\nu} is the
+#' (effective) number of parameters of the model, \eqn{t} is the tree level 
+#' \eqn{\psi_0} is the priorprobability of having a non-independence copula and 
+#' \eqn{q_t} is the number of non-independence copulas in tree \eqn{t}.
+#' The vBIC is a consistent model 
+#' selection criterion for parametric sparse vine copula models.
+#'
+#' @param object a fitted `vinecop` object.
+#' @param psi0 baseline prior probability of a non-independence copula.
+#' @export mBICV
+mBICV <- function(object, psi0 = 0.9) {
+    stopifnot(inherits(object, "vinecop_dist"))
+    if (is.null(object$data))
+        stop("data have not been stored, use keep_data = TRUE when fitting.")
+    vinecop_mbicv_cpp(object$data, object, psi0)
 }
 
 #' @export

@@ -116,6 +116,7 @@ Rcpp::List bicop_select_cpp(
         std::string nonpar_method,
         double mult,
         std::string selcrit,
+        double psi0,
         bool presel,
         size_t num_threads
 )
@@ -130,11 +131,12 @@ Rcpp::List bicop_select_cpp(
             nonpar_method,
             mult,
             selcrit,
+            psi0,
             presel,
             num_threads
     );
     Bicop bicop_cpp(data, controls);
-
+    
     return bicop_wrap(bicop_cpp);
 }
 

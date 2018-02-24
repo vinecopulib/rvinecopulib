@@ -18,6 +18,8 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -25,6 +27,7 @@
 <script src="../pkgdown.js"></script>
   
   
+<meta property="og:title" content="Plotting tools for <code>bicop_dist</code> and <code>bicop</code> objects — plot.bicop_dist" />
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -142,7 +145,7 @@ default is 100.</p></td>
 <span class='no'>obj</span> <span class='kw'>&lt;-</span> <span class='fu'>bicop_dist</span>(<span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"t"</span>, <span class='kw'>rotation</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>parameters</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='fl'>0.7</span>,<span class='fl'>4</span>))
 
 <span class='co'>## plots</span>
-<span class='fu'>plot</span>(<span class='no'>obj</span>)  <span class='co'># surface plot of copula density</span></div><div class='img'><img src='plot.bicop_dist-1.png' alt='' width='700' height='432.632880098887' /></div><div class='input'><span class='fu'>contour</span>(<span class='no'>obj</span>)  <span class='co'># contour plot with standard normal margins</span></div><div class='img'><img src='plot.bicop_dist-2.png' alt='' width='700' height='432.632880098887' /></div><div class='input'><span class='fu'>contour</span>(<span class='no'>obj</span>, <span class='kw'>margins</span> <span class='kw'>=</span> <span class='st'>"unif"</span>)  <span class='co'># contour plot of copula density</span></div><div class='img'><img src='plot.bicop_dist-3.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>plot</span>(<span class='no'>obj</span>)  <span class='co'># surface plot of copula density</span></div><div class='img'><img src='plot.bicop_dist-4.png' alt='' width='700' height='432.632880098887' /></div><div class='input'><span class='fu'>contour</span>(<span class='no'>obj</span>)  <span class='co'># contour plot with standard normal margins</span></div><div class='img'><img src='plot.bicop_dist-5.png' alt='' width='700' height='432.632880098887' /></div><div class='input'><span class='fu'>contour</span>(<span class='no'>obj</span>, <span class='kw'>margins</span> <span class='kw'>=</span> <span class='st'>"unif"</span>)  <span class='co'># contour plot of copula density</span></div><div class='img'><img src='plot.bicop_dist-6.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
