@@ -28,6 +28,9 @@
   
   
 <meta property="og:title" content="Vine copula models — vinecop" />
+
+<meta property="og:description" content="Automated fitting or creation of custom vine copula models" />
+<meta name="twitter:card" content="summary" />
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -235,12 +238,12 @@ select both parameters.</p>
 <span class='co'># estimate a vine copula model</span>
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
 <span class='no'>fit</span></div><div class='output co'>#&gt; 3-dimensional vine copula fit ('vinecop')
-#&gt; nobs = 50   logLik = 167.53   npars = 3   AIC = -329.06   BIC = -323.33   </div><div class='input'><span class='fu'>summary</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula fit ('vinecop')
-#&gt; nobs = 50   logLik = 167.53   npars = 3   AIC = -329.06   BIC = -323.33   
-#&gt; ---------------------------------------------------------------</div><div class='output co'>#&gt;   tree edge conditioned conditioning family rotation parameters
-#&gt; 1    1    1        2, 1              gumbel      270   4.160086
-#&gt; 2    1    2        1, 3              gumbel       90    4.28655
-#&gt; 3    2    1        2, 3            1 gumbel       90   5.353547</div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 7
+#&gt; nobs = 50   logLik = 195.3   npars = 4   AIC = -382.59   BIC = -374.95   </div><div class='input'><span class='fu'>summary</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula fit ('vinecop')
+#&gt; nobs = 50   logLik = 195.3   npars = 4   AIC = -382.59   BIC = -374.95   
+#&gt; ---------------------------------------------------------------</div><div class='output co'>#&gt;   tree edge conditioned conditioning  family rotation         parameters
+#&gt; 1    1    1        2, 1              clayton       90           7.361942
+#&gt; 2    1    2        1, 3                  bb7      270 2.356575, 8.970399
+#&gt; 3    2    1        2, 3            1  gumbel       90           3.631427</div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 7
 #&gt;  $ pair_copulas:List of 2
 #&gt;   ..$ :List of 2
 #&gt;   .. ..$ :List of 4
@@ -251,9 +254,9 @@ select both parameters.</p>
 #&gt;   .. ..$ :List of 4
 #&gt;   .. .. ..- attr(*, "class")= chr [1:2] "bicop" "bicop_dist"
 #&gt;  $ matrix      : num [1:3, 1:3] 1 3 2 3 1 0 3 0 0
-#&gt;  $ npars       : num 3
+#&gt;  $ npars       : num 4
 #&gt;  $ threshold   : num 0
-#&gt;  $ data        : num [1:50, 1:3] 0.3495 0.9062 0.4869 0.906 0.0559 ...
+#&gt;  $ data        : num [1:50, 1:3] 0.969 0.976 0.77 0.731 0.833 ...
 #&gt;  $ controls    :List of 9
 #&gt;   ..$ family_set   : chr [1:11] "indep" "gaussian" "clayton" "gumbel" ...
 #&gt;   ..$ par_method   : chr "mle"
