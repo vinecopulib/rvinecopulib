@@ -1,3 +1,11 @@
+# vinecopulib 0.2.6.1.1 (February 24, 2018)
+
+Patch of rvinecopulib 0.2.6.1.0.
+
+BUG FIXES
+   
+   * corrected documentation items.
+
 # vinecopulib 0.2.6.1.0 (February 23, 2018)
 
 Release following the updates of vinecopulib to 0.2.6, see 
