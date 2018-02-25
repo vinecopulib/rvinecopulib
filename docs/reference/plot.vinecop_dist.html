@@ -28,6 +28,13 @@
   
   
 <meta property="og:title" content="Plotting <code>vinecop_dist</code> and <code>vinecop</code> objects. — plot.vinecop_dist" />
+
+<meta property="og:description" content="There are two plotting generics for vinecop_dist objects.
+plot.vinecop_dist plots one or all trees of a given R-vine copula
+model. Edges can be labeled with information about the corresponding
+pair-copula. contour.vinecop_dist produces a matrix of contour plots
+(using plot.bicop)." />
+<meta name="twitter:card" content="summary" />
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -163,7 +170,7 @@ be <code>1.25/length(tree)*(d - min(tree))</code> times the plot width.</p>
 <span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vinecop.html'>vinecop</a></span>(<span class='no'>u</span>, <span class='st'>"indep"</span>)
 
 <span class='co'># plot</span>
-<span class='fu'>plot</span>(<span class='no'>vc</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>2</span>))</div><div class='img'><img src='plot.vinecop_dist-4.png' alt='' width='700' height='432.632880098887' /></div><div class='input'><span class='fu'>plot</span>(<span class='no'>vc</span>, <span class='kw'>edge_labels</span> <span class='kw'>=</span> <span class='st'>"pair"</span>)</div><div class='img'><img src='plot.vinecop_dist-5.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>plot</span>(<span class='no'>vc</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>2</span>))</div><div class='img'><img src='plot.vinecop_dist-1.png' alt='' width='700' height='432.632880098887' /></div><div class='input'><span class='fu'>plot</span>(<span class='no'>vc</span>, <span class='kw'>edge_labels</span> <span class='kw'>=</span> <span class='st'>"pair"</span>)</div><div class='img'><img src='plot.vinecop_dist-2.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
 <span class='co'># set up another vine copula model</span>
 <span class='no'>pcs</span> <span class='kw'>&lt;-</span> <span class='fu'>lapply</span>(<span class='fl'>1</span>:<span class='fl'>3</span>, <span class='kw'>function</span>(<span class='no'>j</span>) <span class='co'># pair-copulas in tree j</span>
     <span class='fu'>lapply</span>(<span class='fu'>runif</span>(<span class='fl'>4</span>-<span class='no'>j</span>), <span class='kw'>function</span>(<span class='no'>cor</span>) <span class='fu'>bicop_dist</span>(<span class='st'>"gaussian"</span>, <span class='fl'>0</span>, <span class='no'>cor</span>)))
@@ -171,7 +178,7 @@ be <code>1.25/length(tree)*(d - min(tree))</code> times the plot width.</p>
 <span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop_dist</span>(<span class='no'>pcs</span>, <span class='no'>mat</span>)
 
 <span class='co'># contour plot</span>
-<span class='fu'>contour</span>(<span class='no'>vc</span>)</div><div class='img'><img src='plot.vinecop_dist-6.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>contour</span>(<span class='no'>vc</span>)</div><div class='img'><img src='plot.vinecop_dist-3.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
