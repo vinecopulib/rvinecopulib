@@ -9,7 +9,7 @@ defined as
 }
 where \eqn{\mathrm{loglik}} is the log-liklihood and \eqn{\nu} is the
 (effective) number of parameters of the model, \eqn{t} is the tree level
-\eqn{\psi_0} is the priorprobability of having a non-independence copula and
+\eqn{\psi_0} is the prior probability of having a non-independence copula and
 \eqn{q_t} is the number of non-independence copulas in tree \eqn{t}.
 The vBIC is a consistent model
 selection criterion for parametric sparse vine copula models.}
@@ -29,7 +29,7 @@ defined as
 }
 where \eqn{\mathrm{loglik}} is the log-liklihood and \eqn{\nu} is the
 (effective) number of parameters of the model, \eqn{t} is the tree level
-\eqn{\psi_0} is the priorprobability of having a non-independence copula and
+\eqn{\psi_0} is the prior probability of having a non-independence copula and
 \eqn{q_t} is the number of non-independence copulas in tree \eqn{t}.
 The vBIC is a consistent model
 selection criterion for parametric sparse vine copula models.
