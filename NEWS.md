@@ -1,3 +1,18 @@
+# vinecopulib 0.2.7.1.0 (March 1, 2018)
+
+Release following the updates of vinecopulib to 0.2.7, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+NEW FEATURES
+
+   * new criterion for tree selection `"mcor"`.
+
+BUG FIXES
+   
+   * fix bandwidth scaling for family `"tll"`.
+
+
 # vinecopulib 0.2.6.1.1 (February 24, 2018)
 
 Patch of rvinecopulib 0.2.6.1.0.
@@ -5,6 +20,7 @@ Patch of rvinecopulib 0.2.6.1.0.
 BUG FIXES
    
    * corrected documentation items.
+
 
 # vinecopulib 0.2.6.1.0 (February 23, 2018)
 
