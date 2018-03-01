@@ -52,8 +52,8 @@ truncation, \code{NA} indicates that the truncation level should be selected
 automatically by \code{\link[=mBICV]{mBICV()}}.}
 
 \item{tree_crit}{the criterion for tree selection, one of \code{"tau"}, \code{"rho"},
-\code{"hoeffd"} for Kendall's \eqn{tau}, Spearman's \eqn{rho}, and Hoeffding's
-\eqn{D}, respectively.}
+\code{"hoeffd"}, or \code{"mcor"} for Kendall's \eqn{\tau}, Spearman's \eqn{\rho},
+Hoeffding's \eqn{D}, and maximum correlation, respectively.}
 
 \item{threshold}{for thresholded vine copulas; \code{NA} indicates that the
 threshold should be selected automatically by \code{\link[=mBICV]{mBICV()}}.}
