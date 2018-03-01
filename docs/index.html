@@ -17,7 +17,7 @@
  models. Advantages over 'VineCopula' are a sleeker and more modern API, 
  improved performances, especially in high dimensions, nonparametric and 
  multi-parameter families. The 'rvinecopulib' package includes 'vinecopulib' as
- header-only C++ library (currently version 0.2.6). Thus 
+ header-only C++ library (currently version 0.2.7). Thus 
  users do not need to install 'vinecopulib' itself in order to use 
  'rvinecopulib'. Since their initial releases, 'vinecopulib' is licensed under 
  the MIT License, and 'rvinecopulib' is licensed under the GNU GPL version 3.">
@@ -65,9 +65,8 @@
       
       </header><div class="row">
   <div class="contents col-md-9">
-    <div id="rvinecopulib" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#rvinecopulib" class="anchor"></a>rvinecopulib</h1></div>
+    <div class="section level1">
+<div class="page-header"><h1>rvinecopulib</h1></div>
 
 <p>Vine copulas are a flexible class of dependence models consisting of bivariate building blocks (see e.g., Aas et al., 2009). You can find a comprehensive list of publications and other materials on <a href="http://www.statistics.ma.tum.de/en/research/vine-copula-models/">vine-copula.org</a>.</p>
 <p>This package is the <a href="https://cran.r-project.org/">R</a> API to the C++ library <a href="https://github.com/vinecopulib/vinecopulib">vinecopulib</a>, a header-only C++ library for vine copula models based on <a href="http://www.boost.org/">Boost</a> and <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen</a>.</p>
@@ -78,9 +77,8 @@
 <li>nonparametric and multi-parameter families.</li>
 </ul>
 <p>As VineCopula, the package is primarily made for the statistical analysis of <strong>vine copula models</strong>. The package includes tools for parameter estimation, model selection, simulation, and visualization. Tools for estimation, selection and exploratory data analysis of <strong>bivariate copula</strong> models are also provided. Please see the <a href="https://vinecopulib.github.io/rvinecopulib/">API documentation</a> for a detailed description of all functions.</p>
-<div id="table-of-contents" class="section level2">
-<h2 class="hasAnchor">
-<a href="#table-of-contents" class="anchor"></a>Table of contents</h2>
+<div class="section level2">
+<h2>Table of contents</h2>
 <ul>
 <li><a href="#how-to-install">How to install</a></li>
 <li>
@@ -95,29 +93,26 @@
 </ul>
 <hr>
 </div>
-<div id="how-to-install" class="section level2">
-<h2 class="hasAnchor">
-<a href="#how-to-install" class="anchor"></a>How to install</h2>
+<div class="section level2">
+<h2>How to install</h2>
 <p>You can install:</p>
 <ul>
 <li>
 <p>the stable release on CRAN:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">"rvinecopulib"</span>)</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">install.packages</span>(<span class="st">"rvinecopulib"</span>)</a></code></pre></div>
 </li>
 <li>
 <p>the latest development version:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/install_github">install_github</a></span>(<span class="st">"vinecopulib/rvinecopulib"</span>)</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/install_github">install_github</a></span>(<span class="st">"vinecopulib/rvinecopulib"</span>)</a></code></pre></div>
 </li>
 </ul>
 <hr>
 </div>
-<div id="package-overview" class="section level2">
-<h2 class="hasAnchor">
-<a href="#package-overview" class="anchor"></a>Package overview</h2>
+<div class="section level2">
+<h2>Package overview</h2>
 <p>Below, we list most functions and features you should know about. As usual in copula models, data are assumed to be serially independent and lie in the unit hypercube.</p>
-<div id="bivariate-copula-modeling-bicop_dist-and-bicop" class="section level3">
-<h3 class="hasAnchor">
-<a href="#bivariate-copula-modeling-bicop_dist-and-bicop" class="anchor"></a>Bivariate copula modeling: bicop_dist and bicop</h3>
+<div class="section level3">
+<h3>Bivariate copula modeling: bicop_dist and bicop</h3>
 <ul>
 <li>
 <p><code>bicop_dist</code>: Creates a bivariate copula by specifying the family, rotation and parameters. Returns an object of class <code>bicop_dist</code>. The class has the following methods:</p>
@@ -137,9 +132,8 @@
 </li>
 </ul>
 </div>
-<div id="vine-copula-modeling-vinecop_dist-and-vinecop" class="section level3">
-<h3 class="hasAnchor">
-<a href="#vine-copula-modeling-vinecop_dist-and-vinecop" class="anchor"></a>Vine copula modeling: vinecop_dist and vinecop</h3>
+<div class="section level3">
+<h3>Vine copula modeling: vinecop_dist and vinecop</h3>
 <ul>
 <li>
 <p><code>vinecop_dist</code>: Creates a vine copula by specifying a nested list of <code>bicop_dist</code> objects and a quadratic structure matrix. Returns an object of class <code>vinecop_dist</code>. The class has the following methods:</p>
@@ -159,9 +153,8 @@
 </li>
 </ul>
 </div>
-<div id="bivariate-copula-families" class="section level3">
-<h3 class="hasAnchor">
-<a href="#bivariate-copula-families" class="anchor"></a>Bivariate copula families</h3>
+<div class="section level3">
+<h3>Bivariate copula families</h3>
 <p>In this package several bivariate copula families are included for bivariate and multivariate analysis using vine copulas. It provides functionality of elliptical (Gaussian and Student-t) as well as Archimedean (Clayton, Gumbel, Frank, Joe, BB1, BB6, BB7 and BB8) copulas to cover a large range of dependence patterns. For Archimedean copula families, rotated versions are included to cover negative dependence as well. Additionally, nonparametric families are also supported.</p>
 <table class="table">
 <thead><tr class="header">
@@ -316,9 +309,8 @@
 <hr>
 </div>
 </div>
-<div id="references" class="section level2">
-<h2 class="hasAnchor">
-<a href="#references" class="anchor"></a>References</h2>
+<div class="section level2">
+<h2>References</h2>
 <p>Aas, K., C. Czado, A. Frigessi, and H. Bakken (2009). Pair-copula constructions of multiple dependence. Insurance: Mathematics and Economics 44 (2), 182-198.</p>
 </div>
 </div>
