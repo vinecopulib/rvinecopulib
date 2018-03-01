@@ -16,8 +16,8 @@
 #'   truncation, `NA` indicates that the truncation level should be selected
 #'   automatically by [mBICV()].
 #' @param tree_crit the criterion for tree selection, one of `"tau"`, `"rho"`,
-#'    `"hoeffd"` for Kendall's \eqn{tau}, Spearman's \eqn{rho}, and Hoeffding's
-#'    \eqn{D}, respectively.
+#'    `"hoeffd"`, or `"mcor"` for Kendall's \eqn{\tau}, Spearman's \eqn{\rho}, 
+#'    Hoeffding's \eqn{D}, and maximum correlation, respectively.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the 
 #'   threshold should be selected automatically by [mBICV()].
 #' @param show_trace logical; whether a trace of the fitting progress should be 
