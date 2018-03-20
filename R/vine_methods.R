@@ -1,32 +1,23 @@
-#' Vine copula distributions
+#' Vine based distributions
 #' 
 #' Density, distribution function and random generation 
-#' for the vine copula distribution.
+#' for the vine based distribution.
 #' 
 #' @name vine_distributions
 #' @aliases dvine pvine rvine dvine_dist pvine_dist rvine_dist
-#' @param u evaluation points, either a length d vector or a d-column matrix,
+#' @param x evaluation points, either a length d vector or a d-column matrix,
 #'   where d is the number of variables in the vine.
 #' @param vine an object of class `"vine_dist"`.
 #' @details 
-#' See [vine] for the estimation and construction of vine copula models. 
+#' See [vine] for the estimation and construction of vine models. 
 #' Here, the density, distribution function and random generation 
-#' for the vine copulas are standard.
+#' for the vine distributions are standard.
 #' 
-#' The Rosenblatt transform (Rosenblatt, 1952) \eqn{U = T(V)} of a random vector
-#' \eqn{V = (V_1,\ldots,V_d) ~ C} is defined as
-#' \deqn{ 
-#'   U_1 = V_1, U_2 = C(V_2|V_1), \ldots, U_d =C(V_d|V_1,\ldots,V_{d-1}), 
-#' } 
-#' where \eqn{C(v_k|v_1,\ldots,v_{k-1})} is the conditional distribution of 
-#' \eqn{V_k} given \eqn{V_1 \ldots, V_{k-1}, k = 2,\ldots,d}. The vector \eqn{V}
-#' are then independent standard uniform variables. The inverse operation 
-#' \deqn{ 
-#'   V_1 = U_1, V_2 = C^{-1}(U_2|U_1), \ldots, V_d =C^{-1}(U_d|U_1,\ldots,U_{d-1}), 
-#' } 
-#' can can be used to simulate from a copula. For any copula \eqn{C}, if 
-#' \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has 
-#' distribution \eqn{C}.
+#' The functions are based on [dvinecop()], [pvinecop()] and [rvinecop()] for 
+#' [vinecop] objects, and either [kde1d::dkde1d()], [kde1d::pkde1d()] and 
+#' [kde1d::qkde1d()] for estimated vines (i.e., output of [vine()]), or the 
+#' standard *d/p/q-xxx* from [stats::Distributions] for customly created vines 
+#' (i.e., output of [vine_dist()])
 #' @return 
 #' `dvine()` gives the density, `pvine()` gives the distribution function, 
 #' and `rvine()` generates random deviates.
@@ -48,28 +39,97 @@
 #' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
 #' 
 #' # set up vine copula model
-#' vc <- vine_dist(pcs, mat)
+#' vc <- vine_dist(list(name = "norm"), pcs, mat)
 #' 
 #' # simulate from the model
-#' u <- rvine(200, vc)
-#' pairs(u)
+#' x <- rvine(200, vc)
+#' pairs(x)
 #' 
 #' # evaluate the density and cdf
-#' dvine(u[1, ], vc)
-#' pvine(u[1, ], vc)
+#' dvine(x[1, ], vc)
+#' pvine(x[1, ], vc)
 #' @rdname vine_methods
+#' @importFrom cctools expand_as_numeric
 #' @export
-dvine <- function(u, vine) {
+dvine <- function(x, vine) {
     stopifnot(inherits(vine, "vine_dist"))
-    vine_pdf_cpp(if_vec_to_matrix(u), vine)
+    if (NCOL(x) == 1)
+        x <- t(x)
+    nms <- colnames(x)
+    # must be numeric, factors are expanded
+    x <- expand_as_numeric(x)
+    # variables must be in same order
+    if (!is.null(nms))
+        x <- x[, colnames(vine$data), drop = FALSE]
+    
+    # prepare marginals if only one is specified
+    d <- ncol(x)
+    if (!inherits(vine, "vine") & depth(vine$marg) == 1) 
+        vine$marg <- replicate(d, vine$marg, simplify = FALSE)
+    
+    ## evaluate marginal densities
+    margvals <- u <- x
+    for (k in 1:d) {
+        x_k <- x[, k]
+        if (inherits(vine, "vine")) {
+            if (k %in% attr(vine$data, "i_disc")) {
+                # use normalization if discrete
+                attr(x_k, "i_disc") <- 1
+                vine$marg[[k]]$levels <- attr(vine$data, "levels")[[k]]
+            }
+            margvals[, k] <- dkde1d(x_k, vine$marg[[k]])
+        } else {
+            dfun <- get(paste0("d", vine$marg[[k]]$name))
+            par <- vine$marg[[k]][names(vine$marg[[k]]) != "name"]
+            par$x <- x_k
+            margvals[, k] <- do.call(dfun, par)
+        }
+    }
+    
+    if (!is.null(vine$cop)) {
+        # PIT to copula data
+        u <- get_u(x, vine)
+        # evaluate vine density
+        vinevals <- vinecop_pdf_cpp(u, vine$cop)
+    } else {
+        vinevals <- rep(1, nrow(x))
+    }
+    
+    ## final density estimate is product of marginals and copula density
+    apply(cbind(margvals, vinevals), 1, prod)
 }
 
 #' @rdname vine_methods
 #' @param n_mc number of samples used for quasi Monte Carlo integration.
 #' @export
-pvine <- function(u, vine, n_mc = 10^4) {
+pvine <- function(x, vine, n_mc = 10^4) {
+    
     stopifnot(inherits(vine, "vine_dist"))
-    vine_cdf_cpp(if_vec_to_matrix(u), vine, n_mc)
+    
+    if (NCOL(x) == 1)
+        x <- t(x)
+    nms <- colnames(x)
+    # must be numeric, factors are expanded
+    x <- expand_as_numeric(x)
+    # variables must be in same order
+    if (!is.null(nms))
+        x <- x[, colnames(vine$data), drop = FALSE]
+    
+    # prepare marginals if only one is specified
+    if (!inherits(vine, "vine") & depth(vine$marg) == 1) 
+        vine$marg <- replicate(ncol(x), vine$marg, simplify = FALSE)
+    
+    # PIT to copula data
+    u <- get_u(x, vine)
+    
+    # Evaluate copula if needed
+    if (!is.null(vine$cop)) {
+        vals <- vinecop_cdf_cpp(u, vine$cop, n_mc)
+    } else {
+        vals <- u
+    }
+    
+    return(vals)
 }
 
 #' @rdname vine_methods
@@ -81,57 +141,41 @@ pvine <- function(u, vine, n_mc = 10^4) {
 #' @export
 rvine <- function(n, vine, U = NULL) {
     stopifnot(inherits(vine, "vine_dist"))
-    d <- ncol(vine$matrix)
-    U <- prep_uniform_data(n, d, U)
-    stopifnot(inherits(vine, "vine_dist"))
-    U <- vine_inverse_rosenblatt_cpp(U, vine)
-    if (!is.null(vine$names))
-        colnames(U) <- vine$names
     
+    # prepare uniform data
+    d <- ncol(vine$cop$matrix)
+    U <- prep_uniform_data(n, d, U)
+
+    # simulate from copula
+    U <- vinecop_inverse_rosenblatt_cpp(U, vine$cop)
+    
+    # prepare marginals if only one is specified
+    if (!inherits(vine, "vine") & depth(vine$marg) == 1) 
+        vine$marg <- replicate(d, vine$marg, simplify = FALSE)
+    
+    # use quantile transformation for marginals
+    if (inherits(vine, "vine")) {
+        U <- sapply(seq_len(d), function(i) qkde1d(U[, i], vine$marg[[i]]))
+    } else {
+        U <- sapply(seq_len(d), function(i) {
+            qfun <- get(paste0("q", vine$marg[[i]]$name))
+            par <- vine$marg[[i]][names(vine$marg[[i]]) != "name"]
+            par$p <- U[, i]
+            do.call(qfun, par)
+        })
+    }
+
     U
 }
 
 #' @export
 print.vine_dist <- function(x, ...) {
-    d <- nrow(x$matrix)
-    cat(d, "-dimensional vine copula model ('vine_dist')", sep = "")
-    n_trees <- length(x$pair_copulas)
-    if (n_trees < d - 1)
-        cat(", ", n_trees, "-truncated", sep = "")
-    cat("\n")
+    print(x$cop)
 }
 
-#' @importFrom utils capture.output
 #' @export
 summary.vine_dist <- function(object, ...) {
-    mat <- object$matrix
-    d <- nrow(mat)
-    n_trees <- length(object$pair_copulas)
-    n_pcs <- length(unlist(object$pair_copulas, recursive = FALSE))
-    mdf <- as.data.frame(matrix(NA, n_pcs, 7))
-    names(mdf) <- c("tree", "edge", 
-                    "conditioned", "conditioning", 
-                    "family", "rotation", "parameters")
-    k <- 1
-    for (t in seq_len(n_trees)) {
-        for (e in seq_len(d - t)) {
-            mdf$tree[k] <- t
-            mdf$edge[k] <- e
-            mdf$conditioned[k]  <- list(c(mat[d - e + 1, e], mat[t, e]))
-            mdf$conditioning[k] <- list(mat[rev(seq_len(t - 1)), e])
-            pc <- object$pair_copulas[[t]][[e]]
-            if (pc$family %in% setdiff(family_set_nonparametric, "indep")) {
-                pc$parameters <- paste0(round(pc$npars, 2), sep = " d.f.")
-            }
-            mdf$family[k]     <- pc$family
-            mdf$rotation[k]   <- pc$rotation
-            mdf$parameters[k] <- list(pc$parameters)
-            k <- k + 1
-        }
-    }
-    print.vine_dist(object)
-    cat(strrep("-", 63), "\n", sep = "")
-    mdf
+    summary(object$cop)
 }
 
 #' Predictions and fitted values for a vine copula model
@@ -154,84 +198,85 @@ summary.vine_dist <- function(object, ...) {
 #' @export
 #' @rdname predict_vine
 #' @examples
-#' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vine(u, "par")
-#' all.equal(predict(fit, u), fitted(fit))
+#' x <- sapply(1:5, function(i) rnorm(50))
+#' fit <- vine(x, cop_controls = list(family_set = "par"))
+#' all.equal(predict(fit, x), fitted(fit))
 predict.vine <- function(object, newdata, what = "pdf", n_mc = 10^4, ...) {
     stopifnot(what %in% c("pdf", "cdf"))
-    newdata <- if_vec_to_matrix(newdata)
     switch(
         what,
-        "pdf" = vine_pdf_cpp(newdata, object),
-        "cdf" = vine_cdf_cpp(object$data, object, n_mc)
+        "pdf" = dvine(newdata, object),
+        "cdf" = pvine(newdata, object, n_mc)
     )
 }
 
 #' @rdname predict_vine
 #' @export
 fitted.vine <- function(object, what = "pdf", n_mc = 10^4, ...) {
-    if (is.null(object$data))
+    if (all(is.na(object$data)))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     stopifnot(what %in% c("pdf", "cdf"))
     switch(
         what,
-        "pdf" = vine_pdf_cpp(object$data, object),
-        "cdf" = vine_cdf_cpp(object$data, object, n_mc)
+        "pdf" = dvine(object$data, object),
+        "cdf" = pvine(object$data, object, n_mc)
     )
 }
 
 #' @export
 logLik.vine <- function(object, ...) {
-    if (is.null(object$data))
+    if (all(is.na(object$data)))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
-    pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
-    npars <- ifelse(length(pc_lst) == 0, 0, 
+    
+    ll_marg <- lapply(object$marg, logLik)
+    npars_marg <- sapply(ll_marg, function(x) attr(x, "df"))
+    u <- get_u(object$data, object)
+    ll_cop <- vinecop_loglik_cpp(u, object$cop)
+    pc_lst <- unlist(object$cop$pair_copulas, recursive = FALSE)
+    npars_cop <- ifelse(length(pc_lst) == 0, 0, 
                     sum(sapply(pc_lst, function(x) x[["npars"]])))
-    structure(vine_loglik_cpp(object$data, object), "df" = npars)
+    structure(sum(unlist(ll_marg)) + ll_cop, "df" = sum(npars_marg) + npars_cop)
 }
 
 #' @export
 print.vine <- function(x, ...) {
-    d <- nrow(x$matrix)
-    cat(d, "-dimensional vine copula fit ('vine')", sep = "")
-    n_trees <- length(x$pair_copulas)
-    if (n_trees < d - 1)
-        cat(", ", n_trees, "-truncated", sep = "")
-    cat("\n")
-    cat("nobs =", x$nobs, "  ")
-    if (!is.null(x$data)) {
-        info <- vine_fit_info(x)
-        cat("logLik =", round(info$logLik, 2), "  ")
-        cat("npars =", round(info$npars, 2), "  ")
-        cat("AIC =", round(info$AIC, 2), "  ")
-        cat("BIC =", round(info$BIC, 2), "  ")
-        attr(x, "info") <- info
-    } else {
-        cat("(for mor information, fit model with keep_data = TRUE)")
-    }
-    cat("\n")
-    invisible(x)
+    print(collate_u(x)$cop)
 }
 
 
 #' @export
 summary.vine <- function(object, ...) {
-    info <- attr(print.vine(object), "info")
-    capture.output(s <- summary.vine_dist(object))
-    cat(strrep("-", 63), "\n", sep = "")
-    attr(s, "info") <- info
-    s
+    summary(collate_u(object)$cop)
 }
 
+# PIT to copula level
+get_u <- function(x, vine) {
+    d <- ncol(x)
+    u <- matrix(NA, nrow(x), ncol(x))
+    
+    for (k in 1:d) {
+        x_k <- x[, k]
+        if (inherits(vine, "vine")) {
+            if (k %in% attr(vine$data, "i_disc")) {
+                # use continuous variant for PIT
+                attr(x_k, "i_disc") <- integer(0)
+                vine$marg[[k]]$levels <- NULL
+            }
+            u[, k] <- pkde1d(x_k, vine$marg[[k]])
+        } else {
+            pfun <- get(paste0("p", vine$marg[[k]]$name))
+            par <- vine$marg[[k]][names(vine$marg[[k]]) != "name"]
+            par$q <- x_k
+            u[, k] <- do.call(pfun, par)
+        }
+    }
+    return(u)
+}
 
-vine_fit_info <- function(vc) {
-    stopifnot(inherits(vc, "vine"))
-    ll <- logLik(vc)
-    list(
-        nobs   = vc$nobs,
-        logLik = ll[1],
-        npars  = attr(ll, "df"),
-        AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
-        BIC    = -2 * ll[1] + log(vc$nobs) * attr(ll, "df")
-    )
+collate_u <- function(x) {
+    if (!all(is.na(x$data))) {
+        u <- get_u(x$data, x)
+        x$cop$data <- u
+    }
+    x
 }
