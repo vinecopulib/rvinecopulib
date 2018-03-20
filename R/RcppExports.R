@@ -77,3 +77,15 @@ vinecop_select_cpp <- function(data, matrix, family_set, par_method, nonpar_meth
     .Call(`_rvinecopulib_vinecop_select_cpp`, data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads)
 }
 
+vinecop_get_all_pair_copulas_cpp <- function(vinecop_r) {
+    .Call(`_rvinecopulib_vinecop_get_all_pair_copulas_cpp`, vinecop_r)
+}
+
+vinecop_get_matrix_cpp <- function(vinecop_r) {
+    .Call(`_rvinecopulib_vinecop_get_matrix_cpp`, vinecop_r)
+}
+
+vinecop_get_pair_copula_cpp <- function(vinecop_r, tree, edge) {
+    .Call(`_rvinecopulib_vinecop_get_pair_copula_cpp`, vinecop_r, tree, edge)
+}
+

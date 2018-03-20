@@ -84,3 +84,18 @@ test_that("plot functions work", {
     vc$pair_copulas[[4]] <- NULL
     expect_silent(p <- contour(vc, margins = "unif"))
 })
+
+
+
+test_that("getters work", {
+    
+    # test get_all_pair_copulas
+    expect_identical(pcs, get_all_pair_copulas(vc))
+    
+    # test get_all_pair_copulas
+    pcc <- get_pair_copula(vc, 0, 0)
+    expect_equal(bicop, bicop_dist(pcc$family,pcc$rotation, pcc$parameters))
+    
+    # test get_matrix
+    expect_identical(mat, get_matrix(vc))
+})
