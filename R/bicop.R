@@ -64,18 +64,18 @@
 #' 
 #' Object from the `bicop_dist` class are lists containing:
 #' 
-#' * `family` a `character` indicating the copula family.
-#' * `rotation` an `integer` indicating the rotation (i.e., either 0, 90, 180, 
+#' * `family`, a `character` indicating the copula family.
+#' * `rotation`, an `integer` indicating the rotation (i.e., either 0, 90, 180, 
 #' or 270).
-#' * `parameters` is a `numeric` vector or matrix of parameters.
-#' * `npars` is a `numeric` encoding the number of parameters.
+#' * `parameters`, a `numeric` vector or matrix of parameters.
+#' * `npars`, a `numeric` with the number of parameters.
 #' 
 #' Additionally, objects from the `bicop` class contain:
 #' 
-#' * `data` (optionally, if `keep_data = TRUE` was used) is the dataset that was 
+#' * `data` (optionally, if `keep_data = TRUE` was used), the dataset that was 
 #' passed to [bicop()].
-#' * `controls` is a `list` with the set of fit controls that was passed to [bicop()].
-#' * `nobs` is an `integer` containing the number of observations that was used 
+#' * `controls`, a `list` with the set of fit controls that was passed to [bicop()].
+#' * `nobs`, an `integer` with the number of observations that was used 
 #' to fit the model.
 #' 
 #' @examples

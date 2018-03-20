@@ -59,19 +59,19 @@ Objects inheriting from \code{bicop_dist} for \code{bicop_dist()}, and
 
 Object from the \code{bicop_dist} class are lists containing:
 \itemize{
-\item \code{family} a \code{character} indicating the copula family.
-\item \code{rotation} an \code{integer} indicating the rotation (i.e., either 0, 90, 180,
+\item \code{family}, a \code{character} indicating the copula family.
+\item \code{rotation}, an \code{integer} indicating the rotation (i.e., either 0, 90, 180,
 or 270).
-\item \code{parameters} is a \code{numeric} vector or matrix of parameters.
-\item \code{npars} is a \code{numeric} encoding the number of parameters.
+\item \code{parameters}, a \code{numeric} vector or matrix of parameters.
+\item \code{npars}, a \code{numeric} with the number of parameters.
 }
 
 Additionally, objects from the \code{bicop} class contain:
 \itemize{
-\item \code{data} (optionally, if \code{keep_data = TRUE} was used) is the dataset that was
+\item \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset that was
 passed to \code{\link[=bicop]{bicop()}}.
-\item \code{controls} is a \code{list} with the set of fit controls that was passed to \code{\link[=bicop]{bicop()}}.
-\item \code{nobs} is an \code{integer} containing the number of observations that was used
+\item \code{controls}, a \code{list} with the set of fit controls that was passed to \code{\link[=bicop]{bicop()}}.
+\item \code{nobs}, an \code{integer} with the number of observations that was used
 to fit the model.
 }
 }

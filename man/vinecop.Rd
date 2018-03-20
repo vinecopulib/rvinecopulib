@@ -77,22 +77,22 @@ Objects inheriting from \code{vinecop_dist} for \code{\link[=vinecop_dist]{vinec
 
 Object from the \code{vinecop_dist} class are lists containing:
 \itemize{
-\item \code{pair_copulas} a list of lists. Each element of \code{pair_copulas} corresponds
-to a tree, i.e., a list of \code{bicop_dist} objects (see \code{\link[=bicop_dist]{bicop_dist()}}).
-\item \code{matrix} is an R-vine matrix, namely a compressed representation of the
-vine structure (see \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}).
-\item \code{npars} is a \code{numeric} encoding the number of parameters.
+\item \code{pair_copulas}, a list of lists. Each element of \code{pair_copulas} corresponds
+to a tree, i.e., a list of \code{bicop_dist} objects, see \code{\link[=bicop_dist]{bicop_dist()}}.
+\item \code{matrix}, an R-vine matrix, namely a compressed representation of the
+vine structure, see \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}.
+\item \code{npars}, a \code{numeric} with the number of parameters.
 }
 
 For objects from the \code{vinecop} class, elements of the sublists in
-\code{pair_copulas} are also \code{bicop} objects (see \code{\link[=bicop]{bicop()}}). Additionally,
+\code{pair_copulas} are also \code{bicop} objects, see \code{\link[=bicop]{bicop()}}. Additionally,
 objects from the \code{vinecop} class contain:
 \itemize{
-\item \code{threshold} the (set or estimated) threshold used for thresholding the vine.
-\item \code{data} (optionally, if \code{keep_data = TRUE} was used) is the dataset that was
+\item \code{threshold}, the (set or estimated) threshold used for thresholding the vine.
+\item \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset that was
 passed to \code{\link[=vinecop]{vinecop()}}.
-\item \code{controls} is a \code{list} with the set of fit controls that was passed to \code{\link[=vinecop]{vinecop()}}.
-\item \code{nobs} is an \code{integer} containing the number of observations that was used
+\item \code{controls}, a \code{list} with the set of fit controls that was passed to \code{\link[=vinecop]{vinecop()}}.
+\item \code{nobs}, an \code{integer} with the number of observations that was used
 to fit the model.
 }
 }
