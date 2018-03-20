@@ -61,7 +61,23 @@
 #'
 #' @return Objects inheriting from `bicop_dist` for `bicop_dist()`, and
 #' `bicop` and `bicop_dist` for `bicop()`.
-#'
+#' 
+#' Object from the `bicop_dist` class are lists containing:
+#' 
+#' * `family`, a `character` indicating the copula family.
+#' * `rotation`, an `integer` indicating the rotation (i.e., either 0, 90, 180, 
+#' or 270).
+#' * `parameters`, a `numeric` vector or matrix of parameters.
+#' * `npars`, a `numeric` with the (effective) number of parameters.
+#' 
+#' Additionally, objects from the `bicop` class contain:
+#' 
+#' * `data` (optionally, if `keep_data = TRUE` was used), the dataset that was 
+#' passed to [bicop()].
+#' * `controls`, a `list` with the set of fit controls that was passed to [bicop()].
+#' * `nobs`, an `integer` with the number of observations that was used 
+#' to fit the model.
+#' 
 #' @examples
 #' ## bicop_dist objects
 #' bicop_dist("gaussian", 0, 0.5)
