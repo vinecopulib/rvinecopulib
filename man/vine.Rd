@@ -7,7 +7,7 @@
 \title{Vine copula models}
 \usage{
 vine(data, marg_controls = list(mult = NULL, xmin = -Inf, xmax = Inf, bw =
-  NULL), cop_controls = list(family_set = "all", matrix = NA, par_method =
+  NA), cop_controls = list(family_set = "all", matrix = NA, par_method =
   "mle", nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9,
   presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data =
   TRUE, show_trace = FALSE, cores = 1))
@@ -18,20 +18,20 @@ vine_dist(marg, pair_copulas, matrix)
 \item{data}{a matrix or data.frame.}
 
 \item{marg_controls}{a list with arguments to be passed to
-\code{\link[kdevine:kde1d]{kdevine::kde1d()}}. Currently, there can be
+\code{\link[kde1d:kde1d]{kde1d::kde1d()}}. Currently, there can be
 \itemize{
 \item \code{mult} numeric; all bandwidhts for marginal kernel density estimation
 are multiplied with \code{mult_1d}. Defaults to \code{log(1 + d)} where \code{d} is
 the number of variables after applying \code{\link[cctools:expand_as_numeric]{cctools::expand_as_numeric()}}.
-\item \code{xmin} numeric vector of length d; see \code{\link[kdevine:kde1d]{kdevine::kde1d()}}.
-\item \code{xmax} numeric vector of length d; see \code{\link[kdevine:kde1d]{kdevine::kde1d()}}.
-\item \code{bw} numeric vector of length d; see \code{\link[kdevine:kde1d]{kdevine::kde1d()}}.
+\item \code{xmin} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
+\item \code{xmax} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
+\item \code{bw} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 }}
 
 \item{cop_controls}{a list with arguments to be passed to \code{\link[=vinecop]{vinecop()}}.}
 
 \item{marg}{A list with with each element containing the specification of a
-marginal \href{distribution}{stats:Distributions}. Each marginal specification
+marginal \link[stats:Distributions]{stats::Distributions}. Each marginal specification
 should be a list with containing at least the name and optionally the
 parameters, e.g. \code{list(list(name = "norm"), list(name = "norm", mu = 1), list(name = "beta", shape1 = 1, shape2 = 1))}.
 Note that parameters that have no default values have to be provided.
@@ -40,6 +40,11 @@ Furthermore, if \code{marg} has length one, it will be recycled for every compon
 \item{pair_copulas}{A nested list of 'bicop_dist' objects, where
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
 tree \code{t}.}
+
+\item{matrix}{a quadratic matrix specifying the structure matrix (see
+\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
+\code{length(pair_copulas)-1}; for \code{\link[=vinecop]{vinecop()}}, \code{matrix = NA} performs
+automatic structure selection.}
 }
 \value{
 Objects inheriting from \code{vine_dist} for \code{\link[=vine_dist]{vine_dist()}}, and
@@ -54,9 +59,31 @@ of \code{bicop_dist} objects and a quadratic structure matrix.
 
 \code{vine()} provides automated fitting for vine copula models.
 \code{marg_controls} is a list with the same parameters as
-\code{\link[kdevine:kde1d]{kdevine::kde1d()}} (except for \code{x}). \code{cop_controls} is a list
+\code{\link[kde1d:kde1d]{kde1d::kde1d()}} (except for \code{x}). \code{cop_controls} is a list
 with the same parameters as \code{\link[=vinecop]{vinecop()}} (except for \code{data}).
 }
 \examples{
-# TODO
+# specify pair-copulas
+bicop <- bicop_dist("bb1", 90, c(3, 2))
+pcs <- list(
+    list(bicop, bicop),  # pair-copulas in first tree 
+    list(bicop)          # pair-copulas in second tree 
+ )
+ 
+# specify R-vine matrix
+mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
+
+# set up vine copula model with Gaussian margins
+vc <- vine_dist(list(name = "norm"), pcs, mat)
+
+# show model
+summary(vc)
+
+# simulate some data
+x <- rvine(50, vc)
+
+# estimate a vine copula model
+fit <- vine(x, cop_controls = list(family_set = "par"))
+summary(fit)
+
 }
