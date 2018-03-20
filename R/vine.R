@@ -32,7 +32,7 @@
 #' * `cop`, an object of the class `vinecop_dist`, see [vinecop_dist()].
 #' 
 #' For objects from the `vine` class, `cop` is also an object of the class
-#' `bicop`, see [bicop()]. Additionally, objects from the `vine` class contain:
+#' `vine`, see [vinecop()]. Additionally, objects from the `vine` class contain:
 #' 
 #' * `marg_controls`, a `list` with the set of fit controls that was passed 
 #' to [kde1d::kde1d()] when estimating the margins.

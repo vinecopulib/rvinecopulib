@@ -57,7 +57,7 @@ Objects from the \code{vine_dist} class are lists containing:
 }
 
 For objects from the \code{vine} class, \code{cop} is also an object of the class
-\code{bicop}, see \code{\link[=bicop]{bicop()}}. Additionally, objects from the \code{vine} class contain:
+\code{vine}, see \code{\link[=vinecop]{vinecop()}}. Additionally, objects from the \code{vine} class contain:
 \itemize{
 \item \code{marg_controls}, a \code{list} with the set of fit controls that was passed
 to \code{\link[kde1d:kde1d]{kde1d::kde1d()}} when estimating the margins.
