@@ -21,15 +21,23 @@ apt_packages:
   - libudunits2-dev
 
 r_packages:
+  - cctools
   - devtools
   - BH
   - covr
   - ggraph
   - ggplot2
+  - KernSmooth # for kde1d
+  - MASS # for kde1d
+  - qrng # for kde1d
   - Rcpp
   - RcppEigen
   - RcppThread
   - testthat
+    
+  
+r_github_packages:
+  - tnagler/kde1d
 
 before_install:
   ### Linux
