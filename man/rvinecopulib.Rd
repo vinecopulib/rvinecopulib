@@ -53,7 +53,7 @@ summary(vc)
 
 #' ## vine objects
 x <- sapply(1:3, function(i) rnorm(50))
-vc <- vine(x, cop_controls = list(family_set = "par"))
+vc <- vine(x, copula_controls = list(family_set = "par"))
 summary(vc)
 }
 \author{

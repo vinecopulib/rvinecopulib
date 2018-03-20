@@ -6,18 +6,18 @@
 \alias{vine_dist}
 \title{Vine copula models}
 \usage{
-vine(data, marg_controls = list(mult = NULL, xmin = NaN, xmax = NaN, bw = NA),
-  cop_controls = list(family_set = "all", matrix = NA, par_method = "mle",
-  nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9, presel =
-  TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = TRUE,
-  show_trace = FALSE, cores = 1))
+vine(data, margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN, bw =
+  NA), copula_controls = list(family_set = "all", matrix = NA, par_method =
+  "mle", nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9,
+  presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data =
+  TRUE, show_trace = FALSE, cores = 1))
 
-vine_dist(marg, pair_copulas, matrix)
+vine_dist(margins, pair_copulas, matrix)
 }
 \arguments{
 \item{data}{a matrix or data.frame.}
 
-\item{marg_controls}{a list with arguments to be passed to
+\item{margins_controls}{a list with arguments to be passed to
 \code{\link[kde1d:kde1d]{kde1d::kde1d()}}. Currently, there can be
 \itemize{
 \item \code{mult} numeric; all bandwidhts for marginal kernel density estimation
@@ -28,14 +28,14 @@ the number of variables after applying \code{\link[cctools:expand_as_numeric]{cc
 \item \code{bw} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 }}
 
-\item{cop_controls}{a list with arguments to be passed to \code{\link[=vinecop]{vinecop()}}.}
+\item{copula_controls}{a list with arguments to be passed to \code{\link[=vinecop]{vinecop()}}.}
 
-\item{marg}{A list with with each element containing the specification of a
+\item{margins}{A list with with each element containing the specification of a
 marginal \link[stats:Distributions]{stats::Distributions}. Each marginal specification
 should be a list with containing at least the name and optionally the
 parameters, e.g. \code{list(list(name = "norm"), list(name = "norm", mu = 1), list(name = "beta", shape1 = 1, shape2 = 1))}.
 Note that parameters that have no default values have to be provided.
-Furthermore, if \code{marg} has length one, it will be recycled for every component.}
+Furthermore, if \code{margins} has length one, it will be recycled for every component.}
 
 \item{pair_copulas}{A nested list of 'bicop_dist' objects, where
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
@@ -52,16 +52,16 @@ Objects inheriting from \code{vine_dist} for \code{\link[=vine_dist]{vine_dist()
 
 Objects from the \code{vine_dist} class are lists containing:
 \itemize{
-\item \code{marg}, a list of marginals (see below).
-\item \code{cop}, an object of the class \code{vinecop_dist}, see \code{\link[=vinecop_dist]{vinecop_dist()}}.
+\item \code{margins}, a list of marginals (see below).
+\item \code{copula}, an object of the class \code{vinecop_dist}, see \code{\link[=vinecop_dist]{vinecop_dist()}}.
 }
 
-For objects from the \code{vine} class, \code{cop} is also an object of the class
+For objects from the \code{vine} class, \code{copula} is also an object of the class
 \code{vine}, see \code{\link[=vinecop]{vinecop()}}. Additionally, objects from the \code{vine} class contain:
 \itemize{
-\item \code{marg_controls}, a \code{list} with the set of fit controls that was passed
+\item \code{margins_controls}, a \code{list} with the set of fit controls that was passed
 to \code{\link[kde1d:kde1d]{kde1d::kde1d()}} when estimating the margins.
-\item \code{cop_controls}, a \code{list} with the set of fit controls that was passed
+\item \code{copula_controls}, a \code{list} with the set of fit controls that was passed
 to \code{\link[=vinecop]{vinecop()}} when estimating the copula.
 \item \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset that was
 passed to \code{\link[=vinecop]{vinecop()}}.
@@ -69,9 +69,9 @@ passed to \code{\link[=vinecop]{vinecop()}}.
 to fit the model.
 }
 
-Concerning \code{marg}:
+Concerning \code{margins}:
 \itemize{
-\item For objects created with \code{\link[=vine_dist]{vine_dist()}}, it simply corresponds to the \code{marg}
+\item For objects created with \code{\link[=vine_dist]{vine_dist()}}, it simply corresponds to the \code{margins}
 argument.
 \item For objets created with \code{\link[=vine]{vine()}}, it is a list of objects of class \code{kde1d},
 see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
@@ -85,8 +85,8 @@ Automated fitting or creation of custom vine copula models
 of \code{bicop_dist} objects and a quadratic structure matrix.
 
 \code{vine()} provides automated fitting for vine copula models.
-\code{marg_controls} is a list with the same parameters as
-\code{\link[kde1d:kde1d]{kde1d::kde1d()}} (except for \code{x}). \code{cop_controls} is a list
+\code{margins_controls} is a list with the same parameters as
+\code{\link[kde1d:kde1d]{kde1d::kde1d()}} (except for \code{x}). \code{copula_controls} is a list
 with the same parameters as \code{\link[=vinecop]{vinecop()}} (except for \code{data}).
 }
 \examples{
@@ -110,7 +110,7 @@ summary(vc)
 x <- rvine(50, vc)
 
 # estimate a vine copula model
-fit <- vine(x, cop_controls = list(family_set = "par"))
+fit <- vine(x, copula_controls = list(family_set = "par"))
 summary(fit)
 
 }

@@ -2,16 +2,17 @@ context("Fitting `vine` models")
 
 set.seed(5)
 u <- sapply(1:5, function(i) rnorm(30))
-fit <- vine(u, cop_controls = list(family_set = "nonpar"))
-fit_no_data <- vine(u, cop_controls = list(family_set = "nonpar", 
-                                           keep_data = FALSE))
+fit <- vine(u, copula_controls = list(family_set = "nonpar"))
+fit_no_data <- vine(u, copula_controls = list(family_set = "nonpar", 
+                                              keep_data = FALSE))
 
 test_that("returns proper 'vine' object", {
     expect_s3_class(fit, "vine")
     expect_s3_class(fit, "vine_dist")
     expect_identical(
         names(fit),  
-        c("marg", "marg_controls", "cop", "cop_controls", "data", "nobs")
+        c("margins", "margins_controls", "copula", 
+          "copula_controls", "data", "nobs")
     )
 })
 

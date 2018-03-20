@@ -4,7 +4,7 @@
 #' 
 #' @aliases vine_dist
 #' @param data a matrix or data.frame.
-#' @param marg_controls a list with arguments to be passed to 
+#' @param margins_controls a list with arguments to be passed to 
 #' [kde1d::kde1d()]. Currently, there can be 
 #'   * `mult` numeric; all bandwidhts for marginal kernel density estimation
 #'   are multiplied with \code{mult_1d}. Defaults to `log(1 + d)` where `d` is
@@ -12,15 +12,15 @@
 #'   * `xmin` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `xmax` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
-#' @param cop_controls a list with arguments to be passed to [vinecop()].
+#' @param copula_controls a list with arguments to be passed to [vinecop()].
 #' 
 #' @details
 #' `vine_dist()` creates a vine copula by specifying the marg, a nested list 
 #' of `bicop_dist` objects and a quadratic structure matrix. 
 #' 
 #' `vine()` provides automated fitting for vine copula models. 
-#' `marg_controls` is a list with the same parameters as 
-#' [kde1d::kde1d()] (except for `x`). `cop_controls` is a list 
+#' `margins_controls` is a list with the same parameters as 
+#' [kde1d::kde1d()] (except for `x`). `copula_controls` is a list 
 #' with the same parameters as [vinecop()] (except for `data`). 
 #'
 #' @return Objects inheriting from `vine_dist` for [vine_dist()], and
@@ -28,24 +28,24 @@
 #' 
 #' Objects from the `vine_dist` class are lists containing:
 #' 
-#' * `marg`, a list of marginals (see below).
-#' * `cop`, an object of the class `vinecop_dist`, see [vinecop_dist()].
+#' * `margins`, a list of marginals (see below).
+#' * `copula`, an object of the class `vinecop_dist`, see [vinecop_dist()].
 #' 
-#' For objects from the `vine` class, `cop` is also an object of the class
+#' For objects from the `vine` class, `copula` is also an object of the class
 #' `vine`, see [vinecop()]. Additionally, objects from the `vine` class contain:
 #' 
-#' * `marg_controls`, a `list` with the set of fit controls that was passed 
+#' * `margins_controls`, a `list` with the set of fit controls that was passed 
 #' to [kde1d::kde1d()] when estimating the margins.
-#' * `cop_controls`, a `list` with the set of fit controls that was passed 
+#' * `copula_controls`, a `list` with the set of fit controls that was passed 
 #' to [vinecop()] when estimating the copula.
 #' * `data` (optionally, if `keep_data = TRUE` was used), the dataset that was 
 #' passed to [vinecop()].
 #' * `nobs`, an `integer` containing the number of observations that was used 
 #' to fit the model.
 #' 
-#' Concerning `marg`:
+#' Concerning `margins`:
 #' 
-#' * For objects created with [vine_dist()], it simply corresponds to the `marg` 
+#' * For objects created with [vine_dist()], it simply corresponds to the `margins` 
 #' argument.
 #' * For objets created with [vine()], it is a list of objects of class `kde1d`, 
 #' see [kde1d::kde1d()].
@@ -71,18 +71,18 @@
 #' x <- rvine(50, vc)
 #' 
 #' # estimate a vine copula model
-#' fit <- vine(x, cop_controls = list(family_set = "par"))
+#' fit <- vine(x, copula_controls = list(family_set = "par"))
 #' summary(fit)
 #' 
 #' @importFrom kde1d kde1d dkde1d pkde1d qkde1d
 #' @importFrom cctools cont_conv expand_vec
 #' @export
 vine <- function(data, 
-                 marg_controls = list(mult = NULL, 
+                 margins_controls = list(mult = NULL, 
                                       xmin = NaN, 
                                       xmax = NaN, 
                                       bw = NA), 
-                 cop_controls = list(family_set = "all", 
+                 copula_controls = list(family_set = "all", 
                                      matrix = NA, 
                                      par_method = "mle", 
                                      nonpar_method = "constant",
@@ -102,23 +102,23 @@ vine <- function(data,
         stop("data must be multivariate.")
     d <- ncol(data_cc)
     
-    if (is.null(cop_controls$keep_data))
-        cop_controls$keep_data <- TRUE
+    if (is.null(copula_controls$keep_data))
+        copula_controls$keep_data <- TRUE
     
     ## check that the correct arguments are there
-    marg_controls_names <- c("mult", "xmin", "xmax", "bw")
-    if (!is.list(marg_controls) | !setequal(names(marg_controls), 
-                                            marg_controls_names)) {
+    margins_controls_names <- c("mult", "xmin", "xmax", "bw")
+    if (!is.list(margins_controls) | !setequal(names(margins_controls), 
+                                            margins_controls_names)) {
         msg <- "marg controls should be a list with elements 'mult', 'xmin', 
         'xmax', and 'bw'."
         stop(msg)
     }
     
     ## expand the required arguments and compute default mult if needed
-    marg_controls_names <- names(marg_controls)
-    marg_controls <- sapply(seq_along(marg_controls), function(j) {
-        par <- marg_controls[[j]]
-        if (names(marg_controls)[j] == "mult") {
+    margins_controls_names <- names(margins_controls)
+    margins_controls <- sapply(seq_along(margins_controls), function(j) {
+        par <- margins_controls[[j]]
+        if (names(margins_controls)[j] == "mult") {
             if (is.null(par)) 
                 par <- log(1 + ncol(data_cc))
         } else {
@@ -126,34 +126,34 @@ vine <- function(data,
         }
         return(par)
     })
-    names(marg_controls) <- marg_controls_names
+    names(margins_controls) <- margins_controls_names
     
     ## estimation of the marginals
     vine <- list()
-    vine$marg <- lapply(1:d, function(k) kde1d(data_cc[, k],
-                                               xmin = marg_controls$xmin[k], 
-                                               xmax = marg_controls$xmax[k],
-                                               bw = marg_controls$bw[k],
-                                               mult = marg_controls$mult))
-    vine$marg_controls <- marg_controls
+    vine$margins <- lapply(1:d, function(k) kde1d(data_cc[, k],
+                                               xmin = margins_controls$xmin[k], 
+                                               xmax = margins_controls$xmax[k],
+                                               bw = margins_controls$bw[k],
+                                               mult = margins_controls$mult))
+    vine$margins_controls <- margins_controls
     
     ## estimation of the R-vine copula (only if d > 1)
     if (d > 1) {
         ## transform to copula data
-        cop_controls$data <- sapply(1:d, function(k) pkde1d(data_cc[, k],
-                                                            vine$marg[[k]]))
+        copula_controls$data <- sapply(1:d, function(k) pkde1d(data_cc[, k],
+                                                            vine$margins[[k]]))
         
         ## to avoid saving copula data
-        keep_data <- cop_controls$keep_data
-        cop_controls$keep_data <- FALSE
+        keep_data <- copula_controls$keep_data
+        copula_controls$keep_data <- FALSE
         
         ## estimate the copula
-        vine$cop  <- do.call(vinecop, cop_controls)
+        vine$copula  <- do.call(vinecop, copula_controls)
         
         ## to potentially save the data on the standard scale
-        cop_controls$keep_data <- keep_data
+        copula_controls$keep_data <- keep_data
     }
-    vine$cop_controls <- cop_controls[-which(names(cop_controls) == "data")]
+    vine$copula_controls <- copula_controls[-which(names(copula_controls) == "data")]
     
     ## add information about the fit
     if (keep_data) {
@@ -170,12 +170,12 @@ vine <- function(data,
     structure(vine, class = c("vine", "vine_dist"))
 }
 
-#' @param marg A list with with each element containing the specification of a 
+#' @param margins A list with with each element containing the specification of a 
 #' marginal [stats::Distributions]. Each marginal specification 
 #' should be a list with containing at least the name and optionally the 
 #' parameters, e.g. `list(list(name = "norm"), list(name = "norm", mu = 1), list(name = "beta", shape1 = 1, shape2 = 1))`.
 #' Note that parameters that have no default values have to be provided. 
-#' Furthermore, if `marg` has length one, it will be recycled for every component.
+#' Furthermore, if `margins` has length one, it will be recycled for every component.
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where 
 #'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
 #'    tree `t`.
@@ -185,16 +185,16 @@ vine <- function(data,
 #'   automatic structure selection.
 #' @rdname vine
 #' @export
-vine_dist <- function(marg, pair_copulas, matrix) {
+vine_dist <- function(margins, pair_copulas, matrix) {
     
     # sanity checks for the marg
-    if (!(length(marg) %in% c(1, ncol(matrix))))
+    if (!(length(margins) %in% c(1, ncol(matrix))))
         stop("marg should have length 1 or ncol(matrix)")
-    stopifnot(is.list(marg))
-    if (depth(marg) == 1) {
-        check_marg <- check_distr(marg)
+    stopifnot(is.list(margins))
+    if (depth(margins) == 1) {
+        check_marg <- check_distr(margins)
     } else {
-        check_marg <- lapply(marg, check_distr)
+        check_marg <- lapply(margins, check_distr)
     }
     is_ok <- sapply(check_marg, isTRUE)
     if (!all(is_ok)) {
@@ -205,8 +205,8 @@ vine_dist <- function(marg, pair_copulas, matrix) {
     }
 
     # create the vinecop object
-    vinecop <- vinecop_dist(pair_copulas, matrix)
+    copula <- vinecop_dist(pair_copulas, matrix)
     
     # create object
-    structure(list(marg = marg, cop = vinecop), class = "vine_dist")
+    structure(list(margins = margins, copula = copula), class = "vine_dist")
 }

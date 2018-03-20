@@ -64,8 +64,8 @@ dvine <- function(x, vine) {
     
     # prepare marginals if only one is specified
     d <- ncol(x)
-    if (!inherits(vine, "vine") & depth(vine$marg) == 1) 
-        vine$marg <- replicate(d, vine$marg, simplify = FALSE)
+    if (!inherits(vine, "vine") & depth(vine$margins) == 1) 
+        vine$margins <- replicate(d, vine$margins, simplify = FALSE)
     
     ## evaluate marginal densities
     margvals <- u <- x
@@ -75,22 +75,22 @@ dvine <- function(x, vine) {
             if (k %in% attr(vine$data, "i_disc")) {
                 # use normalization if discrete
                 attr(x_k, "i_disc") <- 1
-                vine$marg[[k]]$levels <- attr(vine$data, "levels")[[k]]
+                vine$margins[[k]]$levels <- attr(vine$data, "levels")[[k]]
             }
-            margvals[, k] <- dkde1d(x_k, vine$marg[[k]])
+            margvals[, k] <- dkde1d(x_k, vine$margins[[k]])
         } else {
-            dfun <- get(paste0("d", vine$marg[[k]]$name))
-            par <- vine$marg[[k]][names(vine$marg[[k]]) != "name"]
+            dfun <- get(paste0("d", vine$margins[[k]]$name))
+            par <- vine$margins[[k]][names(vine$margins[[k]]) != "name"]
             par$x <- x_k
             margvals[, k] <- do.call(dfun, par)
         }
     }
     
-    if (!is.null(vine$cop)) {
+    if (!is.null(vine$copula)) {
         # PIT to copula data
         u <- get_u(x, vine)
         # evaluate vine density
-        vinevals <- vinecop_pdf_cpp(u, vine$cop)
+        vinevals <- vinecop_pdf_cpp(u, vine$copula)
     } else {
         vinevals <- rep(1, nrow(x))
     }
@@ -116,15 +116,15 @@ pvine <- function(x, vine, n_mc = 10^4) {
         x <- x[, colnames(vine$data), drop = FALSE]
     
     # prepare marginals if only one is specified
-    if (!inherits(vine, "vine") & depth(vine$marg) == 1) 
-        vine$marg <- replicate(ncol(x), vine$marg, simplify = FALSE)
+    if (!inherits(vine, "vine") & depth(vine$margins) == 1) 
+        vine$margins <- replicate(ncol(x), vine$margins, simplify = FALSE)
     
     # PIT to copula data
     u <- get_u(x, vine)
     
     # Evaluate copula if needed
-    if (!is.null(vine$cop)) {
-        vals <- vinecop_cdf_cpp(u, vine$cop, n_mc)
+    if (!is.null(vine$copula)) {
+        vals <- vinecop_cdf_cpp(u, vine$copula, n_mc)
     } else {
         vals <- u
     }
@@ -143,23 +143,23 @@ rvine <- function(n, vine, U = NULL) {
     stopifnot(inherits(vine, "vine_dist"))
     
     # prepare uniform data
-    d <- ncol(vine$cop$matrix)
+    d <- ncol(vine$copula$matrix)
     U <- prep_uniform_data(n, d, U)
 
     # simulate from copula
-    U <- vinecop_inverse_rosenblatt_cpp(U, vine$cop)
+    U <- vinecop_inverse_rosenblatt_cpp(U, vine$copula)
     
     # prepare marginals if only one is specified
-    if (!inherits(vine, "vine") & depth(vine$marg) == 1) 
-        vine$marg <- replicate(d, vine$marg, simplify = FALSE)
+    if (!inherits(vine, "vine") & depth(vine$margins) == 1) 
+        vine$margins <- replicate(d, vine$margins, simplify = FALSE)
     
     # use quantile transformation for marginals
     if (inherits(vine, "vine")) {
-        U <- sapply(seq_len(d), function(i) qkde1d(U[, i], vine$marg[[i]]))
+        U <- sapply(seq_len(d), function(i) qkde1d(U[, i], vine$margins[[i]]))
     } else {
         U <- sapply(seq_len(d), function(i) {
-            qfun <- get(paste0("q", vine$marg[[i]]$name))
-            par <- vine$marg[[i]][names(vine$marg[[i]]) != "name"]
+            qfun <- get(paste0("q", vine$margins[[i]]$name))
+            par <- vine$margins[[i]][names(vine$margins[[i]]) != "name"]
             par$p <- U[, i]
             do.call(qfun, par)
         })
@@ -170,12 +170,12 @@ rvine <- function(n, vine, U = NULL) {
 
 #' @export
 print.vine_dist <- function(x, ...) {
-    print(x$cop)
+    print(x$copula)
 }
 
 #' @export
 summary.vine_dist <- function(object, ...) {
-    summary(object$cop)
+    summary(object$copula)
 }
 
 #' Predictions and fitted values for a vine copula model
@@ -199,7 +199,7 @@ summary.vine_dist <- function(object, ...) {
 #' @rdname predict_vine
 #' @examples
 #' x <- sapply(1:5, function(i) rnorm(50))
-#' fit <- vine(x, cop_controls = list(family_set = "par"))
+#' fit <- vine(x, copula_controls = list(family_set = "par"))
 #' all.equal(predict(fit, x), fitted(fit))
 predict.vine <- function(object, newdata, what = "pdf", n_mc = 10^4, ...) {
     stopifnot(what %in% c("pdf", "cdf"))
@@ -228,11 +228,11 @@ logLik.vine <- function(object, ...) {
     if (all(is.na(object$data)))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     
-    ll_marg <- lapply(object$marg, logLik)
+    ll_marg <- lapply(object$margins, logLik)
     npars_marg <- sapply(ll_marg, function(x) attr(x, "df"))
     u <- get_u(object$data, object)
-    ll_cop <- vinecop_loglik_cpp(u, object$cop)
-    pc_lst <- unlist(object$cop$pair_copulas, recursive = FALSE)
+    ll_cop <- vinecop_loglik_cpp(u, object$copula)
+    pc_lst <- unlist(object$copula$pair_copulas, recursive = FALSE)
     npars_cop <- ifelse(length(pc_lst) == 0, 0, 
                     sum(sapply(pc_lst, function(x) x[["npars"]])))
     structure(sum(unlist(ll_marg)) + ll_cop, "df" = sum(npars_marg) + npars_cop)
@@ -240,13 +240,13 @@ logLik.vine <- function(object, ...) {
 
 #' @export
 print.vine <- function(x, ...) {
-    print(collate_u(x)$cop)
+    print(collate_u(x)$copula)
 }
 
 
 #' @export
 summary.vine <- function(object, ...) {
-    summary(collate_u(object)$cop)
+    summary(collate_u(object)$copula)
 }
 
 # PIT to copula level
@@ -260,12 +260,12 @@ get_u <- function(x, vine) {
             if (k %in% attr(vine$data, "i_disc")) {
                 # use continuous variant for PIT
                 attr(x_k, "i_disc") <- integer(0)
-                vine$marg[[k]]$levels <- NULL
+                vine$margins[[k]]$levels <- NULL
             }
-            u[, k] <- pkde1d(x_k, vine$marg[[k]])
+            u[, k] <- pkde1d(x_k, vine$margins[[k]])
         } else {
-            pfun <- get(paste0("p", vine$marg[[k]]$name))
-            par <- vine$marg[[k]][names(vine$marg[[k]]) != "name"]
+            pfun <- get(paste0("p", vine$margins[[k]]$name))
+            par <- vine$margins[[k]][names(vine$margins[[k]]) != "name"]
             par$q <- x_k
             u[, k] <- do.call(pfun, par)
         }
@@ -276,7 +276,7 @@ get_u <- function(x, vine) {
 collate_u <- function(x) {
     if (!all(is.na(x$data))) {
         u <- get_u(x$data, x)
-        x$cop$data <- u
+        x$copula$data <- u
     }
     x
 }
