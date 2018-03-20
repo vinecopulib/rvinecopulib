@@ -45,7 +45,7 @@
 #' Object from the `vinecop_dist` class are lists containing:
 #' 
 #' * `pair_copulas`, a list of lists. Each element of `pair_copulas` corresponds 
-#' to a tree, i.e., a list of `bicop_dist` objects, see [bicop_dist()].
+#' to a tree, which is itself a list of `bicop_dist` objects, see [bicop_dist()].
 #' * `matrix`, an R-vine matrix, namely a compressed representation of the 
 #' vine structure, see [check_rvine_matrix()].
 #' * `npars`, a `numeric` with the number of (effective) parameters.

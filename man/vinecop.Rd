@@ -78,7 +78,7 @@ Objects inheriting from \code{vinecop_dist} for \code{\link[=vinecop_dist]{vinec
 Object from the \code{vinecop_dist} class are lists containing:
 \itemize{
 \item \code{pair_copulas}, a list of lists. Each element of \code{pair_copulas} corresponds
-to a tree, i.e., a list of \code{bicop_dist} objects, see \code{\link[=bicop_dist]{bicop_dist()}}.
+to a tree, which is itself a list of \code{bicop_dist} objects, see \code{\link[=bicop_dist]{bicop_dist()}}.
 \item \code{matrix}, an R-vine matrix, namely a compressed representation of the
 vine structure, see \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}.
 \item \code{npars}, a \code{numeric} with the number of (effective) parameters.
