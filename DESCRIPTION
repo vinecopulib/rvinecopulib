@@ -22,8 +22,10 @@ Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
 Imports:
+    cctools,
     graphics,
     grDevices,
+    kde1d,
     lattice,
     Rcpp (>= 0.12.12),
     stats,

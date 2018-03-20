@@ -129,3 +129,35 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
         }
     }
 }
+
+# Get the depth of a list
+depth <- function(this) ifelse(is.list(this), 1L + max(sapply(this, depth)), 0L)
+
+distr <- c("beta", "cauchy", "chisq", "exp", "f", "gamma", "lnorm", "norm",
+           "t", "unif", "weibull")
+
+#' @importFrom stats pbeta qbeta qbeta dcauchy pcauchy qcauchy dchisq pchisq
+#' @importFrom stats qchisq dexp pexp qexp df pf qf dgamma pgamma qgamma
+#' @importFrom stats dlnorm plnorm qlnorm dt pt qt dunif punif qunif
+#' @importFrom stats dweibull pweibull qweibull
+check_distr <- function(distr) {
+    
+    ## basic sanity checks
+    if (!is.list(distr))
+        return("a distribution should be a list")
+    if (!any(is.element(names(distr), "name")))
+        return("a distribution should contain a name element")
+    nn <- distr[["name"]]
+    if (!is.element(nn, distr))
+        return("unsupported distribution")
+    
+    ## check that the provided parameters are consistent with the distribution
+    qfun <- get(paste0("q", nn))
+    par <- distr[names(distr)!= "name"]
+    par$p <- 0.5
+    e <- tryCatch(do.call(qfun, par), error = function(e) e)
+    if (any(class(e) == "error"))
+        return(e$message)
+    
+    return(TRUE)
+}
