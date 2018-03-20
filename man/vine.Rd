@@ -49,6 +49,33 @@ automatic structure selection.}
 \value{
 Objects inheriting from \code{vine_dist} for \code{\link[=vine_dist]{vine_dist()}}, and
 \code{vine} and \code{vine_dist} for \code{\link[=vine]{vine()}}.
+
+Objects from the \code{vine_dist} class are lists containing:
+\itemize{
+\item \code{marg}, a list of marginals (see below).
+\item \code{cop}, an object of the class \code{vinecop_dist}, see \code{\link[=vinecop_dist]{vinecop_dist()}}.
+}
+
+For objects from the \code{vine} class, \code{cop} is also an object of the class
+\code{bicop}, see \code{\link[=bicop]{bicop()}}. Additionally, objects from the \code{vine} class contain:
+\itemize{
+\item \code{marg_controls}, a \code{list} with the set of fit controls that was passed
+to \code{\link[kde1d:kde1d]{kde1d::kde1d()}} when estimating the margins.
+\item \code{cop_controls}, a \code{list} with the set of fit controls that was passed
+to \code{\link[=vinecop]{vinecop()}} when estimating the copula.
+\item \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset that was
+passed to \code{\link[=vinecop]{vinecop()}}.
+\item \code{nobs}, an \code{integer} containing the number of observations that was used
+to fit the model.
+}
+
+Concerning \code{marg}:
+\itemize{
+\item For objects created with \code{\link[=vine_dist]{vine_dist()}}, it simply corresponds to the \code{marg}
+argument.
+\item For objets created with \code{\link[=vine]{vine()}}, it is a list of objects of class \code{kde1d},
+see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
+}
 }
 \description{
 Automated fitting or creation of custom vine copula models

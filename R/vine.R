@@ -25,7 +25,31 @@
 #'
 #' @return Objects inheriting from `vine_dist` for [vine_dist()], and
 #' `vine` and `vine_dist` for [vine()].
-#'
+#' 
+#' Objects from the `vine_dist` class are lists containing:
+#' 
+#' * `marg`, a list of marginals (see below).
+#' * `cop`, an object of the class `vinecop_dist`, see [vinecop_dist()].
+#' 
+#' For objects from the `vine` class, `cop` is also an object of the class
+#' `bicop`, see [bicop()]. Additionally, objects from the `vine` class contain:
+#' 
+#' * `marg_controls`, a `list` with the set of fit controls that was passed 
+#' to [kde1d::kde1d()] when estimating the margins.
+#' * `cop_controls`, a `list` with the set of fit controls that was passed 
+#' to [vinecop()] when estimating the copula.
+#' * `data` (optionally, if `keep_data = TRUE` was used), the dataset that was 
+#' passed to [vinecop()].
+#' * `nobs`, an `integer` containing the number of observations that was used 
+#' to fit the model.
+#' 
+#' Concerning `marg`:
+#' 
+#' * For objects created with [vine_dist()], it simply corresponds to the `marg` 
+#' argument.
+#' * For objets created with [vine()], it is a list of objects of class `kde1d`, 
+#' see [kde1d::kde1d()].
+#' 
 #' @examples
 #' # specify pair-copulas
 #' bicop <- bicop_dist("bb1", 90, c(3, 2))
