@@ -81,7 +81,7 @@ Object from the \code{vinecop_dist} class are lists containing:
 to a tree, i.e., a list of \code{bicop_dist} objects, see \code{\link[=bicop_dist]{bicop_dist()}}.
 \item \code{matrix}, an R-vine matrix, namely a compressed representation of the
 vine structure, see \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}.
-\item \code{npars}, a \code{numeric} with the number of parameters.
+\item \code{npars}, a \code{numeric} with the number of (effective) parameters.
 }
 
 For objects from the \code{vinecop} class, elements of the sublists in

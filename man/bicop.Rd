@@ -63,7 +63,7 @@ Object from the \code{bicop_dist} class are lists containing:
 \item \code{rotation}, an \code{integer} indicating the rotation (i.e., either 0, 90, 180,
 or 270).
 \item \code{parameters}, a \code{numeric} vector or matrix of parameters.
-\item \code{npars}, a \code{numeric} with the number of parameters.
+\item \code{npars}, a \code{numeric} with the (effective) number of parameters.
 }
 
 Additionally, objects from the \code{bicop} class contain:

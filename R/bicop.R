@@ -68,7 +68,7 @@
 #' * `rotation`, an `integer` indicating the rotation (i.e., either 0, 90, 180, 
 #' or 270).
 #' * `parameters`, a `numeric` vector or matrix of parameters.
-#' * `npars`, a `numeric` with the number of parameters.
+#' * `npars`, a `numeric` with the (effective) number of parameters.
 #' 
 #' Additionally, objects from the `bicop` class contain:
 #' 
