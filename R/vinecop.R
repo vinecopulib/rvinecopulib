@@ -41,6 +41,25 @@
 #'
 #' @return Objects inheriting from `vinecop_dist` for [vinecop_dist()], and
 #' `vinecop` and `vinecop_dist` for [vinecop()].
+#' 
+#' Object from the `vinecop_dist` class are lists containing:
+#' 
+#' * `pair_copulas` a list of lists. Each element of `pair_copulas` corresponds 
+#' to a tree, i.e., a list of `bicop_dist` objects (see [bicop_dist()]).
+#' * `matrix` is an R-vine matrix, namely a compressed representation of the 
+#' vine structure (see [check_rvine_matrix()]).
+#' * `npars` is a `numeric` encoding the number of parameters.
+#' 
+#' For objects from the `vinecop` class, elements of the sublists in 
+#' `pair_copulas` are also `bicop` objects (see [bicop()]). Additionally, 
+#' objects from the `vinecop` class contain:
+#' 
+#' * `threshold` the (set or estimated) threshold used for thresholding the vine.
+#' * `data` (optionally, if `keep_data = TRUE` was used) is the dataset that was 
+#' passed to [vinecop()].
+#' * `controls` is a `list` with the set of fit controls that was passed to [vinecop()].
+#' * `nobs` is an `integer` containing the number of observations that was used 
+#' to fit the model.
 #'
 #' @examples
 #' # specify pair-copulas
