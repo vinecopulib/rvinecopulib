@@ -56,6 +56,24 @@ families is done in parallel.}
 \value{
 Objects inheriting from \code{bicop_dist} for \code{bicop_dist()}, and
 \code{bicop} and \code{bicop_dist} for \code{bicop()}.
+
+Object from the \code{bicop_dist} class are lists containing:
+\itemize{
+\item \code{family}, a \code{character} indicating the copula family.
+\item \code{rotation}, an \code{integer} indicating the rotation (i.e., either 0, 90, 180,
+or 270).
+\item \code{parameters}, a \code{numeric} vector or matrix of parameters.
+\item \code{npars}, a \code{numeric} with the (effective) number of parameters.
+}
+
+Additionally, objects from the \code{bicop} class contain:
+\itemize{
+\item \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset that was
+passed to \code{\link[=bicop]{bicop()}}.
+\item \code{controls}, a \code{list} with the set of fit controls that was passed to \code{\link[=bicop]{bicop()}}.
+\item \code{nobs}, an \code{integer} with the number of observations that was used
+to fit the model.
+}
 }
 \description{
 Bivariate copula models

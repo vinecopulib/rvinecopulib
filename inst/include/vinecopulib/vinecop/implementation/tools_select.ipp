@@ -36,6 +36,8 @@ inline double calculate_criterion(const Eigen::Matrix<double, Eigen::Dynamic, 2>
             w = tools_stats::pairwise_hoeffd(data_no_nan);
         } else if (tree_criterion == "rho") {
             w = tools_stats::pairwise_cor(data_no_nan);
+        } else if (tree_criterion == "mcor") {
+            w = tools_stats::pairwise_mcor(data_no_nan);
         }
     }
 
