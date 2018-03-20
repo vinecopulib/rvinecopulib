@@ -1,4 +1,4 @@
-context("Fitting vine copula models")
+context("Fitting `vinecop` models")
 
 set.seed(5)
 u <- sapply(1:5, function(i) runif(30))
