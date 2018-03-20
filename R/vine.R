@@ -79,8 +79,8 @@
 #' @export
 vine <- function(data, 
                  marg_controls = list(mult = NULL, 
-                                      xmin = -Inf, 
-                                      xmax = Inf, 
+                                      xmin = NaN, 
+                                      xmax = NaN, 
                                       bw = NA), 
                  cop_controls = list(family_set = "all", 
                                      matrix = NA, 

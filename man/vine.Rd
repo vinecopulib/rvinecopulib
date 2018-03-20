@@ -6,11 +6,11 @@
 \alias{vine_dist}
 \title{Vine copula models}
 \usage{
-vine(data, marg_controls = list(mult = NULL, xmin = -Inf, xmax = Inf, bw =
-  NA), cop_controls = list(family_set = "all", matrix = NA, par_method =
-  "mle", nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9,
-  presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data =
-  TRUE, show_trace = FALSE, cores = 1))
+vine(data, marg_controls = list(mult = NULL, xmin = NaN, xmax = NaN, bw = NA),
+  cop_controls = list(family_set = "all", matrix = NA, par_method = "mle",
+  nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9, presel =
+  TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = TRUE,
+  show_trace = FALSE, cores = 1))
 
 vine_dist(marg, pair_copulas, matrix)
 }
