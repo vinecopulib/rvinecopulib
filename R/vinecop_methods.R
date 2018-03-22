@@ -67,8 +67,8 @@
 #' # get vine matrix
 #' get_matrix(vc)
 #' 
-#' # get tree from a vine selected by index
-#' get_trees(vc, 1)
+#' # extract a truncated sub-vine based on truncation level supplied by user
+#' truncate_vine(vc, 1)
 #' 
 #' @rdname vinecop_methods
 #' @export
@@ -275,13 +275,13 @@ vinecop_fit_info <- function(vc) {
 #' return a nested list with entry `[t][e]` corresponding to
 #' edge `e` in tree `t`.
 #' @param object a `vinecop` object.
-#' @param depth the number of trees extracted from the `vinecop` object.
+#' @param trees the number of trees extracted from the `vinecop` object.
 #'
 #' @export
-get_all_pair_copulas <- function(object, depth = NA) {
+get_all_pair_copulas <- function(object, trees = NA) {
     stopifnot(inherits(object, "vinecop_dist"))   
-    vine_depth = ifelse(!is.na(depth), depth, length(object$pair_copulas))
-    object$pair_copulas[1:vine_depth]
+    trees <- ifelse(!is.na(trees), trees, length(object$pair_copulas))
+    object$pair_copulas[1:trees]
 }
 
 #' extracts the structure matrix of the vine copula model.
@@ -305,16 +305,17 @@ get_pair_copula <- function(object, tree, edge) {
     object$pair_copulas[[tree]][[edge]]
 }
 
-#' extracts trees from a vine based on user-supplied vector of indices.
+#' extract a truncated sub-vine based on truncation level supplied by user.
 #' @param object a `vinecop` object.
-#' @param depths user-supplied vector of tree indices.
+#' @param trunc_lvl truncation level for the vine copula.
 #'
 #' @export
-get_trees <- function(object, depths = NA) {
+truncate_vine <- function(object, trunc_lvl = NA) { 
     stopifnot(inherits(object, "vinecop_dist"))
-    if (!is.na(depths)) {
-        lapply(depths, function(x) vinecop_dist(object$pair_copulas[1:x], object$matrix))
+    stopifnot(trunc_lvl <= length(object$pair_copulas))
+    if (!is.na(trunc_lvl)) {
+        vinecop_dist(object$pair_copulas[1:trunc_lvl], object$matrix)
     } else{
-        object
+        vinecop_dist(object$pair_copulas, object$matrix)
     }
 }

@@ -98,7 +98,7 @@ get_all_pair_copulas(vc)
 # get vine matrix
 get_matrix(vc)
 
-# get tree from a vine selected by index
-get_trees(vc, 1)
+# extract a truncated sub-vine based on truncation level supplied by user
+truncate_vine(vc, 1)
 
 }

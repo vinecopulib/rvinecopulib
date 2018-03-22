@@ -99,6 +99,6 @@ test_that("getters work", {
     # test get_matrix
     expect_identical(mat, get_matrix(vc))
     
-    # test get_trees by index
-    expect_identical(vc$pair_copulas[1:1], get_trees(vc, 1)[[1]][[1]])
+    # test truncate 
+    expect_identical(vc$pair_copulas[1:1], truncate_vine(vc, 1)[[1]])
 })
