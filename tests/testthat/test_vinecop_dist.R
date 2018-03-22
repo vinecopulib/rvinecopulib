@@ -100,5 +100,5 @@ test_that("getters work", {
     expect_identical(mat, get_matrix(vc))
     
     # test truncate 
-    expect_identical(vc$pair_copulas[1:1], truncate_vine(vc, 1)[[1]])
+    expect_identical(vc$pair_copulas[1:1], truncate_vinecop(vc, 1)[[1]])
 })

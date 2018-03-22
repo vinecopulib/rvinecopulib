@@ -99,6 +99,6 @@ get_all_pair_copulas(vc)
 get_matrix(vc)
 
 # extract a truncated sub-vine based on truncation level supplied by user
-truncate_vine(vc, 1)
+truncate_vinecop(vc, 1)
 
 }

@@ -68,7 +68,7 @@
 #' get_matrix(vc)
 #' 
 #' # extract a truncated sub-vine based on truncation level supplied by user
-#' truncate_vine(vc, 1)
+#' truncate_vinecop(vc, 1)
 #' 
 #' @rdname vinecop_methods
 #' @export
@@ -310,7 +310,7 @@ get_pair_copula <- function(object, tree, edge) {
 #' @param trunc_lvl truncation level for the vine copula.
 #'
 #' @export
-truncate_vine <- function(object, trunc_lvl = NA) { 
+truncate_vinecop <- function(object, trunc_lvl = NA) { 
     stopifnot(inherits(object, "vinecop_dist"))
     stopifnot(trunc_lvl <= length(object$pair_copulas))
     if (!is.na(trunc_lvl)) {
