@@ -310,9 +310,9 @@ get_pair_copula <- function(object, tree, edge) {
 #' @param depths user-supplied vector of tree indices.
 #'
 #' @export
-get_trees <- function(object, depths = numeric()) {
+get_trees <- function(object, depths = NA) {
     stopifnot(inherits(object, "vinecop_dist"))
-    if (length(depths > 0)) {
+    if (!is.na(depths)) {
         lapply(depths, function(x) vinecop_dist(object$pair_copulas[1:x], object$matrix))
     } else{
         object
