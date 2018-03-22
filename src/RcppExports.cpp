@@ -250,41 +250,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// vinecop_get_all_pair_copulas_cpp
-Rcpp::List vinecop_get_all_pair_copulas_cpp(Rcpp::List& vinecop_r);
-RcppExport SEXP _rvinecopulib_vinecop_get_all_pair_copulas_cpp(SEXP vinecop_rSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_get_all_pair_copulas_cpp(vinecop_r));
-    return rcpp_result_gen;
-END_RCPP
-}
-// vinecop_get_matrix_cpp
-Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> vinecop_get_matrix_cpp(Rcpp::List& vinecop_r);
-RcppExport SEXP _rvinecopulib_vinecop_get_matrix_cpp(SEXP vinecop_rSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_get_matrix_cpp(vinecop_r));
-    return rcpp_result_gen;
-END_RCPP
-}
-// vinecop_get_pair_copula_cpp
-Rcpp::List vinecop_get_pair_copula_cpp(Rcpp::List& vinecop_r, int tree, int edge);
-RcppExport SEXP _rvinecopulib_vinecop_get_pair_copula_cpp(SEXP vinecop_rSEXP, SEXP treeSEXP, SEXP edgeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
-    Rcpp::traits::input_parameter< int >::type tree(treeSEXP);
-    Rcpp::traits::input_parameter< int >::type edge(edgeSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_get_pair_copula_cpp(vinecop_r, tree, edge));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_bicop_check_cpp", (DL_FUNC) &_rvinecopulib_bicop_check_cpp, 1},
@@ -306,9 +271,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_loglik_cpp", (DL_FUNC) &_rvinecopulib_vinecop_loglik_cpp, 2},
     {"_rvinecopulib_vinecop_mbicv_cpp", (DL_FUNC) &_rvinecopulib_vinecop_mbicv_cpp, 3},
     {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 16},
-    {"_rvinecopulib_vinecop_get_all_pair_copulas_cpp", (DL_FUNC) &_rvinecopulib_vinecop_get_all_pair_copulas_cpp, 1},
-    {"_rvinecopulib_vinecop_get_matrix_cpp", (DL_FUNC) &_rvinecopulib_vinecop_get_matrix_cpp, 1},
-    {"_rvinecopulib_vinecop_get_pair_copula_cpp", (DL_FUNC) &_rvinecopulib_vinecop_get_pair_copula_cpp, 3},
     {NULL, NULL, 0}
 };
 

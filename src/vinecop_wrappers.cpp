@@ -146,24 +146,3 @@ Rcpp::List vinecop_select_cpp(
     
     return vinecop_wrap(vinecop_cpp);
 }
-
-// [[Rcpp::export()]]
-Rcpp::List vinecop_get_all_pair_copulas_cpp(Rcpp::List& vinecop_r)
-{
-    Rcpp::List pair_copulas = vinecop_r["pair_copulas"];
-    return pair_copulas;
-}
-
-// [[Rcpp::export()]]
-Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> vinecop_get_matrix_cpp(Rcpp::List& vinecop_r)
-{
-    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix = vinecop_r["matrix"];
-    return matrix;
-}
-
-// [[Rcpp::export()]]
-Rcpp::List vinecop_get_pair_copula_cpp(Rcpp::List& vinecop_r, int tree, int edge)
-{
-    Bicop bicop_cpp = vinecop_wrap(vinecop_r).get_pair_copula(tree, edge);
-    return bicop_wrap(bicop_cpp);
-}

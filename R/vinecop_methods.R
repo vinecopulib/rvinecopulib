@@ -59,13 +59,16 @@
 #' pvinecop(u[1, ], vc)
 #' 
 #' # get single pair copula
-#' get_pair_copula(vc, 0, 0)
+#' get_pair_copula(vc, 1, 1)
 #' 
 #' # get all pair copulas
 #' get_all_pair_copulas(vc)
 #' 
 #' # get vine matrix
 #' get_matrix(vc)
+#' 
+#' # get tree from a vine selected by index
+#' get_trees(vc, 1)
 #' 
 #' @rdname vinecop_methods
 #' @export
@@ -272,11 +275,13 @@ vinecop_fit_info <- function(vc) {
 #' return a nested list with entry `[t][e]` corresponding to
 #' edge `e` in tree `t`.
 #' @param object a `vinecop` object.
+#' @param depth the number of trees extracted from the `vinecop` object.
 #'
 #' @export
-get_all_pair_copulas <- function(object) {
+get_all_pair_copulas <- function(object, depth = NA) {
     stopifnot(inherits(object, "vinecop_dist"))   
-    vinecop_get_all_pair_copulas_cpp(object)
+    vine_depth = ifelse(!is.na(depth), depth, length(object$pair_copulas))
+    object$pair_copulas[1:vine_depth]
 }
 
 #' extracts the structure matrix of the vine copula model.
@@ -285,17 +290,31 @@ get_all_pair_copulas <- function(object) {
 #' @export
 get_matrix <- function(object) {
     stopifnot(inherits(object, "vinecop_dist"))   
-    vinecop_get_matrix_cpp(object)
+    object$matrix
 }
 
-#' extracts a pair copula
+#' extracts a pair copula 
 #' @param object a `vinecop` object.
 #' 
-#' @param tree tree index (starting with 0).
-#' @param edge edge index (starting with 0).
+#' @param tree tree index (starting with 1).
+#' @param edge edge index (starting with 1).
 #'
 #' @export
 get_pair_copula <- function(object, tree, edge) {
     stopifnot(inherits(object, "vinecop_dist"))   
-    vinecop_get_pair_copula_cpp(object, tree, edge)
+    object$pair_copulas[[tree]][[edge]]
+}
+
+#' extracts trees from a vine based on user-supplied vector of indices.
+#' @param object a `vinecop` object.
+#' @param depths user-supplied vector of tree indices.
+#'
+#' @export
+get_trees <- function(object, depths = numeric()) {
+    stopifnot(inherits(object, "vinecop_dist"))
+    if (length(depths > 0)) {
+        lapply(depths, function(x) vinecop_dist(object$pair_copulas[1:x], object$matrix))
+    } else{
+        object
+    }
 }

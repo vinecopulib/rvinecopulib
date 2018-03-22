@@ -93,9 +93,12 @@ test_that("getters work", {
     expect_identical(pcs, get_all_pair_copulas(vc))
     
     # test get_all_pair_copulas
-    pcc <- get_pair_copula(vc, 0, 0)
+    pcc <- get_pair_copula(vc, 1, 1)
     expect_equal(bicop, bicop_dist(pcc$family,pcc$rotation, pcc$parameters))
     
     # test get_matrix
     expect_identical(mat, get_matrix(vc))
+    
+    # test get_trees by index
+    expect_identical(vc$pair_copulas[1:1], get_trees(vc, 1)[[1]][[1]])
 })

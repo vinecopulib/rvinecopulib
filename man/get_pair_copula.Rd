@@ -9,9 +9,9 @@ get_pair_copula(object, tree, edge)
 \arguments{
 \item{object}{a \code{vinecop} object.}
 
-\item{tree}{tree index (starting with 0).}
+\item{tree}{tree index (starting with 1).}
 
-\item{edge}{edge index (starting with 0).}
+\item{edge}{edge index (starting with 1).}
 }
 \description{
 extracts a pair copula

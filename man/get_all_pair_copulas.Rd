@@ -6,10 +6,12 @@
 return a nested list with entry \code{[t][e]} corresponding to
 edge \code{e} in tree \code{t}.}
 \usage{
-get_all_pair_copulas(object)
+get_all_pair_copulas(object, depth = NA)
 }
 \arguments{
 \item{object}{a \code{vinecop} object.}
+
+\item{depth}{the number of trees extracted from the \code{vinecop} object.}
 }
 \description{
 extracts all pair copulas.
