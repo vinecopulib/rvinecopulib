@@ -129,3 +129,17 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
         }
     }
 }
+
+#' @noRd
+#' @importFrom assertthat assert_that on_failure<-
+in_set <- function(el, set) {
+    all(el %in% set)
+}
+
+
+on_failure(in_set) <- function(call, env) {
+    paste0(deparse(call$el), 
+           " must be one of {", 
+           paste0(env$set, collapse = ", "), 
+           "}.")
+}

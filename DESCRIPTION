@@ -27,7 +27,8 @@ Imports:
     lattice,
     Rcpp (>= 0.12.12),
     stats,
-    utils
+    utils,
+    assertthat
 Suggests:
     igraph,
     ggplot2,
