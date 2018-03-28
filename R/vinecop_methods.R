@@ -279,12 +279,20 @@ vinecop_fit_info <- function(vc) {
 #' @export
 get_all_pair_copulas <- function(object, trees = NA) {
     assert_that(inherits(object, "vinecop_dist"))
-    if (!all(is.na(trees)))
-        assert_that(is.numeric(trees), all(trees >= 1))
-
-    if (length(trees) == 1 && is.na(trees)) {
-        trees <- 1:length(object$pair_copulas)
-    } 
+    d <- length(object$pair_copulas[[1]]) + 1
+    if (!any(is.na(trees)))
+        assert_that(is.numeric(trees), all(trees >= 1), all(trees <= d - 1))
+    
+    t <- length(object$pair_copulas)
+    if (any(is.na(trees))) {
+        trees <- seq_len(t)
+    } else {
+        if (any(trees > t)) {
+            warning("vine copula is ", t, "-truncated; ",
+                    "only returning available trees.")
+            trees <- trees[trees <= t]
+        }
+    }
     
     object$pair_copulas[trees]
 }
@@ -317,11 +325,13 @@ get_pair_copula <- function(object, tree, edge) {
 #' @export
 truncate_vinecop <- function(object, trunc_lvl = NA) { 
     assert_that(inherits(object, "vinecop_dist"))
+    d <- length(object$pair_copulas[[1]]) + 1
     if (!all(is.na(trunc_lvl)))
-        assert_that(trunc_lvl <= length(object$pair_copulas))
+        assert_that(trunc_lvl <= d - 1, trunc_lvl > 0)
     if (!is.na(trunc_lvl)) {
-        vinecop_dist(object$pair_copulas[1:trunc_lvl], object$matrix)
-    } else{
+        trunc_lvl <- min(trunc_lvl, length(object$pair_copulas))
+        vinecop_dist(object$pair_copulas[seq_len(trunc_lvl)], object$matrix)
+    } else {
         vinecop_dist(object$pair_copulas, object$matrix)
     }
 }
