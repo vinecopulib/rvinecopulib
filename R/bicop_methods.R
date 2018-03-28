@@ -79,6 +79,8 @@ pbicop <- function(u, family, rotation, parameters) {
 rbicop <- function(n, family, rotation, parameters, U = NULL) {
     if (length(n) > 1)
         n <- length(n)
+    if (inherits(family, "bicop_dist") & is.null(U) & !missing(rotation))
+        U <- rotation
     bicop <- args2bicop(family, rotation, parameters)
     U <- prep_uniform_data(n, 2, U)
     U <- cbind(U[, 1], bicop_hinv1_cpp(U, bicop))
@@ -95,9 +97,7 @@ rbicop <- function(n, family, rotation, parameters, U = NULL) {
 #' @param inverse whether to compute the h-function or its inverse.
 #' @export
 hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
-    stopifnot(length(cond_var) == 1)
-    stopifnot(cond_var %in% c(1, 2))
-    stopifnot(is.logical(inverse))
+    assert_that(in_set(cond_var, 1:2), is.flag(inverse))
     bicop <- args2bicop(family, rotation, parameters)
 
     if (!inverse) {
@@ -173,7 +173,7 @@ tau_to_par <- function(family, tau) {
 #' @rdname predict_bicop
 #' @export
 predict.bicop <- function(object, newdata, what = "pdf", ...) {
-    stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
+    assert_that(in_set(what, what_allowed))
     newdata <- if_vec_to_matrix(newdata)
     switch(
         what,
@@ -186,12 +186,14 @@ predict.bicop <- function(object, newdata, what = "pdf", ...) {
     )
 }
 
+what_allowed <- c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2")
+
 #' @rdname predict_bicop
 #' @export
 fitted.bicop <- function(object, what = "pdf", ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
-    stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
+    assert_that(in_set(what, what_allowed))
     switch(
         what,
         "pdf"    = bicop_pdf_cpp(object$data, object),

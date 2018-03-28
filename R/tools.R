@@ -29,6 +29,7 @@ args2bicop <- function(family, rotation, parameters) {
             rotation <- 0
         if (missing(parameters))
             parameters <- numeric(0)
+        assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
         return(bicop_dist(family, rotation, parameters))
     }
 }
@@ -76,9 +77,13 @@ prep_uniform_data <- function(n, d, U) {
     if (is.null(U)) {
         U <- matrix(runif(n * d), n, d)
     } else {
-        stopifnot(is.matrix(U))
-        stopifnot(nrow(U) == n)
-        stopifnot(ncol(U) == d)
+        assert_that(is.matrix(U))
+        assert_that(nrow(U) == n)
+        if (d == 2) {
+            assert_that(ncol(U) == 2)
+        } else {
+            assert_that(ncol(U) == d)
+        }
     }
     U
 }
@@ -131,7 +136,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 
 #' @noRd
-#' @importFrom assertthat assert_that on_failure<-
+#' @importFrom assertthat assert_that on_failure<- is.number is.string is.flag
 in_set <- function(el, set) {
     all(el %in% set)
 }
@@ -140,6 +145,6 @@ in_set <- function(el, set) {
 on_failure(in_set) <- function(call, env) {
     paste0(deparse(call$el), 
            " must be one of {", 
-           paste0(env$set, collapse = ", "), 
+           paste0(eval(call$set, env), collapse = ", "), 
            "}.")
 }

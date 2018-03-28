@@ -93,6 +93,18 @@
 bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic", 
                   psi0 = 0.9, presel = TRUE, keep_data = TRUE, cores = 1) {
+    assert_that(
+        is.character(family_set), 
+        is.string(par_method), 
+        is.string(nonpar_method),
+        is.number(mult),
+        is.string(selcrit),
+        is.number(psi0),
+        is.flag(presel),
+        is.flag(keep_data),
+        is.number(cores)
+    )
+    
     stopifnot(ncol(data) == 2)
     # check if families known (w/ partial matching) and expand convenience defs
     family_set <- process_family_set(family_set)
@@ -143,7 +155,8 @@ as.bicop <- function(object) {
 #' @rdname bicop
 #' @export
 bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {
-    stopifnot(length(family) == 1)
+    assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
+
     if (family %in% setdiff(family_set_nonparametric, "indep"))
         stop("bicop_dist should not be used directly with nonparametric families.")
     family <- family_set_all[pmatch(family, family_set_all)]

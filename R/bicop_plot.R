@@ -39,38 +39,30 @@
 #' @export
 plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
     ## partial matching and sanity check for type
-    stopifnot(class(type) == "character")
-    tpnms <- c("contour", "surface")
-    type <- tpnms[pmatch(type, tpnms)]
-    if (is.na(type))
-        stop("type not implemented")
+    allowed_types <- c("contour", "surface")
+    type <- allowed_types[pmatch(type, allowed_types)]
+    assert_that(in_set(type, allowed_types))
     
     ## choose margins if missing, else partial matching and sanity check
     if (missing(margins)) {
-        margins <- switch(type,
-                          "contour" = "norm",
-                          "surface" = "unif")
+        margins <- switch(type, "contour" = "norm", "surface" = "unif")
     } else {
-        stopifnot(class(margins) == "character")
-        mgnms <- c("norm", "unif", "exp", "flexp")
-        margins <- mgnms[pmatch(margins, mgnms)]
+        assert_that(is.string(margins))
+        allowed_margins <- c("norm", "unif", "exp", "flexp")
+        margins <- allowed_margins[pmatch(margins, allowed_margins)]
+        assert_that(in_set(margins, allowed_margins))
     }
     
     ## choose size if missing and sanity check
     if (missing(size))
-        size <- switch(type,
-                       "contour" = 100L,
-                       "surface" = 40L)
-    stopifnot(is.numeric(size))
+        size <- switch(type, "contour" = 100L, "surface" = 40L)
+    assert_that(is.number(size))
     size <- round(size)
-    
-    ## construct grid for evaluation of the copula density
     if (size < 5) {
         warning("size too small, set to 5")
         size <- 5
     }
-    if (!(margins %in% c("unif", "norm", "exp", "flexp")))
-        stop("'margins' has to be one of 'unif', 'norm', 'exp', or 'flexp'.")
+    
     if (is.null(list(...)$xlim) & is.null(list(...)$ylim)) {
         xylim <- switch(margins,
                         "unif"  = c(1e-2, 1 - 1e-2),
