@@ -57,6 +57,19 @@
 #' # evaluate the density and cdf
 #' dvinecop(u[1, ], vc)
 #' pvinecop(u[1, ], vc)
+#' 
+#' # get single pair copula
+#' get_pair_copula(vc, 1, 1)
+#' 
+#' # get all pair copulas
+#' get_all_pair_copulas(vc)
+#' 
+#' # get vine matrix
+#' get_matrix(vc)
+#' 
+#' # extract a truncated sub-vine based on truncation level supplied by user
+#' truncate_vinecop(vc, 1)
+#' 
 #' @rdname vinecop_methods
 #' @export
 dvinecop <- function(u, vinecop) {
@@ -256,4 +269,58 @@ vinecop_fit_info <- function(vc) {
         AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
         BIC    = -2 * ll[1] + log(vc$nobs) * attr(ll, "df")
     )
+}
+
+#' extracts all pair copulas.
+#' return a nested list with entry `[t][e]` corresponding to
+#' edge `e` in tree `t`.
+#' @param object a `vinecop` object.
+#' @param trees the number of trees extracted from the `vinecop` object.
+#'
+#' @export
+get_all_pair_copulas <- function(object, trees = NA) {
+    stopifnot(inherits(object, "vinecop_dist"))
+    stopifnot(is.na(trees) || (is.numeric(trees) && all(trees >= 1)))
+    
+    if (length(trees) == 1 && is.na(trees)) {
+        trees <- 1:length(object$pair_copulas)
+    } 
+    
+    object$pair_copulas[trees]
+}
+
+#' extracts the structure matrix of the vine copula model.
+#' @param object a `vinecop` object.
+#'
+#' @export
+get_matrix <- function(object) {
+    stopifnot(inherits(object, "vinecop_dist"))   
+    object$matrix
+}
+
+#' extracts a pair copula 
+#' @param object a `vinecop` object.
+#' 
+#' @param tree tree index (starting with 1).
+#' @param edge edge index (starting with 1).
+#'
+#' @export
+get_pair_copula <- function(object, tree, edge) {
+    stopifnot(inherits(object, "vinecop_dist"))   
+    object$pair_copulas[[tree]][[edge]]
+}
+
+#' extract a truncated sub-vine based on truncation level supplied by user.
+#' @param object a `vinecop` object.
+#' @param trunc_lvl truncation level for the vine copula.
+#'
+#' @export
+truncate_vinecop <- function(object, trunc_lvl = NA) { 
+    stopifnot(inherits(object, "vinecop_dist"))
+    stopifnot(is.na(trunc_lvl) || trunc_lvl <= length(object$pair_copulas))
+    if (!is.na(trunc_lvl)) {
+        vinecop_dist(object$pair_copulas[1:trunc_lvl], object$matrix)
+    } else{
+        vinecop_dist(object$pair_copulas, object$matrix)
+    }
 }

@@ -38,7 +38,7 @@ Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp) {
     size_t d = matrix.cols();
     
     Rcpp::List pair_copulas(pcs.size());
-
+    
     for (size_t t = 0; t < pcs.size(); ++t) {
         Rcpp::List tree_pcs(d - 1 - t);
         for(size_t e = 0; e < d - 1 - t; ++e) {
@@ -119,7 +119,7 @@ Rcpp::List vinecop_select_cpp(
     for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
         fam_set[fam] = to_cpp_family(family_set[fam]);
     }
-
+    
     FitControlsVinecop fit_controls(
             fam_set,
             par_method,
@@ -143,6 +143,6 @@ Rcpp::List vinecop_select_cpp(
     } else {
         vinecop_cpp.select_all(data, fit_controls);
     }
-
+    
     return vinecop_wrap(vinecop_cpp);
 }
