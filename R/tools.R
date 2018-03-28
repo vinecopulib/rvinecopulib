@@ -7,6 +7,7 @@
 #'
 #' @noRd
 if_vec_to_matrix <- function(u) {
+    assert_that(is.numeric(u))
     if (NCOL(u) == 1)
         u <- matrix(u, 1, length(u))
     if (!is.matrix(u))
@@ -82,7 +83,7 @@ prep_uniform_data <- function(n, d, U) {
         if (d == 2) {
             assert_that(ncol(U) == 2)
         } else {
-            assert_that(ncol(U) == d)
+            assert_that(ncol(U) == eval(d))
         }
     }
     U
@@ -136,7 +137,8 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 
 #' @noRd
-#' @importFrom assertthat assert_that on_failure<- is.number is.string is.flag
+#' @importFrom assertthat assert_that on_failure<-
+#' @importFrom assertthat is.number is.string is.flag is.scalar
 in_set <- function(el, set) {
     all(el %in% set)
 }

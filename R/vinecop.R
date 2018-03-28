@@ -93,6 +93,21 @@ vinecop <- function(data, family_set = "all", matrix = NA,
                     mult = 1, selcrit = "bic", psi0 = 0.9, presel = TRUE, 
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
                     keep_data = TRUE, show_trace = FALSE, cores = 1) {
+    assert_that(
+        is.character(family_set), 
+        is.string(par_method), 
+        is.string(nonpar_method),
+        is.number(mult),
+        is.string(selcrit),
+        is.number(psi0),
+        is.flag(presel),
+        is.scalar(trunc_lvl),
+        is.string(tree_crit),
+        is.scalar(threshold),
+        is.flag(keep_data),
+        is.number(cores)
+    )
+    
     # check if families known (w/ partial matching) and expand convenience defs
     family_set <- process_family_set(family_set)
     
@@ -165,7 +180,7 @@ vinecop_dist <- function(pair_copulas, matrix) {
     )
     
     # sanity checks
-    stopifnot(is.list(pair_copulas))
+    assert_that(is.list(pair_copulas))
     pc_lst <- unlist(pair_copulas, recursive = FALSE)
     if (!all(sapply(pc_lst, function(x) inherits(x, "bicop_dist")))) {
         stop("some objects in pair_copulas aren't of class 'bicop_dist'")

@@ -64,7 +64,8 @@
 #' try(check_rvine_matrix(mat))
 #' 
 check_rvine_matrix <- function(matrix) {
-    stopifnot(is.matrix(matrix))
+    assert_that(is.matrix(matrix))
+    assert_that(is.numeric(matrix))
     rvine_matrix_check_cpp(matrix)
     invisible(TRUE)
 }

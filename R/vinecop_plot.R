@@ -73,8 +73,7 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
     d <- nrow(M)
     
     ## sanity checks
-    if (!inherits(x, "vinecop_dist"))
-        stop("'x' has to be an vinecop_dist object.")
+    assert_that(inherits(x, "vinecop_dist"))
     if (tree != "ALL" && any(tree > d - 1))
         stop("Selected tree does not exist.")
     if (any(tree == "ALL")) {
@@ -86,12 +85,10 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
             tree <- 1:(d - 1)
         }
     }
-    if (!all(var_names %in% c("ignore", "use", "legend")))
-        stop("var_names not implemented")
-    if (!(is.null(edge_labels) || 
-          any(edge_labels %in% c("pair","tau","family","family_tau"))))
-        stop("edge_labels not implemented")
-    
+    assert_that(in_set(var_names, c("ignore", "use", "legend")))
+    if (!is.null(edge_labels))
+        assert_that(in_set(edge_labels, c("pair","tau","family","family_tau")))
+
     ## set names if empty
     if (is.null(x$names))
         x$names <- as.character(1:d)
@@ -241,24 +238,21 @@ get_family_tau <- function(j, tree, vc) {
 #' @importFrom graphics strheight strwidth text
 #' @export
 contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
-    
     ## check input
     d <- nrow(x$matrix)
-    if (!inherits(x, "vinecop_dist"))
-        stop("'x' has to be an vinecop_dist object.")
+    assert_that(inherits(x, "vinecop_dist"), is.number(cex.nums))
     if (tree != "ALL" && any(tree > d - 1))
         stop("Selected tree does not exist.")
     if (any(tree == "ALL")) {
         tree <- 1:(d - 1)
     }
     n.tree <- length(tree)
-    
+
     if (!is.null(list(...)$var_names))
         stop("Only contour plots allowed. Don't use the var_names argument!")
     if (!is.null(list(...)$margins)) {
         margins <- list(...)$margins
-        if (!(margins %in% c("unif", "norm", "exp", "flexp")))
-            stop("'margins' has to be one of 'unif', 'norm', 'exp', or 'flexp'.")
+        assert_that(in_set(margins, c("unif", "norm", "exp", "flexp")))
     } else {
         margins <- "norm"
     }
