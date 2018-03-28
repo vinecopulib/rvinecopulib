@@ -279,9 +279,14 @@ vinecop_fit_info <- function(vc) {
 #'
 #' @export
 get_all_pair_copulas <- function(object, trees = NA) {
-    stopifnot(inherits(object, "vinecop_dist"))   
-    trees <- ifelse(!is.na(trees), trees, length(object$pair_copulas))
-    object$pair_copulas[1:trees]
+    stopifnot(inherits(object, "vinecop_dist"))
+    stopifnot(is.na(trees) || (is.numeric(trees) && all(trees >= 1)))
+    
+    if (length(trees) == 1 && is.na(trees)) {
+        trees <- 1:length(object$pair_copulas)
+    } 
+    
+    object$pair_copulas[trees]
 }
 
 #' extracts the structure matrix of the vine copula model.
