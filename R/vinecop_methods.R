@@ -317,7 +317,7 @@ get_pair_copula <- function(object, tree, edge) {
 #' @export
 truncate_vinecop <- function(object, trunc_lvl = NA) { 
     stopifnot(inherits(object, "vinecop_dist"))
-    stopifnot(trunc_lvl <= length(object$pair_copulas))
+    stopifnot(is.na(trunc_lvl) || trunc_lvl <= length(object$pair_copulas))
     if (!is.na(trunc_lvl)) {
         vinecop_dist(object$pair_copulas[1:trunc_lvl], object$matrix)
     } else{
