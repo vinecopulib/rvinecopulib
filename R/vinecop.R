@@ -97,15 +97,15 @@ vinecop <- function(data, family_set = "all", matrix = NA,
         is.character(family_set), 
         is.string(par_method), 
         is.string(nonpar_method),
-        is.number(mult),
+        is.number(mult), mult > 0,
         is.string(selcrit),
-        is.number(psi0),
+        is.number(psi0), psi0 > 0, psi0 < 1,
         is.flag(presel),
         is.scalar(trunc_lvl),
         is.string(tree_crit),
         is.scalar(threshold),
         is.flag(keep_data),
-        is.number(cores)
+        is.number(cores), cores > 0
     )
     
     # check if families known (w/ partial matching) and expand convenience defs

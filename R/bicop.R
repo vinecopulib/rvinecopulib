@@ -97,12 +97,12 @@ bicop <- function(data, family_set = "all", par_method = "mle",
         is.character(family_set), 
         is.string(par_method), 
         is.string(nonpar_method),
-        is.number(mult),
+        is.number(mult), mult > 0,
         is.string(selcrit),
-        is.number(psi0),
+        is.number(psi0), psi0 > 0, psi0 < 1,
         is.flag(presel),
         is.flag(keep_data),
-        is.number(cores)
+        is.number(cores), cores > 0
     )
     
     stopifnot(ncol(data) == 2)
@@ -156,9 +156,9 @@ as.bicop <- function(object) {
 #' @export
 bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0)) {
     assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
-
     if (family %in% setdiff(family_set_nonparametric, "indep"))
         stop("bicop_dist should not be used directly with nonparametric families.")
+    
     family <- family_set_all[pmatch(family, family_set_all)]
     dist <- list(family     = family,
                  rotation   = rotation,
