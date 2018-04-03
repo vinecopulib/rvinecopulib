@@ -327,7 +327,7 @@ truncate_vinecop <- function(object, trunc_lvl = NA) {
     assert_that(inherits(object, "vinecop_dist"))
     d <- length(object$pair_copulas[[1]]) + 1
     if (!all(is.na(trunc_lvl)))
-        assert_that(trunc_lvl <= d - 1, trunc_lvl > 0)
+        assert_that(is.number(trunc_lvl), trunc_lvl <= d - 1, trunc_lvl > 0)
     if (!is.na(trunc_lvl)) {
         trunc_lvl <- min(trunc_lvl, length(object$pair_copulas))
         vinecop_dist(object$pair_copulas[seq_len(trunc_lvl)], object$matrix)
