@@ -78,8 +78,7 @@ prep_uniform_data <- function(n, d, U) {
     if (is.null(U)) {
         U <- matrix(runif(n * d), n, d)
     } else {
-        assert_that(is.matrix(U))
-        assert_that(nrow(U) == n)
+        assert_that(is.matrix(U), nrow(U) == n)
         if (d == 2) {
             assert_that(ncol(U) == 2)
         } else {
