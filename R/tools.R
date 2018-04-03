@@ -142,14 +142,18 @@ distr <- c("beta", "cauchy", "chisq", "exp", "f", "gamma", "lnorm", "norm",
 #' @importFrom stats dweibull pweibull qweibull
 check_distr <- function(distr) {
     
+    ## if provided with a kde1d object, then there is nothing to do
+    if (inherits(x, "kde1d"))
+        return(TRUE)
+    
     ## basic sanity checks
     if (!is.list(distr))
-        return("a distribution should be a list")
+        return("a distribution should be a kde1d object or a list")
     if (!any(is.element(names(distr), "name")))
-        return("a distribution should contain a name element")
+        return("a distribution should be a kde1d object or a list with a name element")
     nn <- distr[["name"]]
     if (!is.element(nn, distr))
-        return("unsupported distribution")
+        return("the provided name does not belong to supported distributions")
     
     ## check that the provided parameters are consistent with the distribution
     qfun <- get(paste0("q", nn))
