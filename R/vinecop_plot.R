@@ -73,7 +73,6 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
     d <- nrow(M)
     
     ## sanity checks
-    assert_that(inherits(x, "vinecop_dist"))
     if (tree != "ALL" && any(tree > d - 1))
         stop("Selected tree does not exist.")
     if (any(tree == "ALL")) {
@@ -240,7 +239,7 @@ get_family_tau <- function(j, tree, vc) {
 contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     ## check input
     d <- nrow(x$matrix)
-    assert_that(inherits(x, "vinecop_dist"), is.number(cex.nums))
+    assert_that(is.number(cex.nums))
     if (tree != "ALL" && any(tree > d - 1))
         stop("Selected tree does not exist.")
     if (any(tree == "ALL")) {
