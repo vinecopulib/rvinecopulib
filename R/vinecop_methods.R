@@ -81,7 +81,7 @@ dvinecop <- function(u, vinecop) {
 #' @param n_mc number of samples used for quasi Monte Carlo integration.
 #' @export
 pvinecop <- function(u, vinecop, n_mc = 10^4) {
-    assert_that(inherits(vinecop, "vinecop_dist"))
+    assert_that(inherits(vinecop, "vinecop_dist"), is.number(n_mc))
     vinecop_cdf_cpp(if_vec_to_matrix(u), vinecop, n_mc)
 }
 
