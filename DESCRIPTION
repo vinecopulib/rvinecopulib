@@ -22,13 +22,13 @@ Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
 Imports:
+    assertthat,
     graphics,
     grDevices,
     lattice,
     Rcpp (>= 0.12.12),
     stats,
-    utils,
-    assertthat
+    utils
 Suggests:
     igraph,
     ggplot2,
