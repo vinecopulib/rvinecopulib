@@ -20,8 +20,11 @@
 #' 
 #' H-functions (`hbicop()`) are conditional distributions derived
 #' from a copula. If \eqn{C(u, v) = P(U \le u, V \le v)} is a copula, then 
-#' \deqn{h_1(v | u) = P(U \le u | V = v),} \deqn{h_2(u | v) = P(V \le v | U =
-#' u).}
+#' \deqn{h_1(u, v) = P(V \le v | U = u) = \partial C(u, v) / \partial u,} 
+#' \deqn{h_2(u, v) = P(U \le u | V = v) = \partial C(u, v) / \partial v.} 
+#' In other words, the H-function number refers to the conditioning variable. 
+#' When inverting H-functions, the inverse is then taken with respect to the 
+#' other variable, that is `v` when `cond_var = 1` and `u` when `cond_var = 2`.
 #' 
 #' @return 
 #' `dbicop()` gives the density, `pbicop()` gives the distribution function, 
@@ -47,13 +50,13 @@
 #' 
 #' ## h-functions
 #' joe_cop <- bicop_dist("joe", 0, 3)
-#' # h_1(0.2 | 0.1)
+#' # h_1(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5))
-#' # h_2(0.1 | 0.2)
+#' # h_2(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 2, joe_cop)
-#' # h_1^{-1}(0.2 | 0.1)
+#' # h_1^{-1}(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5), inverse = TRUE)
-#' # h_2^{-1}(0.1 | 0.2)
+#' # h_2^{-1}(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
 #' @rdname bicop_methods
 #' @export
