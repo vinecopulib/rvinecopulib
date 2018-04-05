@@ -73,7 +73,7 @@
 #' @rdname vinecop_methods
 #' @export
 dvinecop <- function(u, vinecop) {
-    stopifnot(inherits(vinecop, "vinecop_dist"))
+    assert_that(inherits(vinecop, "vinecop_dist"))
     vinecop_pdf_cpp(if_vec_to_matrix(u), vinecop)
 }
 
@@ -81,7 +81,7 @@ dvinecop <- function(u, vinecop) {
 #' @param n_mc number of samples used for quasi Monte Carlo integration.
 #' @export
 pvinecop <- function(u, vinecop, n_mc = 10^4) {
-    stopifnot(inherits(vinecop, "vinecop_dist"))
+    assert_that(inherits(vinecop, "vinecop_dist"), is.number(n_mc))
     vinecop_cdf_cpp(if_vec_to_matrix(u), vinecop, n_mc)
 }
 
@@ -93,10 +93,9 @@ pvinecop <- function(u, vinecop, n_mc = 10^4) {
 #'    from `vinecop`.
 #' @export
 rvinecop <- function(n, vinecop, U = NULL) {
-    stopifnot(inherits(vinecop, "vinecop_dist"))
+    assert_that(inherits(vinecop, "vinecop_dist"))
     d <- ncol(vinecop$matrix)
     U <- prep_uniform_data(n, d, U)
-    stopifnot(inherits(vinecop, "vinecop_dist"))
     U <- vinecop_inverse_rosenblatt_cpp(U, vinecop)
     if (!is.null(vinecop$names))
         colnames(U) <- vinecop$names
@@ -171,7 +170,7 @@ summary.vinecop_dist <- function(object, ...) {
 #' fit <- vinecop(u, "par")
 #' all.equal(predict(fit, u), fitted(fit))
 predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4, ...) {
-    stopifnot(what %in% c("pdf", "cdf"))
+    assert_that(in_set(what, c("pdf", "cdf")), is.number(n_mc))
     newdata <- if_vec_to_matrix(newdata)
     switch(
         what,
@@ -185,7 +184,7 @@ predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4, ...) {
 fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
-    stopifnot(what %in% c("pdf", "cdf"))
+    assert_that(in_set(what, c("pdf", "cdf")), is.number(n_mc))
     switch(
         what,
         "pdf" = vinecop_pdf_cpp(object$data, object),
@@ -219,7 +218,7 @@ logLik.vinecop <- function(object, ...) {
 #' @param psi0 baseline prior probability of a non-independence copula.
 #' @export mBICV
 mBICV <- function(object, psi0 = 0.9) {
-    stopifnot(inherits(object, "vinecop_dist"))
+    assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
     vinecop_mbicv_cpp(object$data, object, psi0)
@@ -279,12 +278,21 @@ vinecop_fit_info <- function(vc) {
 #'
 #' @export
 get_all_pair_copulas <- function(object, trees = NA) {
-    stopifnot(inherits(object, "vinecop_dist"))
-    stopifnot(is.na(trees) || (is.numeric(trees) && all(trees >= 1)))
+    assert_that(inherits(object, "vinecop_dist"))
+    d <- length(object$pair_copulas[[1]]) + 1
+    if (!any(is.na(trees)))
+        assert_that(is.numeric(trees), all(trees >= 1), all(trees <= d - 1))
     
-    if (length(trees) == 1 && is.na(trees)) {
-        trees <- 1:length(object$pair_copulas)
-    } 
+    t <- length(object$pair_copulas)
+    if (any(is.na(trees))) {
+        trees <- seq_len(t)
+    } else {
+        if (any(trees > t)) {
+            warning("vine copula is ", t, "-truncated; ",
+                    "only returning available trees.")
+            trees <- trees[trees <= t]
+        }
+    }
     
     object$pair_copulas[trees]
 }
@@ -294,7 +302,7 @@ get_all_pair_copulas <- function(object, trees = NA) {
 #'
 #' @export
 get_matrix <- function(object) {
-    stopifnot(inherits(object, "vinecop_dist"))   
+    assert_that(inherits(object, "vinecop_dist"))   
     object$matrix
 }
 
@@ -306,7 +314,7 @@ get_matrix <- function(object) {
 #'
 #' @export
 get_pair_copula <- function(object, tree, edge) {
-    stopifnot(inherits(object, "vinecop_dist"))   
+    assert_that(inherits(object, "vinecop_dist"))   
     object$pair_copulas[[tree]][[edge]]
 }
 
@@ -316,11 +324,14 @@ get_pair_copula <- function(object, tree, edge) {
 #'
 #' @export
 truncate_vinecop <- function(object, trunc_lvl = NA) { 
-    stopifnot(inherits(object, "vinecop_dist"))
-    stopifnot(is.na(trunc_lvl) || trunc_lvl <= length(object$pair_copulas))
+    assert_that(inherits(object, "vinecop_dist"))
+    d <- length(object$pair_copulas[[1]]) + 1
+    if (!all(is.na(trunc_lvl)))
+        assert_that(is.number(trunc_lvl), trunc_lvl <= d - 1, trunc_lvl > 0)
     if (!is.na(trunc_lvl)) {
-        vinecop_dist(object$pair_copulas[1:trunc_lvl], object$matrix)
-    } else{
+        trunc_lvl <- min(trunc_lvl, length(object$pair_copulas))
+        vinecop_dist(object$pair_copulas[seq_len(trunc_lvl)], object$matrix)
+    } else {
         vinecop_dist(object$pair_copulas, object$matrix)
     }
 }
