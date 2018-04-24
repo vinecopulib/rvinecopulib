@@ -7,6 +7,7 @@
 #'
 #' @noRd
 if_vec_to_matrix <- function(u) {
+    assert_that(is.numeric(u))
     if (NCOL(u) == 1)
         u <- matrix(u, 1, length(u))
     if (!is.matrix(u))
@@ -29,6 +30,7 @@ args2bicop <- function(family, rotation, parameters) {
             rotation <- 0
         if (missing(parameters))
             parameters <- numeric(0)
+        assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
         return(bicop_dist(family, rotation, parameters))
     }
 }
@@ -76,9 +78,12 @@ prep_uniform_data <- function(n, d, U) {
     if (is.null(U)) {
         U <- matrix(runif(n * d), n, d)
     } else {
-        stopifnot(is.matrix(U))
-        stopifnot(nrow(U) == n)
-        stopifnot(ncol(U) == d)
+        assert_that(is.matrix(U), nrow(U) == n)
+        if (d == 2) {
+            assert_that(ncol(U) == 2)
+        } else {
+            assert_that(ncol(U) == eval(d))
+        }
     }
     U
 }
@@ -164,4 +169,19 @@ check_distr <- function(distr) {
         return(e$message)
     
     return(TRUE)
+}
+
+#' @noRd
+#' @importFrom assertthat assert_that on_failure<-
+#' @importFrom assertthat is.number is.string is.flag is.scalar
+in_set <- function(el, set) {
+    all(el %in% set)
+}
+
+
+on_failure(in_set) <- function(call, env) {
+    paste0(deparse(call$el), 
+           " must be one of {", 
+           paste0(eval(call$set, env), collapse = ", "), 
+           "}.")
 }
