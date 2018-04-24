@@ -148,7 +148,7 @@ distr <- c("beta", "cauchy", "chisq", "exp", "f", "gamma", "lnorm", "norm",
 check_distr <- function(distr) {
     
     ## if provided with a kde1d object, then there is nothing to do
-    if (inherits(x, "kde1d"))
+    if (inherits(distr, "kde1d"))
         return(TRUE)
     
     ## basic sanity checks
