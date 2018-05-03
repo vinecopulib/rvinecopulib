@@ -70,18 +70,12 @@ dvine <- function(x, vine) {
     ## evaluate marginal densities
     margvals <- u <- x
     for (k in 1:d) {
-        x_k <- x[, k]
         if (inherits(vine, "vine")) {
-            if (k %in% attr(vine$data, "i_disc")) {
-                # use normalization if discrete
-                attr(x_k, "i_disc") <- 1
-                vine$margins[[k]]$levels <- attr(vine$data, "levels")[[k]]
-            }
-            margvals[, k] <- dkde1d(x_k, vine$margins[[k]])
+            margvals[, k] <- dkde1d(x[, k], vine$margins[[k]])
         } else {
             dfun <- get(paste0("d", vine$margins[[k]]$name))
             par <- vine$margins[[k]][names(vine$margins[[k]]) != "name"]
-            par$x <- x_k
+            par$x <- x[, k]
             margvals[, k] <- do.call(dfun, par)
         }
     }
@@ -259,8 +253,8 @@ get_u <- function(x, vine) {
         if (inherits(vine, "vine")) {
             if (k %in% attr(vine$data, "i_disc")) {
                 # use continuous variant for PIT
-                attr(x_k, "i_disc") <- integer(0)
-                vine$margins[[k]]$levels <- NULL
+                vine$margins[[k]]$jitter_info$i_disc <- integer(0)
+                vine$margins[[k]]$jitter_info$levels$x <- NULL
             }
             u[, k] <- pkde1d(x_k, vine$margins[[k]])
         } else {

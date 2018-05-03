@@ -34,3 +34,16 @@ test_that("print/summary generics work", {
     expect_is(s, "data.frame")
     expect_length(attr(s, "info"), 5)
 })
+
+test_that("discrete data work", {
+    n <- 1e2
+    x1 <- rnorm(n)
+    x2 <- ordered(sample(5, n, TRUE), 1:5)
+    x3 <- x1 + as.numeric(x2) + rnorm(n, sd = 0.5)
+    
+    my_data <- data.frame(x1, x2, x3)
+    fit <- vine(my_data)
+    sim <- rvine(n, fit)
+    expect_equal(sort(unique(sim[,2])), 1:5)
+})
+

@@ -139,19 +139,7 @@ vine <- function(data,
     }
     vine$copula_controls <- copula_controls[-which(names(copula_controls) == "data")]
     
-    ## add information about the fit
-    if (keep_data) {
-        vine$data <- data_cc
-    } else {
-        vine$data <- matrix(NA, ncol = ncol(data_cc))
-        colnames(vine$data) <- colnames(data_cc)
-        attr(vine$data, "i_disc") <- attr(data_cc, "i_disc")
-        attr(vine$data, "theta") <- attr(data_cc, "theta")
-    }
-    vine$nobs <- nrow(data)
-    
-    ## create and return object
-    structure(vine, class = c("vine", "vine_dist"))
+    finalize_vine(vine, data_cc, keep_data)
 }
 
 #' @param margins A list with with each element containing the specification of a 
@@ -209,4 +197,31 @@ expand_margin_controls <- function(margins_controls, d, data) {
     })
     names(margins_controls) <- margins_controls_names
     return(margins_controls)
+}
+
+finalize_vine <- function(vine, data, keep_data) {
+    
+    ## add information about the fit
+    if (keep_data) {
+        vine$data <- data
+    } else {
+        vine$data <- matrix(NA, ncol = ncol(data))
+        colnames(vine$data) <- colnames(data)
+        attr(vine$data, "i_disc") <- attr(data, "i_disc")
+        attr(vine$data, "levels") <- attr(data, "levels")
+    }
+    
+    ## adjust margins for discrete data
+    for (k in seq_len(ncol(data))) {
+        if (k %in% attr(vine$data, "i_disc")) {
+            vine$margins[[k]]$jitter_info$i_disc[1] <- 1
+            vine$margins[[k]]$jitter_info$levels$x <- attr(vine$data, "levels")[[k]]
+        }
+    }
+    
+    ## add number of observations
+    vine$nobs <- nrow(data)
+    
+    ## create and return object
+    structure(vine, class = c("vine", "vine_dist"))
 }
