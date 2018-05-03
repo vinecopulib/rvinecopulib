@@ -97,36 +97,20 @@ vine <- function(data,
                                      show_trace = FALSE, 
                                      cores = 1)) {
     
+    ## continuous convolution
     data_cc <- cont_conv(data)
-    if (NCOL(data_cc) == 1)
-        stop("data must be multivariate.")
-    d <- ncol(data_cc)
     
+    ## basic sanity checks (copula_controls are checked by vinecop)
+    assert_that(NCOL(data_cc) > 1, msg = "data must be multivariate.")
+    d <- ncol(data_cc)
+    assert_that(is.list(margins_controls))
+    assert_that(in_set(names(margins_controls), c("mult", "xmin", "xmax", "bw")))
+    assert_that(is.list(copula_controls))
     if (is.null(copula_controls$keep_data))
         copula_controls$keep_data <- TRUE
     
-    ## check that the correct arguments are there
-    margins_controls_names <- c("mult", "xmin", "xmax", "bw")
-    if (!is.list(margins_controls) | !setequal(names(margins_controls), 
-                                            margins_controls_names)) {
-        msg <- "marg controls should be a list with elements 'mult', 'xmin', 
-        'xmax', and 'bw'."
-        stop(msg)
-    }
-    
     ## expand the required arguments and compute default mult if needed
-    margins_controls_names <- names(margins_controls)
-    margins_controls <- sapply(seq_along(margins_controls), function(j) {
-        par <- margins_controls[[j]]
-        if (names(margins_controls)[j] == "mult") {
-            if (is.null(par)) 
-                par <- log(1 + ncol(data_cc))
-        } else {
-            par <- expand_vec(par, data)
-        }
-        return(par)
-    })
-    names(margins_controls) <- margins_controls_names
+    margins_controls <- expand_margin_controls(margins_controls, d, data)
     
     ## estimation of the marginals
     vine <- list()
@@ -209,4 +193,20 @@ vine_dist <- function(margins, pair_copulas, matrix) {
     
     # create object
     structure(list(margins = margins, copula = copula), class = "vine_dist")
+}
+
+expand_margin_controls <- function(margins_controls, d, data) {
+    margins_controls_names <- names(margins_controls)
+    margins_controls <- sapply(seq_along(margins_controls), function(j) {
+        par <- margins_controls[[j]]
+        if (names(margins_controls)[j] == "mult") {
+            if (is.null(par)) 
+                par <- log(1 + d)
+        } else {
+            par <- expand_vec(par, data)
+        }
+        return(par)
+    })
+    names(margins_controls) <- margins_controls_names
+    return(margins_controls)
 }
