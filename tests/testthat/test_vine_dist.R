@@ -44,3 +44,19 @@ test_that("print/summary generics work", {
     expect_equal(nrow(s), 3)
     expect_equal(ncol(s), 7)
 })
+
+test_that("getters work", {
+    
+    # test get_all_pair_copulas
+    expect_identical(pcs, get_all_pair_copulas(vc))
+    
+    # test get_all_pair_copulas
+    pcc <- get_pair_copula(vc, 1, 1)
+    expect_equal(bicop, bicop_dist(pcc$family,pcc$rotation, pcc$parameters))
+    
+    # test get_matrix
+    expect_identical(mat, get_matrix(vc))
+    
+    # test truncate 
+    expect_identical(vc$copula$pair_copulas[1:1], truncate_model(vc, 1)[[2]][[1]])
+})

@@ -9,9 +9,9 @@ edge \code{e} in tree \code{t}.}
 get_all_pair_copulas(object, trees = NA)
 }
 \arguments{
-\item{object}{a \code{vinecop} object.}
+\item{object}{a \code{vinecop} or \code{vine} object.}
 
-\item{trees}{the number of trees extracted from the \code{vinecop} object.}
+\item{trees}{the number of trees extracted from \code{object}.}
 }
 \description{
 extracts all pair copulas.
