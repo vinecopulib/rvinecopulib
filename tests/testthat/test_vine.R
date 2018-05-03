@@ -43,7 +43,7 @@ test_that("discrete data work", {
     
     my_data <- data.frame(x1, x2, x3)
     fit <- vine(my_data)
-    sim <- rvine(n, fit)
+    sim <- rvine(n * 10, fit)
     expect_equal(sort(unique(sim[,2])), 1:5)
 })
 
