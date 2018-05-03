@@ -7,7 +7,7 @@
 #'
 #' @noRd
 if_vec_to_matrix <- function(u) {
-    assert_that(is.numeric(u))
+    assert_that(is.numeric(u) | is.data.frame(u))
     if (NCOL(u) == 1)
         u <- matrix(u, 1, length(u))
     if (!is.matrix(u))
