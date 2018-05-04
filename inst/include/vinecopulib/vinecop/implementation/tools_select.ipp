@@ -907,10 +907,7 @@ inline std::string VinecopSelector::get_pc_index(const EdgeIterator &e,
     std::stringstream index;
     // add 1 everywhere for user-facing representation (boost::graph
     // starts at 0)
-    index <<
-          tree[e].conditioned[0] + 1 <<
-          "," <<
-          tree[e].conditioned[1] + 1;
+    index << tree[e].conditioned[0] + 1 << "," << tree[e].conditioned[1] + 1;
     if (tree[e].conditioning.size() > 0) {
         index << " | ";
         for (unsigned int i = 0; i < tree[e].conditioning.size(); ++i) {
