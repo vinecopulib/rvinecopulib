@@ -8,7 +8,7 @@ vc <- vine_dist(list(name = "norm"), pcs, mat)
 
 test_that("constructor creates proper `vine_dist` object", {
     expect_s3_class(vc, "vine_dist")
-    expect_identical(names(vc), c("margins", "copula"))
+    expect_identical(names(vc), c("margins", "copula", "npars", "loglik"))
 })
 
 

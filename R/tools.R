@@ -138,8 +138,8 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 # Get the depth of a list
 depth <- function(this) ifelse(is.list(this), 1L + max(sapply(this, depth)), 0L)
 
-distr <- c("beta", "cauchy", "chisq", "exp", "f", "gamma", "lnorm", "norm",
-           "t", "unif", "weibull")
+supported_distributions <- c("beta", "cauchy", "chisq", "exp", "f", "gamma", 
+                             "lnorm", "norm", "t", "unif", "weibull")
 
 #' @importFrom stats pbeta qbeta qbeta dcauchy pcauchy qcauchy dchisq pchisq
 #' @importFrom stats qchisq dexp pexp qexp df pf qf dgamma pgamma qgamma
@@ -157,7 +157,7 @@ check_distr <- function(distr) {
     if (!any(is.element(names(distr), "name")))
         return("a distribution should be a kde1d object or a list with a name element")
     nn <- distr[["name"]]
-    if (!is.element(nn, distr))
+    if (!is.element(nn, supported_distributions))
         return("the provided name does not belong to supported distributions")
     
     ## check that the provided parameters are consistent with the distribution
@@ -169,6 +169,21 @@ check_distr <- function(distr) {
         return(e$message)
     
     return(TRUE)
+}
+
+get_npars_distr <- function(distr) {
+    switch(distr$name,
+           beta = 2,
+           cauchy = 2,
+           chisq = ifelse("ncp" %in% names(distr), 2, 1),
+           exp = 1,
+           f = 3,
+           gamma = 2,
+           lnorm = 2,
+           norm = 2,
+           t = ifelse("ncp" %in% names(distr), 3, 2),
+           unif = 2,
+           weibull = ifelse("scale" %in% names(distr), 2, 1))
 }
 
 #' @noRd

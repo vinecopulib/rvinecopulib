@@ -165,8 +165,10 @@ vine_dist <- function(margins, pair_copulas, matrix) {
     stopifnot(is.list(margins))
     if (depth(margins) == 1) {
         check_marg <- check_distr(margins)
+        npars_marg <- ncol(matrix) * get_npars_distr(margins)
     } else {
         check_marg <- lapply(margins, check_distr)
+        npars_marg <- sum(sapply(margins, get_npars_distr))
     }
     is_ok <- sapply(check_marg, isTRUE)
     if (!all(is_ok)) {
@@ -180,7 +182,10 @@ vine_dist <- function(margins, pair_copulas, matrix) {
     copula <- vinecop_dist(pair_copulas, matrix)
     
     # create object
-    structure(list(margins = margins, copula = copula), class = "vine_dist")
+    structure(list(margins = margins, 
+                   copula = copula,
+                   npars = copula$npars + npars_marg,
+                   loglik = NA), class = "vine_dist")
 }
 
 expand_margin_controls <- function(margins_controls, d, data) {
@@ -201,7 +206,22 @@ expand_margin_controls <- function(margins_controls, d, data) {
 
 finalize_vine <- function(vine, data, keep_data) {
     
-    ## add information about the fit
+    ## compute npars/loglik and adjust margins for discrete data and 
+    npars <- loglik <- 0
+    for (k in seq_len(ncol(data))) {
+        npars <- npars + vine$margins[[k]]$edf
+        loglik <- loglik + vine$margins[[k]]$loglik
+        if (k %in% attr(data, "i_disc")) {
+            vine$margins[[k]]$jitter_info$i_disc[1] <- 1
+            vine$margins[[k]]$jitter_info$levels$x <- attr(data, "levels")[[k]]
+        }
+    }
+    
+    ## add the npars/loglik of the copulas
+    vine$npars <- npars + vine$copula$npars
+    vine$loglik <- loglik + vine$copula$loglik
+    
+    ## add data
     if (keep_data) {
         vine$data <- data
     } else {
@@ -209,14 +229,6 @@ finalize_vine <- function(vine, data, keep_data) {
         colnames(vine$data) <- colnames(data)
         attr(vine$data, "i_disc") <- attr(data, "i_disc")
         attr(vine$data, "levels") <- attr(data, "levels")
-    }
-    
-    ## adjust margins for discrete data
-    for (k in seq_len(ncol(data))) {
-        if (k %in% attr(vine$data, "i_disc")) {
-            vine$margins[[k]]$jitter_info$i_disc[1] <- 1
-            vine$margins[[k]]$jitter_info$levels$x <- attr(vine$data, "levels")[[k]]
-        }
     }
     
     ## add number of observations
