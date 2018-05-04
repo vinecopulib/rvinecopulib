@@ -68,7 +68,7 @@
 #' get_matrix(vc)
 #' 
 #' # extract a truncated sub-vine based on truncation level supplied by user
-#' truncate_vinecop(vc, 1)
+#' truncate_model(vc, 1)
 #' 
 #' @rdname vinecop_methods
 #' @export
@@ -273,17 +273,23 @@ vinecop_fit_info <- function(vc) {
 #' extracts all pair copulas.
 #' return a nested list with entry `[t][e]` corresponding to
 #' edge `e` in tree `t`.
-#' @param object a `vinecop` object.
-#' @param trees the number of trees extracted from the `vinecop` object.
+#' @param object a `vinecop` or `vine` object.
+#' @param trees the number of trees extracted from `object`.
 #'
 #' @export
 get_all_pair_copulas <- function(object, trees = NA) {
-    assert_that(inherits(object, "vinecop_dist"))
-    d <- length(object$pair_copulas[[1]]) + 1
+    assert_that(inherits(object, "vinecop_dist") || 
+                    inherits(object, "vine_dist"))
+    if (inherits(object, "vinecop_dist")) {
+        pcs <- object$pair_copulas
+    } else {
+        pcs <- object$copula$pair_copulas
+    }
+    d <- length(pcs[[1]]) + 1
     if (!any(is.na(trees)))
         assert_that(is.numeric(trees), all(trees >= 1), all(trees <= d - 1))
     
-    t <- length(object$pair_copulas)
+    t <- length(pcs)
     if (any(is.na(trees))) {
         trees <- seq_len(t)
     } else {
@@ -294,44 +300,71 @@ get_all_pair_copulas <- function(object, trees = NA) {
         }
     }
     
-    object$pair_copulas[trees]
+    pcs[trees]
 }
 
 #' extracts the structure matrix of the vine copula model.
-#' @param object a `vinecop` object.
+#' @param object a `vinecop` or a `vine` object.
 #'
 #' @export
 get_matrix <- function(object) {
-    assert_that(inherits(object, "vinecop_dist"))   
-    object$matrix
+    assert_that(inherits(object, "vinecop_dist") || 
+                    inherits(object, "vine_dist"))
+    if (inherits(object, "vinecop_dist")) {
+        return(object$matrix)
+    } else {
+        return(object$copula$matrix)
+    }  
+    
 }
 
 #' extracts a pair copula 
-#' @param object a `vinecop` object.
+#' @param object a `vinecop` or a `vine` object.
 #' 
 #' @param tree tree index (starting with 1).
 #' @param edge edge index (starting with 1).
 #'
 #' @export
 get_pair_copula <- function(object, tree, edge) {
-    assert_that(inherits(object, "vinecop_dist"))   
-    object$pair_copulas[[tree]][[edge]]
+    assert_that(inherits(object, "vinecop_dist") || 
+                    inherits(object, "vine_dist"))
+    if (inherits(object, "vinecop_dist")) {
+        return(object$pair_copulas[[tree]][[edge]])
+    } else {
+        return(object$copula$pair_copulas[[tree]][[edge]])
+    }  
 }
 
 #' extract a truncated sub-vine based on truncation level supplied by user.
-#' @param object a `vinecop` object.
+#' @param object a `vinecop` or a `vine` object.
 #' @param trunc_lvl truncation level for the vine copula.
 #'
 #' @export
-truncate_vinecop <- function(object, trunc_lvl = NA) { 
-    assert_that(inherits(object, "vinecop_dist"))
-    d <- length(object$pair_copulas[[1]]) + 1
+truncate_model <- function(object, trunc_lvl = NA) { 
+    assert_that(inherits(object, "vinecop_dist") || 
+                    inherits(object, "vine_dist"))
+    is_vinecop <- inherits(object, "vinecop_dist")
+    if (is_vinecop) {
+        pcs <- object$pair_copulas
+    } else {
+        pcs <- object$copula$pair_copulas
+    }
+    d <- length(pcs[[1]]) + 1
     if (!all(is.na(trunc_lvl)))
         assert_that(is.number(trunc_lvl), trunc_lvl <= d - 1, trunc_lvl > 0)
     if (!is.na(trunc_lvl)) {
-        trunc_lvl <- min(trunc_lvl, length(object$pair_copulas))
-        vinecop_dist(object$pair_copulas[seq_len(trunc_lvl)], object$matrix)
+        trunc_lvl <- min(trunc_lvl, length(pcs))
+        if (is_vinecop) {
+            object$pair_copulas <- pcs[seq_len(trunc_lvl)]
+        } else {
+            object$copula$pair_copulas <- pcs[seq_len(trunc_lvl)]
+        }
     } else {
-        vinecop_dist(object$pair_copulas, object$matrix)
+        if (is_vinecop) {
+            object$pair_copulas <- pcs
+        } else {
+            object$copula$pair_copulas <- pcs
+        }
     }
+    return(object)
 }

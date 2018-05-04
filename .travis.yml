@@ -21,11 +21,13 @@ apt_packages:
   - libudunits2-dev
 
 r_packages:
+  - cctools
   - devtools
   - BH
   - covr
   - ggraph
   - ggplot2
+  - kde1d
   - Rcpp
   - RcppEigen
   - RcppThread

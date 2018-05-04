@@ -7,7 +7,7 @@
 get_matrix(object)
 }
 \arguments{
-\item{object}{a \code{vinecop} object.}
+\item{object}{a \code{vinecop} or a \code{vine} object.}
 }
 \description{
 extracts the structure matrix of the vine copula model.

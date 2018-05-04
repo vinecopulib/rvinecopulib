@@ -49,4 +49,13 @@
 #' u <- sapply(1:3, function(i) runif(50))
 #' vc <- vinecop(u, "par")
 #' summary(vc)
+#' 
+#' ## vine_dist objects
+#' vc <- vine_dist(list(name = "norm"), pcs, mat)
+#' summary(vc)
+#' 
+#' #' ## vine objects
+#' x <- sapply(1:3, function(i) rnorm(50))
+#' vc <- vine(x, copula_controls = list(family_set = "par"))
+#' summary(vc)
 NULL

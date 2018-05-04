@@ -7,7 +7,7 @@
 get_pair_copula(object, tree, edge)
 }
 \arguments{
-\item{object}{a \code{vinecop} object.}
+\item{object}{a \code{vinecop} or a \code{vine} object.}
 
 \item{tree}{tree index (starting with 1).}
 

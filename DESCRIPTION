@@ -23,8 +23,10 @@ LazyData: true
 NeedsCompilation: yes
 Imports:
     assertthat,
+    cctools,
     graphics,
     grDevices,
+    kde1d,
     lattice,
     Rcpp (>= 0.12.12),
     stats,

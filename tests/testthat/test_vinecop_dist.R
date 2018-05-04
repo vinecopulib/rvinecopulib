@@ -85,8 +85,6 @@ test_that("plot functions work", {
     expect_silent(p <- contour(vc, margins = "unif"))
 })
 
-
-
 test_that("getters work", {
     
     # test get_all_pair_copulas
@@ -100,5 +98,5 @@ test_that("getters work", {
     expect_identical(mat, get_matrix(vc))
     
     # test truncate 
-    expect_identical(vc$pair_copulas[1:1], truncate_vinecop(vc, 1)[[1]])
+    expect_identical(vc$pair_copulas[1:1], truncate_model(vc, 1)[[1]])
 })
