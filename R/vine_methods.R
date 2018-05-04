@@ -68,23 +68,13 @@ dvine <- function(x, vine) {
         vine$margins <- replicate(d, vine$margins, simplify = FALSE)
     
     ## evaluate marginal densities
-    margvals <- u <- x
-    for (k in 1:d) {
-        if (inherits(vine, "vine")) {
-            margvals[, k] <- dkde1d(x[, k], vine$margins[[k]])
-        } else {
-            dfun <- get(paste0("d", vine$margins[[k]]$name))
-            par <- vine$margins[[k]][names(vine$margins[[k]]) != "name"]
-            par$x <- x[, k]
-            margvals[, k] <- do.call(dfun, par)
-        }
-    }
+    margvals <- dpq_marg(x, vine, "d")
     
     if (!is.null(vine$copula)) {
         # PIT to copula data
-        u <- prob_quantile_marg(x, vine)
+        u <- dpq_marg(x, vine)
         # evaluate vine density
-        vinevals <- vinecop_pdf_cpp(u, vine$copula)
+        vinevals <- vinecop_pdf_cpp(if_vec_to_matrix(u), vine$copula)
     } else {
         vinevals <- rep(1, nrow(x))
     }
@@ -114,11 +104,11 @@ pvine <- function(x, vine, n_mc = 10^4) {
         vine$margins <- replicate(ncol(x), vine$margins, simplify = FALSE)
     
     # PIT to copula data
-    u <- prob_quantile_marg(x, vine)
+    u <- dpq_marg(x, vine)
     
     # Evaluate copula if needed
     if (!is.null(vine$copula)) {
-        vals <- vinecop_cdf_cpp(u, vine$copula, n_mc)
+        vals <- vinecop_cdf_cpp(if_vec_to_matrix(u), vine$copula, n_mc)
     } else {
         vals <- u
     }
@@ -148,7 +138,7 @@ rvine <- function(n, vine, U = NULL) {
         vine$margins <- replicate(d, vine$margins, simplify = FALSE)
     
     # use quantile transformation for marginals
-    prob_quantile_marg(U, vine, "q")
+    dpq_marg(U, vine, "q")
 }
 
 #' @export
@@ -213,7 +203,7 @@ logLik.vine <- function(object, ...) {
     
     ll_marg <- lapply(object$margins, logLik)
     npars_marg <- sapply(ll_marg, function(x) attr(x, "df"))
-    u <- prob_quantile_marg(object$data, object)
+    u <- dpq_marg(object$data, object)
     ll_cop <- vinecop_loglik_cpp(u, object$copula)
     pc_lst <- unlist(object$copula$pair_copulas, recursive = FALSE)
     npars_cop <- ifelse(length(pc_lst) == 0, 0, 
@@ -232,32 +222,30 @@ summary.vine <- function(object, ...) {
     summary(collate_u(object)$copula)
 }
 
-prob_quantile_marg <- function(x, vine, what = "p") {
+dpq_marg <- function(x, vine, what = "p") {
     d <- ncol(x)
     if (inherits(vine, "vine")) {
-        if (what == "p") {
-            fun <- function(i) pkde1d(x[, i], vine$margins[[i]])
-        } else {
-            fun <- function(i) qkde1d(x[, i], vine$margins[[i]])
-        }
+        fun <- switch(what,
+                    p = pkde1d,
+                    d = dkde1d,
+                    q = qkde1d)
     } else {
-        fun <- function(i) {
-            pfun <- get(paste0(what, vine$margins[[i]]$name))
-            par <- vine$margins[[i]][names(vine$margins[[i]]) != "name"]
-            if (what == "q") {
-                par$p <- x[, i]
-            } else {
-                par$q <- x[, i]
-            }
-            do.call(pfun, par)
+        fun <- function(x, margin) {
+            par <- margin[names(margin) != "name"]
+            par[[length(par) + 1]] <- x
+            names(par)[[length(par)]] <- switch(what,
+                                                p = "q",
+                                                d = "x",
+                                                q = "p")
+            do.call(get(paste0(what, margin$name)), par)
         }
     }
-    sapply(seq_len(d), fun)
+    sapply(seq_len(d), function(i) fun(x[, i], vine$margins[[i]]))
 }
 
 collate_u <- function(x) {
     if (!all(is.na(x$data))) {
-        u <- prob_quantile_marg(x$data, x)
+        u <- dpq_marg(x$data, x)
         x$copula$data <- u
     }
     x
