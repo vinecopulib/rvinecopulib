@@ -92,13 +92,17 @@ Bicop bicop_wrap(const Rcpp::List& bicop_r)
     return bicop_cpp;
 }
 
-Rcpp::List bicop_wrap(Bicop bicop_cpp)
+Rcpp::List bicop_wrap(Bicop bicop_cpp, bool is_fitted)
 {
+    double loglik = NAN;
+    if (is_fitted)
+        loglik = bicop_cpp.get_loglik();
     return Rcpp::List::create(
         Rcpp::Named("family")     = to_r_family(bicop_cpp.get_family()),
         Rcpp::Named("rotation")   = bicop_cpp.get_rotation(),
         Rcpp::Named("parameters") = bicop_cpp.get_parameters(),
-        Rcpp::Named("npars")      = bicop_cpp.calculate_npars()
+        Rcpp::Named("npars")      = bicop_cpp.calculate_npars(),
+        Rcpp::Named("loglik")     = loglik
     );
 }
 
@@ -137,7 +141,7 @@ Rcpp::List bicop_select_cpp(
     );
     Bicop bicop_cpp(data, controls);
     
-    return bicop_wrap(bicop_cpp);
+    return bicop_wrap(bicop_cpp, TRUE);
 }
 
 // [[Rcpp::export()]]
