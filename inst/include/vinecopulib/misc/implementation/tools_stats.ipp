@@ -7,8 +7,6 @@
 #include <vinecopulib/misc/tools_stl.hpp>
 #include <unsupported/Eigen/FFT>
 
-//! @file misc/tools_stats.ipp
-
 namespace vinecopulib {
 
 //! Utilities for statistical analysis

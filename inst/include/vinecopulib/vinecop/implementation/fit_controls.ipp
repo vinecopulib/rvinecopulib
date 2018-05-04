@@ -27,7 +27,7 @@ inline FitControlsVinecop::FitControlsVinecop() : FitControlsBicop()
 //! @param nonparametric_mult see FitControlsBicop.
 //! @param truncation_level for truncated vines.
 //! @param tree_criterion the criterion for selecting the maximum spanning
-//!     tree ("tau", "hoeffd" and "rho" implemented so far).
+//!     tree ("tau", "hoeffd", "rho", and "mcor" implemented so far).
 //! @param threshold for thresholded vines (0 = no threshold).
 //! @param selection_criterion see FitControlsBicop.
 //! @param psi0 see FitControlsBicop.

@@ -15,7 +15,7 @@ inline Bb7Bicop::Bb7Bicop()
     parameters_upper_bounds_ = Eigen::VectorXd(2);
     parameters_ << 1, 1;
     parameters_lower_bounds_ << 1, 0;
-    parameters_upper_bounds_ << 6, 30;
+    parameters_upper_bounds_ << 6, 25;
 }
 
 inline double Bb7Bicop::generator(const double &u)
