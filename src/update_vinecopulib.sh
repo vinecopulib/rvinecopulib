@@ -2,7 +2,7 @@
 
 git clone https://github.com/vinecopulib/vinecopulib/
 cd vinecopulib
-git checkout better-use-mcor
+git checkout dev
 cd ..
 
 rm -rf ../inst/include/vinecopulib*

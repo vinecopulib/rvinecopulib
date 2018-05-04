@@ -41,20 +41,6 @@ inline Eigen::MatrixXd nan_omit(const Eigen::MatrixXd &x)
     out.conservativeResize(last + 1, out.cols());
 
     return out;
-
-    /* Version that copy each non-nan row
-    // allocate output matrix
-    Eigen::MatrixXd out(x.rows() - nans.count(), x.cols());
-
-    // fill output matrix
-    Eigen::Index j = 0;
-    for(Eigen::Index i = 0; i < x.rows(); ++i)
-    {
-        if(!nans(i))
-            out.row(j++) = x.row(i);
-    }
-
-    return out;*/
 }
 
 //! check if all elements are contained in the unit cube.
@@ -91,30 +77,24 @@ inline Eigen::Matrix<double, Eigen::Dynamic, 2> swap_cols(
 //! guaranteeing an accuracy of 0.5^35 ~= 6e-11).
 //!
 //! @return \f$ f^{-1}(x) \f$.
-inline Eigen::VectorXd invert_f(const Eigen::VectorXd &x,
-                                std::function< Eigen::VectorXd(
-    const Eigen::VectorXd &)
-
-> f,
-const double lb,
-const double ub,
-int n_iter
-) {
-Eigen::VectorXd xl = Eigen::VectorXd::Constant(x.size(), lb);
-Eigen::VectorXd xh = Eigen::VectorXd::Constant(x.size(), ub);
-Eigen::VectorXd x_tmp = x;
-for (
-int iter = 0;
-iter<n_iter;
-++iter) {
-x_tmp = (xh + xl) / 2.0;
-Eigen::VectorXd fm = f(x_tmp) - x;
-xl = (fm.array() < 0).select(x_tmp, xl);
-xh = (fm.array() < 0).select(xh, x_tmp);
-}
-
-return
-x_tmp;
+inline Eigen::VectorXd invert_f(
+    const Eigen::VectorXd &x,
+    std::function<Eigen::VectorXd(const Eigen::VectorXd &)> f,
+    const double lb,
+    const double ub,
+    int n_iter) 
+{
+    Eigen::VectorXd xl = Eigen::VectorXd::Constant(x.size(), lb);
+    Eigen::VectorXd xh = Eigen::VectorXd::Constant(x.size(), ub);
+    Eigen::VectorXd x_tmp = x;
+    for (int iter = 0; iter < n_iter; ++iter) {
+        x_tmp = (xh + xl) / 2.0;
+        Eigen::VectorXd fm = f(x_tmp) - x;
+        xl = (fm.array() < 0).select(x_tmp, xl);
+        xh = (fm.array() < 0).select(xh, x_tmp);
+    }
+    
+    return x_tmp;
 }
 
 //! expand a vector into a matrix with two columns where each row

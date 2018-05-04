@@ -14,13 +14,6 @@
 //! Tools for bivariate and vine copula modeling
 namespace vinecopulib {
 
-//! creates the independence copula.
-inline Bicop::Bicop()
-{
-    bicop_ = AbstractBicop::create();
-    rotation_ = 0;
-}
-
 //! creates a specific bivariate copula model.
 //! @param family the copula family.
 //! @param rotation the rotation of the copula; one of 0, 90, 180, or 270
@@ -33,6 +26,11 @@ inline Bicop::Bicop(BicopFamily family, int rotation,
     bicop_ = AbstractBicop::create(family, parameters);
     // family must be set before checking the rotation
     set_rotation(rotation);
+    if (bicop_->get_family() != BicopFamily::indep) {
+        bicop_->set_loglik();
+    } else {
+        bicop_->set_loglik(0.0);
+    }
 }
 
 //! create a copula model from the data,
@@ -106,8 +104,9 @@ const
 {
     tools_eigen::check_if_in_unit_cube(u);
     Eigen::VectorXd f = bicop_->pdf(cut_and_rotate(u));
-    f = f.unaryExpr([](const double x) { return std::min(x, 1e16); });
-    return f;
+    return tools_eigen::unaryExpr_or_nan(f, [](const double& x) { 
+        return std::max(DBL_MIN, std::min(x, DBL_MAX));
+    });
 }
 
 //! evaluates the copula distribution.
@@ -391,15 +390,27 @@ inline Eigen::MatrixXd Bicop::get_parameters() const
     return bicop_->get_parameters();
 }
 
+inline double Bicop::get_loglik() const
+{
+    return bicop_->get_loglik();
+}
+
+inline double Bicop::get_tau() const
+{
+    return parameters_to_tau(bicop_->get_parameters());
+}
+
 inline void Bicop::set_rotation(int rotation)
 {
     check_rotation(rotation);
     rotation_ = rotation;
+    bicop_->set_loglik();
 }
 
 inline void Bicop::set_parameters(const Eigen::MatrixXd &parameters)
 {
     bicop_->set_parameters(parameters);
+    bicop_->set_loglik();
 }
 //! @}
 

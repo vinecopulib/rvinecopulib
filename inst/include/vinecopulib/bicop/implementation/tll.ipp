@@ -47,7 +47,7 @@ inline Eigen::Matrix2d TllBicop::select_bandwidth(
     }
     double mcor = tools_stats::pairwise_mcor(x);
     double cor = tools_stats::pairwise_cor(x);
-    double scale = std::pow(std::fabs(cor / mcor), mcor);
+    double scale = std::pow(std::fabs(cor / mcor), 0.5 * mcor);
 
     return mult * cov * scale;
 }
@@ -247,5 +247,6 @@ inline void TllBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
     auto infl_grid = tools_interpolation::InterpolationGrid(grid_points, infl,
                                                             0);
     npars_ = infl_grid.interpolate(data).sum();
+    set_loglik(pdf(data).array().log().sum());
 }
 }

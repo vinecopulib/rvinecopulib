@@ -18,9 +18,9 @@ namespace tools_eigen {
 typedef Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> MatrixXb;
 
 template<typename T>
-Eigen::MatrixXd unaryExpr_or_nan(const Eigen::MatrixXd &x, T func)
+Eigen::MatrixXd unaryExpr_or_nan(const Eigen::MatrixXd &x, const T &func)
 {
-    return x.unaryExpr([&func](double y) {
+    return x.unaryExpr([&func](const double& y) {
         return tools_stl::unaryFunc_or_nan(func, y);
     });
 }
@@ -28,14 +28,12 @@ Eigen::MatrixXd unaryExpr_or_nan(const Eigen::MatrixXd &x, T func)
 template<typename T>
 Eigen::VectorXd binaryExpr_or_nan(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u,
-    T func)
+    const T &func)
 {
-    return u.col(0).binaryExpr(u.col(1),
-                               [&func](double u1, double u2) {
-                                   return tools_stl::binaryFunc_or_nan(func,
-                                                                       u1,
-                                                                       u2);
-                               });
+    auto func_or_nan = [&func](const double &u1, const double &u2) {
+        return tools_stl::binaryFunc_or_nan(func, u1, u2);
+    };
+    return u.col(0).binaryExpr(u.col(1), func_or_nan);
 }
 
 Eigen::MatrixXd nan_omit(const Eigen::MatrixXd &x);
@@ -47,7 +45,7 @@ Eigen::Matrix<double, Eigen::Dynamic, 2> swap_cols(
 
 Eigen::VectorXd invert_f(
     const Eigen::VectorXd &x,
-    std::function< Eigen::VectorXd(const Eigen::VectorXd &)> f,
+    std::function<Eigen::VectorXd(const Eigen::VectorXd &)> f,
     const double lb = 1e-20,
     const double ub = 1 - 1e-20,
     int n_iter = 35

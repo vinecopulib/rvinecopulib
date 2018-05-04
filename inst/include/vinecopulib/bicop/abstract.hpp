@@ -36,6 +36,10 @@ protected:
 
     std::string get_family_name() const;
 
+    double get_loglik() const;
+
+    void set_loglik(const double loglik = NAN);
+
     virtual Eigen::MatrixXd get_parameters() const = 0;
 
     virtual void set_parameters(const Eigen::MatrixXd &parameters) = 0;
@@ -79,6 +83,7 @@ protected:
 
     // Data members
     BicopFamily family_;
+    double loglik_;
 };
 
 //! A shared pointer to an object of class AbstracBicop.
