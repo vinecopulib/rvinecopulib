@@ -9,7 +9,7 @@ vc <- vinecop_dist(pcs, mat)
 
 test_that("constructor creates proper vinecop_dist object", {
     expect_s3_class(vc, "vinecop_dist")
-    expect_identical(names(vc), c("pair_copulas", "matrix", "npars"))
+    expect_identical(names(vc), c("pair_copulas", "matrix", "npars", "loglik"))
 })
 
 

@@ -198,17 +198,7 @@ fitted.vine <- function(object, what = "pdf", n_mc = 10^4, ...) {
 
 #' @export
 logLik.vine <- function(object, ...) {
-    if (all(is.na(object$data)))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    
-    ll_marg <- lapply(object$margins, logLik)
-    npars_marg <- sapply(ll_marg, function(x) attr(x, "df"))
-    u <- dpq_marg(object$data, object)
-    ll_cop <- vinecop_loglik_cpp(u, object$copula)
-    pc_lst <- unlist(object$copula$pair_copulas, recursive = FALSE)
-    npars_cop <- ifelse(length(pc_lst) == 0, 0, 
-                    sum(sapply(pc_lst, function(x) x[["npars"]])))
-    structure(sum(unlist(ll_marg)) + ll_cop, "df" = sum(npars_marg) + npars_cop)
+    structure(object$loglik, "df" = object$npars)
 }
 
 #' @export

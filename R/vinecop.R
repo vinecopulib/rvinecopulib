@@ -188,6 +188,7 @@ vinecop_dist <- function(pair_copulas, matrix) {
     vinecop_check_cpp(vinecop)
     check_rvine_matrix(matrix)
     vinecop$npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
+    vinecop$loglik <- NA
     
     vinecop
 }

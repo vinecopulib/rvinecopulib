@@ -3,8 +3,6 @@ context("Fitting `vine` models")
 set.seed(5)
 u <- sapply(1:5, function(i) rnorm(30))
 fit <- vine(u, copula_controls = list(family_set = "nonpar"))
-fit_no_data <- vine(u, copula_controls = list(family_set = "nonpar", 
-                                              keep_data = FALSE))
 
 test_that("returns proper 'vine' object", {
     expect_s3_class(fit, "vine")
@@ -12,7 +10,7 @@ test_that("returns proper 'vine' object", {
     expect_identical(
         names(fit),  
         c("margins", "margins_controls", "copula", 
-          "copula_controls", "data", "nobs")
+          "copula_controls", "npars", "loglik", "data", "nobs")
     )
 })
 
@@ -25,7 +23,6 @@ test_that("S3 generics work", {
     )
     expect_error(predict(fit, u, what = "hfunc1"))
     expect_length(attr(logLik(fit), "df"), 1)
-    expect_error(logLik(fit_no_data))
 })
 
 test_that("print/summary generics work", {

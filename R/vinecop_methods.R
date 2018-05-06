@@ -194,12 +194,7 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, ...) {
 
 #' @export
 logLik.vinecop <- function(object, ...) {
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
-    npars <- ifelse(length(pc_lst) == 0, 0, 
-                    sum(sapply(pc_lst, function(x) x[["npars"]])))
-    structure(vinecop_loglik_cpp(object$data, object), "df" = npars)
+    structure(object$loglik, "df" = object$npars)
 }
 
 #' calculates the vine copula Bayesian information criterion (vBIC), which is 
@@ -352,12 +347,37 @@ truncate_model <- function(object, trunc_lvl = NA) {
     d <- length(pcs[[1]]) + 1
     if (!all(is.na(trunc_lvl)))
         assert_that(is.number(trunc_lvl), trunc_lvl <= d - 1, trunc_lvl > 0)
+    
     if (!is.na(trunc_lvl)) {
-        trunc_lvl <- min(trunc_lvl, length(pcs))
+        n_trees <- length(pcs)
+        trunc_lvl <- min(trunc_lvl, n_trees)
+        
+        # truncate pair_copulas
         if (is_vinecop) {
             object$pair_copulas <- pcs[seq_len(trunc_lvl)]
         } else {
             object$copula$pair_copulas <- pcs[seq_len(trunc_lvl)]
+        }
+        
+        # adjust npars for truncation
+        pcs <- unlist(pcs[min(trunc_lvl+1,n_trees):n_trees], recursive = FALSE)
+        npars <- ifelse(length(pcs) == 0, 0, 
+                        sum(sapply(pcs, function(x) x[["npars"]])))
+        object$npars <- object$npars - npars
+        
+        # adjust loglik for truncation
+        if (!is.na(object$loglik)) {
+            loglik <- ifelse(length(pcs) == 0, 0, 
+                             sum(sapply(pcs, function(x) x[["loglik"]])))
+            object$loglik <- object$loglik - loglik
+        }
+        
+        # adjust copula object for truncation
+        if (!is_vinecop) {
+            object$copula$npars <- object$copula$npars - npars
+            if (!is.na(object$loglik)) {
+                object$copula$loglik <- object$copula$loglik - loglik
+            }
         }
     } else {
         if (is_vinecop) {

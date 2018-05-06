@@ -211,9 +211,7 @@ fitted.bicop <- function(object, what = "pdf", ...) {
 #' @importFrom stats logLik
 #' @export
 logLik.bicop <- function(object, ...) {
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    structure(bicop_loglik_cpp(object$data, object), "df" = object$npars)
+    structure(object$loglik, "df" = object$npars)
 }
 
 #' @export

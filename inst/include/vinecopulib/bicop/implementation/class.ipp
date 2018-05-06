@@ -276,9 +276,13 @@ Bicop::simulate(const int &n) const
 //!
 //! @param u \f$n \times 2\f$ matrix of observations.
 inline double
-Bicop::loglik(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
+Bicop::loglik(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u = Eigen::MatrixXd()) const
 {
-    return pdf(tools_eigen::nan_omit(u)).array().log().sum();
+    if (u.rows() < 1) {
+        return get_loglik();
+    } else {
+        return pdf(tools_eigen::nan_omit(u)).array().log().sum();
+    }
 }
 
 //! calculates the Akaike information criterion (AIC), defined as
@@ -392,7 +396,12 @@ inline Eigen::MatrixXd Bicop::get_parameters() const
 
 inline double Bicop::get_loglik() const
 {
-    return bicop_->get_loglik();
+    double loglik = bicop_->get_loglik();
+    if (std::isnan(loglik)) {
+        throw std::runtime_error("copula has not been fitted from data or its "
+                                     "parameters have been modified manually");
+    }
+    return loglik;
 }
 
 inline double Bicop::get_tau() const
@@ -424,11 +433,13 @@ inline void Bicop::flip()
 {
     BicopFamily family = bicop_->get_family();
     if (tools_stl::is_member(family, bicop_families::flip_by_rotation)) {
+        double loglik = bicop_->get_loglik();
         if (rotation_ == 90) {
             set_rotation(270);
         } else if (rotation_ == 270) {
             set_rotation(90);
         }
+        bicop_->set_loglik(loglik);
     } else {
         bicop_->flip();
     }
@@ -497,11 +508,10 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
     data = tools_eigen::nan_omit(data);
     tools_eigen::check_if_in_unit_cube(data);
 
-    if (data.rows() < 10) {
-        bicop_ = AbstractBicop::create();
-        rotation_ = 0;
-    } else {
-        rotation_ = 0;
+    bicop_ = AbstractBicop::create();
+    rotation_ = 0;
+    bicop_->set_loglik(0.0);
+    if (data.rows() >= 10) {
         data = cut_and_rotate(data);
         std::vector <Bicop> bicops = create_candidate_bicops(data, controls);
 
@@ -518,7 +528,7 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
             // Compute the selection criterion
             double new_criterion;
             if (controls.get_selection_criterion() == "loglik") {
-                new_criterion = -cop.loglik(data);
+                new_criterion = -cop.get_loglik();
             } else if (controls.get_selection_criterion() == "aic") {
                 new_criterion = cop.aic(data);
             } else if (controls.get_selection_criterion() == "bic") {
