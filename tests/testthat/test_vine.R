@@ -1,4 +1,4 @@
-context("Fitting `vine` models")
+context("Fitting 'vine' models")
 
 set.seed(5)
 u <- sapply(1:5, function(i) rnorm(30))
