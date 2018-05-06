@@ -388,3 +388,8 @@ truncate_model <- function(object, trunc_lvl = NA) {
     }
     return(object)
 }
+
+#' @export
+coef.vinecop_dist <- function(object, ...) {
+    lapply(object$pair_copulas, function(tree) lapply(tree, coef))
+}
