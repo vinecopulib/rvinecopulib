@@ -109,10 +109,6 @@ inline std::string AbstractBicop::get_family_name() const
 
 inline double AbstractBicop::get_loglik() const
 {
-    if (std::isnan(loglik_)) {
-        throw std::runtime_error("copula has not been fitted from data or its "
-                                     "parameters have been modified manually");
-    }
     return loglik_;
 }
 
