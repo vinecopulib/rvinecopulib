@@ -51,6 +51,8 @@ test_that("plot functions work", {
 test_that("parameter <-> tau conversion works", {
     dist <- bicop_dist("joe", 90, 3)
     
+    expect_equal(coef(dist), dist$parameters)
+    
     # one-parameter family
     tau <- par_to_tau(dist)
     expect_identical(tau, par_to_tau("joe", 90, 3))

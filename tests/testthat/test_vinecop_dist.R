@@ -87,6 +87,9 @@ test_that("plot functions work", {
 
 test_that("getters work", {
     
+    # test coef
+    expect_identical(coef(vc), lapply(pcs, function(tree) lapply(tree, coef)))
+    
     # test get_all_pair_copulas
     expect_identical(pcs, get_all_pair_copulas(vc))
     

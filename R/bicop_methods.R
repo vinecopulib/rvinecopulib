@@ -271,6 +271,12 @@ summary.bicop <- function(object, ...) {
     invisible(object)
 }
 
+#' @importFrom stats coef
+#' @export
+coef.bicop_dist <- function(object, ...) {
+    object$parameters
+}
+
 bicop_fit_info <- function(bc) {
     ll <- logLik(bc)
     list(
