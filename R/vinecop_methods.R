@@ -197,15 +197,6 @@ logLik.vinecop <- function(object, ...) {
     structure(object$loglik, "df" = object$npars)
 }
 
-loglik_vinecop <- function(object) {
-    pc_lst <- unlist(object$pair_copulas, recursive = FALSE)
-    npars <- ifelse(length(pc_lst) == 0, 0, 
-                    sum(sapply(pc_lst, function(x) x[["npars"]])))
-    loglik <- ifelse(length(pc_lst) == 0, 0, 
-                     sum(sapply(pc_lst, function(x) x[["loglik"]])))
-    structure(loglik, "df" = npars)
-}
-
 #' calculates the vine copula Bayesian information criterion (vBIC), which is 
 #' defined as
 #' \deqn{\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
