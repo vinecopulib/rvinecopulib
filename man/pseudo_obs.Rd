@@ -4,8 +4,7 @@
 \alias{pseudo_obs}
 \title{Pseudo-Observations}
 \usage{
-pseudo_obs(x, ties_method = c("average", "first", "random"),
-  lower_tail = TRUE)
+pseudo_obs(x, ties_method = "average", lower_tail = TRUE)
 }
 \arguments{
 \item{x}{vector or matrix random variates to be converted (column wise) to

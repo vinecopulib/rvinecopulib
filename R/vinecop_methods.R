@@ -265,71 +265,6 @@ vinecop_fit_info <- function(vc) {
     )
 }
 
-#' extracts all pair copulas.
-#' return a nested list with entry `[t][e]` corresponding to
-#' edge `e` in tree `t`.
-#' @param object a `vinecop` or `vine` object.
-#' @param trees the number of trees extracted from `object`.
-#'
-#' @export
-get_all_pair_copulas <- function(object, trees = NA) {
-    assert_that(inherits(object, "vinecop_dist") || 
-                    inherits(object, "vine_dist"))
-    if (inherits(object, "vinecop_dist")) {
-        pcs <- object$pair_copulas
-    } else {
-        pcs <- object$copula$pair_copulas
-    }
-    d <- length(pcs[[1]]) + 1
-    if (!any(is.na(trees)))
-        assert_that(is.numeric(trees), all(trees >= 1), all(trees <= d - 1))
-    
-    t <- length(pcs)
-    if (any(is.na(trees))) {
-        trees <- seq_len(t)
-    } else {
-        if (any(trees > t)) {
-            warning("vine copula is ", t, "-truncated; ",
-                    "only returning available trees.")
-            trees <- trees[trees <= t]
-        }
-    }
-    
-    pcs[trees]
-}
-
-#' extracts the structure matrix of the vine copula model.
-#' @param object a `vinecop` or a `vine` object.
-#'
-#' @export
-get_matrix <- function(object) {
-    assert_that(inherits(object, "vinecop_dist") || 
-                    inherits(object, "vine_dist"))
-    if (inherits(object, "vinecop_dist")) {
-        return(object$matrix)
-    } else {
-        return(object$copula$matrix)
-    }  
-    
-}
-
-#' extracts a pair copula 
-#' @param object a `vinecop` or a `vine` object.
-#' 
-#' @param tree tree index (starting with 1).
-#' @param edge edge index (starting with 1).
-#'
-#' @export
-get_pair_copula <- function(object, tree, edge) {
-    assert_that(inherits(object, "vinecop_dist") || 
-                    inherits(object, "vine_dist"))
-    if (inherits(object, "vinecop_dist")) {
-        return(object$pair_copulas[[tree]][[edge]])
-    } else {
-        return(object$copula$pair_copulas[[tree]][[edge]])
-    }  
-}
-
 #' extract a truncated sub-vine based on truncation level supplied by user.
 #' @param object a `vinecop` or a `vine` object.
 #' @param trunc_lvl truncation level for the vine copula.
@@ -391,5 +326,10 @@ truncate_model <- function(object, trunc_lvl = NA) {
 
 #' @export
 coef.vinecop_dist <- function(object, ...) {
-    lapply(object$pair_copulas, function(tree) lapply(tree, coef))
+    get_all_parameters(object)
+}
+
+#' @export
+dim.vinecop_dist <- function(x) {
+    ncol(x$matrix)
 }

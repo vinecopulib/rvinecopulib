@@ -258,3 +258,4 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
         res <- 1 - res
     return(res)
 }
+

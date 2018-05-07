@@ -240,3 +240,8 @@ collate_u <- function(x) {
     }
     x
 }
+
+#' @export
+dim.vine_dist <- function(x) {
+    dim(x$copula)
+}
