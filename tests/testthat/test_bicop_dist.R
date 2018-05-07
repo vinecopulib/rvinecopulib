@@ -72,3 +72,18 @@ test_that("print method produces output", {
     expect_output(print(dist))
     expect_output(summary(dist))
 })
+
+test_that("getters work", {
+    dist <- bicop_dist("gumbel", 90, 3)
+    
+    # test get_pair_copula
+    expect_identical(dist, get_pair_copula(dist))
+    expect_warning(get_pair_copula(dist, 1))
+    expect_warning(get_pair_copula(dist, NA, 1))
+
+    # test other getters
+    expect_equivalent(get_parameters(dist), coef(dist))
+    expect_equivalent(get_kendall_tau(dist), par_to_tau(dist))
+    expect_equivalent(get_family(dist), "gumbel")
+
+})

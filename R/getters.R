@@ -1,18 +1,19 @@
-#' Extracts components of the vinecop object
+#' Extracts components of the bicop or vinecop object
 #' 
-#' Extracts either the structure matrix, or pair-copulas,
-#' their parameters, Kendall's taus, or families
+#' Extracts either the structure matrix  (for vinecop only), or pair-copulas, 
+#' their parameters, Kendall's taus, or families (for bicop and vinecop).
 #' 
-#' @name vinecop_getters
+#' @name getters
 #' @aliases get_pair_copula get_all_pair_copulas get_parameters get_all_parameters
 #' get_kendall_tau get_all_kendall_taus get_matrix
-#' @param object a `vinecop` or `vine` object.
+#' @param object a `bicop_dist`, `vinecop_dist` or `vine_dist` object.
 #' @details 
-#' The [get_matrix] method extracts the structure matrix (see 
-#' [check_rvine_matrix] for more details).
+#' The [get_matrix] method (for `vinecop_dist` or `vine_dist` objects only) 
+#' extracts the structure matrix (see [check_rvine_matrix] for more details).
 #' 
-#' The other `get_xyz` methods return the entries corresponding to the 
-#' pair-copula indexed by its `tree` and `edge`: \cr
+#' The other `get_xyz` methods for `vinecop_dist` or `vine_dist` objects return 
+#' the entries corresponding to the pair-copula indexed by its `tree` and `edge`. 
+#' When `object` is of class `bicop_dist`, `tree` and `edge` are not required. \cr
 #' 
 #' [get_pair_copula] = the pair-copula itself (see [bicop]).\cr
 #' [get_parameters] = the parameters of the pair-copula (i.e., a `numeric` 
@@ -20,9 +21,13 @@
 #' [get_family] = a character for the family (see [bicop] for implemented families).\cr
 #' [get_kendall_tau] = a `numeric` scalar with the pair-copula Kendall's tau.\cr
 #' 
-#' The `get_all_xyz` methods return lists of lists, with each element 
-#' corresponding to a tree in `trees`, and then elements of the sublists 
-#' correspond to edges.
+#' The `get_all_xyz` methods (for `vinecop_dist` or `vine_dist` objects only) 
+#' return lists of lists, with each element corresponding to a tree in `trees`, 
+#' and then elements of the sublists correspond to edges. 
+#' The returned lists have two additional attributes: \cr
+#' 
+#' `"d"` = the dimension of the model.\cr
+#' `"trees"` = the extracted trees.\cr
 #' 
 #' @examples
 #' # specify pair-copulas
@@ -49,7 +54,7 @@
 #' @return 
 #' The structure matrix, or pair-copulas, their parameters, Kendall's taus, 
 #' or families.
-#' @rdname vinecop_getters
+#' @rdname getters
 #' @export
 get_matrix <- function(object) {
     assert_that(inherits(object, "vinecop_dist") || 
@@ -58,61 +63,68 @@ get_matrix <- function(object) {
         return(object$matrix)
     } else {
         return(object$copula$matrix)
-    }  
-    
+    }
 }
 
-#' @param tree tree index.
-#' @param edge edge index.
+#' @param tree tree index (not required if `object` is of class `bicop_dist`).
+#' @param edge edge index (not required if `object` is of class `bicop_dist`).
 #'
-#' @rdname vinecop_getters
+#' @rdname getters
 #' @export
-get_pair_copula <- function(object, tree, edge) {
+get_pair_copula <- function(object, tree = NA, edge = NA) {
 
     ## sanity checks
-    assert_that(inherits(object, "vinecop_dist") || 
+    assert_that(inherits(object, "bicop_dist") ||
+                    inherits(object, "vinecop_dist") || 
                     inherits(object, "vine_dist"))
     
-    d <- dim(object)
-    assert_that(is.numeric(tree), 
-                is.scalar(tree),
-                tree >= 1, 
-                tree <= d - 1)
-    assert_that(is.numeric(edge), 
-                is.scalar(edge),
-                edge >= 1, 
-                edge <= d - tree)
-    
-    ## return pair-copula
-    if (inherits(object, "vinecop_dist")) {
-        return(object$pair_copulas[[tree]][[edge]])
+    if (inherits(object, "bicop_dist")) {
+        if (!is.scalar(tree) || !is.na(tree))
+            warning("tree argument not used for bicop_dist objects")
+        if (!is.scalar(edge) || !is.na(edge))
+            warning("edge argument not used for bicop_dist objects")
+        return(object)
     } else {
-        return(object$copula$pair_copulas[[tree]][[edge]])
-    }  
+        d <- dim(object)
+        assert_that(is.numeric(tree), 
+                    is.scalar(tree),
+                    tree >= 1, 
+                    tree <= d - 1)
+        assert_that(is.numeric(edge), 
+                    is.scalar(edge),
+                    edge >= 1, 
+                    edge <= d - tree)
+        
+        ## return pair-copula
+        if (inherits(object, "vinecop_dist")) {
+            return(object$pair_copulas[[tree]][[edge]])
+        } else {
+            return(object$copula$pair_copulas[[tree]][[edge]])
+        }  
+    }
 }
 
-#' @rdname vinecop_getters
+#' @rdname getters
 #' @export
-get_parameters <- function(object, tree, edge) {
-    get_pair_copula(object, tree, edge)$parameters
+get_parameters <- function(object, tree = NA, edge = NA) {
+    coef(get_pair_copula(object, tree, edge))
 }
 
-#' @rdname vinecop_getters
+#' @rdname getters
 #' @export
-get_tau <- function(object, tree, edge) {
-    pc <- get_pair_copula(object, tree, edge)
-    par_to_tau(pc$family, pc$rotation, pc$parameters)
+get_kendall_tau <- function(object, tree = NA, edge = NA) {
+    par_to_tau(get_pair_copula(object, tree, edge))
 }
 
-#' @rdname vinecop_getters
+#' @rdname getters
 #' @export
-get_family <- function(object, tree, edge) {
+get_family <- function(object, tree = NA, edge = NA) {
     get_pair_copula(object, tree, edge)$family
 }
 
 #' @param trees the trees to extract from `object` (`trees = NA` extracts all 
 #' trees).
-#' @rdname vinecop_getters
+#' @rdname getters
 #' @export
 get_all_pair_copulas <- function(object, trees = NA) {
     
@@ -154,19 +166,19 @@ get_all_xyz <- function(object, trees, func, list_name) {
     return(res)
 }
 
-#' @rdname vinecop_getters
+#' @rdname getters
 #' @export
 get_all_parameters <- function(object, trees = NA) {
     get_all_xyz(object, trees, coef, "parameters")
 }
 
-#' @rdname vinecop_getters
+#' @rdname getters
 #' @export
 get_all_kendall_taus <- function(object, trees = NA) {
     get_all_xyz(object, trees, par_to_tau, "kendall_taus")
 }
 
-#' @rdname vinecop_getters
+#' @rdname getters
 #' @export
 get_all_families <- function(object, trees = NA) {
     get_all_xyz(object, trees, function(pc) pc$family, "families")
@@ -194,5 +206,4 @@ print.rvine_list <- function(x, ...) {
                        "and", trees[ntrees])
         cat(paste(msg, " trees ", trees, ". \n", sep = ""))
     }
-
 }

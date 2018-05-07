@@ -194,7 +194,8 @@ set_edge_labels <- function(tree, vc, edge_labels) {
     get_edge_label <- switch(edge_labels,
                              family = get_family,
                              tau = function(vc, tree, edge) 
-                                 round(get_tau(vc, tree, edge), digits = 2),
+                                 round(get_kendall_tau(vc, tree, edge), 
+                                       digits = 2),
                              family_tau = get_family_tau,
                              pair = get_name)
     sapply(1:(d - tree), function(edge) get_edge_label(vc, tree, edge))
@@ -218,8 +219,8 @@ get_name <-  function(vc, tree, edge) {
 }
 
 get_family_tau <- function(vc, tree, edge) {
-    paste0(get_family(vc, tree, edge), "(", round(get_tau(vc, tree, edge),
-                                                  digits = 2), ")")
+    paste0(get_family(vc, tree, edge), "(", 
+           round(get_kendall_tau(vc, tree, edge), digits = 2), ")")
 }
 
 #' @method contour vinecop_dist
