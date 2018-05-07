@@ -45,6 +45,10 @@ bicop_tau_to_par_cpp <- function(bicop_r, tau) {
     .Call(`_rvinecopulib_bicop_tau_to_par_cpp`, bicop_r, tau)
 }
 
+pseudo_obs_cpp <- function(x, ties_method) {
+    .Call(`_rvinecopulib_pseudo_obs_cpp`, x, ties_method)
+}
+
 rvine_matrix_check_cpp <- function(matrix) {
     invisible(.Call(`_rvinecopulib_rvine_matrix_check_cpp`, matrix))
 }
