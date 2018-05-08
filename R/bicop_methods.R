@@ -129,22 +129,22 @@ hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
 #'
 #' @examples
 #' # the following are equivalent
-#' par_to_tau(bicop_dist("clayton", 0, 3))
-#' par_to_tau("clayton", 0, 3)
+#' par_to_ktau(bicop_dist("clayton", 0, 3))
+#' par_to_ktau("clayton", 0, 3)
 #' 
-#' tau_to_par("clayton", 0.5)
-#' tau_to_par(bicop_dist("clayton", 0, 3), 0.5)
-#' @name par_to_tau
-#' @rdname par_to_tau
-par_to_tau <- function(family, rotation, parameters) {
+#' ktau_to_par("clayton", 0.5)
+#' ktau_to_par(bicop_dist("clayton", 0, 3), 0.5)
+#' @name par_to_ktau
+#' @rdname par_to_ktau
+par_to_ktau <- function(family, rotation, parameters) {
     bicop <- args2bicop(family, rotation, parameters)
     bicop_par_to_tau_cpp(bicop)
 }
 
-#' @rdname par_to_tau
+#' @rdname par_to_ktau
 #' @param tau Kendall's \eqn{\tau}.
 #' @export
-tau_to_par <- function(family, tau) {
+ktau_to_par <- function(family, tau) {
     bicop <- args2bicop(family)
     if (!(bicop$family %in% c(family_set_elliptical, family_set_nonparametric)))
         bicop$rotation <- ifelse(tau > 0, 0, 90)
@@ -216,6 +216,7 @@ logLik.bicop <- function(object, ...) {
 
 #' @export
 print.bicop_dist <- function(x, ...) {
+    x0 <- x
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
         x$parameters <- paste0(round(x$npars, 2), sep = " d.f.")
     }
@@ -228,6 +229,7 @@ print.bicop_dist <- function(x, ...) {
                                   x$parameters),
         sep = "")
     cat("\n")
+    invisible(x0)
 }
 
 #' @export
@@ -237,6 +239,7 @@ summary.bicop_dist <- function(object, ...) {
 
 #' @export
 print.bicop <- function(x, ...) {
+    x0 <- x
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
         pars_formatted <- paste0(round(x$npars, 2), sep = " d.f.")
     } else {
@@ -249,7 +252,7 @@ print.bicop <- function(x, ...) {
         "\n",
         sep = "")
     
-    invisible(x)
+    invisible(x0)
 }
 
 #' @export
