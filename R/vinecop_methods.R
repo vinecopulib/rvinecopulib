@@ -145,6 +145,7 @@ summary.vinecop_dist <- function(object, ...) {
     mdf
 }
 
+#' @export
 print.vinecop_dist_summary <- function(x, ...) {
     x_print <- x[1:min(nrow(x), 10), ]
     x_print[x_print$family == "tll", "parameters"] <- list("[30x30 grid]")
