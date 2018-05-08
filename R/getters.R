@@ -191,19 +191,36 @@ print.rvine_list <- function(x, ...) {
                    parameters = "copula parameters",
                    kendall_taus = "Kendall's taus",
                    families = "copula families")
-
+    
     d <- attr(x, "d")
     trees <- attr(x, "trees")
     msg <- paste("Nested list of lists for the", what, "of a", 
                  d, "dimensional vine with")
+    
     ntrees <- length(trees)
     if (ntrees == d - 1) {
-        cat(paste(msg, "all trees. \n"))
+        cat(paste(msg, "all trees: \n"))
     } else if (ntrees == 1) {
         cat(paste(msg, " tree ", trees, ". \n", sep = ""))
     } else {
-        trees <- paste(paste(trees[1:(ntrees - 1)], collapse = ", "),
-                       "and", trees[ntrees])
-        cat(paste(msg, " trees ", trees, ". \n", sep = ""))
+        trees_print <- paste(paste(trees[1:(ntrees - 1)], collapse = ", "),
+                             "and", trees[ntrees])
+        cat(paste(msg, " trees ", trees_print, ". \n", sep = ""))
     }
+    cat(rep("-", 50), "\n")
+    arg <- deparse(substitute(x))
+    for (t in seq_along(trees)) {
+        if (t > 10) {
+            if (length(trees) - 10 > 1) {
+                trees_print <- "more trees.\n"
+            } else {
+                trees_print <- "more tree.\n"
+            }
+            cat("# ... with", length(trees) - 10, trees_print)
+            break
+        }
+        cat(paste(arg, "[[", t, "]] -> a list with the ", d - trees[t], 
+                  " ", what, " of tree ", trees[t], ". \n", sep = ""))
+    }
+    invisible(x)
 }
