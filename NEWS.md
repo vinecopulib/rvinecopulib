@@ -1,3 +1,47 @@
+# vinecopulib 0.2.8.1.0 (May 8, 2018)
+
+Release following the updates of vinecopulib to 0.2.8, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+NEW FEATURES
+   
+   * new `vine_dist` and `vine` classes for data with non-uniform margins (#97).
+   
+   * new function `truncate_model()` for `vinecop_dist` and `vine_dist` 
+   objects (#95, #97).
+   
+   * new convenience functions `get_pair_copula()`, `get_parameters()`, 
+   `get_ktau()`, `get_family()` for `bicop_dist`, `vinecop_dist` and 
+   `vine_dist` objects (#95, #107, #109).
+   
+   * new convenience functions `get_matrix()`, `get_all_pair_copulas()`,
+   `get_all_parameters()`, `get_all_ktaus()`, `get_all_families()` for 
+   `vinecop_dist` and `vine_dist` objects (#95, #107, #109).
+   
+   * new (`dim`) and improved (`print`, `summary` and `logLik`) generic methods 
+   for `vinecop_dist` and `vine_dist` objects (#104, #109, #110).
+   
+   * new function `pseudo_obs` to compute pseudo-observations (#108).
+
+   * improved documentation (#98, #100).
+
+   * improved sanity checks and error messages (#99, #102).
+   
+BUG FIXES
+   
+   * make mcor correction less agressive (#103).
+   
+   * fix truncation of pdf values (#103).
+   
+   * use increased search interval for parameter estimation when initial fit is 
+     unreasonable (#103).
+     
+   * ensure that boundaries are respected for Joe's `hinv` methods (#103).
+
+   * improve numerical stability by more restrictive parameter bounds for Joe 
+     and BB7 copulas (#103). 
+
 # vinecopulib 0.2.7.1.0 (March 1, 2018)
 
 Release following the updates of vinecopulib to 0.2.7, see 

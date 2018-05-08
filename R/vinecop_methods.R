@@ -343,11 +343,6 @@ truncate_model <- function(object, trunc_lvl = NA) {
 }
 
 #' @export
-coef.vinecop_dist <- function(object, ...) {
-    get_all_parameters(object)
-}
-
-#' @export
 dim.vinecop_dist <- function(x) {
     ncol(x$matrix)
 }
