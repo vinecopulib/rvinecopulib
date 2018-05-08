@@ -216,6 +216,7 @@ logLik.bicop <- function(object, ...) {
 
 #' @export
 print.bicop_dist <- function(x, ...) {
+    x0 <- x
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
         x$parameters <- paste0(round(x$npars, 2), sep = " d.f.")
     }
@@ -228,6 +229,7 @@ print.bicop_dist <- function(x, ...) {
                                   x$parameters),
         sep = "")
     cat("\n")
+    invisible(x0)
 }
 
 #' @export
@@ -237,6 +239,7 @@ summary.bicop_dist <- function(object, ...) {
 
 #' @export
 print.bicop <- function(x, ...) {
+    x0 <- x
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
         pars_formatted <- paste0(round(x$npars, 2), sep = " d.f.")
     } else {
@@ -249,7 +252,7 @@ print.bicop <- function(x, ...) {
         "\n",
         sep = "")
     
-    invisible(x)
+    invisible(x0)
 }
 
 #' @export
