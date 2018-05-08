@@ -111,6 +111,7 @@ print.vinecop_dist <- function(x, ...) {
     if (n_trees < d - 1)
         cat(", ", n_trees, "-truncated", sep = "")
     cat("\n")
+    invisible(x)
 }
 
 #' @importFrom utils capture.output
@@ -153,6 +154,7 @@ print.vinecop_dist_summary <- function(x, ...) {
     } else {
         print.data.frame(x, digits = 2)
     }
+    invisble(x)
 }
 
 #' Predictions and fitted values for a vine copula model
