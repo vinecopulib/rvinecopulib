@@ -39,10 +39,10 @@ test_that("constructor catches wrong input", {
 
 test_that("print/summary/dim generics work", {
     expect_output(print(vc))
-    expect_output(s <- summary(vc))
+    expect_s3_class(s <- summary(vc), "vinecop_dist_summary")
     expect_is(s, "data.frame")
     expect_equal(nrow(s), 3)
-    expect_equal(ncol(s), 7)
+    expect_equal(ncol(s), 9)
     expect_equal(dim(vc), 3)
 })
 

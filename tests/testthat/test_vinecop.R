@@ -46,7 +46,6 @@ test_that("S3 generics work", {
 
 test_that("print/summary generics work", {
     expect_output(print(fit))
-    expect_output(s <- summary(fit))
+    expect_s3_class(s <- summary(fit), "vinecop_dist_summary")
     expect_is(s, "data.frame")
-    expect_length(attr(s, "info"), 5)
 })

@@ -43,16 +43,18 @@ test_that("works with truncated vines", {
     expect_length(trunc_vine$pair_copulas, 1)
     
     # summary table is truncated too
-    expect_output(smr <- summary(vinecop_dist(pcs[-2], mat)))
+    expect_s3_class(summary(vinecop_dist(pcs[-2], mat)), "vinecop_dist_summary")
+    expect_silent(smr <- summary(vinecop_dist(pcs[-2], mat)))
     expect_equal(nrow(smr), 2)
 })
 
 test_that("print/summary/dim generics work", {
     expect_output(print(vc))
-    expect_output(s <- summary(vc))
+    expect_s3_class(summary(vc), "vinecop_dist_summary")
+    expect_silent(s <- summary(vc))
     expect_is(s, "data.frame")
     expect_equal(nrow(s), 3)
-    expect_equal(ncol(s), 7)
+    expect_equal(ncol(s), 9)
     expect_equal(dim(vc), 3)
 })
 
