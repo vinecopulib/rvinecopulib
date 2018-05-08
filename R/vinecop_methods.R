@@ -120,10 +120,10 @@ summary.vinecop_dist <- function(object, ...) {
     d <- nrow(mat)
     n_trees <- length(object$pair_copulas)
     n_pcs <- length(unlist(object$pair_copulas, recursive = FALSE))
-    mdf <- as.data.frame(matrix(NA, n_pcs, 7))
+    mdf <- as.data.frame(matrix(NA, n_pcs, 9))
     names(mdf) <- c("tree", "edge", 
                     "conditioned", "conditioning", 
-                    "family", "rotation", "parameters")
+                    "family", "rotation", "parameters", "df", "tau")
     k <- 1
     for (t in seq_len(n_trees)) {
         for (e in seq_len(d - t)) {
@@ -132,18 +132,27 @@ summary.vinecop_dist <- function(object, ...) {
             mdf$conditioned[k]  <- list(c(mat[d - e + 1, e], mat[t, e]))
             mdf$conditioning[k] <- list(mat[rev(seq_len(t - 1)), e])
             pc <- object$pair_copulas[[t]][[e]]
-            if (pc$family %in% setdiff(family_set_nonparametric, "indep")) {
-                pc$parameters <- paste0(round(pc$npars, 2), sep = " d.f.")
-            }
             mdf$family[k]     <- pc$family
             mdf$rotation[k]   <- pc$rotation
             mdf$parameters[k] <- list(pc$parameters)
+            mdf$df[k] <- pc$npars
+            mdf$tau[k] <- par_to_tau(pc)
             k <- k + 1
         }
     }
-    print.vinecop_dist(object)
-    cat(strrep("-", 63), "\n", sep = "")
+    class(mdf) <- c("vinecop_dist_summary", class(mdf))
     mdf
+}
+
+print.vinecop_dist_summary <- function(x, ...) {
+    truncate_output <- nrow(x) > 10
+    cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
+    if (truncate_output) {
+        print.data.frame(x[1:10, ], digits = 2)
+        cat("# ... with", nrow(x) - 10, "more rows\n")
+    } else {
+        print.data.frame(x, digits = 2)
+    }
 }
 
 #' Predictions and fitted values for a vine copula model
