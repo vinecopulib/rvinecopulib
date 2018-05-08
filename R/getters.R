@@ -5,7 +5,7 @@
 #' 
 #' @name getters
 #' @aliases get_pair_copula get_all_pair_copulas get_parameters get_all_parameters
-#' get_kendall_tau get_all_kendall_taus get_matrix
+#' get_ktau get_all_ktaus get_matrix
 #' @param object a `bicop_dist`, `vinecop_dist` or `vine_dist` object.
 #' @details 
 #' The [get_matrix] method (for `vinecop_dist` or `vine_dist` objects only) 
@@ -19,7 +19,7 @@
 #' [get_parameters] = the parameters of the pair-copula (i.e., a `numeric` 
 #'  scalar, vector, or matrix).\cr
 #' [get_family] = a character for the family (see [bicop] for implemented families).\cr
-#' [get_kendall_tau] = a `numeric` scalar with the pair-copula Kendall's tau.\cr
+#' [get_ktau] = a `numeric` scalar with the pair-copula Kendall's tau.\cr
 #' 
 #' The `get_all_xyz` methods (for `vinecop_dist` or `vine_dist` objects only) 
 #' return lists of lists, with each element corresponding to a tree in `trees`, 
@@ -112,8 +112,8 @@ get_parameters <- function(object, tree = NA, edge = NA) {
 
 #' @rdname getters
 #' @export
-get_kendall_tau <- function(object, tree = NA, edge = NA) {
-    par_to_tau(get_pair_copula(object, tree, edge))
+get_ktau <- function(object, tree = NA, edge = NA) {
+    par_to_ktau(get_pair_copula(object, tree, edge))
 }
 
 #' @rdname getters
@@ -174,8 +174,8 @@ get_all_parameters <- function(object, trees = NA) {
 
 #' @rdname getters
 #' @export
-get_all_kendall_taus <- function(object, trees = NA) {
-    get_all_xyz(object, trees, par_to_tau, "kendall_taus")
+get_all_ktaus <- function(object, trees = NA) {
+    get_all_xyz(object, trees, par_to_ktau, "ktaus")
 }
 
 #' @rdname getters
@@ -189,7 +189,7 @@ print.rvine_list <- function(x, ...) {
     what <- switch(class(x)[2],
                    pair_copulas = "pair-copulas",
                    parameters = "copula parameters",
-                   kendall_taus = "Kendall's taus",
+                   ktaus = "Kendall's taus",
                    families = "copula families")
     
     d <- attr(x, "d")

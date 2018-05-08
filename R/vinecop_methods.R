@@ -137,7 +137,7 @@ summary.vinecop_dist <- function(object, ...) {
             mdf$rotation[k]   <- pc$rotation
             mdf$parameters[k] <- list(pc$parameters)
             mdf$df[k] <- pc$npars
-            mdf$tau[k] <- par_to_tau(pc)
+            mdf$tau[k] <- par_to_ktau(pc)
             k <- k + 1
         }
     }

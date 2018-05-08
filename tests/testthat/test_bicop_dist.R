@@ -54,17 +54,17 @@ test_that("parameter <-> tau conversion works", {
     expect_equal(coef(dist), dist$parameters)
     
     # one-parameter family
-    tau <- par_to_tau(dist)
-    expect_identical(tau, par_to_tau("joe", 90, 3))
+    tau <- par_to_ktau(dist)
+    expect_identical(tau, par_to_ktau("joe", 90, 3))
     
-    par <- tau_to_par(dist, tau)
-    expect_identical(par, tau_to_par("joe", tau))
+    par <- ktau_to_par(dist, tau)
+    expect_identical(par, ktau_to_par("joe", tau))
     
     expect_equal(3, par[1])
     
     # two-parameter
-    tau <- par_to_tau("bb1", 0, c(1, 2))
-    expect_error(tau_to_par("bb1", 0.5))
+    tau <- par_to_ktau("bb1", 0, c(1, 2))
+    expect_error(ktau_to_par("bb1", 0.5))
 })
 
 test_that("print method produces output", {
@@ -83,7 +83,7 @@ test_that("getters work", {
 
     # test other getters
     expect_equivalent(get_parameters(dist), coef(dist))
-    expect_equivalent(get_kendall_tau(dist), par_to_tau(dist))
+    expect_equivalent(get_ktau(dist), par_to_ktau(dist))
     expect_equivalent(get_family(dist), "gumbel")
 
 })

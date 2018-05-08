@@ -116,10 +116,10 @@ test_that("getters work", {
     expect_equivalent(get_parameters(vc, 1, 1), coef(pcs[[1]][[1]]))
     expect_equivalent(get_all_parameters(vc), 
                       lapply(pcs, function(tree) lapply(tree, coef)))
-    expect_equivalent(get_kendall_tau(vc, 1, 1), par_to_tau(bicop))
-    expect_equivalent(get_all_kendall_taus(vc), 
+    expect_equivalent(get_ktau(vc, 1, 1), par_to_ktau(bicop))
+    expect_equivalent(get_all_ktaus(vc), 
                       lapply(pcs, function(tree) 
-                          lapply(tree, function(pc) par_to_tau(pc))))
+                          lapply(tree, function(pc) par_to_ktau(pc))))
     expect_equivalent(get_family(vc, 1, 1), "bb1")
     expect_equivalent(get_all_families(vc), 
                       lapply(pcs, function(tree) 

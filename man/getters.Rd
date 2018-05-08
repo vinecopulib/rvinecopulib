@@ -7,15 +7,15 @@
 \alias{get_all_pair_copulas}
 \alias{get_parameters}
 \alias{get_all_parameters}
-\alias{get_kendall_tau}
-\alias{get_all_kendall_taus}
+\alias{get_ktau}
+\alias{get_all_ktaus}
 \alias{get_pair_copula}
 \alias{get_parameters}
-\alias{get_kendall_tau}
+\alias{get_ktau}
 \alias{get_family}
 \alias{get_all_pair_copulas}
 \alias{get_all_parameters}
-\alias{get_all_kendall_taus}
+\alias{get_all_ktaus}
 \alias{get_all_families}
 \title{Extracts components of the bicop or vinecop object}
 \usage{
@@ -25,7 +25,7 @@ get_pair_copula(object, tree = NA, edge = NA)
 
 get_parameters(object, tree = NA, edge = NA)
 
-get_kendall_tau(object, tree = NA, edge = NA)
+get_ktau(object, tree = NA, edge = NA)
 
 get_family(object, tree = NA, edge = NA)
 
@@ -33,7 +33,7 @@ get_all_pair_copulas(object, trees = NA)
 
 get_all_parameters(object, trees = NA)
 
-get_all_kendall_taus(object, trees = NA)
+get_all_ktaus(object, trees = NA)
 
 get_all_families(object, trees = NA)
 }
@@ -67,7 +67,7 @@ When \code{object} is of class \code{bicop_dist}, \code{tree} and \code{edge} ar
 \link{get_parameters} = the parameters of the pair-copula (i.e., a \code{numeric}
 scalar, vector, or matrix).\cr
 \link{get_family} = a character for the family (see \link{bicop} for implemented families).\cr
-\link{get_kendall_tau} = a \code{numeric} scalar with the pair-copula Kendall's tau.\cr
+\link{get_ktau} = a \code{numeric} scalar with the pair-copula Kendall's tau.\cr
 
 The \code{get_all_xyz} methods (for \code{vinecop_dist} or \code{vine_dist} objects only)
 return lists of lists, with each element corresponding to a tree in \code{trees},

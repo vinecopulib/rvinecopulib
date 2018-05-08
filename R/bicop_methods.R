@@ -129,22 +129,22 @@ hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
 #'
 #' @examples
 #' # the following are equivalent
-#' par_to_tau(bicop_dist("clayton", 0, 3))
-#' par_to_tau("clayton", 0, 3)
+#' par_to_ktau(bicop_dist("clayton", 0, 3))
+#' par_to_ktau("clayton", 0, 3)
 #' 
-#' tau_to_par("clayton", 0.5)
-#' tau_to_par(bicop_dist("clayton", 0, 3), 0.5)
-#' @name par_to_tau
-#' @rdname par_to_tau
-par_to_tau <- function(family, rotation, parameters) {
+#' ktau_to_par("clayton", 0.5)
+#' ktau_to_par(bicop_dist("clayton", 0, 3), 0.5)
+#' @name par_to_ktau
+#' @rdname par_to_ktau
+par_to_ktau <- function(family, rotation, parameters) {
     bicop <- args2bicop(family, rotation, parameters)
     bicop_par_to_tau_cpp(bicop)
 }
 
-#' @rdname par_to_tau
+#' @rdname par_to_ktau
 #' @param tau Kendall's \eqn{\tau}.
 #' @export
-tau_to_par <- function(family, tau) {
+ktau_to_par <- function(family, tau) {
     bicop <- args2bicop(family)
     if (!(bicop$family %in% c(family_set_elliptical, family_set_nonparametric)))
         bicop$rotation <- ifelse(tau > 0, 0, 90)
