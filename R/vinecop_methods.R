@@ -146,15 +146,13 @@ summary.vinecop_dist <- function(object, ...) {
 }
 
 print.vinecop_dist_summary <- function(x, ...) {
-    truncate_output <- nrow(x) > 10
+    x_print <- x[1:min(nrow(x), 10), ]
+    x_print[x_print$family == "tll", "parameters"] <- list("[30x30 grid]")
     cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
-    if (truncate_output) {
-        print.data.frame(x[1:10, ], digits = 2)
+    print.data.frame(x_print, digits = 2)
+    if (nrow(x) > 10)
         cat("# ... with", nrow(x) - 10, "more rows\n")
-    } else {
-        print.data.frame(x, digits = 2)
-    }
-    invisble(x)
+    invisible(x)
 }
 
 #' Predictions and fitted values for a vine copula model
