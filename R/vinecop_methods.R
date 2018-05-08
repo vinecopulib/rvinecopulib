@@ -254,11 +254,19 @@ print.vinecop <- function(x, ...) {
 
 #' @export
 summary.vinecop <- function(object, ...) {
-    info <- attr(print.vinecop(object), "info")
-    capture.output(s <- summary.vinecop_dist(object))
-    cat(strrep("-", 63), "\n", sep = "")
-    attr(s, "info") <- info
-    s
+    mdf <- summary.vinecop_dist(object)
+    
+    d <- dim(object)
+    n_trees <- length(object$pair_copulas)
+    k <- 1
+    for (t in seq_len(n_trees)) {
+        for (e in seq_len(d - t)) {
+            mdf$loglik[k] <- object$pair_copulas[[t]][[e]]$loglik
+            k <- k + 1
+        }
+    }
+    
+    mdf
 }
 
 
