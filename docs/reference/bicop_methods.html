@@ -25,13 +25,13 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
 <meta property="og:title" content="Bivariate copula distributions — bicop_distributions" />
 
 <meta property="og:description" content="Density, distribution function, random generation and h-functions (with
 their inverses) for the bivariate copula distribution." />
 <meta name="twitter:card" content="summary" />
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -39,6 +39,8 @@ their inverses) for the bivariate copula distribution." />
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
 
 
   </head>
@@ -54,8 +56,12 @@ their inverses) for the bivariate copula distribution." />
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">rvinecopulib</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">rvinecopulib</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.8.1.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -68,13 +74,14 @@ their inverses) for the bivariate copula distribution." />
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
         
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -82,10 +89,12 @@ their inverses) for the bivariate copula distribution." />
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Bivariate copula distributions</h1>
+    
+    <div class="hidden name"><code>bicop_methods.Rd</code></div>
     </div>
 
     
@@ -101,7 +110,7 @@ their inverses) for the bivariate copula distribution.</p>
 
 <span class='fu'>hbicop</span>(<span class='no'>u</span>, <span class='no'>cond_var</span>, <span class='no'>family</span>, <span class='no'>rotation</span>, <span class='no'>parameters</span>, <span class='kw'>inverse</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -159,8 +168,11 @@ result.</p>
     <p>See <a href='bicop.html'>bicop</a> for the various implemented copula families.</p>
 <p>H-functions (<code>hbicop()</code>) are conditional distributions derived
 from a copula. If \(C(u, v) = P(U \le u, V \le v)\) is a copula, then
-$$h_1(v | u) = P(U \le u | V = v),$$ $$h_2(u | v) = P(V \le v | U =
-u).$$</p>
+$$h_1(u, v) = P(V \le v | U = u) = \partial C(u, v) / \partial u,$$
+$$h_2(u, v) = P(U \le u | V = v) = \partial C(u, v) / \partial v.$$
+In other words, the H-function number refers to the conditioning variable.
+When inverting H-functions, the inverse is then taken with respect to the
+other variable, that is <code>v</code> when <code>cond_var = 1</code> and <code>u</code> when <code>cond_var = 2</code>.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
@@ -174,13 +186,13 @@ object, e.g., <code>dbicop(c(0.1, 0.5), bicop_dist("indep"))</code>.</p>
 <span class='co'>## evaluate the copula cdf</span>
 <span class='fu'>pbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='st'>"clay"</span>, <span class='fl'>90</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; [1] 0.0001978703</div><div class='input'>
 <span class='co'>## simulate data</span>
-<span class='fu'>plot</span>(<span class='fu'>rbicop</span>(<span class='fl'>500</span>, <span class='st'>"clay"</span>, <span class='fl'>90</span>, <span class='fl'>3</span>))</div><div class='img'><img src='bicop_methods-1.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>plot</span>(<span class='fu'>rbicop</span>(<span class='fl'>500</span>, <span class='st'>"clay"</span>, <span class='fl'>90</span>, <span class='fl'>3</span>))</div><div class='img'><img src='bicop_methods-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>## h-functions</span>
 <span class='no'>joe_cop</span> <span class='kw'>&lt;-</span> <span class='fu'>bicop_dist</span>(<span class='st'>"joe"</span>, <span class='fl'>0</span>, <span class='fl'>3</span>)
-<span class='co'># h_1(0.2 | 0.1)</span>
-<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>1</span>, <span class='st'>"bb8"</span>, <span class='fl'>0</span>, <span class='fu'>c</span>(<span class='fl'>2</span>, <span class='fl'>0.5</span>))</div><div class='output co'>#&gt; [1] 0.2436951</div><div class='input'><span class='co'># h_2(0.1 | 0.2)</span>
-<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>2</span>, <span class='no'>joe_cop</span>)</div><div class='output co'>#&gt; [1] 0.1906421</div><div class='input'><span class='co'># h_1^{-1}(0.2 | 0.1)</span>
-<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>1</span>, <span class='st'>"bb8"</span>, <span class='fl'>0</span>, <span class='fu'>c</span>(<span class='fl'>2</span>, <span class='fl'>0.5</span>), <span class='kw'>inverse</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; [1] 0.1629181</div><div class='input'><span class='co'># h_2^{-1}(0.1 | 0.2)</span>
+<span class='co'># h_1(0.1, 0.2)</span>
+<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>1</span>, <span class='st'>"bb8"</span>, <span class='fl'>0</span>, <span class='fu'>c</span>(<span class='fl'>2</span>, <span class='fl'>0.5</span>))</div><div class='output co'>#&gt; [1] 0.2436951</div><div class='input'><span class='co'># h_2(0.1, 0.2)</span>
+<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>2</span>, <span class='no'>joe_cop</span>)</div><div class='output co'>#&gt; [1] 0.1906421</div><div class='input'><span class='co'># h_1^{-1}(0.1, 0.2)</span>
+<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>1</span>, <span class='st'>"bb8"</span>, <span class='fl'>0</span>, <span class='fu'>c</span>(<span class='fl'>2</span>, <span class='fl'>0.5</span>), <span class='kw'>inverse</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; [1] 0.1629181</div><div class='input'><span class='co'># h_2^{-1}(0.1, 0.2)</span>
 <span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>2</span>, <span class='no'>joe_cop</span>, <span class='kw'>inverse</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; [1] 0.05221261</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -212,5 +224,8 @@ object, e.g., <code>dbicop(c(0.1, 0.5), bicop_dist("indep"))</code>.</p>
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

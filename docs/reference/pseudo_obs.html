@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>R-vine matrices — check_rvine_matrix • rvinecopulib</title>
+<title>Pseudo-Observations — pseudo_obs • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -25,11 +25,9 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-<meta property="og:title" content="R-vine matrices — check_rvine_matrix" />
+<meta property="og:title" content="Pseudo-Observations — pseudo_obs" />
 
-<meta property="og:description" content="R-vine matrices are compressed representations of the vine structure. It
-needs to satisfy several properties that can be checked by
-check_rvine_matrix(), see Details." />
+<meta property="og:description" content="Compute the pseudo-observations for the given data matrix." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -93,100 +91,75 @@ check_rvine_matrix(), see Details." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>R-vine matrices</h1>
+    <h1>Pseudo-Observations</h1>
     
-    <div class="hidden name"><code>check_rvine_matrix.Rd</code></div>
+    <div class="hidden name"><code>pseudo_obs.Rd</code></div>
     </div>
 
     
-    <p>R-vine matrices are compressed representations of the vine structure. It
-needs to satisfy several properties that can be checked by
-<code>check_rvine_matrix()</code>, see <em>Details</em>.</p>
+    <p>Compute the pseudo-observations for the given data matrix.</p>
     
 
-    <pre class="usage"><span class='fu'>check_rvine_matrix</span>(<span class='no'>matrix</span>)</pre>
+    <pre class="usage"><span class='fu'>pseudo_obs</span>(<span class='no'>x</span>, <span class='kw'>ties_method</span> <span class='kw'>=</span> <span class='st'>"average"</span>, <span class='kw'>lower_tail</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>matrix</th>
-      <td><p>a quadratic matrix, see <em>Details</em>.</p></td>
+      <th>x</th>
+      <td><p>vector or matrix random variates to be converted (column wise) to
+pseudo-observations.</p></td>
+    </tr>
+    <tr>
+      <th>ties_method</th>
+      <td><p>similar to <code>ties.method</code> of <code>rank()</code> (only <code>"average"</code>,
+<code>"first"</code> and <code>"random"</code> currently available).</p></td>
+    </tr>
+    <tr>
+      <th>lower_tail</th>
+      <td><p><code>logical</code> which, if `FALSE``, returns the pseudo-observations
+when applying the empirical marginal survival functions.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Throws an error if <code>matrix</code> is not a valid R-vine matrix, otherwise
-<code>TRUE</code> is returned invisibly.</p>
+    <p>a vector of matrix of the same dimension as the input containing the
+pseudo-observations.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The R-vine matrix notation in vinecopulib is different from the one in
-the VineCopula package. An example matrix is</p><pre>1 1 1 1
-2 2 2 0
-3 3 0 0
-4 0 0 0
-</pre>
-    <p>which encodes the following pair-copulas:</p>
-<table><tr><td>
-tree </td>
-<td>  edge </td>
-<td> pair-copulas   </td>
-</tr><tr><td><br />
-0    </td>
-<td>  0    </td>
-<td> <code>(4, 1)</code>       </td>
-</tr><tr><td><br />
-</td>
-<td>  1    </td>
-<td> <code>(3, 1)</code>       </td>
-</tr><tr><td><br />
-</td>
-<td>  2    </td>
-<td> <code>(2, 1)</code>       </td>
-</tr><tr><td><br />
-1    </td>
-<td>  0    </td>
-<td> <code>(4, 2; 1)</code>    </td>
-</tr><tr><td><br />
-</td>
-<td>  1    </td>
-<td> <code>(3, 2; 1)</code>    </td>
-</tr></table>
-    <p>Denoting by <code>M[i, j]</code> the matrix entry in row <code>i</code> and column <code>j</code> (the
-pair-copula index for edge <code>e</code> in tree <code>t</code> of a <code>d</code> dimensional vine is
-<code>(M[d - 1 - t, e], M[t, e]; M[t - 1, e], ..., M[0, e])</code>. Less formally,</p><ol>
-<li><p>Start with the counter-diagonal element of column <code>e</code> (first conditioned
-variable).</p></li>
-<li><p>Jump up to the element in row <code>t</code> (second conditioned variable).</p></li>
-<li><p>Gather all entries further up in column <code>e</code> (conditioning set).</p></li>
-</ol>
-    <p>A valid R-vine matrix must satisfy several conditions which are checked
-when <code>RVineMatrix()</code> is called:</p><ol>
-<li><p>The lower right triangle must only contain zeros.</p></li>
-<li><p>The upper left triangle can only contain numbers between 1 and d.</p></li>
-<li><p>The anti-diagonal must contain the numbers 1, ..., d.</p></li>
-<li><p>The anti-diagonal entry of a column must not be contained in any
-column further to the right.</p></li>
-<li><p>The entries of a column must be contained in all columns to the left.</p></li>
-<li><p>The proximity condition must hold: For all t = 1, ..., d - 2 and
-e = 0, ..., d - t - 1 there must exist an index j &gt; d, such that
-<code>(M[t, e], {M[0, e], ..., M[t-1, e]})</code> equals either
-<code>(M[d-j-1, j], {M[0, j], ..., M[t-1, j]})</code> or
-<code>(M[t-1, j], {M[d-j-1, j], M[0, j], ..., M[t-2, j]})</code>.</p></li>
-</ol>
-    <p>Condition 6 already implies conditions 2-5, but is more difficult to
-check by hand.</p>
+    <p>Given <code>n</code> realizations \(x_i=(x_{i1}, \ldots,x_{id})\),
+\(i \in \left\lbrace 1, \ldots,n \right\rbrace \)
+of a random vector <code>X</code>, the pseudo-observations are defined via
+\(u_{ij}=r_{ij}/(n+1)\) for \(i \in \left\lbrace 1, \ldots,n \right\rbrace \)
+and \(j \in \left\lbrace 1, \ldots,d \right\rbrace \), where
+\(r_{ij}\) denotes the rank of \(x_{ij}\) among all \(x_{kj}\),
+\(k \in \left\lbrace 1, \ldots,n \right\rbrace \).</p>
+<p>The pseudo-observations can thus also be computed by component-wise applying
+the empirical distribution functions to the data and scaling the result by
+\(n/(n+1)\). This asymptotically negligible scaling factor is used to force the
+variates to fall inside the open unit hypercube, for example, to avoid
+problems with density evaluation at the boundaries.</p>
+<p>When <code>lower_tail = FALSE</code>, then <code>pseudo_obs()</code> simply returns <code>1 - pseudo_obs()</code>.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'>matrix</span>(<span class='fu'>c</span>(<span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>3</span>, <span class='fl'>4</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>3</span>, <span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>), <span class='fl'>4</span>, <span class='fl'>4</span>)
-<span class='fu'>check_rvine_matrix</span>(<span class='no'>mat</span>)
-
-<span class='co'># throws an error</span>
-<span class='no'>mat</span>[<span class='fl'>4</span>, <span class='fl'>4</span>] <span class='kw'>&lt;-</span> <span class='fl'>5</span>
-<span class='fu'>try</span>(<span class='fu'>check_rvine_matrix</span>(<span class='no'>mat</span>))</div></pre>
+    <pre class="examples"><div class='input'><span class='co'># pseudo-observations for a vector</span>
+<span class='fu'>pseudo_obs</span>(<span class='fu'>rnorm</span>(<span class='fl'>10</span>))</div><div class='output co'>#&gt;  [1] 0.90909091 0.45454545 0.18181818 0.36363636 0.54545455 0.63636364
+#&gt;  [7] 0.09090909 0.72727273 0.27272727 0.81818182</div><div class='input'>
+<span class='co'># pseudo-observations for a matrix</span>
+<span class='fu'>pseudo_obs</span>(<span class='fu'>cbind</span>(<span class='fu'>rnorm</span>(<span class='fl'>10</span>), <span class='fu'>rnorm</span>(<span class='fl'>10</span>)))</div><div class='output co'>#&gt;             [,1]       [,2]
+#&gt;  [1,] 0.54545455 0.72727273
+#&gt;  [2,] 0.18181818 0.27272727
+#&gt;  [3,] 0.27272727 0.36363636
+#&gt;  [4,] 0.72727273 0.63636364
+#&gt;  [5,] 0.63636364 0.54545455
+#&gt;  [6,] 0.36363636 0.45454545
+#&gt;  [7,] 0.81818182 0.81818182
+#&gt;  [8,] 0.90909091 0.18181818
+#&gt;  [9,] 0.09090909 0.09090909
+#&gt; [10,] 0.45454545 0.90909091</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

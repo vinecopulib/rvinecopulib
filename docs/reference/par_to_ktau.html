@@ -6,17 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-$$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-$$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
-(effective) number of parameters of the model, \(t\) is the tree level
-\(\psi_0\) is the prior probability of having a non-independence copula and
-\(q_t\) is the number of non-independence copulas in tree \(t\).
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models. — mBICV • rvinecopulib</title>
+<title>Conversion between Kendall's tau and parameters — par_to_ktau • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -35,29 +25,9 @@ selection criterion for parametric sparse vine copula models. — mBICV • rvin
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-<meta property="og:title" content="calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-$$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-$$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
-(effective) number of parameters of the model, \(t\) is the tree level
-\(\psi_0\) is the prior probability of having a non-independence copula and
-\(q_t\) is the number of non-independence copulas in tree \(t\).
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models. — mBICV" />
+<meta property="og:title" content="Conversion between Kendall's tau and parameters — par_to_ktau" />
 
-<meta property="og:description" content="calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-$$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-$$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
-(effective) number of parameters of the model, \(t\) is the tree level
-\(\psi_0\) is the prior probability of having a non-independence copula and
-\(q_t\) is the number of non-independence copulas in tree \(t\).
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models." />
+<meta property="og:description" content="Conversion between Kendall's tau and parameters" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -121,57 +91,56 @@ selection criterion for parametric sparse vine copula models." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-$$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-$$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
-(effective) number of parameters of the model, \(t\) is the tree level
-\(\psi_0\) is the prior probability of having a non-independence copula and
-\(q_t\) is the number of non-independence copulas in tree \(t\).
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models.</h1>
+    <h1>Conversion between Kendall's tau and parameters</h1>
     
-    <div class="hidden name"><code>mBICV.Rd</code></div>
+    <div class="hidden name"><code>par_to_ktau.Rd</code></div>
     </div>
 
     
-    <p>calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-$$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-$$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
-(effective) number of parameters of the model, \(t\) is the tree level
-\(\psi_0\) is the prior probability of having a non-independence copula and
-\(q_t\) is the number of non-independence copulas in tree \(t\).
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models.</p>
+    <p>Conversion between Kendall's tau and parameters</p>
     
 
-    <pre class="usage"><span class='fu'>mBICV</span>(<span class='no'>object</span>, <span class='kw'>psi0</span> <span class='kw'>=</span> <span class='fl'>0.9</span>)</pre>
+    <pre class="usage"><span class='fu'>par_to_ktau</span>(<span class='no'>family</span>, <span class='no'>rotation</span>, <span class='no'>parameters</span>)
+
+<span class='fu'>ktau_to_par</span>(<span class='no'>family</span>, <span class='no'>tau</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>object</th>
-      <td><p>a fitted <code>vinecop</code> object.</p></td>
+      <th>family</th>
+      <td><p>a copula family (see <code>bicop_dist()</code>) or a bicop_dist object.</p></td>
     </tr>
     <tr>
-      <th>psi0</th>
-      <td><p>baseline prior probability of a non-independence copula.</p></td>
+      <th>rotation</th>
+      <td><p>the rotation of the copula, one of <code>0</code>, <code>90</code>, <code>180</code>, <code>270</code>.</p></td>
+    </tr>
+    <tr>
+      <th>parameters</th>
+      <td><p>vector or matrix of copula parameters, not used when
+<code>family</code> is a <code>bicop_dist</code> object.</p></td>
+    </tr>
+    <tr>
+      <th>tau</th>
+      <td><p>Kendall's \(\tau\).</p></td>
     </tr>
     </table>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># the following are equivalent</span>
+<span class='fu'>par_to_ktau</span>(<span class='fu'>bicop_dist</span>(<span class='st'>"clayton"</span>, <span class='fl'>0</span>, <span class='fl'>3</span>))</div><div class='output co'>#&gt; [1] 0.6</div><div class='input'><span class='fu'>par_to_ktau</span>(<span class='st'>"clayton"</span>, <span class='fl'>0</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; [1] 0.6</div><div class='input'>
+<span class='fu'>ktau_to_par</span>(<span class='st'>"clayton"</span>, <span class='fl'>0.5</span>)</div><div class='output co'>#&gt;      [,1]
+#&gt; [1,]    2</div><div class='input'><span class='fu'>ktau_to_par</span>(<span class='fu'>bicop_dist</span>(<span class='st'>"clayton"</span>, <span class='fl'>0</span>, <span class='fl'>3</span>), <span class='fl'>0.5</span>)</div><div class='output co'>#&gt;      [,1]
+#&gt; [1,]    2</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-                </ul>
+            
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

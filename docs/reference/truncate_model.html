@@ -6,17 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-$$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-$$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
-(effective) number of parameters of the model, \(t\) is the tree level
-\(\psi_0\) is the prior probability of having a non-independence copula and
-\(q_t\) is the number of non-independence copulas in tree \(t\).
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models. — mBICV • rvinecopulib</title>
+<title>extract a truncated sub-vine based on truncation level supplied by user. — truncate_model • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -35,29 +25,9 @@ selection criterion for parametric sparse vine copula models. — mBICV • rvin
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-<meta property="og:title" content="calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-$$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-$$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
-(effective) number of parameters of the model, \(t\) is the tree level
-\(\psi_0\) is the prior probability of having a non-independence copula and
-\(q_t\) is the number of non-independence copulas in tree \(t\).
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models. — mBICV" />
+<meta property="og:title" content="extract a truncated sub-vine based on truncation level supplied by user. — truncate_model" />
 
-<meta property="og:description" content="calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-$$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-$$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
-(effective) number of parameters of the model, \(t\) is the tree level
-\(\psi_0\) is the prior probability of having a non-independence copula and
-\(q_t\) is the number of non-independence copulas in tree \(t\).
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models." />
+<meta property="og:description" content="extract a truncated sub-vine based on truncation level supplied by user." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -121,47 +91,27 @@ selection criterion for parametric sparse vine copula models." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-$$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-$$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
-(effective) number of parameters of the model, \(t\) is the tree level
-\(\psi_0\) is the prior probability of having a non-independence copula and
-\(q_t\) is the number of non-independence copulas in tree \(t\).
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models.</h1>
+    <h1>extract a truncated sub-vine based on truncation level supplied by user.</h1>
     
-    <div class="hidden name"><code>mBICV.Rd</code></div>
+    <div class="hidden name"><code>truncate_model.Rd</code></div>
     </div>
 
     
-    <p>calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-$$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-$$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
-(effective) number of parameters of the model, \(t\) is the tree level
-\(\psi_0\) is the prior probability of having a non-independence copula and
-\(q_t\) is the number of non-independence copulas in tree \(t\).
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models.</p>
+    <p>extract a truncated sub-vine based on truncation level supplied by user.</p>
     
 
-    <pre class="usage"><span class='fu'>mBICV</span>(<span class='no'>object</span>, <span class='kw'>psi0</span> <span class='kw'>=</span> <span class='fl'>0.9</span>)</pre>
+    <pre class="usage"><span class='fu'>truncate_model</span>(<span class='no'>object</span>, <span class='kw'>trunc_lvl</span> <span class='kw'>=</span> <span class='fl'>NA</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>a fitted <code>vinecop</code> object.</p></td>
+      <td><p>a <code>vinecop</code> or a <code>vine</code> object.</p></td>
     </tr>
     <tr>
-      <th>psi0</th>
-      <td><p>baseline prior probability of a non-independence copula.</p></td>
+      <th>trunc_lvl</th>
+      <td><p>truncation level for the vine copula.</p></td>
     </tr>
     </table>
     

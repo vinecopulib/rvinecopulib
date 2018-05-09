@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Vine copula distributions — vinecop_distributions • rvinecopulib</title>
+<title>Extracts components of the bicop or vinecop object — getters • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -25,10 +25,10 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-<meta property="og:title" content="Vine copula distributions — vinecop_distributions" />
+<meta property="og:title" content="Extracts components of the bicop or vinecop object — getters" />
 
-<meta property="og:description" content="Density, distribution function and random generation
-for the vine copula distribution." />
+<meta property="og:description" content="Extracts either the structure matrix  (for vinecop only), or pair-copulas,
+their parameters, Kendall's taus, or families (for bicop and vinecop)." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -92,79 +92,79 @@ for the vine copula distribution." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Vine copula distributions</h1>
+    <h1>Extracts components of the bicop or vinecop object</h1>
     
-    <div class="hidden name"><code>vinecop_methods.Rd</code></div>
+    <div class="hidden name"><code>getters.Rd</code></div>
     </div>
 
     
-    <p>Density, distribution function and random generation
-for the vine copula distribution.</p>
+    <p>Extracts either the structure matrix  (for vinecop only), or pair-copulas,
+their parameters, Kendall's taus, or families (for bicop and vinecop).</p>
     
 
-    <pre class="usage"><span class='fu'>dvinecop</span>(<span class='no'>u</span>, <span class='no'>vinecop</span>)
+    <pre class="usage"><span class='fu'>get_matrix</span>(<span class='no'>object</span>)
 
-<span class='fu'>pvinecop</span>(<span class='no'>u</span>, <span class='no'>vinecop</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>)
+<span class='fu'>get_pair_copula</span>(<span class='no'>object</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>edge</span> <span class='kw'>=</span> <span class='fl'>NA</span>)
 
-<span class='fu'>rvinecop</span>(<span class='no'>n</span>, <span class='no'>vinecop</span>, <span class='kw'>U</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+<span class='fu'>get_parameters</span>(<span class='no'>object</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>edge</span> <span class='kw'>=</span> <span class='fl'>NA</span>)
+
+<span class='fu'>get_ktau</span>(<span class='no'>object</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>edge</span> <span class='kw'>=</span> <span class='fl'>NA</span>)
+
+<span class='fu'>get_family</span>(<span class='no'>object</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>edge</span> <span class='kw'>=</span> <span class='fl'>NA</span>)
+
+<span class='fu'>get_all_pair_copulas</span>(<span class='no'>object</span>, <span class='kw'>trees</span> <span class='kw'>=</span> <span class='fl'>NA</span>)
+
+<span class='fu'>get_all_parameters</span>(<span class='no'>object</span>, <span class='kw'>trees</span> <span class='kw'>=</span> <span class='fl'>NA</span>)
+
+<span class='fu'>get_all_ktaus</span>(<span class='no'>object</span>, <span class='kw'>trees</span> <span class='kw'>=</span> <span class='fl'>NA</span>)
+
+<span class='fu'>get_all_families</span>(<span class='no'>object</span>, <span class='kw'>trees</span> <span class='kw'>=</span> <span class='fl'>NA</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>u</th>
-      <td><p>evaluation points, either a length d vector or a d-column matrix,
-where d is the number of variables in the vine.</p></td>
+      <th>object</th>
+      <td><p>a <code>bicop_dist</code>, <code>vinecop_dist</code> or <code>vine_dist</code> object.</p></td>
     </tr>
     <tr>
-      <th>vinecop</th>
-      <td><p>an object of class <code>"vinecop_dist"</code>.</p></td>
+      <th>tree</th>
+      <td><p>tree index (not required if <code>object</code> is of class <code>bicop_dist</code>).</p></td>
     </tr>
     <tr>
-      <th>n_mc</th>
-      <td><p>number of samples used for quasi Monte Carlo integration.</p></td>
+      <th>edge</th>
+      <td><p>edge index (not required if <code>object</code> is of class <code>bicop_dist</code>).</p></td>
     </tr>
     <tr>
-      <th>n</th>
-      <td><p>number of observations.</p></td>
-    </tr>
-    <tr>
-      <th>U</th>
-      <td><p>optionally, an \(n \times d\) matrix of values in \((0,1)\).
-The result is then the inverse Rosenblatt transform of <code>U</code>; if <code>U</code> is a
-matrix of independent \(U(0, 1)\) variables, this simulates data
-from <code>vinecop</code>.</p></td>
+      <th>trees</th>
+      <td><p>the trees to extract from <code>object</code> (<code>trees = NA</code> extracts all
+trees).</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><code>dvinecop()</code> gives the density, <code>pvinecop()</code> gives the distribution function,
-and <code>rvinecop()</code> generates random deviates.</p>
-<p>The length of the result is determined by <code>n</code> for <code>rvinecop()</code>, and
-the number of rows in <code>u</code> for the other functions.</p>
-<p>The <code>vinecop</code> object is recycled to the length of the
-result.</p>
+    <p>The structure matrix, or pair-copulas, their parameters, Kendall's taus,
+or families.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>See <a href='vinecop.html'>vinecop</a> for the estimation and construction of vine copula models.
-Here, the density, distribution function and random generation
-for the vine copulas are standard.</p>
-<p>The Rosenblatt transform (Rosenblatt, 1952) \(U = T(V)\) of a random vector
-\(V = (V_1,\ldots,V_d) ~ C\) is defined as
-$$ 
-  U_1 = V_1, U_2 = C(V_2|V_1), \ldots, U_d =C(V_d|V_1,\ldots,V_{d-1}), 
-$$
-where \(C(v_k|v_1,\ldots,v_{k-1})\) is the conditional distribution of
-\(V_k\) given \(V_1 \ldots, V_{k-1}, k = 2,\ldots,d\). The vector \(V\)
-are then independent standard uniform variables. The inverse operation
-$$ 
-  V_1 = U_1, V_2 = C^{-1}(U_2|U_1), \ldots, V_d =C^{-1}(U_d|U_1,\ldots,U_{d-1}), 
-$$
-can can be used to simulate from a copula. For any copula \(C\), if
-\(U\) is a vector of independent random variables, \(V = T^{-1}(U)\) has
-distribution \(C\).</p>
+    <p>The get_matrix method (for <code>vinecop_dist</code> or <code>vine_dist</code> objects only)
+extracts the structure matrix (see <a href='check_rvine_matrix.html'>check_rvine_matrix</a> for more details).</p>
+<p>The other <code>get_xyz</code> methods for <code>vinecop_dist</code> or <code>vine_dist</code> objects return
+the entries corresponding to the pair-copula indexed by its <code>tree</code> and <code>edge</code>.
+When <code>object</code> is of class <code>bicop_dist</code>, <code>tree</code> and <code>edge</code> are not required. <br /></p>
+<p>get_pair_copula = the pair-copula itself (see <a href='bicop.html'>bicop</a>).<br />
+get_parameters = the parameters of the pair-copula (i.e., a <code>numeric</code>
+scalar, vector, or matrix).<br />
+get_family = a character for the family (see <a href='bicop.html'>bicop</a> for implemented families).<br />
+get_ktau = a <code>numeric</code> scalar with the pair-copula Kendall's tau.<br /></p>
+<p>The <code>get_all_xyz</code> methods (for <code>vinecop_dist</code> or <code>vine_dist</code> objects only)
+return lists of lists, with each element corresponding to a tree in <code>trees</code>,
+and then elements of the sublists correspond to edges.
+The returned lists have two additional attributes: <br /></p>
+<p><code>"d"</code> = the dimension of the model.<br />
+<code>"trees"</code> = the extracted trees.<br /></p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -173,7 +173,7 @@ distribution \(C\).</p>
 <span class='no'>pcs</span> <span class='kw'>&lt;-</span> <span class='fu'>list</span>(
     <span class='fu'>list</span>(<span class='no'>bicop</span>, <span class='no'>bicop</span>),  <span class='co'># pair-copulas in first tree </span>
     <span class='fu'>list</span>(<span class='no'>bicop</span>)          <span class='co'># pair-copulas in second tree </span>
- )
+)
 
 <span class='co'># specify R-vine matrix</span>
 <span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'>matrix</span>(<span class='fu'>c</span>(<span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>3</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>0</span>, <span class='fl'>0</span>), <span class='fl'>3</span>, <span class='fl'>3</span>)
@@ -181,25 +181,13 @@ distribution \(C\).</p>
 <span class='co'># set up vine copula model</span>
 <span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop_dist</span>(<span class='no'>pcs</span>, <span class='no'>mat</span>)
 
-<span class='co'># simulate from the model</span>
-<span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>rvinecop</span>(<span class='fl'>200</span>, <span class='no'>vc</span>)
-<span class='fu'>pairs</span>(<span class='no'>u</span>)</div><div class='img'><img src='vinecop_methods-1.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># evaluate the density and cdf</span>
-<span class='fu'>dvinecop</span>(<span class='no'>u</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 47.44818</div><div class='input'><span class='fu'>pvinecop</span>(<span class='no'>u</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 0</div><div class='input'>
-<span class='co'># get single pair copula</span>
-<span class='fu'>get_pair_copula</span>(<span class='no'>vc</span>, <span class='fl'>1</span>, <span class='fl'>1</span>)</div><div class='output co'>#&gt; Bivariate copula ('bicop_dist'): family = bb1, rotation = 90, parameters = 3, 2</div><div class='input'>
-<span class='co'># get all pair copulas</span>
-<span class='fu'>get_all_pair_copulas</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; Nested list of lists for the pair-copulas of a 3 dimensional vine with all trees: 
+<span class='co'># get the structure matrix</span>
+<span class='fu'>all.equal</span>(<span class='fu'>get_matrix</span>(<span class='no'>vc</span>), <span class='no'>mat</span>)</div><div class='output co'>#&gt; [1] TRUE</div><div class='input'>
+<span class='co'># get pair-copulas</span>
+<span class='fu'>get_pair_copula</span>(<span class='no'>vc</span>, <span class='fl'>1</span>, <span class='fl'>1</span>)</div><div class='output co'>#&gt; Bivariate copula ('bicop_dist'): family = bb1, rotation = 90, parameters = 3, 2</div><div class='input'><span class='fu'>get_all_pair_copulas</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; Nested list of lists for the pair-copulas of a 3 dimensional vine with all trees: 
 #&gt; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #&gt; x[[1]] -&gt; a list with the 2 pair-copulas of tree 1. 
-#&gt; x[[2]] -&gt; a list with the 1 pair-copulas of tree 2. </div><div class='input'>
-<span class='co'># get vine matrix</span>
-<span class='fu'><a href='getters.html'>get_matrix</a></span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt;      [,1] [,2] [,3]
-#&gt; [1,]    1    1    1
-#&gt; [2,]    2    2    0
-#&gt; [3,]    3    0    0</div><div class='input'>
-<span class='co'># extract a truncated sub-vine based on truncation level supplied by user</span>
-<span class='fu'><a href='truncate_model.html'>truncate_model</a></span>(<span class='no'>vc</span>, <span class='fl'>1</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model ('vinecop_dist'), 1-truncated</div><div class='input'>
+#&gt; x[[2]] -&gt; a list with the 1 pair-copulas of tree 2. </div><div class='input'><span class='fu'>all.equal</span>(<span class='fu'>get_all_pair_copulas</span>(<span class='no'>vc</span>), <span class='no'>pcs</span>, <span class='kw'>check.attributes</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</div><div class='output co'>#&gt; [1] TRUE</div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
