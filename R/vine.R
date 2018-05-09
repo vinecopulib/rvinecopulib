@@ -6,7 +6,7 @@
 #' @param data a matrix or data.frame.
 #' @param margins_controls a list with arguments to be passed to 
 #' [kde1d::kde1d()]. Currently, there can be 
-#'   * `mult` numeric; all bandwidhts for marginal kernel density estimation
+#'   * `mult` numeric; all bandwidths for marginal kernel density estimation
 #'   are multiplied with \code{mult_1d}. Defaults to `log(1 + d)` where `d` is
 #'   the number of variables after applying [cctools::expand_as_numeric()].
 #'   * `xmin` numeric vector of length d; see [kde1d::kde1d()].
@@ -15,7 +15,7 @@
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
 #' 
 #' @details
-#' `vine_dist()` creates a vine copula by specifying the marg, a nested list 
+#' `vine_dist()` creates a vine copula by specifying the margins, a nested list 
 #' of `bicop_dist` objects and a quadratic structure matrix. 
 #' 
 #' `vine()` provides automated fitting for vine copula models. 
@@ -47,7 +47,7 @@
 #' 
 #' * For objects created with [vine_dist()], it simply corresponds to the `margins` 
 #' argument.
-#' * For objets created with [vine()], it is a list of objects of class `kde1d`, 
+#' * For objects created with [vine()], it is a list of objects of class `kde1d`, 
 #' see [kde1d::kde1d()].
 #' 
 #' @examples

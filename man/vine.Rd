@@ -20,7 +20,7 @@ vine_dist(margins, pair_copulas, matrix)
 \item{margins_controls}{a list with arguments to be passed to
 \code{\link[kde1d:kde1d]{kde1d::kde1d()}}. Currently, there can be
 \itemize{
-\item \code{mult} numeric; all bandwidhts for marginal kernel density estimation
+\item \code{mult} numeric; all bandwidths for marginal kernel density estimation
 are multiplied with \code{mult_1d}. Defaults to \code{log(1 + d)} where \code{d} is
 the number of variables after applying \code{\link[cctools:expand_as_numeric]{cctools::expand_as_numeric()}}.
 \item \code{xmin} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
@@ -73,7 +73,7 @@ Concerning \code{margins}:
 \itemize{
 \item For objects created with \code{\link[=vine_dist]{vine_dist()}}, it simply corresponds to the \code{margins}
 argument.
-\item For objets created with \code{\link[=vine]{vine()}}, it is a list of objects of class \code{kde1d},
+\item For objects created with \code{\link[=vine]{vine()}}, it is a list of objects of class \code{kde1d},
 see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 }
 }
@@ -81,7 +81,7 @@ see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 Automated fitting or creation of custom vine copula models
 }
 \details{
-\code{vine_dist()} creates a vine copula by specifying the marg, a nested list
+\code{vine_dist()} creates a vine copula by specifying the margins, a nested list
 of \code{bicop_dist} objects and a quadratic structure matrix.
 
 \code{vine()} provides automated fitting for vine copula models.

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extracts components of the bicop or vinecop object — getters • rvinecopulib</title>
+<title>Extracts components of <code>bicop_dist</code> and <code>vinecop_dist</code> objects — getters • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -25,13 +25,14 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-<meta property="og:title" content="Extracts components of the bicop or vinecop object — getters" />
+  
+  
+<meta property="og:title" content="Extracts components of <code>bicop_dist</code> and <code>vinecop_dist</code> objects — getters" />
 
-<meta property="og:description" content="Extracts either the structure matrix  (for vinecop only), or pair-copulas,
-their parameters, Kendall's taus, or families (for bicop and vinecop)." />
+<meta property="og:description" content="Extracts either the structure matrix  (for vinecop_dist only), or
+pair-copulas, their parameters, Kendall's taus, or families
+(for bicop_dist and vinecop_dist)." />
 <meta name="twitter:card" content="summary" />
-
-
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -39,8 +40,6 @@ their parameters, Kendall's taus, or families (for bicop and vinecop)." />
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
-
-
 
 
   </head>
@@ -56,12 +55,8 @@ their parameters, Kendall's taus, or families (for bicop and vinecop)." />
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.8.1.0</span>
-      </span>
+      <a class="navbar-brand" href="../index.html">rvinecopulib</a>
     </div>
-
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -74,14 +69,13 @@ their parameters, Kendall's taus, or families (for bicop and vinecop)." />
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="../news/index.html">Changelog</a>
+  <a href="../news/index.html">News</a>
 </li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
         
       </ul>
-      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -89,17 +83,16 @@ their parameters, Kendall's taus, or families (for bicop and vinecop)." />
       
       </header>
 
-<div class="row">
+      <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extracts components of the bicop or vinecop object</h1>
-    
-    <div class="hidden name"><code>getters.Rd</code></div>
+    <h1>Extracts components of <code>bicop_dist</code> and <code>vinecop_dist</code> objects</h1>
     </div>
 
     
-    <p>Extracts either the structure matrix  (for vinecop only), or pair-copulas,
-their parameters, Kendall's taus, or families (for bicop and vinecop).</p>
+    <p>Extracts either the structure matrix  (for <code>vinecop_dist</code> only), or
+pair-copulas, their parameters, Kendall's taus, or families
+(for <code>bicop_dist</code> and <code>vinecop_dist</code>).</p>
     
 
     <pre class="usage"><span class='fu'>get_matrix</span>(<span class='no'>object</span>)
@@ -120,7 +113,7 @@ their parameters, Kendall's taus, or families (for bicop and vinecop).</p>
 
 <span class='fu'>get_all_families</span>(<span class='no'>object</span>, <span class='kw'>trees</span> <span class='kw'>=</span> <span class='fl'>NA</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -153,18 +146,18 @@ or families.</p>
 extracts the structure matrix (see <a href='check_rvine_matrix.html'>check_rvine_matrix</a> for more details).</p>
 <p>The other <code>get_xyz</code> methods for <code>vinecop_dist</code> or <code>vine_dist</code> objects return
 the entries corresponding to the pair-copula indexed by its <code>tree</code> and <code>edge</code>.
-When <code>object</code> is of class <code>bicop_dist</code>, <code>tree</code> and <code>edge</code> are not required. <br /></p>
-<p>get_pair_copula = the pair-copula itself (see <a href='bicop.html'>bicop</a>).<br />
+When <code>object</code> is of class <code>bicop_dist</code>, <code>tree</code> and <code>edge</code> are not required.
+    get_pair_copula = the pair-copula itself (see <a href='bicop.html'>bicop</a>).
 get_parameters = the parameters of the pair-copula (i.e., a <code>numeric</code>
-scalar, vector, or matrix).<br />
-get_family = a character for the family (see <a href='bicop.html'>bicop</a> for implemented families).<br />
-get_ktau = a <code>numeric</code> scalar with the pair-copula Kendall's tau.<br /></p>
+scalar, vector, or matrix).
+get_family = a character for the family (see <a href='bicop.html'>bicop</a> for implemented families).
+get_ktau = a <code>numeric</code> scalar with the pair-copula Kendall's tau.</p>
 <p>The <code>get_all_xyz</code> methods (for <code>vinecop_dist</code> or <code>vine_dist</code> objects only)
 return lists of lists, with each element corresponding to a tree in <code>trees</code>,
 and then elements of the sublists correspond to edges.
-The returned lists have two additional attributes: <br /></p>
-<p><code>"d"</code> = the dimension of the model.<br />
-<code>"trees"</code> = the extracted trees.<br /></p>
+The returned lists have two additional attributes:
+    <code>"d"</code> = the dimension of the model.
+<code>"trees"</code> = the extracted trees.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -217,8 +210,5 @@ The returned lists have two additional attributes: <br /></p>
       </footer>
    </div>
 
-  
-
   </body>
 </html>
-

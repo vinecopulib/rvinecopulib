@@ -17,7 +17,7 @@
 \alias{get_all_parameters}
 \alias{get_all_ktaus}
 \alias{get_all_families}
-\title{Extracts components of the bicop or vinecop object}
+\title{Extracts components of \code{bicop_dist} and \code{vinecop_dist} objects}
 \usage{
 get_matrix(object)
 
@@ -52,8 +52,9 @@ The structure matrix, or pair-copulas, their parameters, Kendall's taus,
 or families.
 }
 \description{
-Extracts either the structure matrix  (for vinecop only), or pair-copulas,
-their parameters, Kendall's taus, or families (for bicop and vinecop).
+Extracts either the structure matrix  (for \code{vinecop_dist} only), or
+pair-copulas, their parameters, Kendall's taus, or families
+(for \code{bicop_dist} and \code{vinecop_dist}).
 }
 \details{
 The \link{get_matrix} method (for \code{vinecop_dist} or \code{vine_dist} objects only)

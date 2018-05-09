@@ -1,7 +1,8 @@
-#' Extracts components of the bicop or vinecop object
+#' Extracts components of `bicop_dist` and `vinecop_dist` objects
 #' 
-#' Extracts either the structure matrix  (for vinecop only), or pair-copulas, 
-#' their parameters, Kendall's taus, or families (for bicop and vinecop).
+#' Extracts either the structure matrix  (for `vinecop_dist` only), or 
+#' pair-copulas, their parameters, Kendall's taus, or families 
+#' (for `bicop_dist` and `vinecop_dist`).
 #' 
 #' @name getters
 #' @aliases get_pair_copula get_all_pair_copulas get_parameters get_all_parameters
