@@ -35,8 +35,6 @@ selection criterion for parametric sparse vine copula models. — mBICV • rvin
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
 <meta property="og:title" content="calculates the vine copula Bayesian information criterion (vBIC), which is
 defined as
 $$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
@@ -61,6 +59,8 @@ where \(\mathrm{loglik}\) is the log-likelihood and \(\nu\) is the
 The vBIC is a consistent model
 selection criterion for parametric sparse vine copula models." />
 <meta name="twitter:card" content="summary" />
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -68,6 +68,8 @@ selection criterion for parametric sparse vine copula models." />
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
 
 
   </head>
@@ -83,8 +85,12 @@ selection criterion for parametric sparse vine copula models." />
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">rvinecopulib</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">rvinecopulib</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.8.1.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -97,13 +103,14 @@ selection criterion for parametric sparse vine copula models." />
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
         
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -111,7 +118,7 @@ selection criterion for parametric sparse vine copula models." />
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>calculates the vine copula Bayesian information criterion (vBIC), which is
@@ -125,6 +132,8 @@ where \(\mathrm{loglik}\) is the log-likelihood and \(\nu\) is the
 \(q_t\) is the number of non-independence copulas in tree \(t\).
 The vBIC is a consistent model
 selection criterion for parametric sparse vine copula models.</h1>
+    
+    <div class="hidden name"><code>mBICV.Rd</code></div>
     </div>
 
     
@@ -143,7 +152,7 @@ selection criterion for parametric sparse vine copula models.</p>
 
     <pre class="usage"><span class='fu'>mBICV</span>(<span class='no'>object</span>, <span class='kw'>psi0</span> <span class='kw'>=</span> <span class='fl'>0.9</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -179,5 +188,8 @@ selection criterion for parametric sparse vine copula models.</p>
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+
