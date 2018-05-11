@@ -88,4 +88,17 @@ pairs(u)
 # evaluate the density and cdf
 dvinecop(u[1, ], vc)
 pvinecop(u[1, ], vc)
+
+# get single pair copula
+get_pair_copula(vc, 1, 1)
+
+# get all pair copulas
+get_all_pair_copulas(vc)
+
+# get vine matrix
+get_matrix(vc)
+
+# extract a truncated sub-vine based on truncation level supplied by user
+truncate_model(vc, 1)
+
 }

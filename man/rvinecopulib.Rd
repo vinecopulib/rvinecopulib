@@ -13,7 +13,7 @@ particular inference algorithms for both vine copula and bivariate copula
 models. Advantages over 'VineCopula' are a sleeker and more modern API,
 improved performances, especially in high dimensions, nonparametric and
 multi-parameter families. The 'rvinecopulib' package includes 'vinecopulib' as
-header-only C++ library (currently version 0.2.7). Thus
+header-only C++ library (currently version 0.2.8). Thus
 users do not need to install 'vinecopulib' itself in order to use
 'rvinecopulib'. Since their initial releases, 'vinecopulib' is licensed under
 the MIT License, and 'rvinecopulib' is licensed under the GNU GPL version 3.
@@ -45,6 +45,15 @@ summary(vc)
 ## vinecop objects
 u <- sapply(1:3, function(i) runif(50))
 vc <- vinecop(u, "par")
+summary(vc)
+
+## vine_dist objects
+vc <- vine_dist(list(name = "norm"), pcs, mat)
+summary(vc)
+
+#' ## vine objects
+x <- sapply(1:3, function(i) rnorm(50))
+vc <- vine(x, copula_controls = list(family_set = "par"))
 summary(vc)
 }
 \author{

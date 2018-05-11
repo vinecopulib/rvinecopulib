@@ -9,7 +9,7 @@ vc <- vinecop_dist(pcs, mat)
 
 test_that("constructor creates proper vinecop_dist object", {
     expect_s3_class(vc, "vinecop_dist")
-    expect_identical(names(vc), c("pair_copulas", "matrix", "npars"))
+    expect_identical(names(vc), c("pair_copulas", "matrix", "npars", "loglik"))
 })
 
 
@@ -43,16 +43,19 @@ test_that("works with truncated vines", {
     expect_length(trunc_vine$pair_copulas, 1)
     
     # summary table is truncated too
-    expect_output(smr <- summary(vinecop_dist(pcs[-2], mat)))
+    expect_s3_class(summary(vinecop_dist(pcs[-2], mat)), "vinecop_dist_summary")
+    expect_silent(smr <- summary(vinecop_dist(pcs[-2], mat)))
     expect_equal(nrow(smr), 2)
 })
 
-test_that("print/summary generics work", {
+test_that("print/summary/dim generics work", {
     expect_output(print(vc))
-    expect_output(s <- summary(vc))
+    expect_s3_class(summary(vc), "vinecop_dist_summary")
+    expect_silent(s <- summary(vc))
     expect_is(s, "data.frame")
     expect_equal(nrow(s), 3)
-    expect_equal(ncol(s), 7)
+    expect_equal(ncol(s), 9)
+    expect_equal(dim(vc), 3)
 })
 
 test_that("plot functions work", {
@@ -83,4 +86,49 @@ test_that("plot functions work", {
     # contour for truncated vines
     vc$pair_copulas[[4]] <- NULL
     expect_silent(p <- contour(vc, margins = "unif"))
+})
+
+test_that("getters work", {
+    
+    # test get_matrix
+    expect_identical(mat, get_matrix(vc))
+    expect_error(get_matrix(12))
+    
+    # test get_pair_copulas
+    expect_silent(pcc <- get_pair_copula(vc, 1, 1))
+    expect_equal(bicop, bicop_dist(pcc$family,pcc$rotation, pcc$parameters))
+    expect_error(get_pair_copula(12, 1, 1))
+    expect_error(get_pair_copula(vc, 1:2, 1))
+    expect_error(get_pair_copula(vc, 1, 1:2))
+    expect_error(get_pair_copula(vc, 0, 1))
+    expect_error(get_pair_copula(vc, 1, 0))
+    expect_error(get_pair_copula(vc, 12, 1))
+    expect_error(get_pair_copula(vc, 1, 12))
+    
+    # test get_all_pair_copulas
+    expect_equivalent(pcs, get_all_pair_copulas(vc))
+    expect_equivalent(pcs[1:2], get_all_pair_copulas(vc, 1:2))
+    expect_error(get_all_pair_copulas(12))
+    expect_error(get_all_pair_copulas(vc, 0))
+    expect_error(get_all_pair_copulas(vc, 12))
+    
+    # test other getters
+    expect_equivalent(get_parameters(vc, 1, 1), coef(pcs[[1]][[1]]))
+    expect_equivalent(get_all_parameters(vc), 
+                      lapply(pcs, function(tree) lapply(tree, coef)))
+    expect_equivalent(get_ktau(vc, 1, 1), par_to_ktau(bicop))
+    expect_equivalent(get_all_ktaus(vc), 
+                      lapply(pcs, function(tree) 
+                          lapply(tree, function(pc) par_to_ktau(pc))))
+    expect_equivalent(get_family(vc, 1, 1), "bb1")
+    expect_equivalent(get_all_families(vc), 
+                      lapply(pcs, function(tree) 
+                          lapply(tree, function(pc) pc$family)))
+    
+    # test printed output of getters
+    expect_output(print(get_all_pair_copulas(vc)))
+    expect_output(print(get_all_pair_copulas(vc, 1)))
+    
+    # test truncate 
+    expect_identical(vc$pair_copulas[1:1], truncate_model(vc, 1)[[1]])
 })

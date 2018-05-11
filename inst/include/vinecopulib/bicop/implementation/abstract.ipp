@@ -106,6 +106,16 @@ inline std::string AbstractBicop::get_family_name() const
 {
     return vinecopulib::get_family_name(family_);
 }
+
+inline double AbstractBicop::get_loglik() const
+{
+    return loglik_;
+}
+
+inline void AbstractBicop::set_loglik(const double loglik)
+{
+    loglik_ = loglik;
+}
 //! @}
 
 

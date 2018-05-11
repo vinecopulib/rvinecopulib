@@ -92,7 +92,7 @@ inline void ParBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
             auto initial_parameters = get_start_parameters(tau);
 
             ParBicopOptData my_data = {temp_data, this, initial_parameters(0),
-                                       0};
+                                       0, 0};
             std::function<double(void *, long, const double *)> objective =
                 mle_objective;
             if (method == "itau") {
@@ -130,7 +130,22 @@ inline void ParBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
 
             // optimize and store result
             auto optimized_parameters = optimizer.optimize(initial_parameters,
-                                                           objective, &my_data);
+                                                           objective, 
+                                                           &my_data);
+                                                           
+            // check if fit is reasonable, otherwise increase search interval 
+            // and refit
+            if (tools_stl::is_member(family_, bicop_families::one_par)) {
+                if (my_data.objective_min > 0.1) {
+                    // -loglik should always be negative!
+                    lb = get_parameters_lower_bounds();
+                    ub = get_parameters_upper_bounds();
+                    optimizer = Optimizer(npars, lb, ub);
+                    optimized_parameters = optimizer.optimize(initial_parameters,
+                                                              objective, 
+                                                              &my_data);
+                }
+            }
             if (method == "itau") {
                 newpar(1) = optimized_parameters(0);
             } else {
@@ -140,6 +155,9 @@ inline void ParBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
 
         // set the new parameters
         set_parameters(newpar);
+        set_loglik(pdf(temp_data).array().log().sum());
+    } else {
+        set_loglik(0.0);
     }
 }
 

@@ -73,8 +73,6 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
     d <- nrow(M)
     
     ## sanity checks
-    if (!inherits(x, "vinecop_dist"))
-        stop("'x' has to be an vinecop_dist object.")
     if (tree != "ALL" && any(tree > d - 1))
         stop("Selected tree does not exist.")
     if (any(tree == "ALL")) {
@@ -86,12 +84,10 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
             tree <- 1:(d - 1)
         }
     }
-    if (!all(var_names %in% c("ignore", "use", "legend")))
-        stop("var_names not implemented")
-    if (!(is.null(edge_labels) || 
-          any(edge_labels %in% c("pair","tau","family","family_tau"))))
-        stop("edge_labels not implemented")
-    
+    assert_that(in_set(var_names, c("ignore", "use", "legend")))
+    if (!is.null(edge_labels))
+        assert_that(in_set(edge_labels, c("pair","tau","family","family_tau")))
+
     ## set names if empty
     if (is.null(x$names))
         x$names <- as.character(1:d)
@@ -197,42 +193,34 @@ set_edge_labels <- function(tree, vc, edge_labels) {
     d <- nrow(vc$matrix)
     get_edge_label <- switch(edge_labels,
                              family = get_family,
-                             tau = get_tau,
+                             tau = function(vc, tree, edge) 
+                                 round(get_ktau(vc, tree, edge), 
+                                       digits = 2),
                              family_tau = get_family_tau,
                              pair = get_name)
-    sapply(1:(d - tree),
-           get_edge_label,
-           tree = tree,
-           vc = vc)
+    sapply(1:(d - tree), function(edge) get_edge_label(vc, tree, edge))
 }
 
 
 ## get info for a pair-copula
-get_name <-  function(j, tree, vc) {
+get_name <-  function(vc, tree, edge) {
     M <- vc$matrix
     d <- nrow(M)
     # conditioned set
-    bef <- paste0(vc$names[M[c(d - j + 1, tree), j]], 
+    bef <- paste0(vc$names[M[c(d - edge + 1, tree), edge]], 
                   collapse = ",")
     # conditioning set
     aft <- ifelse(tree > 1, 
-                  paste0(vc$names[M[(tree - 1):1, j]],  collapse = ","), 
+                  paste0(vc$names[M[(tree - 1):1, edge]],  collapse = ","), 
                   "")
     # paste together
     sep <- ifelse(tree > 1, ";", "")
     paste(bef, aft, sep = sep, collapse = "")
 }
 
-get_family <- function(j, tree, vc) {
-    vc$pair_copulas[[tree]][[j]]$family
-}
-
-get_tau <- function(j, tree, vc) {
-    round(par_to_tau(vc$pair_copulas[[tree]][[j]]), digits = 2)
-}
-
-get_family_tau <- function(j, tree, vc) {
-    paste0(get_family(j, tree, vc), "(", get_tau(j, tree, vc), ")")
+get_family_tau <- function(vc, tree, edge) {
+    paste0(get_family(vc, tree, edge), "(", 
+           round(get_ktau(vc, tree, edge), digits = 2), ")")
 }
 
 #' @method contour vinecop_dist
@@ -241,24 +229,21 @@ get_family_tau <- function(j, tree, vc) {
 #' @importFrom graphics strheight strwidth text
 #' @export
 contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
-    
     ## check input
     d <- nrow(x$matrix)
-    if (!inherits(x, "vinecop_dist"))
-        stop("'x' has to be an vinecop_dist object.")
+    assert_that(is.number(cex.nums))
     if (tree != "ALL" && any(tree > d - 1))
         stop("Selected tree does not exist.")
     if (any(tree == "ALL")) {
         tree <- 1:(d - 1)
     }
     n.tree <- length(tree)
-    
+
     if (!is.null(list(...)$var_names))
         stop("Only contour plots allowed. Don't use the var_names argument!")
     if (!is.null(list(...)$margins)) {
         margins <- list(...)$margins
-        if (!(margins %in% c("unif", "norm", "exp", "flexp")))
-            stop("'margins' has to be one of 'unif', 'norm', 'exp', or 'flexp'.")
+        assert_that(in_set(margins, c("unif", "norm", "exp", "flexp")))
     } else {
         margins <- "norm"
     }
@@ -291,7 +276,7 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     # initialize check variables
     cnt <- 0
     k <- d
-    maxnums <- get_name(1, max(tree, length(x$pair_copulas)), x)
+    maxnums <- get_name(x, max(tree, length(x$pair_copulas)), 1)
     for (i in rev(tree)) {
         for (j in 1:(d - min(tree))) {
             if (j <= d - i) {
@@ -344,7 +329,7 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
                 text(x = sum(xlim)/2,
                      y = ty + 0.225 / cex.nums * (ylim[2] - ty),
                      cex    = cex.nums * cx,
-                     labels = get_name(j, i, x),
+                     labels = get_name(x, i, j),
                      pos    = 3,
                      offset = 0)
             } else {

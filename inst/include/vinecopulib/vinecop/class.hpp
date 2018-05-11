@@ -63,7 +63,9 @@ public:
 
     int get_rotation(size_t tree, size_t edge) const;
 
-    Eigen::VectorXd get_parameters(size_t tree, size_t edge) const;
+    Eigen::MatrixXd get_parameters(size_t tree, size_t edge) const;
+    
+    double get_tau(size_t tree, size_t edge) const;
 
     Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
 
@@ -74,10 +76,15 @@ public:
 
     std::vector <std::vector<int>> get_all_rotations() const;
 
-    std::vector <std::vector<Eigen::VectorXd>> get_all_parameters() const;
+    std::vector <std::vector<Eigen::MatrixXd>> get_all_parameters() const;
+    
+    std::vector <std::vector<double>> get_all_taus() const;
     
     // getter for the threshold
     double get_threshold() const;
+
+    // getter for the loglik
+    double get_loglik() const;
 
     // Stats methods
     Eigen::VectorXd pdf(const Eigen::MatrixXd &u) const;
@@ -108,6 +115,7 @@ private:
     RVineMatrix vine_matrix_;
     std::vector <std::vector<Bicop>> pair_copulas_;
     double threshold_;
+    double loglik_;
 
     void check_data_dim(const Eigen::MatrixXd &data) const;
 

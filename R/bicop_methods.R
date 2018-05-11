@@ -20,8 +20,11 @@
 #' 
 #' H-functions (`hbicop()`) are conditional distributions derived
 #' from a copula. If \eqn{C(u, v) = P(U \le u, V \le v)} is a copula, then 
-#' \deqn{h_1(v | u) = P(U \le u | V = v),} \deqn{h_2(u | v) = P(V \le v | U =
-#' u).}
+#' \deqn{h_1(u, v) = P(V \le v | U = u) = \partial C(u, v) / \partial u,} 
+#' \deqn{h_2(u, v) = P(U \le u | V = v) = \partial C(u, v) / \partial v.} 
+#' In other words, the H-function number refers to the conditioning variable. 
+#' When inverting H-functions, the inverse is then taken with respect to the 
+#' other variable, that is `v` when `cond_var = 1` and `u` when `cond_var = 2`.
 #' 
 #' @return 
 #' `dbicop()` gives the density, `pbicop()` gives the distribution function, 
@@ -47,13 +50,13 @@
 #' 
 #' ## h-functions
 #' joe_cop <- bicop_dist("joe", 0, 3)
-#' # h_1(0.2 | 0.1)
+#' # h_1(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5))
-#' # h_2(0.1 | 0.2)
+#' # h_2(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 2, joe_cop)
-#' # h_1^{-1}(0.2 | 0.1)
+#' # h_1^{-1}(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5), inverse = TRUE)
-#' # h_2^{-1}(0.1 | 0.2)
+#' # h_2^{-1}(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
 #' @rdname bicop_methods
 #' @export
@@ -79,6 +82,8 @@ pbicop <- function(u, family, rotation, parameters) {
 rbicop <- function(n, family, rotation, parameters, U = NULL) {
     if (length(n) > 1)
         n <- length(n)
+    if (inherits(family, "bicop_dist") & is.null(U) & !missing(rotation))
+        U <- rotation
     bicop <- args2bicop(family, rotation, parameters)
     U <- prep_uniform_data(n, 2, U)
     U <- cbind(U[, 1], bicop_hinv1_cpp(U, bicop))
@@ -95,9 +100,7 @@ rbicop <- function(n, family, rotation, parameters, U = NULL) {
 #' @param inverse whether to compute the h-function or its inverse.
 #' @export
 hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
-    stopifnot(length(cond_var) == 1)
-    stopifnot(cond_var %in% c(1, 2))
-    stopifnot(is.logical(inverse))
+    assert_that(in_set(cond_var, 1:2), is.flag(inverse))
     bicop <- args2bicop(family, rotation, parameters)
 
     if (!inverse) {
@@ -126,22 +129,22 @@ hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE) {
 #'
 #' @examples
 #' # the following are equivalent
-#' par_to_tau(bicop_dist("clayton", 0, 3))
-#' par_to_tau("clayton", 0, 3)
+#' par_to_ktau(bicop_dist("clayton", 0, 3))
+#' par_to_ktau("clayton", 0, 3)
 #' 
-#' tau_to_par("clayton", 0.5)
-#' tau_to_par(bicop_dist("clayton", 0, 3), 0.5)
-#' @name par_to_tau
-#' @rdname par_to_tau
-par_to_tau <- function(family, rotation, parameters) {
+#' ktau_to_par("clayton", 0.5)
+#' ktau_to_par(bicop_dist("clayton", 0, 3), 0.5)
+#' @name par_to_ktau
+#' @rdname par_to_ktau
+par_to_ktau <- function(family, rotation, parameters) {
     bicop <- args2bicop(family, rotation, parameters)
     bicop_par_to_tau_cpp(bicop)
 }
 
-#' @rdname par_to_tau
+#' @rdname par_to_ktau
 #' @param tau Kendall's \eqn{\tau}.
 #' @export
-tau_to_par <- function(family, tau) {
+ktau_to_par <- function(family, tau) {
     bicop <- args2bicop(family)
     if (!(bicop$family %in% c(family_set_elliptical, family_set_nonparametric)))
         bicop$rotation <- ifelse(tau > 0, 0, 90)
@@ -173,7 +176,7 @@ tau_to_par <- function(family, tau) {
 #' @rdname predict_bicop
 #' @export
 predict.bicop <- function(object, newdata, what = "pdf", ...) {
-    stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
+    assert_that(in_set(what, what_allowed))
     newdata <- if_vec_to_matrix(newdata)
     switch(
         what,
@@ -186,12 +189,14 @@ predict.bicop <- function(object, newdata, what = "pdf", ...) {
     )
 }
 
+what_allowed <- c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2")
+
 #' @rdname predict_bicop
 #' @export
 fitted.bicop <- function(object, what = "pdf", ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
-    stopifnot(what %in% c("pdf", "cdf", "hfunc1", "hfunc2", "hinv1", "hinv2"))
+    assert_that(in_set(what, what_allowed))
     switch(
         what,
         "pdf"    = bicop_pdf_cpp(object$data, object),
@@ -206,13 +211,12 @@ fitted.bicop <- function(object, what = "pdf", ...) {
 #' @importFrom stats logLik
 #' @export
 logLik.bicop <- function(object, ...) {
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    structure(bicop_loglik_cpp(object$data, object), "df" = object$npars)
+    structure(object$loglik, "df" = object$npars)
 }
 
 #' @export
 print.bicop_dist <- function(x, ...) {
+    x0 <- x
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
         x$parameters <- paste0(round(x$npars, 2), sep = " d.f.")
     }
@@ -225,6 +229,7 @@ print.bicop_dist <- function(x, ...) {
                                   x$parameters),
         sep = "")
     cat("\n")
+    invisible(x0)
 }
 
 #' @export
@@ -234,6 +239,7 @@ summary.bicop_dist <- function(object, ...) {
 
 #' @export
 print.bicop <- function(x, ...) {
+    x0 <- x
     if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
         pars_formatted <- paste0(round(x$npars, 2), sep = " d.f.")
     } else {
@@ -246,7 +252,7 @@ print.bicop <- function(x, ...) {
         "\n",
         sep = "")
     
-    invisible(x)
+    invisible(x0)
 }
 
 #' @export
@@ -266,6 +272,12 @@ summary.bicop <- function(object, ...) {
     }
     cat("\n")
     invisible(object)
+}
+
+#' @importFrom stats coef
+#' @export
+coef.bicop_dist <- function(object, ...) {
+    object$parameters
 }
 
 bicop_fit_info <- function(bc) {

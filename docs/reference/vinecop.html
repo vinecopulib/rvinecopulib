@@ -196,6 +196,25 @@ tree <code>t</code>.</p></td>
 
     <p>Objects inheriting from <code>vinecop_dist</code> for <code>vinecop_dist()</code>, and
 <code>vinecop</code> and <code>vinecop_dist</code> for <code>vinecop()</code>.</p>
+<p>Object from the <code>vinecop_dist</code> class are lists containing:</p><ul>
+<li><p><code>pair_copulas</code>, a list of lists. Each element of <code>pair_copulas</code> corresponds
+to a tree, which is itself a list of <code>bicop_dist</code> objects, see <code>bicop_dist()</code>.</p></li>
+<li><p><code>matrix</code>, an R-vine matrix, namely a compressed representation of the
+vine structure, see <code><a href='check_rvine_matrix.html'>check_rvine_matrix()</a></code>.</p></li>
+<li><p><code>npars</code>, a <code>numeric</code> with the number of (effective) parameters.</p></li>
+</ul>
+
+<p>For objects from the <code>vinecop</code> class, elements of the sublists in
+<code>pair_copulas</code> are also <code>bicop</code> objects, see <code><a href='bicop.html'>bicop()</a></code>. Additionally,
+objects from the <code>vinecop</code> class contain:</p><ul>
+<li><p><code>threshold</code>, the (set or estimated) threshold used for thresholding the vine.</p></li>
+<li><p><code>data</code> (optionally, if <code>keep_data = TRUE</code> was used), the dataset that was
+passed to <code>vinecop()</code>.</p></li>
+<li><p><code>controls</code>, a <code>list</code> with the set of fit controls that was passed to <code>vinecop()</code>.</p></li>
+<li><p><code>nobs</code>, an <code>integer</code> with the number of observations that was used
+to fit the model.</p></li>
+</ul>
+
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
@@ -227,36 +246,40 @@ select both parameters.</p>
 <span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop_dist</span>(<span class='no'>pcs</span>, <span class='no'>mat</span>)
 
 <span class='co'># show model</span>
-<span class='fu'>summary</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model ('vinecop_dist')
-#&gt; ---------------------------------------------------------------</div><div class='output co'>#&gt;   tree edge conditioned conditioning family rotation parameters
-#&gt; 1    1    1        3, 1                 bb1       90       3, 2
-#&gt; 2    1    2        2, 1                 bb1       90       3, 2
-#&gt; 3    2    1        3, 2            1    bb1       90       3, 2</div><div class='input'>
+<span class='fu'>summary</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; # A data.frame: 3 x 9 
+#&gt;   tree edge conditioned conditioning family rotation parameters df  tau
+#&gt; 1    1    1        3, 1                 bb1       90       3, 2  2 -0.8
+#&gt; 2    1    2        2, 1                 bb1       90       3, 2  2 -0.8
+#&gt; 3    2    1        3, 2            1    bb1       90       3, 2  2 -0.8</div><div class='input'>
 <span class='co'># simulate some data</span>
 <span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>rvinecop</span>(<span class='fl'>50</span>, <span class='no'>vc</span>)
 
 <span class='co'># estimate a vine copula model</span>
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
 <span class='no'>fit</span></div><div class='output co'>#&gt; 3-dimensional vine copula fit ('vinecop')
-#&gt; nobs = 50   logLik = 167.53   npars = 3   AIC = -329.06   BIC = -323.33   </div><div class='input'><span class='fu'>summary</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula fit ('vinecop')
-#&gt; nobs = 50   logLik = 167.53   npars = 3   AIC = -329.06   BIC = -323.33   
-#&gt; ---------------------------------------------------------------</div><div class='output co'>#&gt;   tree edge conditioned conditioning family rotation parameters
-#&gt; 1    1    1        2, 1              gumbel      270   4.160086
-#&gt; 2    1    2        1, 3              gumbel       90    4.28655
-#&gt; 3    2    1        2, 3            1 gumbel       90   5.353547</div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 7
+#&gt; nobs = 50   logLik = 179.06   npars = 3   AIC = -352.12   BIC = -346.38   </div><div class='input'><span class='fu'>summary</span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; # A data.frame: 3 x 10 
+#&gt;   tree edge conditioned conditioning  family rotation parameters df   tau
+#&gt; 1    1    1        2, 1              clayton       90        8.7  1 -0.81
+#&gt; 2    1    2        1, 3              clayton      270        9.2  1 -0.82
+#&gt; 3    2    1        2, 3            1  gumbel       90        2.8  1 -0.64
+#&gt;   loglik
+#&gt; 1     71
+#&gt; 2     74
+#&gt; 3     34</div><div class='input'><span class='fu'>str</span>(<span class='no'>fit</span>, <span class='fl'>3</span>)</div><div class='output co'>#&gt; List of 8
 #&gt;  $ pair_copulas:List of 2
 #&gt;   ..$ :List of 2
-#&gt;   .. ..$ :List of 4
+#&gt;   .. ..$ :List of 5
 #&gt;   .. .. ..- attr(*, "class")= chr [1:2] "bicop" "bicop_dist"
-#&gt;   .. ..$ :List of 4
+#&gt;   .. ..$ :List of 5
 #&gt;   .. .. ..- attr(*, "class")= chr [1:2] "bicop" "bicop_dist"
 #&gt;   ..$ :List of 1
-#&gt;   .. ..$ :List of 4
+#&gt;   .. ..$ :List of 5
 #&gt;   .. .. ..- attr(*, "class")= chr [1:2] "bicop" "bicop_dist"
 #&gt;  $ matrix      : num [1:3, 1:3] 1 3 2 3 1 0 3 0 0
 #&gt;  $ npars       : num 3
+#&gt;  $ loglik      : num 179
 #&gt;  $ threshold   : num 0
-#&gt;  $ data        : num [1:50, 1:3] 0.3495 0.9062 0.4869 0.906 0.0559 ...
+#&gt;  $ data        : num [1:50, 1:3] 0.6573 0.0627 0.2281 0.1459 0.4325 ...
 #&gt;  $ controls    :List of 9
 #&gt;   ..$ family_set   : chr [1:11] "indep" "gaussian" "clayton" "gumbel" ...
 #&gt;   ..$ par_method   : chr "mle"

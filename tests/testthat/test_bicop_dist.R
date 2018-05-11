@@ -51,22 +51,39 @@ test_that("plot functions work", {
 test_that("parameter <-> tau conversion works", {
     dist <- bicop_dist("joe", 90, 3)
     
-    # one-parameter family
-    tau <- par_to_tau(dist)
-    expect_identical(tau, par_to_tau("joe", 90, 3))
+    expect_equal(coef(dist), dist$parameters)
     
-    par <- tau_to_par(dist, tau)
-    expect_identical(par, tau_to_par("joe", tau))
+    # one-parameter family
+    tau <- par_to_ktau(dist)
+    expect_identical(tau, par_to_ktau("joe", 90, 3))
+    
+    par <- ktau_to_par(dist, tau)
+    expect_identical(par, ktau_to_par("joe", tau))
     
     expect_equal(3, par[1])
     
     # two-parameter
-    tau <- par_to_tau("bb1", 0, c(1, 2))
-    expect_error(tau_to_par("bb1", 0.5))
+    tau <- par_to_ktau("bb1", 0, c(1, 2))
+    expect_error(ktau_to_par("bb1", 0.5))
 })
 
 test_that("print method produces output", {
     dist <- bicop_dist("indep")
     expect_output(print(dist))
     expect_output(summary(dist))
+})
+
+test_that("getters work", {
+    dist <- bicop_dist("gumbel", 90, 3)
+    
+    # test get_pair_copula
+    expect_identical(dist, get_pair_copula(dist))
+    expect_warning(get_pair_copula(dist, 1))
+    expect_warning(get_pair_copula(dist, NA, 1))
+
+    # test other getters
+    expect_equivalent(get_parameters(dist), coef(dist))
+    expect_equivalent(get_ktau(dist), par_to_ktau(dist))
+    expect_equivalent(get_family(dist), "gumbel")
+
 })

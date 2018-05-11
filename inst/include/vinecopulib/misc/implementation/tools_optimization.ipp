@@ -129,7 +129,7 @@ inline double mle_objective(void *f_data, long n, const double *x)
     ++newdata->objective_calls;
     Eigen::Map<const Eigen::VectorXd> par(&x[0], n);
     newdata->bicop->set_parameters(par);
-    return (-1) * newdata->bicop->pdf(newdata->U).array().log().sum();
+    return -newdata->bicop->pdf(newdata->U).array().log().sum();
 }
 
 //! evaluates the objective function for profile maximum likelihood
@@ -144,9 +144,7 @@ inline double pmle_objective(void *f_data, long n, const double *x)
         par(i + 1) = x[i];
     }
     newdata->bicop->set_parameters(par);
-    double nll = newdata->bicop->pdf(newdata->U).array().log().sum();
-    nll *= -1;
-    return nll;
+    return -newdata->bicop->pdf(newdata->U).array().log().sum();
 }
 
 //! @}
@@ -165,27 +163,28 @@ inline Eigen::VectorXd Optimizer::optimize(Eigen::VectorXd initial_parameters,
     if (initial_parameters.size() != n_parameters_) {
         throw std::runtime_error("initial_parameters.size() should be n_parameters_.");
     }
+    ParBicopOptData *newdata = static_cast<ParBicopOptData*>(data);
 
     Eigen::VectorXd optimized_parameters = initial_parameters;
     if (n_parameters_ > 1) {
         //const int number_interpolation_conditions = (n_parameters_ + 1) *
         //        (n_parameters_ + 2)/2;
         int number_interpolation_conditions = n_parameters_ + 3;
-        auto f = [data, objective](long n, const double *x) -> double {
-            return objective(data, n, x);
+        auto f = [newdata, objective](long n, const double *x) -> double {
+            return objective(newdata, n, x);
         };
-        auto result =
-            tools_bobyqa::bobyqa(f, n_parameters_,
-                               number_interpolation_conditions,
-                               initial_parameters, lb_, ub_,
-                               controls_.get_initial_trust_region(),
-                               controls_.get_final_trust_region(),
-                               controls_.get_maxeval());
+        auto result = tools_bobyqa::bobyqa(f, n_parameters_,
+                                           number_interpolation_conditions,
+                                           initial_parameters, lb_, ub_,
+                                           controls_.get_initial_trust_region(),
+                                           controls_.get_final_trust_region(),
+                                           controls_.get_maxeval());
         optimized_parameters = result.first;
+        newdata->objective_min = result.second;
     } else {
         double eps = 1e-6;
-        auto f = [data, objective](double x) -> double {
-            return objective(data, 1, &x);
+        auto f = [newdata, objective](double x) -> double {
+            return objective(newdata, 1, &x);
         };
         auto result =
             boost::math::tools::brent_find_minima(f,
@@ -193,6 +192,7 @@ inline Eigen::VectorXd Optimizer::optimize(Eigen::VectorXd initial_parameters,
                                                   static_cast<double>(ub_(0)) - eps,
                                                   20);
         optimized_parameters(0) = result.first;
+        newdata->objective_min = result.second;
     }
 
     return optimized_parameters;

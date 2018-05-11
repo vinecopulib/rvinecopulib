@@ -108,8 +108,10 @@ inline std::vector <std::vector<Bicop>> VinecopSelector::make_pair_copula_store(
 inline void VinecopSelector::select_all_trees(const Eigen::MatrixXd &data)
 {
     initialize_new_fit(data);
+    double loglik = 0.0;
     for (size_t t = 0; t < d_ - 1; ++t) {
         select_tree(t);  // select pair copulas (+ structure) of tree t
+        loglik += get_loglik_of_tree(t);
 
         if (controls_.get_show_trace()) {
             std::stringstream tree_heading;
@@ -122,6 +124,7 @@ inline void VinecopSelector::select_all_trees(const Eigen::MatrixXd &data)
             break;
         }
     }
+    loglik_ = loglik;
     finalize(controls_.get_truncation_level());
 }
 
@@ -170,7 +173,7 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd &data)
         // helper variables for checking whether an optimum was found
         double mbicv = 0.0;
         double mbicv_trunc = 0.0;
-        
+
         for (size_t t = 0; t < d_ - 1; ++t) {
             if (controls_.get_truncation_level() < t) {
                 break;  // don't need to fit the remaining trees
@@ -180,13 +183,15 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd &data)
             select_tree(t);
 
             // update fit statistic
-            mbicv_trunc += get_mbicv_of_tree(t);
+            double loglik_tree = get_loglik_of_tree(t);
+            mbicv_trunc += get_mbicv_of_tree(t, loglik_tree);
 
             // print trace for this tree level
             if (controls_.get_show_trace()) {
                 std::cout << "** Tree: " << t;
                 if (controls_.get_select_truncation_level()) {
-                    std::cout << ", mbicv: " << mbicv_trunc;
+                    std::cout << ", mbicv: " << mbicv_trunc
+                              << ", loglik: " << loglik_tree;
                 }
                 std::cout << std::endl;
                 // print fitted pair-copulas for this tree
@@ -205,11 +210,13 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd &data)
                 }
             } else {
                 mbicv = mbicv_trunc;
+                loglik_ += loglik_tree;
             }
         }
 
         if (controls_.get_show_trace()) {
-            std::cout << "--> mbicv = " << mbicv << std::endl << std::endl;
+            std::cout << "--> mbicv = " << mbicv
+                << ", loglik = " << loglik_ << std::endl << std::endl;
         }
 
 
@@ -245,6 +252,12 @@ inline void VinecopSelector::set_tree_to_indep(size_t t)
     for (auto e : boost::edges(trees_[t + 1])) {
         trees_[t + 1][e].pair_copula = Bicop();
     }
+}
+
+// extracts the current loglik value
+inline double VinecopSelector::get_loglik() const
+{
+    return loglik_;
 }
 
 // extracts the current threshold value
@@ -587,9 +600,8 @@ inline void VinecopSelector::select_tree(size_t t)
     trees_[t + 1] = new_tree;
 }
 
-inline double VinecopSelector::get_mbicv_of_tree(size_t t)
+inline double VinecopSelector::get_mbicv_of_tree(size_t t, double loglik)
 {
-    double loglik = get_loglik_of_tree(t);
     double npars = get_npars_of_tree(t);
     size_t non_indeps = get_num_non_indeps_of_tree(t);
     size_t indeps = d_ - t - 1 - non_indeps;
@@ -665,6 +677,7 @@ inline std::vector<double> VinecopSelector::get_thresholded_crits()
 inline void VinecopSelector::initialize_new_fit(const Eigen::MatrixXd &data)
 {
     trees_[0] = make_base_tree(data);
+    loglik_ = 0;
 }
 
 inline void VinecopSelector::set_current_fit_as_opt()
@@ -855,8 +868,8 @@ inline void VinecopSelector::select_pair_copulas(VineTree &tree,
 
         tree[e].hfunc1 = tree[e].pair_copula.hfunc1(tree[e].pc_data);
         tree[e].hfunc2 = tree[e].pair_copula.hfunc2(tree[e].pc_data);
+        tree[e].loglik = tree[e].pair_copula.get_loglik();
         if (controls_.needs_sparse_select()) {
-            tree[e].loglik = tree[e].pair_copula.loglik(tree[e].pc_data);
             tree[e].npars = tree[e].pair_copula.calculate_npars();
         }
     };
@@ -894,10 +907,7 @@ inline std::string VinecopSelector::get_pc_index(const EdgeIterator &e,
     std::stringstream index;
     // add 1 everywhere for user-facing representation (boost::graph
     // starts at 0)
-    index <<
-          tree[e].conditioned[0] + 1 <<
-          "," <<
-          tree[e].conditioned[1] + 1;
+    index << tree[e].conditioned[0] + 1 << "," << tree[e].conditioned[1] + 1;
     if (tree[e].conditioning.size() > 0) {
         index << " | ";
         for (unsigned int i = 0; i < tree[e].conditioning.size(); ++i) {

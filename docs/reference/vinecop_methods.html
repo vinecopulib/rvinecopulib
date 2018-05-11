@@ -176,7 +176,22 @@ distribution \(C\).</p>
 <span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>rvinecop</span>(<span class='fl'>200</span>, <span class='no'>vc</span>)
 <span class='fu'>pairs</span>(<span class='no'>u</span>)</div><div class='img'><img src='vinecop_methods-1.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
 <span class='co'># evaluate the density and cdf</span>
-<span class='fu'>dvinecop</span>(<span class='no'>u</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 44.13875</div><div class='input'><span class='fu'>pvinecop</span>(<span class='no'>u</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 1e-04</div></pre>
+<span class='fu'>dvinecop</span>(<span class='no'>u</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 19.11589</div><div class='input'><span class='fu'>pvinecop</span>(<span class='no'>u</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 6e-04</div><div class='input'>
+<span class='co'># get single pair copula</span>
+<span class='fu'>get_pair_copula</span>(<span class='no'>vc</span>, <span class='fl'>1</span>, <span class='fl'>1</span>)</div><div class='output co'>#&gt; Bivariate copula ('bicop_dist'): family = bb1, rotation = 90, parameters = 3, 2</div><div class='input'>
+<span class='co'># get all pair copulas</span>
+<span class='fu'>get_all_pair_copulas</span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; Nested list of lists for the pair-copulas of a 3 dimensional vine with all trees: 
+#&gt; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+#&gt; x[[1]] -&gt; a list with the 2 pair-copulas of tree 1. 
+#&gt; x[[2]] -&gt; a list with the 1 pair-copulas of tree 2. </div><div class='input'>
+<span class='co'># get vine matrix</span>
+<span class='fu'><a href='getters.html'>get_matrix</a></span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt;      [,1] [,2] [,3]
+#&gt; [1,]    1    1    1
+#&gt; [2,]    2    2    0
+#&gt; [3,]    3    0    0</div><div class='input'>
+<span class='co'># extract a truncated sub-vine based on truncation level supplied by user</span>
+<span class='fu'><a href='truncate_model.html'>truncate_model</a></span>(<span class='no'>vc</span>, <span class='fl'>1</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model ('vinecop_dist'), 1-truncated</div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

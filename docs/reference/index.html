@@ -83,7 +83,7 @@
     <div class="page-header">
       <h1>
         Reference
-        <small>version&nbsp;0.2.7.1.0</small>
+        <small>version&nbsp;0.2.8.1.0</small>
       </h1>
     </div>
 
@@ -123,6 +123,12 @@
         </tr><tr>
           <!--  -->
           <td>
+            <p><code><a href="getters.html">get_matrix</a></code> <code><a href="getters.html">get_pair_copula</a></code> <code><a href="getters.html">get_parameters</a></code> <code><a href="getters.html">get_ktau</a></code> <code><a href="getters.html">get_family</a></code> <code><a href="getters.html">get_all_pair_copulas</a></code> <code><a href="getters.html">get_all_parameters</a></code> <code><a href="getters.html">get_all_ktaus</a></code> <code><a href="getters.html">get_all_families</a></code> </p>
+          </td>
+          <td><p>Extracts components of <code>bicop_dist</code> and <code>vinecop_dist</code> objects</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
             <p><code><a href="mBICV.html">mBICV</a></code> </p>
           </td>
           <td><p>calculates the vine copula Bayesian information criterion (vBIC), which is
@@ -130,7 +136,7 @@ defined as
 $$\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
 \sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
 $$
-where \(\mathrm{loglik}\) is the log-liklihood and \(\nu\) is the
+where \(\mathrm{loglik}\) is the log-likelihood and \(\nu\) is the
 (effective) number of parameters of the model, \(t\) is the tree level
 \(\psi_0\) is the prior probability of having a non-independence copula and
 \(q_t\) is the number of non-independence copulas in tree \(t\).
@@ -139,7 +145,7 @@ selection criterion for parametric sparse vine copula models.</p></td>
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="par_to_tau.html">par_to_tau</a></code> <code><a href="par_to_tau.html">tau_to_par</a></code> </p>
+            <p><code><a href="par_to_ktau.html">par_to_ktau</a></code> <code><a href="par_to_ktau.html">ktau_to_par</a></code> </p>
           </td>
           <td><p>Conversion between Kendall's tau and parameters</p></td>
         </tr><tr>
@@ -163,15 +169,45 @@ selection criterion for parametric sparse vine copula models.</p></td>
         </tr><tr>
           <!--  -->
           <td>
+            <p><code><a href="predict_vine.html">predict</a></code> <code><a href="predict_vine.html">fitted</a></code> </p>
+          </td>
+          <td><p>Predictions and fitted values for a vine copula model</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
             <p><code><a href="predict_vinecop.html">predict</a></code> <code><a href="predict_vinecop.html">fitted</a></code> </p>
           </td>
           <td><p>Predictions and fitted values for a vine copula model</p></td>
         </tr><tr>
           <!--  -->
           <td>
+            <p><code><a href="pseudo_obs.html">pseudo_obs</a></code> </p>
+          </td>
+          <td><p>Pseudo-Observations</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
             <p><code><a href="rvinecopulib.html">rvinecopulib</a></code> </p>
           </td>
           <td><p>High Performance Algorithms for Vine Copula Modeling</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="truncate_model.html">truncate_model</a></code> </p>
+          </td>
+          <td><p>extract a truncated sub-vine based on truncation level supplied by user.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="vine_methods.html">dvine</a></code> <code><a href="vine_methods.html">pvine</a></code> <code><a href="vine_methods.html">rvine</a></code> </p>
+          </td>
+          <td><p>Vine based distributions</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="vine.html">vine</a></code> <code><a href="vine.html">vine_dist</a></code> </p>
+          </td>
+          <td><p>Vine copula models</p></td>
         </tr><tr>
           <!--  -->
           <td>

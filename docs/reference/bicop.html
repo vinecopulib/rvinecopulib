@@ -172,6 +172,22 @@ families is done in parallel.</p></td>
 
     <p>Objects inheriting from <code>bicop_dist</code> for <code>bicop_dist()</code>, and
 <code>bicop</code> and <code>bicop_dist</code> for <code>bicop()</code>.</p>
+<p>Object from the <code>bicop_dist</code> class are lists containing:</p><ul>
+<li><p><code>family</code>, a <code>character</code> indicating the copula family.</p></li>
+<li><p><code>rotation</code>, an <code>integer</code> indicating the rotation (i.e., either 0, 90, 180,
+or 270).</p></li>
+<li><p><code>parameters</code>, a <code>numeric</code> vector or matrix of parameters.</p></li>
+<li><p><code>npars</code>, a <code>numeric</code> with the (effective) number of parameters.</p></li>
+</ul>
+
+<p>Additionally, objects from the <code>bicop</code> class contain:</p><ul>
+<li><p><code>data</code> (optionally, if <code>keep_data = TRUE</code> was used), the dataset that was
+passed to <code>bicop()</code>.</p></li>
+<li><p><code>controls</code>, a <code>list</code> with the set of fit controls that was passed to <code>bicop()</code>.</p></li>
+<li><p><code>nobs</code>, an <code>integer</code> with the number of observations that was used
+to fit the model.</p></li>
+</ul>
+
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 

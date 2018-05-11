@@ -12,6 +12,7 @@
 #include <vector>
 
 namespace vinecopulib {
+
 //! creates a D-vine on `d` variables with all pair-copulas set to
 //! independence.
 //! @param d the dimension (= number of variables) of the model.
@@ -30,6 +31,7 @@ inline Vinecop::Vinecop(size_t d)
 
     // pair_copulas_ empty = everything independence 
     threshold_ = 0.0;
+    loglik_ = NAN;
 }
 
 //! creates a vine copula with structure specified by an R-vine matrix; all
@@ -45,6 +47,7 @@ inline Vinecop::Vinecop(
     vine_matrix_ = RVineMatrix(matrix, check_matrix);
     // pair_copulas_ empty = everything independence
     threshold_ = 0.0;
+    loglik_ = NAN;
 }
 
 //! creates an arbitrary vine copula model.
@@ -81,6 +84,7 @@ inline Vinecop::Vinecop(const std::vector <std::vector<Bicop>> &pair_copulas,
     vine_matrix_ = RVineMatrix(matrix, check_matrix);
     pair_copulas_ = pair_copulas;
     threshold_ = 0.0;
+    loglik_ = NAN;
 }
 
 //! creates from a boost::property_tree::ptree object
@@ -113,6 +117,9 @@ inline Vinecop::Vinecop(boost::property_tree::ptree input, bool check_matrix)
             pair_copulas_[tree][edge] = Bicop(pc_node);
         }
     }
+
+    threshold_ = 0;
+    loglik_ = NAN;
 }
 
 //! creates from a JSON file
@@ -237,6 +244,7 @@ inline void Vinecop::select_all(const Eigen::MatrixXd &data,
         selector.select_all_trees(data);
     }
     threshold_ = selector.get_threshold();
+    loglik_ = selector.get_loglik();
     vine_matrix_ = selector.get_rvine_matrix();
     pair_copulas_ = selector.get_pair_copulas();
 }
@@ -258,6 +266,7 @@ inline void Vinecop::select_families(const Eigen::MatrixXd &data,
         selector.select_all_trees(data);
     }
     threshold_ = selector.get_threshold();
+    loglik_ = selector.get_loglik();
     pair_copulas_ = selector.get_pair_copulas();
 }
 
@@ -359,19 +368,29 @@ inline std::vector <std::vector<int>> Vinecop::get_all_rotations() const
 //!
 //! @param tree tree index (starting with 0).
 //! @param edge edge index (starting with 0).
-inline Eigen::VectorXd Vinecop::get_parameters(size_t tree, size_t edge) const
+inline Eigen::MatrixXd Vinecop::get_parameters(size_t tree, size_t edge) const
 {
     return get_pair_copula(tree, edge).get_parameters();
 }
+
+//! extracts the Kendall's \f$ tau \f$ of a pair copula.
+//!
+//! @param tree tree index (starting with 0).
+//! @param edge edge index (starting with 0).
+inline double Vinecop::get_tau(size_t tree, size_t edge) const
+{
+    return get_pair_copula(tree, edge).get_tau();
+}
+
 
 //! extracts the parameters of all pair copulas.
 //!
 //! @return a nested std::vector with entry `[t][e]` corresponding to
 //! edge `e` in tree `t`.
-inline std::vector <std::vector<Eigen::VectorXd>>
+inline std::vector <std::vector<Eigen::MatrixXd>>
 Vinecop::get_all_parameters() const
 {
-    std::vector <std::vector<Eigen::VectorXd>>
+    std::vector <std::vector<Eigen::MatrixXd>>
         parameters(pair_copulas_.size());
     for (size_t tree = 0; tree < parameters.size(); ++tree) {
         parameters[tree].resize(d_ - 1 - tree);
@@ -383,11 +402,37 @@ Vinecop::get_all_parameters() const
     return parameters;
 }
 
+//! extracts the Kendall's \f$ tau \f$s of all pair copulas.
+//!
+//! @return a nested std::vector with entry `[t][e]` corresponding to
+//! edge `e` in tree `t`.
+inline std::vector <std::vector<double>> Vinecop::get_all_taus() const
+{
+    std::vector <std::vector<double>> taus(pair_copulas_.size());
+    for (size_t tree = 0; tree < taus.size(); ++tree) {
+        taus[tree].resize(d_ - 1 - tree);
+        for (size_t edge = 0; edge < d_ - 1 - tree; ++edge) {
+            taus[tree][edge] = get_tau(tree, edge);
+        }
+    }
+
+    return taus;
+}
+
 //! extracts the structure matrix of the vine copula model.
 inline Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic>
 Vinecop::get_matrix() const
 {
     return vine_matrix_.get_matrix();
+}
+
+//! extracts the log-likelihood (zero when model not fitted to data).
+inline double Vinecop::get_loglik() const
+{
+    if (std::isnan(loglik_)) {
+        throw std::runtime_error("copula has not been fitted from data ");
+    }
+    return loglik_;
 }
 
 //! extracts the threshold (usually zero except `select_threshold == TRUE` in
@@ -563,7 +608,7 @@ inline double Vinecop::bic(const Eigen::MatrixXd &u) const
 //! \f$ \psi_0 \f$ is the prior probability of having a non-independence copula 
 //! in the first tree, and \f$ q_t \f$ is the number of non-independence copulas
 //! in tree \f$ t \f$; The vBIC is a consistent model selection criterion for 
-//! parametric sparse vine copula models when \f$ d = o(\sqrt{n \ln n})\f.
+//! parametric sparse vine copula models when \f$ d = o(\sqrt{n \ln n})\f$.
 //!
 //! @param u \f$n \times 2\f$ matrix of observations.
 //! @param pi baseline prior probability of a non-independence copula.

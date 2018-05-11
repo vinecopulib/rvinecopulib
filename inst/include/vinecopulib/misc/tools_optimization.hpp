@@ -21,6 +21,7 @@ typedef struct
     vinecopulib::ParBicop *bicop; //!< a pointer to the bivariate copula to optimize.
     double par0;  //!< main dependence parameter.
     unsigned int objective_calls; //!< number of evaluations of the objective.
+    double objective_min;  //!< final value of the objective function 
 } ParBicopOptData;
 
 //! @brief A class for the controls to Bobyqa

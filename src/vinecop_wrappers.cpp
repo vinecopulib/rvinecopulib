@@ -32,27 +32,32 @@ Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
 }
 
 
-Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp) {
+Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp, bool is_fitted = FALSE) {
     auto matrix = vinecop_cpp.get_matrix();
     auto pcs = vinecop_cpp.get_all_pair_copulas();
     size_t d = matrix.cols();
     
     Rcpp::List pair_copulas(pcs.size());
-
+    
     for (size_t t = 0; t < pcs.size(); ++t) {
         Rcpp::List tree_pcs(d - 1 - t);
         for(size_t e = 0; e < d - 1 - t; ++e) {
-            tree_pcs[e] = bicop_wrap(pcs[t][e]);
+            tree_pcs[e] = bicop_wrap(pcs[t][e], is_fitted);
         }
         pair_copulas[t] = tree_pcs;
     }
+    
     double npars = vinecop_cpp.calculate_npars();
     double threshold = vinecop_cpp.get_threshold();
+    double loglik = NAN;
+    if (is_fitted)
+        loglik = vinecop_cpp.get_loglik();
     return Rcpp::List::create(
-        Rcpp::Named("pair_copulas") = pair_copulas,
-        Rcpp::Named("matrix") = matrix,
-        Rcpp::Named("npars") = npars,
-        Rcpp::Named("threshold") = threshold
+        Rcpp::Named("pair_copulas")      = pair_copulas,
+        Rcpp::Named("matrix")            = matrix,
+        Rcpp::Named("npars")             = npars,
+        Rcpp::Named("loglik")            = loglik,
+        Rcpp::Named("threshold")         = threshold
     );
 }
 
@@ -119,7 +124,7 @@ Rcpp::List vinecop_select_cpp(
     for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
         fam_set[fam] = to_cpp_family(family_set[fam]);
     }
-
+    
     FitControlsVinecop fit_controls(
             fam_set,
             par_method,
@@ -143,6 +148,5 @@ Rcpp::List vinecop_select_cpp(
     } else {
         vinecop_cpp.select_all(data, fit_controls);
     }
-
-    return vinecop_wrap(vinecop_cpp);
+    return vinecop_wrap(vinecop_cpp, TRUE);
 }

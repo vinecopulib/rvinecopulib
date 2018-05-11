@@ -159,8 +159,11 @@ result.</p>
     <p>See <a href='bicop.html'>bicop</a> for the various implemented copula families.</p>
 <p>H-functions (<code>hbicop()</code>) are conditional distributions derived
 from a copula. If \(C(u, v) = P(U \le u, V \le v)\) is a copula, then
-$$h_1(v | u) = P(U \le u | V = v),$$ $$h_2(u | v) = P(V \le v | U =
-u).$$</p>
+$$h_1(u, v) = P(V \le v | U = u) = \partial C(u, v) / \partial u,$$
+$$h_2(u, v) = P(U \le u | V = v) = \partial C(u, v) / \partial v.$$
+In other words, the H-function number refers to the conditioning variable.
+When inverting H-functions, the inverse is then taken with respect to the
+other variable, that is <code>v</code> when <code>cond_var = 1</code> and <code>u</code> when <code>cond_var = 2</code>.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
@@ -177,10 +180,10 @@ object, e.g., <code>dbicop(c(0.1, 0.5), bicop_dist("indep"))</code>.</p>
 <span class='fu'>plot</span>(<span class='fu'>rbicop</span>(<span class='fl'>500</span>, <span class='st'>"clay"</span>, <span class='fl'>90</span>, <span class='fl'>3</span>))</div><div class='img'><img src='bicop_methods-1.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
 <span class='co'>## h-functions</span>
 <span class='no'>joe_cop</span> <span class='kw'>&lt;-</span> <span class='fu'>bicop_dist</span>(<span class='st'>"joe"</span>, <span class='fl'>0</span>, <span class='fl'>3</span>)
-<span class='co'># h_1(0.2 | 0.1)</span>
-<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>1</span>, <span class='st'>"bb8"</span>, <span class='fl'>0</span>, <span class='fu'>c</span>(<span class='fl'>2</span>, <span class='fl'>0.5</span>))</div><div class='output co'>#&gt; [1] 0.2436951</div><div class='input'><span class='co'># h_2(0.1 | 0.2)</span>
-<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>2</span>, <span class='no'>joe_cop</span>)</div><div class='output co'>#&gt; [1] 0.1906421</div><div class='input'><span class='co'># h_1^{-1}(0.2 | 0.1)</span>
-<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>1</span>, <span class='st'>"bb8"</span>, <span class='fl'>0</span>, <span class='fu'>c</span>(<span class='fl'>2</span>, <span class='fl'>0.5</span>), <span class='kw'>inverse</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; [1] 0.1629181</div><div class='input'><span class='co'># h_2^{-1}(0.1 | 0.2)</span>
+<span class='co'># h_1(0.1, 0.2)</span>
+<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>1</span>, <span class='st'>"bb8"</span>, <span class='fl'>0</span>, <span class='fu'>c</span>(<span class='fl'>2</span>, <span class='fl'>0.5</span>))</div><div class='output co'>#&gt; [1] 0.2436951</div><div class='input'><span class='co'># h_2(0.1, 0.2)</span>
+<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>2</span>, <span class='no'>joe_cop</span>)</div><div class='output co'>#&gt; [1] 0.1906421</div><div class='input'><span class='co'># h_1^{-1}(0.1, 0.2)</span>
+<span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>1</span>, <span class='st'>"bb8"</span>, <span class='fl'>0</span>, <span class='fu'>c</span>(<span class='fl'>2</span>, <span class='fl'>0.5</span>), <span class='kw'>inverse</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; [1] 0.1629181</div><div class='input'><span class='co'># h_2^{-1}(0.1, 0.2)</span>
 <span class='fu'>hbicop</span>(<span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.2</span>), <span class='fl'>2</span>, <span class='no'>joe_cop</span>, <span class='kw'>inverse</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; [1] 0.05221261</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

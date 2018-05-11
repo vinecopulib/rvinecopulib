@@ -1,14 +1,24 @@
 #' Internal: Turn vector input into a matrix with two columns
 #'
 #' @param u input data
+#' @param to_col if `u` is a vector, then `to_col = FALSE` (respectively 
+#' `to_col = TRUE`) transforms it into a matrix with a single row (respectively 
+#' single column)
+#' 
 #'
-#' @return either a matrix with two columns, or an error if u is neither a
-#' matrix, data.frame, or a length two vector
+#' @return either a matrix, or an error if u is neither a matrix, data.frame, 
+#' or a vector
 #'
 #' @noRd
-if_vec_to_matrix <- function(u) {
-    if (NCOL(u) == 1)
-        u <- matrix(u, 1, length(u))
+if_vec_to_matrix <- function(u, to_col = FALSE) {
+    assert_that(is.numeric(u) | is.data.frame(u))
+    if (NCOL(u) == 1) {
+        if (to_col) {
+            u <- matrix(u, length(u), 1)
+        } else {
+            u <- matrix(u, 1, length(u))
+        }
+    }
     if (!is.matrix(u))
         u <- as.matrix(u)
     
@@ -29,6 +39,7 @@ args2bicop <- function(family, rotation, parameters) {
             rotation <- 0
         if (missing(parameters))
             parameters <- numeric(0)
+        assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
         return(bicop_dist(family, rotation, parameters))
     }
 }
@@ -76,9 +87,12 @@ prep_uniform_data <- function(n, d, U) {
     if (is.null(U)) {
         U <- matrix(runif(n * d), n, d)
     } else {
-        stopifnot(is.matrix(U))
-        stopifnot(nrow(U) == n)
-        stopifnot(ncol(U) == d)
+        assert_that(is.matrix(U), nrow(U) == n)
+        if (d == 2) {
+            assert_that(ncol(U) == 2)
+        } else {
+            assert_that(ncol(U) == eval(d))
+        }
     }
     U
 }
@@ -129,3 +143,119 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
         }
     }
 }
+
+# Get the depth of a list
+depth <- function(this) ifelse(is.list(this), 1L + max(sapply(this, depth)), 0L)
+
+supported_distributions <- c("beta", "cauchy", "chisq", "exp", "f", "gamma", 
+                             "lnorm", "norm", "t", "unif", "weibull")
+
+#' @importFrom stats pbeta qbeta qbeta dcauchy pcauchy qcauchy dchisq pchisq
+#' @importFrom stats qchisq dexp pexp qexp df pf qf dgamma pgamma qgamma
+#' @importFrom stats dlnorm plnorm qlnorm dt pt qt dunif punif qunif
+#' @importFrom stats dweibull pweibull qweibull
+check_distr <- function(distr) {
+    
+    ## if provided with a kde1d object, then there is nothing to do
+    if (inherits(distr, "kde1d"))
+        return(TRUE)
+    
+    ## basic sanity checks
+    if (!is.list(distr))
+        return("a distribution should be a kde1d object or a list")
+    if (!any(is.element(names(distr), "name")))
+        return("a distribution should be a kde1d object or a list with a name element")
+    nn <- distr[["name"]]
+    if (!is.element(nn, supported_distributions))
+        return("the provided name does not belong to supported distributions")
+    
+    ## check that the provided parameters are consistent with the distribution
+    qfun <- get(paste0("q", nn))
+    par <- distr[names(distr)!= "name"]
+    par$p <- 0.5
+    e <- tryCatch(do.call(qfun, par), error = function(e) e)
+    if (any(class(e) == "error"))
+        return(e$message)
+    
+    return(TRUE)
+}
+
+get_npars_distr <- function(distr) {
+    switch(distr$name,
+           beta = 2,
+           cauchy = 2,
+           chisq = ifelse("ncp" %in% names(distr), 2, 1),
+           exp = 1,
+           f = 3,
+           gamma = 2,
+           lnorm = 2,
+           norm = 2,
+           t = ifelse("ncp" %in% names(distr), 3, 2),
+           unif = 2,
+           weibull = ifelse("scale" %in% names(distr), 2, 1))
+}
+
+#' @noRd
+#' @importFrom assertthat assert_that on_failure<-
+#' @importFrom assertthat is.number is.string is.flag is.scalar
+in_set <- function(el, set) {
+    all(el %in% set)
+}
+
+
+on_failure(in_set) <- function(call, env) {
+    paste0(deparse(call$el), 
+           " must be one of {", 
+           paste0(eval(call$set, env), collapse = ", "), 
+           "}.")
+}
+
+#' Pseudo-Observations
+#' 
+#' Compute the pseudo-observations for the given data matrix.
+#' 
+#' @param x vector or matrix random variates to be converted (column wise) to 
+#' pseudo-observations.
+#' @param ties_method similar to `ties.method` of [rank()] (only `"average"`, 
+#' `"first"` and `"random"` currently available).
+#' @param lower_tail `logical` which, if `FALSE``, returns the pseudo-observations 
+#' when applying the empirical marginal survival functions.
+#' @details 
+#' Given `n` realizations \eqn{x_i=(x_{i1}, \ldots,x_{id})}, 
+#' \eqn{i \in \left\lbrace 1, \ldots,n \right\rbrace } 
+#' of a random vector `X`, the pseudo-observations are defined via 
+#' \eqn{u_{ij}=r_{ij}/(n+1)} for \eqn{i \in \left\lbrace 1, \ldots,n \right\rbrace } 
+#' and \eqn{j \in \left\lbrace 1, \ldots,d \right\rbrace }, where 
+#' \eqn{r_{ij}} denotes the rank of \eqn{x_{ij}} among all \eqn{x_{kj}}, 
+#' \eqn{k \in \left\lbrace 1, \ldots,n \right\rbrace }.
+#' 
+#' The pseudo-observations can thus also be computed by component-wise applying 
+#' the empirical distribution functions to the data and scaling the result by 
+#' \eqn{n/(n+1)}. This asymptotically negligible scaling factor is used to force the 
+#' variates to fall inside the open unit hypercube, for example, to avoid 
+#' problems with density evaluation at the boundaries. 
+#' 
+#' When `lower_tail = FALSE`, then `pseudo_obs()` simply returns `1 - pseudo_obs()`.
+#' 
+#' @return 
+#' a vector of matrix of the same dimension as the input containing the 
+#' pseudo-observations.
+#' @examples
+#' # pseudo-observations for a vector
+#' pseudo_obs(rnorm(10))
+#' 
+#' # pseudo-observations for a matrix
+#' pseudo_obs(cbind(rnorm(10), rnorm(10)))
+#' @export
+pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
+    assert_that(is.scalar(lower_tail) && is.logical(lower_tail))
+    assert_that(is.character(ties_method) && is.scalar(ties_method))
+    assert_that(in_set(ties_method, c("average", "first", "random")))
+    res <- pseudo_obs_cpp(if_vec_to_matrix(x, TRUE), ties_method)
+    if (is.vector(x))
+        res <- as.vector(res)
+    if (!lower_tail)
+        res <- 1 - res
+    return(res)
+}
+

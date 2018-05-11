@@ -89,7 +89,9 @@ public:
     void select_all_trees(const Eigen::MatrixXd &data);
 
     void sparse_select_all_trees(const Eigen::MatrixXd &data);
-    
+
+    double get_loglik() const;
+
     double get_threshold() const;
 
 protected:
@@ -97,7 +99,7 @@ protected:
 
     virtual void finalize(size_t trunc_lvl) = 0;
     
-    double get_mbicv_of_tree(size_t t);
+    double get_mbicv_of_tree(size_t t, double loglik);
 
     double get_loglik_of_tree(size_t t);
 
@@ -130,6 +132,7 @@ protected:
     std::vector<VineTree> trees_;
     // for sparse selction
     std::vector<VineTree> trees_opt_;
+    double loglik_;
     double threshold_;
     double psi0_; // initial prior probability for mbicv
 

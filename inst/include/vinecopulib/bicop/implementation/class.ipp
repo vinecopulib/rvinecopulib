@@ -14,13 +14,6 @@
 //! Tools for bivariate and vine copula modeling
 namespace vinecopulib {
 
-//! creates the independence copula.
-inline Bicop::Bicop()
-{
-    bicop_ = AbstractBicop::create();
-    rotation_ = 0;
-}
-
 //! creates a specific bivariate copula model.
 //! @param family the copula family.
 //! @param rotation the rotation of the copula; one of 0, 90, 180, or 270
@@ -33,6 +26,11 @@ inline Bicop::Bicop(BicopFamily family, int rotation,
     bicop_ = AbstractBicop::create(family, parameters);
     // family must be set before checking the rotation
     set_rotation(rotation);
+    if (bicop_->get_family() != BicopFamily::indep) {
+        bicop_->set_loglik();
+    } else {
+        bicop_->set_loglik(0.0);
+    }
 }
 
 //! create a copula model from the data,
@@ -106,8 +104,9 @@ const
 {
     tools_eigen::check_if_in_unit_cube(u);
     Eigen::VectorXd f = bicop_->pdf(cut_and_rotate(u));
-    f = f.unaryExpr([](const double x) { return std::min(x, 1e16); });
-    return f;
+    return tools_eigen::unaryExpr_or_nan(f, [](const double& x) { 
+        return std::max(DBL_MIN, std::min(x, DBL_MAX));
+    });
 }
 
 //! evaluates the copula distribution.
@@ -277,9 +276,13 @@ Bicop::simulate(const int &n) const
 //!
 //! @param u \f$n \times 2\f$ matrix of observations.
 inline double
-Bicop::loglik(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
+Bicop::loglik(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u = Eigen::MatrixXd()) const
 {
-    return pdf(tools_eigen::nan_omit(u)).array().log().sum();
+    if (u.rows() < 1) {
+        return get_loglik();
+    } else {
+        return pdf(tools_eigen::nan_omit(u)).array().log().sum();
+    }
 }
 
 //! calculates the Akaike information criterion (AIC), defined as
@@ -391,15 +394,32 @@ inline Eigen::MatrixXd Bicop::get_parameters() const
     return bicop_->get_parameters();
 }
 
+inline double Bicop::get_loglik() const
+{
+    double loglik = bicop_->get_loglik();
+    if (std::isnan(loglik)) {
+        throw std::runtime_error("copula has not been fitted from data or its "
+                                     "parameters have been modified manually");
+    }
+    return loglik;
+}
+
+inline double Bicop::get_tau() const
+{
+    return parameters_to_tau(bicop_->get_parameters());
+}
+
 inline void Bicop::set_rotation(int rotation)
 {
     check_rotation(rotation);
     rotation_ = rotation;
+    bicop_->set_loglik();
 }
 
 inline void Bicop::set_parameters(const Eigen::MatrixXd &parameters)
 {
     bicop_->set_parameters(parameters);
+    bicop_->set_loglik();
 }
 //! @}
 
@@ -413,11 +433,13 @@ inline void Bicop::flip()
 {
     BicopFamily family = bicop_->get_family();
     if (tools_stl::is_member(family, bicop_families::flip_by_rotation)) {
+        double loglik = bicop_->get_loglik();
         if (rotation_ == 90) {
             set_rotation(270);
         } else if (rotation_ == 270) {
             set_rotation(90);
         }
+        bicop_->set_loglik(loglik);
     } else {
         bicop_->flip();
     }
@@ -486,11 +508,10 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
     data = tools_eigen::nan_omit(data);
     tools_eigen::check_if_in_unit_cube(data);
 
-    if (data.rows() < 10) {
-        bicop_ = AbstractBicop::create();
-        rotation_ = 0;
-    } else {
-        rotation_ = 0;
+    bicop_ = AbstractBicop::create();
+    rotation_ = 0;
+    bicop_->set_loglik(0.0);
+    if (data.rows() >= 10) {
         data = cut_and_rotate(data);
         std::vector <Bicop> bicops = create_candidate_bicops(data, controls);
 
@@ -507,7 +528,7 @@ inline void Bicop::select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
             // Compute the selection criterion
             double new_criterion;
             if (controls.get_selection_criterion() == "loglik") {
-                new_criterion = -cop.loglik(data);
+                new_criterion = -cop.get_loglik();
             } else if (controls.get_selection_criterion() == "aic") {
                 new_criterion = cop.aic(data);
             } else if (controls.get_selection_criterion() == "bic") {
