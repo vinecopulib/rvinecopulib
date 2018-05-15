@@ -37,8 +37,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">rvinecopulib</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="index.html">rvinecopulib</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.8.1.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
@@ -51,7 +55,7 @@
   <a href="reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="news/index.html">News</a>
+  <a href="news/index.html">Changelog</a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right"></ul>
@@ -65,8 +69,9 @@
       
       </header><div class="row">
   <div class="contents col-md-9">
-    <div class="section level1">
-<div class="page-header"><h1>rvinecopulib</h1></div>
+    <div id="rvinecopulib" class="section level1">
+<div class="page-header"><h1 class="hasAnchor">
+<a href="#rvinecopulib" class="anchor"></a>rvinecopulib</h1></div>
 
 <p>Vine copulas are a flexible class of dependence models consisting of bivariate building blocks (see e.g., Aas et al., 2009). You can find a comprehensive list of publications and other materials on <a href="http://www.statistics.ma.tum.de/en/research/vine-copula-models/">vine-copula.org</a>.</p>
 <p>This package is the <a href="https://cran.r-project.org/">R</a> API to the C++ library <a href="https://github.com/vinecopulib/vinecopulib">vinecopulib</a>, a header-only C++ library for vine copula models based on <a href="http://www.boost.org/">Boost</a> and <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen</a>.</p>
@@ -77,8 +82,9 @@
 <li>nonparametric and multi-parameter families.</li>
 </ul>
 <p>As VineCopula, the package is primarily made for the statistical analysis of <strong>vine copula models</strong>. The package includes tools for parameter estimation, model selection, simulation, and visualization. Tools for estimation, selection and exploratory data analysis of <strong>bivariate copula</strong> models are also provided. Please see the <a href="https://vinecopulib.github.io/rvinecopulib/">API documentation</a> for a detailed description of all functions.</p>
-<div class="section level2">
-<h2>Table of contents</h2>
+<div id="table-of-contents" class="section level2">
+<h2 class="hasAnchor">
+<a href="#table-of-contents" class="anchor"></a>Table of contents</h2>
 <ul>
 <li><a href="#how-to-install">How to install</a></li>
 <li>
@@ -93,26 +99,29 @@
 </ul>
 <hr>
 </div>
-<div class="section level2">
-<h2>How to install</h2>
+<div id="how-to-install" class="section level2">
+<h2 class="hasAnchor">
+<a href="#how-to-install" class="anchor"></a>How to install</h2>
 <p>You can install:</p>
 <ul>
 <li>
 <p>the stable release on CRAN:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">install.packages</span>(<span class="st">"rvinecopulib"</span>)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">"rvinecopulib"</span>)</code></pre></div>
 </li>
 <li>
 <p>the latest development version:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/install_github">install_github</a></span>(<span class="st">"vinecopulib/rvinecopulib"</span>)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/install_github">install_github</a></span>(<span class="st">"vinecopulib/rvinecopulib"</span>)</code></pre></div>
 </li>
 </ul>
 <hr>
 </div>
-<div class="section level2">
-<h2>Package overview</h2>
+<div id="package-overview" class="section level2">
+<h2 class="hasAnchor">
+<a href="#package-overview" class="anchor"></a>Package overview</h2>
 <p>Below, we list most functions and features you should know about. As usual in copula models, data are assumed to be serially independent and lie in the unit hypercube.</p>
-<div class="section level3">
-<h3>Bivariate copula modeling: bicop_dist and bicop</h3>
+<div id="bivariate-copula-modeling-bicop_dist-and-bicop" class="section level3">
+<h3 class="hasAnchor">
+<a href="#bivariate-copula-modeling-bicop_dist-and-bicop" class="anchor"></a>Bivariate copula modeling: bicop_dist and bicop</h3>
 <ul>
 <li>
 <p><code>bicop_dist</code>: Creates a bivariate copula by specifying the family, rotation and parameters. Returns an object of class <code>bicop_dist</code>. The class has the following methods:</p>
@@ -132,8 +141,9 @@
 </li>
 </ul>
 </div>
-<div class="section level3">
-<h3>Vine copula modeling: vinecop_dist and vinecop</h3>
+<div id="vine-copula-modeling-vinecop_dist-and-vinecop" class="section level3">
+<h3 class="hasAnchor">
+<a href="#vine-copula-modeling-vinecop_dist-and-vinecop" class="anchor"></a>Vine copula modeling: vinecop_dist and vinecop</h3>
 <ul>
 <li>
 <p><code>vinecop_dist</code>: Creates a vine copula by specifying a nested list of <code>bicop_dist</code> objects and a quadratic structure matrix. Returns an object of class <code>vinecop_dist</code>. The class has the following methods:</p>
@@ -153,8 +163,9 @@
 </li>
 </ul>
 </div>
-<div class="section level3">
-<h3>Bivariate copula families</h3>
+<div id="bivariate-copula-families" class="section level3">
+<h3 class="hasAnchor">
+<a href="#bivariate-copula-families" class="anchor"></a>Bivariate copula families</h3>
 <p>In this package several bivariate copula families are included for bivariate and multivariate analysis using vine copulas. It provides functionality of elliptical (Gaussian and Student-t) as well as Archimedean (Clayton, Gumbel, Frank, Joe, BB1, BB6, BB7 and BB8) copulas to cover a large range of dependence patterns. For Archimedean copula families, rotated versions are included to cover negative dependence as well. Additionally, nonparametric families are also supported.</p>
 <table class="table">
 <thead><tr class="header">
@@ -309,26 +320,41 @@
 <hr>
 </div>
 </div>
-<div class="section level2">
-<h2>References</h2>
+<div id="references" class="section level2">
+<h2 class="hasAnchor">
+<a href="#references" class="anchor"></a>References</h2>
 <p>Aas, K., C. Czado, A. Frigessi, and H. Bakken (2009). Pair-copula constructions of multiple dependence. Insurance: Mathematics and Economics 44 (2), 182-198.</p>
 </div>
 </div>
   </div>
 
   <div class="col-md-3" id="sidebar">
-    <h2>Links</h2>
+    <div class="links">
+<h2>Links</h2>
 <ul class="list-unstyled">
-<li>Download from CRAN at <br><a href="https://cran.r-project.org/package=rvinecopulib">https://​cran.r-project.org/​package=rvinecopulib</a>
+<li>Download from CRAN at <br><a href="https://cloud.r-project.org/package=rvinecopulib">https://​cloud.r-project.org/​package=rvinecopulib</a>
+</li>
+<li>Report a bug at <br><a href="NA">NA</a>
 </li>
 </ul>
+</div>
+<div class="license">
 <h2>License</h2>
-<p><a href="https://www.r-project.org/Licenses/GPL-3">GPL-3</a> | file <a href="LICENSE.html">LICENSE</a></p>
+<ul class="list-unstyled">
+<li>
+<a href="https://www.r-project.org/Licenses/GPL-3">GPL-3</a> | file <a href="LICENSE-text.html">LICENSE</a>
+</li>
+</ul>
+</div>
+<div class="developers">
 <h2>Developers</h2>
 <ul class="list-unstyled">
-<li>Thomas Nagler <br><small class="roles"> Author, maintainer </small> </li>
-<li>Thibault Vatter <br><small class="roles"> Author </small> </li>
+<li>Thomas Nagler <br><small class="roles"> Author, maintainer </small>  </li>
+<li>Thibault Vatter <br><small class="roles"> Author </small>  </li>
 </ul>
+</div>
+
+  <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://travis-ci.org/vinecopulib/rvinecopulib"><img src="https://travis-ci.org/vinecopulib/rvinecopulib.svg?branch=master" alt="Build status Linux"></a></li>
@@ -337,6 +363,7 @@
 <li><a href="https://cran.r-project.org/package=rvinecopulib"><img src="http://www.r-pkg.org/badges/version/rvinecopulib" alt="CRAN version"></a></li>
 <li><a href="https://cran.r-project.org/package=rvinecopulib"><img src="http://cranlogs.r-pkg.org/badges/rvinecopulib" alt="CRAN downloads"></a></li>
 </ul>
+</div>
 </div>
 </div>
 
@@ -351,6 +378,8 @@
 
       </footer>
 </div>
+
+  
 
   </body>
 </html>

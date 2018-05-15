@@ -25,13 +25,13 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
 <meta property="og:title" content="Vine based distributions — vine_distributions" />
 
 <meta property="og:description" content="Density, distribution function and random generation
 for the vine based distribution." />
 <meta name="twitter:card" content="summary" />
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -39,6 +39,8 @@ for the vine based distribution." />
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
 
 
   </head>
@@ -54,8 +56,12 @@ for the vine based distribution." />
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">rvinecopulib</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">rvinecopulib</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.8.1.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -68,13 +74,14 @@ for the vine based distribution." />
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
         
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -82,10 +89,12 @@ for the vine based distribution." />
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Vine based distributions</h1>
+    
+    <div class="hidden name"><code>vine_methods.Rd</code></div>
     </div>
 
     
@@ -99,7 +108,7 @@ for the vine based distribution.</p>
 
 <span class='fu'>rvine</span>(<span class='no'>n</span>, <span class='no'>vine</span>, <span class='kw'>U</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -165,10 +174,10 @@ standard <em>d/p/q-xxx</em> from <a href='http://www.rdocumentation.org/packages
 
 <span class='co'># simulate from the model</span>
 <span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'>rvine</span>(<span class='fl'>200</span>, <span class='no'>vc</span>)
-<span class='fu'>pairs</span>(<span class='no'>x</span>)</div><div class='img'><img src='vine_methods-1.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>pairs</span>(<span class='no'>x</span>)</div><div class='img'><img src='vine_methods-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># evaluate the density and cdf</span>
-<span class='fu'>dvine</span>(<span class='no'>x</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt;       V1       V2       V3 
-#&gt; 2.518908 2.601654 2.289039 </div><div class='input'><span class='fu'>pvine</span>(<span class='no'>x</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 1e-04</div></pre>
+<span class='fu'>dvine</span>(<span class='no'>x</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt;         V1         V2         V3 
+#&gt; 0.12447433 0.12082012 0.08818601 </div><div class='input'><span class='fu'>pvine</span>(<span class='no'>x</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 0</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -197,5 +206,8 @@ standard <em>d/p/q-xxx</em> from <a href='http://www.rdocumentation.org/packages
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+
