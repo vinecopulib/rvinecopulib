@@ -36,7 +36,8 @@ Eigen::VectorXd binaryExpr_or_nan(
     return u.col(0).binaryExpr(u.col(1), func_or_nan);
 }
 
-Eigen::MatrixXd nan_omit(const Eigen::MatrixXd &x);
+void remove_nans(Eigen::MatrixXd &x);
+void remove_nans(Eigen::MatrixXd &x, Eigen::VectorXd &weights);
 
 bool check_if_in_unit_cube(const Eigen::MatrixXd &u);
 

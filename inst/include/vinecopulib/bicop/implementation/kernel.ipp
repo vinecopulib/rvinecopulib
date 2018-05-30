@@ -5,6 +5,7 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/misc/tools_stats.hpp>
+#include <wdm/eigen.hpp>
 
 namespace vinecopulib {
 inline KernelBicop::KernelBicop()
@@ -69,7 +70,7 @@ KernelBicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
     Eigen::Matrix<double, Eigen::Dynamic, 2> U =
         tools_stats::ghalton(static_cast<size_t>(1e3), static_cast<size_t>(2));
     U.col(1) = hinv1(U);
-    return tools_stats::pairwise_tau(U);
+    return wdm::wdm(U, "tau")(0, 1);
 }
 
 inline double KernelBicop::calculate_npars()

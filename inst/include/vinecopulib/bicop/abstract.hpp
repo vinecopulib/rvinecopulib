@@ -48,7 +48,9 @@ protected:
 
     // Virtual methods
     virtual void fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
-                     std::string method, double mult) = 0;
+                     std::string method, 
+                     double mult, 
+                     const Eigen::VectorXd& weights) = 0;
 
     virtual double calculate_npars() = 0;
 

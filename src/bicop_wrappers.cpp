@@ -114,12 +114,13 @@ void bicop_check_cpp(const Rcpp::List& bicop_r)
 
 // [[Rcpp::export()]]
 Rcpp::List bicop_select_cpp(
-        Eigen::MatrixXd& data,
+        const Eigen::MatrixXd& data,
         std::vector<std::string> family_set,
         std::string par_method,
         std::string nonpar_method,
         double mult,
         std::string selcrit,
+        const Eigen::VectorXd& weights,
         double psi0,
         bool presel,
         size_t num_threads
@@ -135,6 +136,7 @@ Rcpp::List bicop_select_cpp(
             nonpar_method,
             mult,
             selcrit,
+            weights,
             psi0,
             presel,
             num_threads

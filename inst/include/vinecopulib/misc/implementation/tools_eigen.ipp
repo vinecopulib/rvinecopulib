@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 namespace vinecopulib {
 
@@ -13,34 +14,46 @@ namespace tools_eigen {
 
 //! remove rows of a matrix which contain nan values
 //! @param x the matrix.
-//! @return a new matrix without the rows containing nan values
-inline Eigen::MatrixXd nan_omit(const Eigen::MatrixXd &x)
+inline void remove_nans(Eigen::MatrixXd &x)
 {
-    // find rows with nans
-    Eigen::Matrix<bool, 1, Eigen::Dynamic>
-        nans = x.array().isNaN().matrix().rowwise().any();
-
-    // if there is no nan, just return x
-    if (!nans.array().any()) {
-        return x;
-    }
-
-    // copy data to not modify input
-    Eigen::MatrixXd out = x;
+    // if a row has nan, move it to the end
     size_t last = x.rows() - 1;
-    for (size_t i = 0; i < last + 1;) {
-        // put nan rows at the end
-        if (nans(i)) {
-            out.row(i).swap(out.row(last));
-            nans.segment<1>(i).swap(nans.segment<1>(last));
-            --last;
-        } else {
-            ++i;
+    for (size_t i = 0; i < last + 1; i++) {
+        if (x.row(i).array().isNaN().any())
+            x.row(i--).swap(x.row(last--));
+    }
+    // remove nan rows
+    x.conservativeResize(last + 1, x.cols());
+}
+
+//! remove rows of a matrix which contain nan values or have zero weight
+//! @param x the matrix.
+//! @param a vector of weights that is either empty or whose size is equal to
+//!   the number of columns of x.
+inline void remove_nans(Eigen::MatrixXd &x, Eigen::VectorXd &weights)
+{
+    if ((weights.size() > 0) & (weights.size() != x.rows()))
+        throw std::runtime_error("sizes of x and weights don't match.");
+    
+    // if a row has nan or weight is zero, move it to the end
+    size_t last = x.rows() - 1;
+    for (size_t i = 0; i < last + 1; i++) {
+        bool row_has_nan = x.row(i).array().isNaN().any();
+        if (weights.size() > 0) {
+            row_has_nan = row_has_nan | (boost::math::isnan)(weights(i));
+            row_has_nan = row_has_nan | (weights(i) == 0.0);
+        }
+        if (row_has_nan) {
+            if (weights.size() > 0)
+                std::swap(weights(i), weights(last));
+            x.row(i--).swap(x.row(last--));
         }
     }
-    out.conservativeResize(last + 1, out.cols());
-
-    return out;
+    
+    // remove nan rows
+    x.conservativeResize(last + 1, x.cols());
+    if (weights.size() > 0)
+        weights.conservativeResize(last + 1);
 }
 
 //! check if all elements are contained in the unit cube.

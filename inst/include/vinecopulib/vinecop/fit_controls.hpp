@@ -27,6 +27,7 @@ public:
                        std::string tree_criterion = "tau",
                        double threshold = 0.0,
                        std::string selection_criterion = "bic",
+                       const Eigen::VectorXd& weights = Eigen::VectorXd(),
                        double psi0 = 0.9,
                        bool preselect_families = true,
                        bool select_truncation_level = false,
@@ -34,7 +35,7 @@ public:
                        bool show_trace = false,
                        size_t num_threads = 1);
 
-    FitControlsVinecop(const FitControlsBicop controls,
+    FitControlsVinecop(const FitControlsBicop &controls,
                        size_t truncation_level = std::numeric_limits<size_t>::max(),
                        std::string tree_criterion = "tau",
                        double threshold = 0.0,
