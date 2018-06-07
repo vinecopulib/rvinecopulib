@@ -147,6 +147,17 @@ inline vector <size_t> seq_int(size_t from, size_t length)
     iota(seq.begin(), seq.end(), from);
     return seq;
 }
+
+inline double log1p(const double& x)
+{
+    if (x < -0.5) {
+        return std::log(1.0 + x);
+    } else {
+        return std::log1p(x);
+    }
+}
+
+
 }
 
 }

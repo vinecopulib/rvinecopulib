@@ -1,7 +1,7 @@
 Package: rvinecopulib
 Type: Package
 Title: High Performance Algorithms for Vine Copula Modeling
-Version: 0.2.8.1.0
+Version: 0.2.9.1.0.9999
 Authors@R: c(
         person("Thomas", "Nagler",, "info@vinecopulib.org", role = c("aut", "cre")),
         person("Thibault", "Vatter",, "info@vinecopulib.org", role = c("aut"))
@@ -40,7 +40,8 @@ LinkingTo:
     BH,
     Rcpp,
     RcppEigen,
-    RcppThread
+    RcppThread,
+    wdm
 Roxygen: list(markdown = TRUE)
 SystemRequirements: C++11
 RoxygenNote: 6.0.1
