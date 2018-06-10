@@ -40,19 +40,19 @@ inline double Bb6Bicop::generator_derivative(const double &u)
     return res * std::pow(1 - u, theta - 1) / (std::pow(1 - u, theta) - 1);
 }
 
-inline double Bb6Bicop::generator_derivative2(const double &u)
-{
-    double theta = double(parameters_(0));
-    double delta = double(parameters_(1));
-    double tmp = std::pow(1 - u, theta);
-    double tmp2 = tools_stl::log1p(-tmp);
-    double res = std::pow((-1) * tmp2, delta - 2);
-    res *= ((delta - 1) * theta * tmp - (tmp + theta - 1) * tmp2);
-    return res * delta * theta * std::pow(1 - u, theta - 2) /
-           std::pow(tmp - 1, 2);
-}
+//inline double Bb6Bicop::generator_derivative2(const double &u)
+//{
+//    double theta = double(parameters_(0));
+//    double delta = double(parameters_(1));
+//    double tmp = std::pow(1 - u, theta);
+//    double tmp2 = tools_stl::log1p(-tmp);
+//    double res = std::pow((-1) * tmp2, delta - 2);
+//    res *= ((delta - 1) * theta * tmp - (tmp + theta - 1) * tmp2);
+//    return res * delta * theta * std::pow(1 - u, theta - 2) /
+//           std::pow(tmp - 1, 2);
+//}
 
-inline Eigen::VectorXd Bb6Bicop::pdf(
+inline Eigen::VectorXd Bb6Bicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {

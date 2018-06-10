@@ -102,8 +102,6 @@ Eigen::MatrixXd to_pseudo_obs(Eigen::MatrixXd x,
 double pairwise_mcor(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x,
                      const Eigen::VectorXd &weights = Eigen::VectorXd());
 
-Eigen::MatrixXd ghalton(const size_t n, const size_t d);
-
 double pairwise_rho(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
 
 double pairwise_hoeffd(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);

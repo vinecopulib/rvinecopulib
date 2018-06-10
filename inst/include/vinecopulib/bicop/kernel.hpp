@@ -29,7 +29,7 @@ public:
     KernelBicop();
 
 protected:
-    Eigen::VectorXd pdf(
+    Eigen::VectorXd pdf_raw(
         const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
     );
 

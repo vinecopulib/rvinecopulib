@@ -56,7 +56,9 @@ protected:
 
     virtual double parameters_to_tau(const Eigen::MatrixXd &parameters) = 0;
 
-    virtual Eigen::VectorXd pdf(
+    Eigen::VectorXd pdf(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u);
+
+    virtual Eigen::VectorXd pdf_raw(
         const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) = 0;
 
     virtual Eigen::VectorXd cdf(

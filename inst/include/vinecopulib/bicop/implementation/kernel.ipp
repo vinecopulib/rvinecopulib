@@ -21,7 +21,7 @@ inline KernelBicop::KernelBicop()
     );
 }
 
-inline Eigen::VectorXd KernelBicop::pdf(
+inline Eigen::VectorXd KernelBicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {

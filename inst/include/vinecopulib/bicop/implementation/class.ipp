@@ -102,10 +102,7 @@ Bicop::pdf(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u)
 const
 {
     tools_eigen::check_if_in_unit_cube(u);
-    Eigen::VectorXd f = bicop_->pdf(cut_and_rotate(u));
-    return tools_eigen::unaryExpr_or_nan(f, [](const double& x) { 
-        return std::max(DBL_MIN, std::min(x, DBL_MAX));
-    });
+    return bicop_->pdf(cut_and_rotate(u));
 }
 
 //! evaluates the copula distribution.
@@ -119,7 +116,7 @@ const
     tools_eigen::check_if_in_unit_cube(u);
     Eigen::VectorXd p = bicop_->cdf(cut_and_rotate(u));
     switch (rotation_) {
-        case 0:
+        default:
             return p;
 
         case 90:
@@ -133,11 +130,6 @@ const
 
         case 270:
             return u.col(0) - p;
-
-        default:
-            throw std::runtime_error(std::string(
-                "rotation can only take values in {0, 90, 180, 270}"
-            ));
     }
 }
 
@@ -150,7 +142,7 @@ const
 {
     tools_eigen::check_if_in_unit_cube(u);
     switch (rotation_) {
-        case 0:
+        default:
             return bicop_->hfunc1(cut_and_rotate(u));
 
         case 90:
@@ -161,11 +153,6 @@ const
 
         case 270:
             return 1.0 - bicop_->hfunc2(cut_and_rotate(u)).array();
-
-        default:
-            throw std::runtime_error(std::string(
-                "rotation can only take values in {0, 90, 180, 270}"
-            ));
     }
 }
 
@@ -178,7 +165,7 @@ const
 {
     tools_eigen::check_if_in_unit_cube(u);
     switch (rotation_) {
-        case 0:
+        default:
             return bicop_->hfunc2(cut_and_rotate(u));
 
         case 90:
@@ -189,11 +176,6 @@ const
 
         case 270:
             return bicop_->hfunc1(cut_and_rotate(u));
-
-        default:
-            throw std::runtime_error(std::string(
-                "rotation can only take values in {0, 90, 180, 270}"
-            ));
     }
 }
 
@@ -206,7 +188,7 @@ const
 {
     tools_eigen::check_if_in_unit_cube(u);
     switch (rotation_) {
-        case 0:
+        default:
             return bicop_->hinv1(cut_and_rotate(u));
 
         case 90:
@@ -217,11 +199,6 @@ const
 
         case 270:
             return 1.0 - bicop_->hinv2(cut_and_rotate(u)).array();
-
-        default:
-            throw std::runtime_error(std::string(
-                "rotation only takes value in {0, 90, 180, 270}"
-            ));
     }
 }
 
@@ -234,7 +211,7 @@ const
 {
     tools_eigen::check_if_in_unit_cube(u);
     switch (rotation_) {
-        case 0:
+        default:
             return bicop_->hinv2(cut_and_rotate(u));
 
         case 90:
@@ -245,11 +222,6 @@ const
 
         case 270:
             return bicop_->hinv1(cut_and_rotate(u));
-
-        default:
-            throw std::runtime_error(std::string(
-                "rotation only takes value in {0, 90, 180, 270}"
-            ));
     }
 }
 //! @}
@@ -284,7 +256,7 @@ Bicop::simulate(const size_t& n,
 //!
 //! @param u \f$n \times 2\f$ matrix of observations.
 inline double Bicop::loglik(
-    const Eigen::Matrix<double, Eigen::Dynamic, 2> &u = Eigen::MatrixXd()) const
+    const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
 {
     if (u.rows() < 1) {
         return get_loglik();

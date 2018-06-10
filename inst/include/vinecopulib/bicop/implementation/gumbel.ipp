@@ -37,14 +37,14 @@ inline double GumbelBicop::generator_derivative(const double &u)
     return std::pow(std::log(1 / u), theta - 1) * (-theta / u);
 }
 
-inline double GumbelBicop::generator_derivative2(const double &u)
-{
-    double theta = double(this->parameters_(0));
-    return (theta - 1 - std::log(u)) * std::pow(std::log(1 / u), theta - 2) *
-           (theta / std::pow(u, 2));
-}
+//inline double GumbelBicop::generator_derivative2(const double &u)
+//{
+//    double theta = double(this->parameters_(0));
+//    return (theta - 1 - std::log(u)) * std::pow(std::log(1 / u), theta - 2) *
+//           (theta / std::pow(u, 2));
+//}
 
-inline Eigen::VectorXd GumbelBicop::pdf(
+inline Eigen::VectorXd GumbelBicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {

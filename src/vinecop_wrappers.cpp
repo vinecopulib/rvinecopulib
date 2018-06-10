@@ -5,7 +5,7 @@ using namespace vinecopulib;
 
 // [[Rcpp::export()]]
 void rvine_matrix_check_cpp(Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix) {
-    auto rvm = RVineMatrix(matrix);
+    auto rvm = RVineStructure(matrix);
 }
 
 Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)

@@ -19,7 +19,7 @@ inline StudentBicop::StudentBicop()
     parameters_upper_bounds_ << 1, 50;
 }
 
-inline Eigen::VectorXd StudentBicop::pdf(
+inline Eigen::VectorXd StudentBicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {

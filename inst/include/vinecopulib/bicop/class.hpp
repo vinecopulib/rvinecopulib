@@ -86,14 +86,22 @@ public:
                 FitControlsBicop controls = FitControlsBicop());
 
     // Fit statistics
-    double loglik(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+    double loglik(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
+            Eigen::Matrix<double, Eigen::Dynamic, 2>()) const;
 
-    double aic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+    double aic(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
+            Eigen::Matrix<double, Eigen::Dynamic, 2>()) const;
 
-    double bic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+    double bic(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
+            Eigen::Matrix<double, Eigen::Dynamic, 2>()) const;
 
-    double mbic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u, 
-                const double pi) const;
+    double mbic(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
+            Eigen::Matrix<double, Eigen::Dynamic, 2>(),
+        const double pi = 0.9) const;
     
     // Misc
     std::string str() const;

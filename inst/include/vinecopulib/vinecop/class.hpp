@@ -7,14 +7,14 @@
 #pragma once
 
 #include <vinecopulib/bicop/class.hpp>
-#include <vinecopulib/vinecop/rvine_matrix.hpp>
+#include <vinecopulib/vinecop/rvine_structure.hpp>
 #include <vinecopulib/vinecop/tools_select.hpp>
 
 namespace vinecopulib {
 //! @brief A class for vine copula models
 //!
 //! A vine copula model is characterized by the structure matrix (see
-//! RVineMatrix) and the pair-copulas.
+//! TriangularArray) and the pair-copulas.
 class Vinecop
 {
 public:
@@ -68,8 +68,6 @@ public:
     
     double get_tau(size_t tree, size_t edge) const;
 
-    Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
-
     // Getters for all pair copulas
     std::vector <std::vector<Bicop>> get_all_pair_copulas() const;
 
@@ -80,7 +78,14 @@ public:
     std::vector <std::vector<Eigen::MatrixXd>> get_all_parameters() const;
     
     std::vector <std::vector<double>> get_all_taus() const;
-    
+
+    // Getters for the structure
+    std::vector<size_t> get_order() const;
+
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
+
+    TriangularArray<size_t> get_struct_array() const;
+        
     // getter for the threshold
     double get_threshold() const;
 
@@ -88,7 +93,8 @@ public:
     double get_loglik() const;
 
     // Stats methods
-    Eigen::VectorXd pdf(const Eigen::MatrixXd &u, const size_t num_threads = 1) const;
+    Eigen::VectorXd pdf(const Eigen::MatrixXd &u,
+                        const size_t num_threads = 1) const;
 
     Eigen::VectorXd cdf(const Eigen::MatrixXd &u, 
                         const size_t N = 1e4,
@@ -99,7 +105,7 @@ public:
                              const size_t num_threads = 1,
                              const std::vector<int>& seeds =  {1, 2, 3, 4}) const;
 
-    Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd &u, 
+    Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd &u,
                                        const size_t num_threads = 1) const;
 
     // Fit statistics
@@ -120,15 +126,12 @@ public:
 
 private:
     size_t d_;
-    RVineMatrix vine_matrix_;
+    RVineStructure vine_struct_;
     std::vector <std::vector<Bicop>> pair_copulas_;
     double threshold_;
     double loglik_;
 
     void check_data_dim(const Eigen::MatrixXd &data) const;
-
-    Eigen::Matrix<size_t, Eigen::Dynamic, 1> inverse_permutation(
-        const Eigen::Matrix<size_t, Eigen::Dynamic, 1> &order) const;
 };
 
 }

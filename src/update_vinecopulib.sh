@@ -1,9 +1,6 @@
 #!/bin/bash
 
-git clone https://github.com/vinecopulib/vinecopulib/
-cd vinecopulib
-git checkout thread-includes
-cd ..
+git clone --depth 1 https://github.com/vinecopulib/vinecopulib/ -b thread-includes --single-branch
 
 rm -rf ../inst/include/vinecopulib*
 mv ./vinecopulib/include/* ../inst/include

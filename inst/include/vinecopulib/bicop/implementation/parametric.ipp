@@ -102,8 +102,7 @@ inline void ParBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
             initial_parameters(0), 
             0, 
             weights, 
-            0
-        };
+        0};
         std::function<double(void *, long, const double *)> objective =
             mle_objective;
         if (method == "itau") {

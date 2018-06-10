@@ -38,15 +38,15 @@ inline double JoeBicop::generator_derivative(const double &u)
     return (-theta) * std::pow(1 - u, theta - 1) / (1 - std::pow(1 - u, theta));
 }
 
-inline double JoeBicop::generator_derivative2(const double &u)
-{
-    double theta = double(parameters_(0));
-    double res = theta * (theta - 1 + std::pow(1 - u, theta));
-    return res * std::pow(1 - u, theta - 2) /
-           std::pow(-1 + std::pow(1 - u, theta), 2);
-}
+//inline double JoeBicop::generator_derivative2(const double &u)
+//{
+//    double theta = double(parameters_(0));
+//    double res = theta * (theta - 1 + std::pow(1 - u, theta));
+//    return res * std::pow(1 - u, theta - 2) /
+//           std::pow(-1 + std::pow(1 - u, theta), 2);
+//}
 
-inline Eigen::VectorXd JoeBicop::pdf(
+inline Eigen::VectorXd JoeBicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {
@@ -54,10 +54,9 @@ inline Eigen::VectorXd JoeBicop::pdf(
     auto f = [theta](const double &u1, const double &u2) {
         double t1 = std::pow(1-u1,theta);
         double t2 = std::pow(1-u2,theta);
-        double res = std::pow(t1 + t2 - t1 * t2,1/theta-2)
+        return std::pow(t1 + t2 - t1 * t2,1/theta-2)
                * std::pow(1-u1,theta-1)*std::pow(1-u2,theta-1)
                * (theta-1 + t1 + t2 - t1 * t2);
-        return std::max(DBL_MIN, std::min(res, DBL_MAX));
     };
     return tools_eigen::binaryExpr_or_nan(u, f);
 }
