@@ -498,7 +498,7 @@ inline Eigen::VectorXd Vinecop::pdf(const Eigen::MatrixXd &u,
     // initial value must be 1.0 for multiplication
     Eigen::VectorXd vine_density = Eigen::VectorXd::Constant(u.rows(), 1.0);
 
-    auto do_batch = [&](const tools_thread::Batch& b) {
+    auto do_batch = [&](const tools_batch::Batch& b) {
 
         // temporary storage objects for h-functions
         Eigen::MatrixXd hfunc1(b.size, d);
@@ -541,7 +541,7 @@ inline Eigen::VectorXd Vinecop::pdf(const Eigen::MatrixXd &u,
 
     if (trunc_lvl > 0) {
         tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
-        pool.map(do_batch, tools_thread::create_batches(n, num_threads));
+        pool.map(do_batch, tools_batch::create_batches(n, num_threads));
         pool.join();
     }
 
@@ -778,7 +778,7 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd &u,
         needed_hfunc2 = vine_struct_.get_needed_hfunc2();
     }
 
-    auto do_batch = [&](const tools_thread::Batch& b) {
+    auto do_batch = [&](const tools_batch::Batch& b) {
         if (d > 2) {
             // temporary storage objects for (inverse) h-functions
             TriangularArray<Eigen::VectorXd> hinv2(d + 1, trunc_lvl + 1);
@@ -833,7 +833,7 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd &u,
 
     if (trunc_lvl > 0) {
         tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
-        pool.map(do_batch, tools_thread::create_batches(n, num_threads));
+        pool.map(do_batch, tools_batch::create_batches(n, num_threads));
         pool.join();
     }
 
