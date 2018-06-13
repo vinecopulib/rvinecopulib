@@ -207,11 +207,14 @@ logLik.vinecop <- function(object, ...) {
     structure(object$loglik, "df" = object$npars)
 }
 
-#' calculates the vine copula Bayesian information criterion (vBIC), which is 
-#' defined as
+#' calculates the vine copula Bayesian information criterion (mBICv)
+#' 
+#' The vine copula Bayesian information criterion (mBICv) is defined as
+#' 
 #' \deqn{\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
 #' \sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
 #' }
+#' 
 #' where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
 #' (effective) number of parameters of the model, \eqn{t} is the tree level 
 #' \eqn{\psi_0} is the prior probability of having a non-independence copula and 
@@ -222,6 +225,10 @@ logLik.vinecop <- function(object, ...) {
 #' @param object a fitted `vinecop` object.
 #' @param psi0 baseline prior probability of a non-independence copula.
 #' @export mBICV
+#' u <- sapply(1:5, function(i) runif(50))
+#' fit <- vinecop(u, "par")
+#' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
+#' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 mBICV <- function(object, psi0 = 0.9) {
     assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
     if (is.null(object$data))
