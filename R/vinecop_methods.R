@@ -58,18 +58,6 @@
 #' dvinecop(u[1, ], vc)
 #' pvinecop(u[1, ], vc)
 #' 
-#' # get single pair copula
-#' get_pair_copula(vc, 1, 1)
-#' 
-#' # get all pair copulas
-#' get_all_pair_copulas(vc)
-#' 
-#' # get vine matrix
-#' get_matrix(vc)
-#' 
-#' # extract a truncated sub-vine based on truncation level supplied by user
-#' truncate_model(vc, 1)
-#' 
 #' @rdname vinecop_methods
 #' @export
 dvinecop <- function(u, vinecop) {
@@ -207,21 +195,31 @@ logLik.vinecop <- function(object, ...) {
     structure(object$loglik, "df" = object$npars)
 }
 
-#' calculates the vine copula Bayesian information criterion (vBIC), which is 
-#' defined as
-#' \deqn{\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-#' \sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
+#' Modified vine copula Bayesian information criterion (mBICv)
+#' 
+#' Calculates the modified vine copula Bayesian information criterion.
+#' 
+#' The modified vine copula Bayesian information criterion (mBICv) is defined as
+#' 
+#' \deqn{\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \log(n) - 2 * 
+#' \sum_{t=1}^{d - 1} \{q_t \log(\psi_0^t) - (d - t - q_t) \log(1 - \psi_0^t)\}
 #' }
+#' 
 #' where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
 #' (effective) number of parameters of the model, \eqn{t} is the tree level 
 #' \eqn{\psi_0} is the prior probability of having a non-independence copula and 
 #' \eqn{q_t} is the number of non-independence copulas in tree \eqn{t}.
-#' The vBIC is a consistent model 
-#' selection criterion for parametric sparse vine copula models.
+#' The mBICv is a consistent model selection criterion for parametric sparse 
+#' vine copula models.
 #'
 #' @param object a fitted `vinecop` object.
 #' @param psi0 baseline prior probability of a non-independence copula.
 #' @export mBICV
+#' @examples
+#' u <- sapply(1:5, function(i) runif(50))
+#' fit <- vinecop(u, "par")
+#' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
+#' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 mBICV <- function(object, psi0 = 0.9) {
     assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
     if (is.null(object$data))
@@ -283,11 +281,40 @@ vinecop_fit_info <- function(vc) {
     )
 }
 
-#' extract a truncated sub-vine based on truncation level supplied by user.
+#' Truncate a vine copula model
+#' 
+#' Extracts a truncated sub-vine based on a truncation level supplied by user.
+#' 
+#' While a vine model for a `d` dimensional random vector contains at most `d-1` 
+#' nested trees, this function extracts a sub-model based on a given truncation 
+#' level. 
+#' 
+#' For instance, `truncate_model(object, 1)` results in a 1-truncated 
+#' vine (i.e., a vine with a single tree). Similarly `truncate_model(object, 2)` 
+#' results in a 2-truncated vine (i.e., a vine with two trees). Note that 
+#' `truncate_model(truncate_model(object, 1), 2)` returns a 1-truncated vine.
+#' 
 #' @param object a `vinecop` or a `vine` object.
-#' @param trunc_lvl truncation level for the vine copula.
+#' @param trunc_lvl truncation level for the vine copula (`NA` corresponds to 
+#' no truncation).
 #'
 #' @export
+#' @examples
+#' # specify pair-copulas
+#' bicop <- bicop_dist("bb1", 90, c(3, 2))
+#' pcs <- list(
+#'     list(bicop, bicop),  # pair-copulas in first tree 
+#'     list(bicop)          # pair-copulas in second tree 
+#' )
+#' 
+#' # specify R-vine matrix
+#' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
+#' 
+#' # set up vine copula model
+#' vc <- vinecop_dist(pcs, mat)
+#' 
+#' # truncate the model
+#' truncate_model(vc, 1)
 truncate_model <- function(object, trunc_lvl = NA) { 
     assert_that(inherits(object, "vinecop_dist") || 
                     inherits(object, "vine_dist"))

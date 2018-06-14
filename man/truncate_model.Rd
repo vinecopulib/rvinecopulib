@@ -2,15 +2,43 @@
 % Please edit documentation in R/vinecop_methods.R
 \name{truncate_model}
 \alias{truncate_model}
-\title{extract a truncated sub-vine based on truncation level supplied by user.}
+\title{Truncate a vine copula model}
 \usage{
 truncate_model(object, trunc_lvl = NA)
 }
 \arguments{
 \item{object}{a \code{vinecop} or a \code{vine} object.}
 
-\item{trunc_lvl}{truncation level for the vine copula.}
+\item{trunc_lvl}{truncation level for the vine copula (\code{NA} corresponds to
+no truncation).}
 }
 \description{
-extract a truncated sub-vine based on truncation level supplied by user.
+Extracts a truncated sub-vine based on a truncation level supplied by user.
+}
+\details{
+While a vine model for a \code{d} dimensional random vector contains at most \code{d-1}
+nested trees, this function extracts a sub-model based on a given truncation
+level.
+
+For instance, \code{truncate_model(object, 1)} results in a 1-truncated
+vine (i.e., a vine with a single tree). Similarly \code{truncate_model(object, 2)}
+results in a 2-truncated vine (i.e., a vine with two trees). Note that
+\code{truncate_model(truncate_model(object, 1), 2)} returns a 1-truncated vine.
+}
+\examples{
+# specify pair-copulas
+bicop <- bicop_dist("bb1", 90, c(3, 2))
+pcs <- list(
+    list(bicop, bicop),  # pair-copulas in first tree 
+    list(bicop)          # pair-copulas in second tree 
+)
+
+# specify R-vine matrix
+mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
+
+# set up vine copula model
+vc <- vinecop_dist(pcs, mat)
+
+# truncate the model
+truncate_model(vc, 1)
 }
