@@ -89,16 +89,18 @@
 #' 
 #' @export
 vinecop <- function(data, family_set = "all", matrix = NA, 
-                    par_method = "mle", nonpar_method = "constant",
-                    mult = 1, selcrit = "bic", psi0 = 0.9, presel = TRUE, 
-                    trunc_lvl = Inf, tree_crit = "tau", threshold = 0, 
-                    keep_data = TRUE, show_trace = FALSE, cores = 1) {
+                    par_method = "mle", nonpar_method = "constant", mult = 1, 
+                    selcrit = "bic", weights = numeric(), psi0 = 0.9, 
+                    presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", 
+                    threshold = 0, keep_data = TRUE, show_trace = FALSE, 
+                    cores = 1) {
     assert_that(
         is.character(family_set), 
         is.string(par_method), 
         is.string(nonpar_method),
         is.number(mult), mult > 0,
         is.string(selcrit),
+        is.numeric(weights),
         is.number(psi0), psi0 > 0, psi0 < 1,
         is.flag(presel),
         is.scalar(trunc_lvl),
@@ -125,6 +127,7 @@ vinecop <- function(data, family_set = "all", matrix = NA,
         nonpar_method = nonpar_method,
         mult = mult,
         selection_criterion = selcrit,
+        weights = weights,
         psi0 = psi0,
         preselect_families = presel,
         truncation_level = ifelse(  # Inf cannot be passed to C++
@@ -157,6 +160,7 @@ vinecop <- function(data, family_set = "all", matrix = NA,
         nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
+        weights = weights,
         presel = presel,
         trunc_lvl = trunc_lvl,
         tree_crit = tree_crit,

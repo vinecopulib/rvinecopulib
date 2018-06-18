@@ -19,7 +19,7 @@ inline GaussianBicop::GaussianBicop()
     parameters_upper_bounds_ << 1;
 }
 
-inline Eigen::VectorXd GaussianBicop::pdf(
+inline Eigen::VectorXd GaussianBicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {

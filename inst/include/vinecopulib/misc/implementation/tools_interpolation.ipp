@@ -190,7 +190,7 @@ InterpolationGrid::intergrate_1d(const Eigen::MatrixXd &u,
             tmpgrid.col(0) = grid_points_;
             tmpgrid.col(1) = Eigen::VectorXd::Constant(m, u2);
         }
-        tmpvals = interpolate(tmpgrid);
+        tmpvals = interpolate(tmpgrid).array().max(1e-4);
         tmpint = int_on_grid(upr, tmpvals, grid_points_);
         int1 = int_on_grid(1.0, tmpvals, grid_points_);
 

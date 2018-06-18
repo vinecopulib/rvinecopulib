@@ -10,7 +10,8 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <vinecopulib/bicop/class.hpp>
 #include <vinecopulib/vinecop/fit_controls.hpp>
-#include <vinecopulib/vinecop/rvine_matrix.hpp>
+#include <vinecopulib/vinecop/rvine_structure.hpp>
+#include <vinecopulib/misc/tools_interface.hpp>
 
 // to allow for (auto e : boost::edges(g)) notation
 namespace std {
@@ -31,10 +32,12 @@ namespace vinecopulib {
 namespace tools_select {
 
 double calculate_criterion(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
-                           std::string tree_criterion);
+                           std::string tree_criterion,
+                           Eigen::VectorXd weights);
 
 Eigen::MatrixXd calculate_criterion_matrix(const Eigen::MatrixXd &data,
-                                           std::string tree_criterion);
+                                           std::string tree_criterion,
+                                           const Eigen::VectorXd& weights);
 
 
 // boost::graph represenation of a vine tree
@@ -67,8 +70,7 @@ boost::vecS,
 boost::vecS,
 boost::undirectedS,
 VertexProperties,
-boost::property<boost::edge_weight_t, double, EdgeProperties>
-> VineTree;
+boost::property<boost::edge_weight_t, double, EdgeProperties>> VineTree;
 
 typedef boost::graph_traits<VineTree>::edge_descriptor EdgeIterator;
 typedef std::pair<EdgeIterator, bool> FoundEdge;
@@ -80,7 +82,7 @@ public:
 
     std::vector<std::vector<Bicop>> get_pair_copulas() const;
 
-    RVineMatrix get_rvine_matrix() const;
+    RVineStructure get_rvine_matrix() const;
 
     static std::vector<std::vector<Bicop>> make_pair_copula_store(
         size_t d,
@@ -113,7 +115,7 @@ protected:
     
     void initialize_new_fit(const Eigen::MatrixXd &data);
 
-    void set_current_fit_as_opt();
+    void set_current_fit_as_opt(const double& loglik);
 
     
     virtual void add_allowed_edges(VineTree &tree) = 0;
@@ -127,7 +129,7 @@ protected:
     size_t n_;
     size_t d_;
     FitControlsVinecop controls_;
-    RVineMatrix vine_matrix_;
+    RVineStructure vine_struct_;
     std::vector<std::vector<Bicop>> pair_copulas_;
     std::vector<VineTree> trees_;
     // for sparse selction
@@ -135,6 +137,7 @@ protected:
     double loglik_;
     double threshold_;
     double psi0_; // initial prior probability for mbicv
+    std::unique_ptr<tools_thread::ThreadPool> pool_;
 
 private:
     double get_next_threshold(std::vector<double> &thresholded_crits);
@@ -186,7 +189,7 @@ class FamilySelector : public VinecopSelector
 {
 public:
     FamilySelector(const Eigen::MatrixXd &data,
-                   const RVineMatrix &vine_matrix,
+                   const RVineStructure &vine_struct,
                    const FitControlsVinecop &controls);
 
     ~FamilySelector()
@@ -194,16 +197,10 @@ public:
     }
 
 private:
-    RVineMatrix vine_matrix_;
 
     void add_allowed_edges(VineTree &tree);
 
-    bool belongs_to_structure(size_t v0, size_t v1,
-                              const VineTree &vine_tree);
-
     void finalize(size_t trunc_lvl);
-    
-    size_t find_column_in_matrix(const std::vector<size_t>& conditioned);
 
 };
 

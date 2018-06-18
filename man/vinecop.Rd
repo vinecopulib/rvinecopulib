@@ -7,9 +7,10 @@
 \title{Vine copula models}
 \usage{
 vinecop(data, family_set = "all", matrix = NA, par_method = "mle",
-  nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9,
-  presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
-  keep_data = TRUE, show_trace = FALSE, cores = 1)
+  nonpar_method = "constant", mult = 1, selcrit = "bic",
+  weights = numeric(), psi0 = 0.9, presel = TRUE, trunc_lvl = Inf,
+  tree_crit = "tau", threshold = 0, keep_data = TRUE,
+  show_trace = FALSE, cores = 1)
 
 vinecop_dist(pair_copulas, matrix)
 }
@@ -40,6 +41,8 @@ than 1 less smooth.}
 
 \item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"},
 \code{"bic"}, \code{"mbic"}. For \code{vinecop()} there is the additional option \code{"mbicv"}.}
+
+\item{weights}{optional vector of weights for each observation.}
 
 \item{psi0}{prior probability of a non-independence copula (only used for
 \code{selcrit = "mbic"} and \code{selcrit = "mbicv"}).}

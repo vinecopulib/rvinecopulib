@@ -7,8 +7,9 @@
 \title{Bivariate copula models}
 \usage{
 bicop(data, family_set = "all", par_method = "mle",
-  nonpar_method = "quadratic", mult = 1, selcrit = "bic", psi0 = 0.9,
-  presel = TRUE, keep_data = TRUE, cores = 1)
+  nonpar_method = "quadratic", mult = 1, selcrit = "bic",
+  weights = numeric(), psi0 = 0.9, presel = TRUE, keep_data = TRUE,
+  cores = 1)
 
 bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
 }
@@ -34,6 +35,8 @@ than 1 less smooth.}
 
 \item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"},
 \code{"bic"}, \code{"mbic"}. For \code{vinecop()} there is the additional option \code{"mbicv"}.}
+
+\item{weights}{optional vector of weights for each observation.}
 
 \item{psi0}{see \code{\link[=mBICV]{mBICV()}}.}
 

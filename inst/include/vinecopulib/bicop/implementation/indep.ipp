@@ -11,7 +11,7 @@ inline IndepBicop::IndepBicop()
     parameters_ = Eigen::MatrixXd();
 }
 
-inline Eigen::VectorXd IndepBicop::pdf(
+inline Eigen::VectorXd IndepBicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {

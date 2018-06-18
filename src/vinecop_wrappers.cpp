@@ -5,7 +5,7 @@ using namespace vinecopulib;
 
 // [[Rcpp::export()]]
 void rvine_matrix_check_cpp(Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix) {
-    auto rvm = RVineMatrix(matrix);
+    auto rvm = RVineStructure(matrix);
 }
 
 Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
@@ -112,6 +112,7 @@ Rcpp::List vinecop_select_cpp(
         std::string tree_criterion,
         double threshold,
         std::string selection_criterion,
+        const Eigen::VectorXd& weights,
         double psi0,
         bool select_truncation_level,
         bool select_threshold,
@@ -134,6 +135,7 @@ Rcpp::List vinecop_select_cpp(
             tree_criterion,
             threshold,
             selection_criterion,
+            weights,
             psi0,
             preselect_families,
             select_truncation_level,
