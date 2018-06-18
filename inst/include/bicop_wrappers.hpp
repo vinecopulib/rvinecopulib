@@ -1,5 +1,6 @@
 #pragma once
 
+#define BOOST_NO_AUTO_PTR
 #include "vinecopulib.hpp"
 
 vinecopulib::BicopFamily to_cpp_family(const std::string& fam);
