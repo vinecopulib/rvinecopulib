@@ -16,6 +16,13 @@ test_that("constructor creates proper vinecop_dist object", {
 test_that("d/p/r- functions work", {
     u <- rvinecop(50, vc)
     u <- rvinecop(50, vc, u)
+    expect_error(rvinecop(50, vc, U = u[, -1]))
+    expect_error(rvinecop(50, vc, U = u[-1, ]))
+    expect_warning(rvinecop(50, vc, U = u, qrng = TRUE))
+    expect_false(any(rvinecop(50, vc, qrng = FALSE) == 
+                         rvinecop(50, vc, qrng = FALSE)))
+    expect_true(all(rvinecop(50, vc, qrng = TRUE) == 
+                        rvinecop(50, vc, qrng = TRUE)))
     expect_gte(min(dvinecop(u, vc)), 0)
     expect_gte(min(pvinecop(u, vc, 100)), 0)
     expect_lte(max(pvinecop(u, vc, 100)), 1)

@@ -16,7 +16,7 @@ dvine(x, vine)
 
 pvine(x, vine, n_mc = 10^4)
 
-rvine(n, vine, U = NULL)
+rvine(n, vine, U = NULL, qrng = FALSE)
 }
 \arguments{
 \item{x}{evaluation points, either a length d vector or a d-column matrix,
@@ -32,6 +32,10 @@ where d is the number of variables in the vine.}
 The result is then the inverse Rosenblatt transform of \code{U}; if \code{U} is a
 matrix of independent \eqn{U(0, 1)} variables, this simulates data
 from \code{vine}.}
+
+\item{qrng}{if \code{TRUE}, generates quasi-random numbers using the multivariate
+Generalized Halton sequence up to dimension 300 and the Generalized Sobol
+sequence in higher dimensions (default \code{qrng = FALSE}).}
 }
 \value{
 \code{dvine()} gives the density, \code{pvine()} gives the distribution function,

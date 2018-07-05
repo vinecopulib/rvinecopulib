@@ -259,3 +259,9 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
     return(res)
 }
 
+check_u_and_qrng <- function(U, qrng) {
+    assert_that(is.flag(qrng))
+    if (!is.null(U) && qrng)
+        warning(c("U is not NULL and qrng is TRUE: generating quasi-random", 
+                  "numbers instead of using the provided U."))
+}

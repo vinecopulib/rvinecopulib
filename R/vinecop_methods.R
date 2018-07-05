@@ -79,12 +79,21 @@ pvinecop <- function(u, vinecop, n_mc = 10^4) {
 #'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
 #'    matrix of independent \eqn{U(0, 1)} variables, this simulates data 
 #'    from `vinecop`.
+#' @param qrng if `TRUE`, generates quasi-random numbers using the multivariate 
+#' Generalized Halton sequence up to dimension 300 and the Generalized Sobol 
+#' sequence in higher dimensions (default `qrng = FALSE`).
 #' @export
-rvinecop <- function(n, vinecop, U = NULL) {
+rvinecop <- function(n, vinecop, U = NULL, qrng = FALSE) {
     assert_that(inherits(vinecop, "vinecop_dist"))
-    d <- ncol(vinecop$matrix)
-    U <- prep_uniform_data(n, d, U)
-    U <- vinecop_inverse_rosenblatt_cpp(U, vinecop)
+    check_u_and_qrng(U, qrng)
+    
+    if (qrng) {
+        U <- vinecop_sim_cpp(vinecop, n, qrng)
+    } else {
+        d <- ncol(vinecop$matrix)
+        U <- prep_uniform_data(n, d, U)
+        U <- vinecop_inverse_rosenblatt_cpp(U, vinecop)
+    }
     if (!is.null(vinecop$names))
         colnames(U) <- vinecop$names
     
