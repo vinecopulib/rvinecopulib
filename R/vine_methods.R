@@ -154,7 +154,22 @@ print.vine_dist <- function(x, ...) {
 
 #' @export
 summary.vine_dist <- function(object, ...) {
-    summary(object$copula)
+    list(
+        margins = margin_summary_vine_dist(object),
+        copula = summary(object$copula)
+    )
+}
+
+margin_summary_vine_dist <- function(vd) {
+    margins <- vd$margins
+    if (length(margins) == 1) 
+        margins <- rep(list(margins), dim(vd$copula))
+    df <- data.frame(
+        margin = seq_along(margins),
+        name = sapply(margins, function(x) x$name)
+    )
+    class(df) <- c("vc_model_df", class(df))
+    df
 }
 
 #' Predictions and fitted values for a vine copula model
@@ -245,8 +260,23 @@ vine_fit_info <- function(vc) {
 
 #' @export
 summary.vine <- function(object, ...) {
-    summary.vine_dist(object)
+    list(
+        margins = margin_summary_vine(object),
+        copula = summary(object$copula)
+    )
 }
+
+margin_summary_vine <- function(object) {
+    capture.output(info <- sapply(object$margins, summary))
+    info <- as.data.frame(t(info))
+    info <- cbind(
+        data.frame(margin = seq_len(nrow(info)), name = object$names), 
+        info
+    )
+    class(info) <- c("vc_model_df", "data.frame")
+    info
+}
+
 
 dpq_marg <- function(x, vine, what = "p") {
     d <- ncol(x)

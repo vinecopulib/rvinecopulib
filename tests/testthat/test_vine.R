@@ -10,7 +10,7 @@ test_that("returns proper 'vine' object", {
     expect_identical(
         names(fit),  
         c("margins", "margins_controls", "copula", 
-          "copula_controls", "npars", "loglik", "data", "nobs")
+          "copula_controls", "npars", "loglik", "data", "nobs", "names")
     )
 })
 

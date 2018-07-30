@@ -233,7 +233,8 @@ finalize_vine <- function(vine, data, keep_data) {
     
     ## add number of observations
     vine$nobs <- nrow(data)
-    
+    vine$names <- vine$copula$names <- colnames(data)
+
     ## create and return object
     structure(vine, class = c("vine", "vine_dist"))
 }

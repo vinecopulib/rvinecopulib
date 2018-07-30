@@ -129,19 +129,8 @@ summary.vinecop_dist <- function(object, ...) {
             k <- k + 1
         }
     }
-    class(mdf) <- c("vinecop_dist_summary", class(mdf))
+    class(mdf) <- c("vc_model_df", class(mdf))
     mdf
-}
-
-#' @export
-print.vinecop_dist_summary <- function(x, ...) {
-    x_print <- x[1:min(nrow(x), 10), ]
-    x_print[x_print$family == "tll", "parameters"] <- list("[30x30 grid]")
-    cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
-    print.data.frame(x_print, digits = 2)
-    if (nrow(x) > 10)
-        cat("# ... with", nrow(x) - 10, "more rows\n")
-    invisible(x)
 }
 
 #' Predictions and fitted values for a vine copula model
