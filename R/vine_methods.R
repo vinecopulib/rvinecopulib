@@ -129,7 +129,7 @@ rvine <- function(n, vine, U = NULL) {
     # prepare uniform data
     d <- ncol(vine$copula$matrix)
     U <- prep_uniform_data(n, d, U)
-
+    
     # simulate from copula
     U <- vinecop_inverse_rosenblatt_cpp(U, vine$copula)
     
@@ -143,7 +143,13 @@ rvine <- function(n, vine, U = NULL) {
 
 #' @export
 print.vine_dist <- function(x, ...) {
-    print(x$copula)
+    d <- nrow(x$copula$matrix)
+    cat(d, "-dimensional vine distribution model ('vine_dist')", sep = "")
+    n_trees <- length(x$copula$pair_copulas)
+    if (n_trees < d - 1)
+        cat(", ", n_trees, "-truncated", sep = "")
+    cat("\n")
+    invisible(x)
 }
 
 #' @export
@@ -203,22 +209,52 @@ logLik.vine <- function(object, ...) {
 
 #' @export
 print.vine <- function(x, ...) {
-    print(collate_u(x)$copula)
+    d <- nrow(x$copula$matrix)
+    cat(d, "-dimensional vine distribution fit ('vine')", sep = "")
+    n_trees <- length(x$copula$pair_copulas)
+    if (n_trees < d - 1)
+        cat(", ", n_trees, "-truncated", sep = "")
+    cat("\n")
+    cat("nobs =", x$nobs, "  ")
+    if (!is.null(x$data)) {
+        info <- vine_fit_info(x)
+        cat("logLik =", round(info$logLik, 2), "  ")
+        cat("npars =", round(info$npars, 2), "  ")
+        cat("AIC =", round(info$AIC, 2), "  ")
+        cat("BIC =", round(info$BIC, 2), "  ")
+        attr(x, "info") <- info
+    } else {
+        cat("(for mor information, fit model with keep_data = TRUE)")
+    }
+    cat("\n")
+    invisible(x)
+}
+
+vine_fit_info <- function(vc) {
+    stopifnot(inherits(vc, "vine"))
+    ll <- logLik(vc)
+    list(
+        nobs   = vc$nobs,
+        logLik = ll[1],
+        npars  = attr(ll, "df"),
+        AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
+        BIC    = -2 * ll[1] + log(vc$nobs) * attr(ll, "df")
+    )
 }
 
 
 #' @export
 summary.vine <- function(object, ...) {
-    summary(collate_u(object)$copula)
+    summary.vine_dist(object)
 }
 
 dpq_marg <- function(x, vine, what = "p") {
     d <- ncol(x)
     if (inherits(vine, "vine")) {
         fun <- switch(what,
-                    p = pkde1d,
-                    d = dkde1d,
-                    q = qkde1d)
+                      p = pkde1d,
+                      d = dkde1d,
+                      q = qkde1d)
     } else {
         fun <- function(x, margin) {
             par <- margin[names(margin) != "name"]
