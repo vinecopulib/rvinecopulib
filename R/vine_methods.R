@@ -39,7 +39,7 @@
 #' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
 #' 
 #' # set up vine copula model
-#' vc <- vine_dist(list(name = "norm"), pcs, mat)
+#' vc <- vine_dist(list(distr = "norm"), pcs, mat)
 #' 
 #' # simulate from the model
 #' x <- rvine(200, vc)
@@ -221,13 +221,13 @@ dpq_marg <- function(x, vine, what = "p") {
                     q = qkde1d)
     } else {
         fun <- function(x, margin) {
-            par <- margin[names(margin) != "name"]
+            par <- margin[names(margin) != "distr"]
             par[[length(par) + 1]] <- x
             names(par)[[length(par)]] <- switch(what,
                                                 p = "q",
                                                 d = "x",
                                                 q = "p")
-            do.call(get(paste0(what, margin$name)), par)
+            do.call(get(paste0(what, margin$distr)), par)
         }
     }
     sapply(seq_len(d), function(i) fun(x[, i], vine$margins[[i]]))
