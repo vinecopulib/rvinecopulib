@@ -28,8 +28,8 @@ test_that("S3 generics work", {
 test_that("print/summary generics work", {
     expect_output(print(fit))
     s <- summary(fit)
-    expect_is(s$margins, c("vc_model_df", "data.frame"))
-    expect_is(s$copula, c("vc_model_df", "data.frame"))
+    expect_is(s$margins, c("summary_df", "data.frame"))
+    expect_is(s$copula, c("summary_df", "data.frame"))
 })
 
 test_that("discrete data work", {

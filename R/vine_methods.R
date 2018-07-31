@@ -164,7 +164,7 @@ get_vine_dist_margin_summary <- function(vd) {
         margin = seq_along(margins),
         name = sapply(margins, function(x) x$name)
     )
-    class(df) <- c("vc_model_df", class(df))
+    class(df) <- c("summary_df", class(df))
     df
 }
 
@@ -241,7 +241,7 @@ get_vine_margin_summary <- function(object) {
         data.frame(margin = seq_len(nrow(info)), name = object$names), 
         info
     )
-    class(info) <- c("vc_model_df", "data.frame")
+    class(info) <- c("summary_df", "data.frame")
     info
 }
 

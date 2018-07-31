@@ -125,7 +125,7 @@ summary.vinecop_dist <- function(object, ...) {
             k <- k + 1
         }
     }
-    class(mdf) <- c("vc_model_df", class(mdf))
+    class(mdf) <- c("summary_df", class(mdf))
     mdf
 }
 

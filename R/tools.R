@@ -264,7 +264,7 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
 #' @param x a `data.frame` whose print output should be truncated.
 #' @noRd
 #' @export
-print.vc_model_df <- function(x, ...) {
+print.summary_df <- function(x, ...) {
     x_print <- x[1:min(nrow(x), 10), ]
     cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
     print.data.frame(x_print, digits = 2)
