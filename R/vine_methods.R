@@ -143,12 +143,8 @@ rvine <- function(n, vine, U = NULL) {
 
 #' @export
 print.vine_dist <- function(x, ...) {
-    d <- nrow(x$copula$matrix)
-    cat(d, "-dimensional vine distribution model ('vine_dist')", sep = "")
-    n_trees <- length(x$copula$pair_copulas)
-    if (n_trees < d - 1)
-        cat(", ", n_trees, "-truncated", sep = "")
-    cat("\n")
+    cat(dim(x), "-dimensional vine distribution model ('vine_dist')", sep = "")
+    print_truncation_info(x$copula)
     invisible(x)
 }
 
@@ -224,35 +220,11 @@ logLik.vine <- function(object, ...) {
 
 #' @export
 print.vine <- function(x, ...) {
-    d <- nrow(x$copula$matrix)
-    cat(d, "-dimensional vine distribution fit ('vine')", sep = "")
-    n_trees <- length(x$copula$pair_copulas)
-    if (n_trees < d - 1)
-        cat(", ", n_trees, "-truncated", sep = "")
-    cat("\n")
-    cat("nobs =", x$nobs, "  ")
-    info <- vine_fit_info(x)
-    cat("logLik =", round(info$logLik, 2), "  ")
-    cat("npars =", round(info$npars, 2), "  ")
-    cat("AIC =", round(info$AIC, 2), "  ")
-    cat("BIC =", round(info$BIC, 2), "  ")
-    attr(x, "info") <- info
-    cat("\n")
+    cat(dim(x), "-dimensional vine distribution fit ('vine')", sep = "")
+    print_truncation_info(x$copula)
+    print_fit_info(x)
     invisible(x)
 }
-
-vine_fit_info <- function(vc) {
-    stopifnot(inherits(vc, "vine"))
-    ll <- logLik(vc)
-    list(
-        nobs   = vc$nobs,
-        logLik = ll[1],
-        npars  = attr(ll, "df"),
-        AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
-        BIC    = -2 * ll[1] + log(vc$nobs) * attr(ll, "df")
-    )
-}
-
 
 #' @export
 summary.vine <- function(object, ...) {

@@ -93,12 +93,8 @@ rvinecop <- function(n, vinecop, U = NULL) {
 
 #' @export
 print.vinecop_dist <- function(x, ...) {
-    d <- nrow(x$matrix)
-    cat(d, "-dimensional vine copula model ('vinecop_dist')", sep = "")
-    n_trees <- length(x$pair_copulas)
-    if (n_trees < d - 1)
-        cat(", ", n_trees, "-truncated", sep = "")
-    cat("\n")
+    cat(dim(x), "-dimensional vine copula model ('vinecop_dist')", sep = "")
+    print_truncation_info(x)
     invisible(x)
 }
 
@@ -218,21 +214,9 @@ mBICV <- function(object, psi0 = 0.9) {
 
 #' @export
 print.vinecop <- function(x, ...) {
-    d <- nrow(x$matrix)
-    cat(d, "-dimensional vine copula fit ('vinecop')", sep = "")
-    n_trees <- length(x$pair_copulas)
-    if (n_trees < d - 1)
-        cat(", ", n_trees, "-truncated", sep = "")
-    cat("\n")
-
-    cat("nobs =", x$nobs, "  ")
-    info <- vinecop_fit_info(x)
-    cat("logLik =", round(info$logLik, 2), "  ")
-    cat("npars =", round(info$npars, 2), "  ")
-    cat("AIC =", round(info$AIC, 2), "  ")
-    cat("BIC =", round(info$BIC, 2), "  ")
-    attr(x, "info") <- info
-    cat("\n")
+    cat(dim(x), "-dimensional vine copula fit ('vinecop')", sep = "")
+    print_truncation_info(x)
+    print_fit_info(x)
     invisible(x)
 }
 
@@ -252,19 +236,6 @@ summary.vinecop <- function(object, ...) {
     }
     
     mdf
-}
-
-
-vinecop_fit_info <- function(vc) {
-    stopifnot(inherits(vc, "vinecop"))
-    ll <- logLik(vc)
-    list(
-        nobs   = vc$nobs,
-        logLik = ll[1],
-        npars  = attr(ll, "df"),
-        AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
-        BIC    = -2 * ll[1] + log(vc$nobs) * attr(ll, "df")
-    )
 }
 
 #' Truncate a vine copula model

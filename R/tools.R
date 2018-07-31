@@ -259,7 +259,6 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
     return(res)
 }
 
-
 #' Truncates output of model data frames.
 #'
 #' @param x a `data.frame` whose print output should be truncated.
@@ -274,3 +273,21 @@ print.vc_model_df <- function(x, ...) {
     invisible(x)
 }
 
+#' internal function
+print_truncation_info <- function(x) {
+    n_trees <- length(x$pair_copulas)
+    if (n_trees < dim(x) - 1)
+        cat(", ", n_trees, "-truncated", sep = "")
+    cat("\n")
+}
+
+#' internal function
+print_fit_info <- function(x) {
+    ll <- logLik(x)
+    cat("nobs =", x$nobs, "  ")
+    cat("logLik =", round(ll[1], 2), "  ")
+    cat("npars =", round(attr(ll, "df"), 2), "  ")
+    cat("AIC =", round(-2 * ll[1] + 2 * attr(ll, "df"), 2), "  ")
+    cat("BIC =", round(-2 * ll[1] + log(x$nobs) * attr(ll, "df"), 2), "  ")
+    cat("\n")
+}
