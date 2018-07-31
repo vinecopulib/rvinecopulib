@@ -231,16 +231,12 @@ print.vine <- function(x, ...) {
         cat(", ", n_trees, "-truncated", sep = "")
     cat("\n")
     cat("nobs =", x$nobs, "  ")
-    if (!is.null(x$data)) {
-        info <- vine_fit_info(x)
-        cat("logLik =", round(info$logLik, 2), "  ")
-        cat("npars =", round(info$npars, 2), "  ")
-        cat("AIC =", round(info$AIC, 2), "  ")
-        cat("BIC =", round(info$BIC, 2), "  ")
-        attr(x, "info") <- info
-    } else {
-        cat("(for mor information, fit model with keep_data = TRUE)")
-    }
+    info <- vine_fit_info(x)
+    cat("logLik =", round(info$logLik, 2), "  ")
+    cat("npars =", round(info$npars, 2), "  ")
+    cat("AIC =", round(info$AIC, 2), "  ")
+    cat("BIC =", round(info$BIC, 2), "  ")
+    attr(x, "info") <- info
     cat("\n")
     invisible(x)
 }
