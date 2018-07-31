@@ -22,8 +22,8 @@
 #' @param psi0 see [mBICV()].
 #' @param presel whether the family set should be thinned out according to
 #'   symmetry characteristics of the data.
-#' @param keep_data whether the data should be stored (necessary for computing
-#'   fit statistics and using [fitted()]).
+#' @param keep_data whether the data should be stored (necessary for using 
+#'   [fitted()]).
 #' @param cores number of cores to use; if more than 1, estimation for multiple
 #'   families is done in parallel.
 #' 
@@ -94,7 +94,7 @@
 bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic", 
                   weights = numeric(), psi0 = 0.9, presel = TRUE, 
-                  keep_data = TRUE, cores = 1) {
+                  keep_data = FALSE, cores = 1) {
     assert_that(
         is.character(family_set), 
         is.string(par_method), 

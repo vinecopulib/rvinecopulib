@@ -93,7 +93,7 @@ vine <- function(data,
                                      trunc_lvl = Inf, 
                                      tree_crit = "tau", 
                                      threshold = 0, 
-                                     keep_data = TRUE,
+                                     keep_data = FALSE,
                                      show_trace = FALSE, 
                                      cores = 1)) {
     

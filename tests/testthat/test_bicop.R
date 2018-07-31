@@ -3,13 +3,13 @@ context("Fitting 'bicop' models")
 set.seed(0)
 dist <- bicop_dist("gumbel", 90, 3)
 u <- rbicop(20, dist)
-fit <- bicop(u)
+fit <- bicop(u, keep_data = TRUE)
 
 test_that("returns proper 'bicop' object", {
     expect_s3_class(fit, "bicop")
     expect_s3_class(fit, "bicop_dist")
     expect_identical(
-        names(fit), 
+        names(fit),
         c("family", "rotation", "parameters", "npars", "loglik", "data", "controls", "nobs")
     )
     
@@ -24,7 +24,7 @@ test_that("returns proper 'bicop' object", {
     colnames(u) <- paste(1:2)
     expect_identical(
         names(bicop(u, "indep")), 
-        c("family", "rotation", "parameters", "npars", "loglik", "names", "data", "controls", "nobs")
+        c("family", "rotation", "parameters", "npars", "loglik", "names", "controls", "nobs")
     )
 })
 

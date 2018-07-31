@@ -173,7 +173,7 @@ predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4, ...) {
     switch(
         what,
         "pdf" = vinecop_pdf_cpp(newdata, object),
-        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc)
+        "cdf" = vinecop_cdf_cpp(newdata, object, n_mc)
     )
 }
 

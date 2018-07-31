@@ -10,7 +10,7 @@ vine(data, margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN, bw =
   NA), copula_controls = list(family_set = "all", matrix = NA, par_method =
   "mle", nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9,
   presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data =
-  TRUE, show_trace = FALSE, cores = 1))
+  FALSE, show_trace = FALSE, cores = 1))
 
 vine_dist(margins, pair_copulas, matrix)
 }

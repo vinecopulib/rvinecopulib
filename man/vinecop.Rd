@@ -9,7 +9,7 @@
 vinecop(data, family_set = "all", matrix = NA, par_method = "mle",
   nonpar_method = "constant", mult = 1, selcrit = "bic",
   weights = numeric(), psi0 = 0.9, presel = TRUE, trunc_lvl = Inf,
-  tree_crit = "tau", threshold = 0, keep_data = TRUE,
+  tree_crit = "tau", threshold = 0, keep_data = FALSE,
   show_trace = FALSE, cores = 1)
 
 vinecop_dist(pair_copulas, matrix)
@@ -61,8 +61,8 @@ Hoeffding's \eqn{D}, and maximum correlation, respectively.}
 \item{threshold}{for thresholded vine copulas; \code{NA} indicates that the
 threshold should be selected automatically by \code{\link[=mBICV]{mBICV()}}.}
 
-\item{keep_data}{whether the data should be stored (necessary for computing
-fit statistics and using \code{\link[=fitted]{fitted()}}).}
+\item{keep_data}{whether the data should be stored (necessary for using
+\code{\link[=fitted]{fitted()}}).}
 
 \item{show_trace}{logical; whether a trace of the fitting progress should be
 printed.}

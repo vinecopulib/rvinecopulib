@@ -92,7 +92,7 @@ vinecop <- function(data, family_set = "all", matrix = NA,
                     par_method = "mle", nonpar_method = "constant", mult = 1, 
                     selcrit = "bic", weights = numeric(), psi0 = 0.9, 
                     presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", 
-                    threshold = 0, keep_data = TRUE, show_trace = FALSE, 
+                    threshold = 0, keep_data = FALSE, show_trace = FALSE, 
                     cores = 1) {
     assert_that(
         is.character(family_set), 
