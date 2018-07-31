@@ -155,12 +155,12 @@ print.vine_dist <- function(x, ...) {
 #' @export
 summary.vine_dist <- function(object, ...) {
     list(
-        margins = margin_summary_vine_dist(object),
+        margins = get_vine_dist_margin_summary(object),
         copula = summary(object$copula)
     )
 }
 
-margin_summary_vine_dist <- function(vd) {
+get_vine_dist_margin_summary <- function(vd) {
     margins <- vd$margins
     if (length(margins) == 1) 
         margins <- rep(list(margins), dim(vd$copula))
@@ -261,12 +261,12 @@ vine_fit_info <- function(vc) {
 #' @export
 summary.vine <- function(object, ...) {
     list(
-        margins = margin_summary_vine(object),
+        margins = get_vine_margin_summary(object),
         copula = summary(object$copula)
     )
 }
 
-margin_summary_vine <- function(object) {
+get_vine_margin_summary <- function(object) {
     capture.output(info <- sapply(object$margins, summary))
     info <- as.data.frame(t(info))
     info <- cbind(
