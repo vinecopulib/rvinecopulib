@@ -31,8 +31,12 @@ and \code{\link[=pvinecop]{pvinecop()}}.
 Predictions of the density and distribution function
 for a vine copula model.
 }
+\details{
+\code{fitted()} can only be called if the model was fit with the
+\code{keep_data = TRUE} option.
+}
 \examples{
 u <- sapply(1:5, function(i) runif(50))
-fit <- vinecop(u, "par")
+fit <- vinecop(u, "par", keep_data = TRUE)
 all.equal(predict(fit, u), fitted(fit))
 }

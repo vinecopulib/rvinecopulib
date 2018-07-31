@@ -164,7 +164,7 @@ summary.vine_dist <- function(object, ...) {
 #' @param n_mc number of samples used for quasi Monte Carlo integration when
 #'    `what = "cdf"`.
 #' @param ... unused.
-#'
+#' 
 #' @return 
 #' `fitted()` and `predict()` have return values similar to [dvine()] 
 #' and [pvine()].
