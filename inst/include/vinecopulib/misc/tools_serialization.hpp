@@ -10,7 +10,7 @@
 #include <Eigen/Dense>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <vinecopulib/vinecop/triangular_array.hpp>
+#include <vinecopulib/misc/triangular_array.hpp>
 
 namespace vinecopulib {
 

@@ -18,28 +18,56 @@ namespace vinecopulib {
 class Vinecop
 {
 public:
-    // Constructors
-    Vinecop()
-    {
-    }
+
+    // default constructors
+    Vinecop() {}
 
     Vinecop(size_t d);
 
+    // Constructors with structure only
+    Vinecop(const RVineStructure &vine_struct);
+
     Vinecop(const Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> &matrix,
             const bool check_matrix = true);
+
+    Vinecop(const std::vector<size_t> &order,
+            const TriangularArray<size_t> &struct_array,
+            const bool check_array = true);
+
+    // Constructors with pair_copulas + structure
+    Vinecop(const std::vector<std::vector<Bicop>> &pair_copulas,
+            const RVineStructure &vine_struct);
 
     Vinecop(const std::vector <std::vector<Bicop>> &pair_copulas,
             const Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> &matrix,
             const bool check_matrix = true);
 
+    Vinecop(const std::vector<std::vector<Bicop>> &pair_copulas,
+            const std::vector<size_t> &order,
+            const TriangularArray<size_t> &struct_array,
+            const bool check_array = true);
+
+    // Constructors from data
     Vinecop(const Eigen::MatrixXd &data,
             const FitControlsVinecop &controls = FitControlsVinecop());
+
+    Vinecop(const Eigen::MatrixXd &data,
+            const RVineStructure &vine_struct,
+            FitControlsVinecop controls = FitControlsVinecop());
 
     Vinecop(const Eigen::MatrixXd &data,
             const Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> &matrix,
             FitControlsVinecop controls = FitControlsVinecop(),
             const bool check_matrix = true);
 
+    Vinecop(const Eigen::MatrixXd &data,
+            const std::vector<size_t> &order,
+            const TriangularArray<size_t> &struct_array,
+            FitControlsVinecop controls = FitControlsVinecop(),
+            const bool check_array = true);
+
+
+    // Constructors from files/serialized objects
     Vinecop(const char *filename, const bool check_matrix = true);
 
     Vinecop(const boost::property_tree::ptree input,
@@ -85,12 +113,15 @@ public:
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
 
     TriangularArray<size_t> get_struct_array() const;
-        
-    // getter for the threshold
+    
+    // getters for fit statistics
     double get_threshold() const;
-
-    // getter for the loglik
     double get_loglik() const;
+    size_t get_nobs() const;
+    double get_aic() const;
+    double get_bic() const;
+    double get_mbicv(const double psi0) const;
+
 
     // Stats methods
     Eigen::VectorXd pdf(const Eigen::MatrixXd &u,
@@ -98,12 +129,13 @@ public:
 
     Eigen::VectorXd cdf(const Eigen::MatrixXd &u, 
                         const size_t N = 1e4,
-                        const size_t num_threads = 1) const;
+                        const size_t num_threads = 1,
+                        std::vector<int> seeds = std::vector<int>()) const;
 
     Eigen::MatrixXd simulate(const size_t n, 
                              const bool qrng = false, 
                              const size_t num_threads = 1,
-                             const std::vector<int>& seeds =  {1, 2, 3, 4}) const;
+                             const std::vector<int>& seeds = std::vector<int>()) const;
 
     Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd &u,
                                        const size_t num_threads = 1) const;
@@ -111,13 +143,13 @@ public:
     // Fit statistics
     double calculate_npars() const;
 
-    double loglik(const Eigen::MatrixXd &u) const;
+    double loglik(const Eigen::MatrixXd &u, const size_t num_threads = 1) const;
 
-    double aic(const Eigen::MatrixXd &u) const;
+    double aic(const Eigen::MatrixXd &u, const size_t num_threads = 1) const;
 
-    double bic(const Eigen::MatrixXd &u) const;
+    double bic(const Eigen::MatrixXd &u, const size_t num_threads = 1) const;
     
-    double mbicv(const Eigen::MatrixXd &u, const double pi) const;
+    double mbicv(const Eigen::MatrixXd &u, const double psi0, const size_t num_threads = 1) const;
 
     // Misc methods
     static std::vector <std::vector<Bicop>>
@@ -130,8 +162,12 @@ private:
     std::vector <std::vector<Bicop>> pair_copulas_;
     double threshold_;
     double loglik_;
+    size_t nobs_;
 
     void check_data_dim(const Eigen::MatrixXd &data) const;
+    void check_pair_copulas_rvine_structure(
+        const std::vector<std::vector<Bicop>> &pair_copulas) const;
+    double calculate_mbicv_penalty(const size_t nobs, const double psi0) const;
 };
 
 }

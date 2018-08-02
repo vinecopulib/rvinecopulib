@@ -88,16 +88,11 @@ rbicop <- function(n, family, rotation, parameters, U = NULL, qrng = FALSE) {
         U <- rotation
     if (inherits(family, "bicop_dist") & !missing(parameters))
         qrng <- parameters
-    check_u_and_qrng(U, qrng)
+    check_u_and_qrng(U, qrng, n, 2)
     
     bicop <- args2bicop(family, rotation, parameters)
     
-    if (qrng) {
-        U <- bicop_sim_cpp(bicop, n, qrng)
-    } else {
-        U <- prep_uniform_data(n, 2, U)
-        U <- cbind(U[, 1], bicop_hinv1_cpp(U, bicop))
-    }
+    U <- bicop_sim_cpp(bicop, n, qrng, get_seeds())
     if (!is.null(bicop$names)) 
         colnames(U) <- bicop$names
     
@@ -177,10 +172,14 @@ ktau_to_par <- function(family, tau) {
 #' @return 
 #' `fitted()` and `logLik()` have return values similar to [dbicop()], 
 #' [pbicop()], and [hbicop()].
+#' 
+#' @details `fitted()` can only be called if the model was fit with the
+#'    `keep_data = TRUE` option.
+#' 
 #' @examples
 #' # Simulate and fit a bivariate copula model
 #' u <- rbicop(500, "gauss", 0, 0.5)
-#' fit <- bicop(u, "par")
+#' fit <- bicop(u, "par", keep_data = TRUE)
 #' 
 #' # Predictions
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))

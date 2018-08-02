@@ -231,7 +231,8 @@ const
 //!
 //! @param n number of observations.
 //! @param qrng set to true for quasi-random numbers.
-//! @param seed seed of the random number generator.
+//! @param seeds seeds of the (quasi-)random number generator; if empty (default),
+//!   the (quasi-)random number generator is seeded randomly.
 //! @return An \f$ n \times 2 \f$ matrix of samples from the copula model.
 inline Eigen::Matrix<double, Eigen::Dynamic, 2>
 Bicop::simulate(const size_t& n, 
@@ -240,7 +241,7 @@ Bicop::simulate(const size_t& n,
 {
     Eigen::Matrix<double, Eigen::Dynamic, 2> U;
     if (qrng) {
-        U = tools_stats::ghalton(n, 2);
+        U = tools_stats::ghalton(n, 2, seeds);
     } else {
         U = tools_stats::simulate_uniform(n, 2, seeds);
     }
@@ -342,7 +343,7 @@ inline Eigen::MatrixXd Bicop::tau_to_parameters(const double &tau) const
 }
 
 //! converts the parameters to the Kendall's \f$ tau \f$ for the current
-//! family (works for all families but `BicopFamily::tll`).
+//! family.
 //!
 //! @param parameters the parameters (must be a valid parametrization of
 //!     the current family).
@@ -387,6 +388,57 @@ inline double Bicop::get_loglik() const
                                      "parameters have been modified manually");
     }
     return loglik;
+}
+
+inline size_t Bicop::get_nobs() const
+{
+    if ((boost::math::isnan)(bicop_->get_loglik())) {
+        throw std::runtime_error("copula has not been fitted from data or its "
+                                     "parameters have been modified manually");
+    }
+    return nobs_;
+}
+
+inline double Bicop::get_aic() const
+{
+    double loglik = bicop_->get_loglik();
+    if ((boost::math::isnan)(loglik)) {
+        throw std::runtime_error("copula has not been fitted from data or its "
+                                     "parameters have been modified manually");
+    }
+    double npars = bicop_->calculate_npars();
+    return -2 * loglik + 2 * npars;
+}
+
+inline double Bicop::get_bic() const
+{
+    double loglik = bicop_->get_loglik();
+    if ((boost::math::isnan)(loglik)) {
+        throw std::runtime_error("copula has not been fitted from data or its "
+                                     "parameters have been modified manually");
+    }
+    double npars = bicop_->calculate_npars();
+    return -2 * loglik + std::log(nobs_) * npars;
+}
+
+inline double Bicop::get_mbic(const double psi0) const
+{
+    double loglik = bicop_->get_loglik();
+    if ((boost::math::isnan)(loglik)) {
+        throw std::runtime_error("copula has not been fitted from data or its "
+                                     "parameters have been modified manually");
+    }
+    return -2 * loglik + compute_mbic_penalty(nobs_, psi0);
+}
+
+inline double Bicop::compute_mbic_penalty(const size_t nobs, const double psi0) const
+{
+    double npars = bicop_->calculate_npars();
+    bool is_indep = (this->get_family() == BicopFamily::indep);
+    double log_prior = 
+        static_cast<double>(!is_indep) * std::log(psi0) +
+        static_cast<double>(is_indep) * std::log(1.0 - psi0);
+    return std::log(nobs) * npars  - 2 * log_prior;
 }
 
 inline double Bicop::get_tau() const
@@ -485,6 +537,7 @@ inline void Bicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
                 method,
                 controls.get_nonparametric_mult(),
                 w);
+    nobs_ = data_no_nan.rows();
 }
 
 //! selects the best fitting model, by calling fit() for all families in
@@ -506,6 +559,7 @@ inline void Bicop::select(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
         controls.set_weights(w);
     }
     tools_eigen::check_if_in_unit_cube(data_no_nan);
+    nobs_ = data_no_nan.rows();
 
     bicop_ = AbstractBicop::create();
     rotation_ = 0;

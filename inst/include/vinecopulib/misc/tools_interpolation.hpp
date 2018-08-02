@@ -36,28 +36,16 @@ public:
 
     Eigen::VectorXd interpolate(const Eigen::MatrixXd &x);
 
-    Eigen::VectorXd intergrate_1d(const Eigen::MatrixXd &u, size_t cond_var);
+    Eigen::VectorXd integrate_1d(const Eigen::MatrixXd &u, size_t cond_var);
 
-    Eigen::VectorXd intergrate_2d(const Eigen::MatrixXd &u);
+    Eigen::VectorXd integrate_2d(const Eigen::MatrixXd &u);
 
 private:
-    // Utility functions for spline Interpolation
-    double cubic_poly(const double &x, const Eigen::VectorXd &a);
 
-    double cubic_indef_integral(const double &x, const Eigen::VectorXd &a);
-
-    double cubic_integral(const double &lower, const double &upper,
-                          const Eigen::VectorXd &a);
-
-    Eigen::VectorXd
-    find_coefs(const Eigen::VectorXd &vals, const Eigen::VectorXd &grid);
-
-    double interp_on_grid(const double &x, const Eigen::VectorXd &vals,
-                          const Eigen::VectorXd &grid);
-
-    Eigen::Matrix<ptrdiff_t, 1, 2> get_ij(double x0, double x1, ptrdiff_t m);
-
-    // Utility functions for integration
+    Eigen::Matrix<ptrdiff_t, 1, 2> get_indices(double x0, double x1);
+    double bilinear_interpolation(double z11, double z12, double z21, double z22,
+                                  double x1, double x2, double y1, double y2,
+                                  double x, double y);
     double int_on_grid(const double &upr, const Eigen::VectorXd &vals,
                        const Eigen::VectorXd &grid);
 

@@ -21,8 +21,10 @@ test_that("d/p/r- functions work", {
     expect_warning(rvinecop(50, vc, U = u, qrng = TRUE))
     expect_false(any(rvinecop(50, vc, qrng = FALSE) == 
                          rvinecop(50, vc, qrng = FALSE)))
-    expect_true(all(rvinecop(50, vc, qrng = TRUE) == 
-                        rvinecop(50, vc, qrng = TRUE)))
+    set.seed(1)
+    u <- rvinecop(50, vc, qrng = TRUE)
+    set.seed(1)
+    expect_true(all(u == rvinecop(50, vc, qrng = TRUE)))
     expect_gte(min(dvinecop(u, vc)), 0)
     expect_gte(min(pvinecop(u, vc, 100)), 0)
     expect_lte(max(pvinecop(u, vc, 100)), 1)
@@ -50,14 +52,14 @@ test_that("works with truncated vines", {
     expect_length(trunc_vine$pair_copulas, 1)
     
     # summary table is truncated too
-    expect_s3_class(summary(vinecop_dist(pcs[-2], mat)), "vinecop_dist_summary")
+    expect_s3_class(summary(vinecop_dist(pcs[-2], mat)), "summary_df")
     expect_silent(smr <- summary(vinecop_dist(pcs[-2], mat)))
     expect_equal(nrow(smr), 2)
 })
 
 test_that("print/summary/dim generics work", {
     expect_output(print(vc))
-    expect_s3_class(summary(vc), "vinecop_dist_summary")
+    expect_s3_class(summary(vc), "summary_df")
     expect_silent(s <- summary(vc))
     expect_is(s, "data.frame")
     expect_equal(nrow(s), 3)

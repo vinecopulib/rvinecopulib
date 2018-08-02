@@ -82,21 +82,6 @@ check_and_match_family_set <- function(family_set) {
     matched_fams
 }
 
-#' @importFrom stats runif
-prep_uniform_data <- function(n, d, U) {
-    if (is.null(U)) {
-        U <- matrix(runif(n * d), n, d)
-    } else {
-        assert_that(is.matrix(U), nrow(U) == n)
-        if (d == 2) {
-            assert_that(ncol(U) == 2)
-        } else {
-            assert_that(ncol(U) == eval(d))
-        }
-    }
-    U
-}
-
 # Multiple plot function
 #
 # ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
@@ -163,15 +148,15 @@ check_distr <- function(distr) {
     ## basic sanity checks
     if (!is.list(distr))
         return("a distribution should be a kde1d object or a list")
-    if (!any(is.element(names(distr), "name")))
-        return("a distribution should be a kde1d object or a list with a name element")
-    nn <- distr[["name"]]
+    if (!any(is.element(names(distr), "distr")))
+        return("a distribution should be a kde1d object or a list with a 'distr' element")
+    nn <- distr[["distr"]]
     if (!is.element(nn, supported_distributions))
         return("the provided name does not belong to supported distributions")
     
     ## check that the provided parameters are consistent with the distribution
     qfun <- get(paste0("q", nn))
-    par <- distr[names(distr)!= "name"]
+    par <- distr[names(distr)!= "distr"]
     par$p <- 0.5
     e <- tryCatch(do.call(qfun, par), error = function(e) e)
     if (any(class(e) == "error"))
@@ -181,7 +166,7 @@ check_distr <- function(distr) {
 }
 
 get_npars_distr <- function(distr) {
-    switch(distr$name,
+    switch(distr$distr,
            beta = 2,
            cauchy = 2,
            chisq = ifelse("ncp" %in% names(distr), 2, 1),
@@ -259,9 +244,64 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
     return(res)
 }
 
-check_u_and_qrng <- function(U, qrng) {
+#' internal function to check arguments of simulation routines
+#' @noRd
+check_u_and_qrng <- function(U, qrng, n, d) {
     assert_that(is.flag(qrng))
-    if (!is.null(U) && qrng)
-        warning(c("U is not NULL and qrng is TRUE: generating quasi-random", 
-                  "numbers instead of using the provided U."))
+    if (!is.null(U)) {
+        if (qrng) {
+            warning(c("U is not NULL and qrng is TRUE: generating quasi-random", 
+                      "numbers instead of using the provided U."))
+        } else {
+            assert_that(is.matrix(U), nrow(U) == n)
+            if (d == 2) {
+                assert_that(ncol(U) == 2)
+            } else {
+                assert_that(ncol(U) == eval(d))
+            }
+        }
+    }
 }
+
+#' Truncates output of model data frames.
+#'
+#' @param x a `data.frame` whose print output should be truncated.
+#' @noRd
+#' @export
+print.summary_df <- function(x, ...) {
+    x_print <- x[1:min(nrow(x), 10), ]
+    cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
+    print.data.frame(x_print, digits = 2)
+    if (nrow(x) > 10)
+        cat("# ... with", nrow(x) - 10, "more rows\n")
+    invisible(x)
+}
+
+#' internal function
+#' @noRd
+print_truncation_info <- function(x) {
+    n_trees <- length(x$pair_copulas)
+    if (n_trees < dim(x) - 1)
+        cat(", ", n_trees, "-truncated", sep = "")
+    cat("\n")
+}
+
+#' internal function
+#' @noRd
+print_fit_info <- function(x) {
+    ll <- logLik(x)
+    cat("nobs =", x$nobs, "  ")
+    cat("logLik =", round(ll[1], 2), "  ")
+    cat("npars =", round(attr(ll, "df"), 2), "  ")
+    cat("AIC =", round(-2 * ll[1] + 2 * attr(ll, "df"), 2), "  ")
+    cat("BIC =", round(-2 * ll[1] + log(x$nobs) * attr(ll, "df"), 2), "  ")
+    cat("\n")
+}
+
+#' internal function : synchronize C++ random number generators with R
+#' @importFrom stats runif
+#' @noRd
+get_seeds <- function() {
+    as.numeric(sprintf("%20.0f", runif(20, 1e6, 1e7)))
+}
+

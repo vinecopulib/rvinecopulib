@@ -12,17 +12,20 @@
 \alias{rvine}
 \title{Vine based distributions}
 \usage{
-dvine(x, vine)
+dvine(x, vine, cores = 1)
 
-pvine(x, vine, n_mc = 10^4)
+pvine(x, vine, n_mc = 10^4, cores = 1)
 
-rvine(n, vine, U = NULL, qrng = FALSE)
+rvine(n, vine, U = NULL, qrng = FALSE, cores = 1)
 }
 \arguments{
 \item{x}{evaluation points, either a length d vector or a d-column matrix,
 where d is the number of variables in the vine.}
 
 \item{vine}{an object of class \code{"vine_dist"}.}
+
+\item{cores}{number of cores to use; if larger than one, computations are
+done in parallel on \code{cores} batches .}
 
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 
@@ -74,7 +77,7 @@ pcs <- list(
 mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
 
 # set up vine copula model
-vc <- vine_dist(list(name = "norm"), pcs, mat)
+vc <- vine_dist(list(distr = "norm"), pcs, mat)
 
 # simulate from the model
 x <- rvine(200, vc)

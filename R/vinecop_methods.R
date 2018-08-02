@@ -8,6 +8,8 @@
 #' @param u evaluation points, either a length d vector or a d-column matrix,
 #'   where d is the number of variables in the vine.
 #' @param vinecop an object of class `"vinecop_dist"`.
+#' @param cores number of cores to use; if larger than one, computations are
+#'   done in parallel on `cores` batches .
 #' @details 
 #' See [vinecop] for the estimation and construction of vine copula models. 
 #' Here, the density, distribution function and random generation 
@@ -60,17 +62,19 @@
 #' 
 #' @rdname vinecop_methods
 #' @export
-dvinecop <- function(u, vinecop) {
+dvinecop <- function(u, vinecop, cores = 1) {
     assert_that(inherits(vinecop, "vinecop_dist"))
-    vinecop_pdf_cpp(if_vec_to_matrix(u), vinecop)
+    vinecop_pdf_cpp(if_vec_to_matrix(u), vinecop, cores)
 }
 
 #' @rdname vinecop_methods
 #' @param n_mc number of samples used for quasi Monte Carlo integration.
+#' @importFrom assertthat is.count
 #' @export
-pvinecop <- function(u, vinecop, n_mc = 10^4) {
-    assert_that(inherits(vinecop, "vinecop_dist"), is.number(n_mc))
-    vinecop_cdf_cpp(if_vec_to_matrix(u), vinecop, n_mc)
+pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
+    assert_that(inherits(vinecop, "vinecop_dist"), 
+                is.number(n_mc), is.count(cores))
+    vinecop_cdf_cpp(if_vec_to_matrix(u), vinecop, n_mc, cores, get_seeds())
 }
 
 #' @rdname vinecop_methods
@@ -83,17 +87,11 @@ pvinecop <- function(u, vinecop, n_mc = 10^4) {
 #' Generalized Halton sequence up to dimension 300 and the Generalized Sobol 
 #' sequence in higher dimensions (default `qrng = FALSE`).
 #' @export
-rvinecop <- function(n, vinecop, U = NULL, qrng = FALSE) {
+rvinecop <- function(n, vinecop, U = NULL, qrng = FALSE, cores = 1) {
     assert_that(inherits(vinecop, "vinecop_dist"))
-    check_u_and_qrng(U, qrng)
+    check_u_and_qrng(U, qrng, n, ncol(vinecop$matrix))
     
-    if (qrng) {
-        U <- vinecop_sim_cpp(vinecop, n, qrng)
-    } else {
-        d <- ncol(vinecop$matrix)
-        U <- prep_uniform_data(n, d, U)
-        U <- vinecop_inverse_rosenblatt_cpp(U, vinecop)
-    }
+    U <- vinecop_sim_cpp(vinecop, n, qrng, cores, get_seeds())
     if (!is.null(vinecop$names))
         colnames(U) <- vinecop$names
     
@@ -102,12 +100,8 @@ rvinecop <- function(n, vinecop, U = NULL, qrng = FALSE) {
 
 #' @export
 print.vinecop_dist <- function(x, ...) {
-    d <- nrow(x$matrix)
-    cat(d, "-dimensional vine copula model ('vinecop_dist')", sep = "")
-    n_trees <- length(x$pair_copulas)
-    if (n_trees < d - 1)
-        cat(", ", n_trees, "-truncated", sep = "")
-    cat("\n")
+    cat(dim(x), "-dimensional vine copula model ('vinecop_dist')", sep = "")
+    print_truncation_info(x)
     invisible(x)
 }
 
@@ -138,19 +132,8 @@ summary.vinecop_dist <- function(object, ...) {
             k <- k + 1
         }
     }
-    class(mdf) <- c("vinecop_dist_summary", class(mdf))
+    class(mdf) <- c("summary_df", class(mdf))
     mdf
-}
-
-#' @export
-print.vinecop_dist_summary <- function(x, ...) {
-    x_print <- x[1:min(nrow(x), 10), ]
-    x_print[x_print$family == "tll", "parameters"] <- list("[30x30 grid]")
-    cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
-    print.data.frame(x_print, digits = 2)
-    if (nrow(x) > 10)
-        cat("# ... with", nrow(x) - 10, "more rows\n")
-    invisible(x)
 }
 
 #' Predictions and fitted values for a vine copula model
@@ -166,7 +149,10 @@ print.vinecop_dist_summary <- function(x, ...) {
 #' @param n_mc number of samples used for quasi Monte Carlo integration when
 #'    `what = "cdf"`.
 #' @param ... unused.
-#'
+#' 
+#' @details `fitted()` can only be called if the model was fit with the
+#'    `keep_data = TRUE` option.
+#' 
 #' @return 
 #' `fitted()` and `predict()` have return values similar to [dvinecop()] 
 #' and [pvinecop()].
@@ -174,28 +160,37 @@ print.vinecop_dist_summary <- function(x, ...) {
 #' @rdname predict_vinecop
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, "par")
+#' fit <- vinecop(u, "par", keep_data = TRUE)
 #' all.equal(predict(fit, u), fitted(fit))
-predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4, ...) {
-    assert_that(in_set(what, c("pdf", "cdf")), is.number(n_mc))
+predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4, 
+                            cores = 1, ...) {
+    assert_that(
+        in_set(what, c("pdf", "cdf")), 
+        is.number(n_mc),
+        is.number(cores), cores > 0
+    )
     newdata <- if_vec_to_matrix(newdata)
     switch(
         what,
-        "pdf" = vinecop_pdf_cpp(newdata, object),
-        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc)
+        "pdf" = vinecop_pdf_cpp(newdata, object, cores),
+        "cdf" = vinecop_cdf_cpp(newdata, object, n_mc, cores, get_seeds())
     )
 }
 
 #' @rdname predict_vinecop
 #' @export
-fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, ...) {
+fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
     if (is.null(object$data))
         stop("data have not been stored, use keep_data = TRUE when fitting.")
-    assert_that(in_set(what, c("pdf", "cdf")), is.number(n_mc))
+    assert_that(
+        in_set(what, c("pdf", "cdf")), 
+        is.number(n_mc), 
+        is.number(cores), cores > 0
+    )
     switch(
         what,
-        "pdf" = vinecop_pdf_cpp(object$data, object),
-        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc)
+        "pdf" = vinecop_pdf_cpp(object$data, object, cores),
+        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc, cores, get_seeds())
     )
 }
 
@@ -223,39 +218,36 @@ logLik.vinecop <- function(object, ...) {
 #'
 #' @param object a fitted `vinecop` object.
 #' @param psi0 baseline prior probability of a non-independence copula.
+#' @param newdata optional; a new data set.
 #' @export mBICV
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, "par")
+#' fit <- vinecop(u, "par", keep_data = TRUE)
 #' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 #' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
-mBICV <- function(object, psi0 = 0.9) {
+mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
     assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    vinecop_mbicv_cpp(object$data, object, psi0)
+    ll <- ifelse(is.null(newdata), 
+                 object$loglik, 
+                 sum(log(dvinecop(newdata, object))))
+    - 2 * ll + compute_mBICV_penalty(object, psi0) 
+}
+
+compute_mBICV_penalty <- function(object, psi0) {
+    d <- dim(object)
+    smr <- summary(object)
+    q_m <- tapply(smr$family, smr$tree, function(x) sum(x == "indep"))
+    q_m <- c(q_m, rep(0, d - 1 - length(q_m)))
+    m_seq <- seq_len(d - 1)
+    pen <- object$npars * log(object$nobs)
+    pen - 2 * sum(q_m * log(psi0^m_seq) + (d - 1 - q_m) * log(1 - psi0^m_seq))
 }
 
 #' @export
 print.vinecop <- function(x, ...) {
-    d <- nrow(x$matrix)
-    cat(d, "-dimensional vine copula fit ('vinecop')", sep = "")
-    n_trees <- length(x$pair_copulas)
-    if (n_trees < d - 1)
-        cat(", ", n_trees, "-truncated", sep = "")
-    cat("\n")
-    cat("nobs =", x$nobs, "  ")
-    if (!is.null(x$data)) {
-        info <- vinecop_fit_info(x)
-        cat("logLik =", round(info$logLik, 2), "  ")
-        cat("npars =", round(info$npars, 2), "  ")
-        cat("AIC =", round(info$AIC, 2), "  ")
-        cat("BIC =", round(info$BIC, 2), "  ")
-        attr(x, "info") <- info
-    } else {
-        cat("(for mor information, fit model with keep_data = TRUE)")
-    }
-    cat("\n")
+    cat(dim(x), "-dimensional vine copula fit ('vinecop')", sep = "")
+    print_truncation_info(x)
+    print_fit_info(x)
     invisible(x)
 }
 
@@ -275,19 +267,6 @@ summary.vinecop <- function(object, ...) {
     }
     
     mdf
-}
-
-
-vinecop_fit_info <- function(vc) {
-    stopifnot(inherits(vc, "vinecop"))
-    ll <- logLik(vc)
-    list(
-        nobs   = vc$nobs,
-        logLik = ll[1],
-        npars  = attr(ll, "df"),
-        AIC    = -2 * ll[1] + 2 * attr(ll, "df"),
-        BIC    = -2 * ll[1] + log(vc$nobs) * attr(ll, "df")
-    )
 }
 
 #' Truncate a vine copula model

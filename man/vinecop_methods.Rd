@@ -12,17 +12,20 @@
 \alias{rvinecop}
 \title{Vine copula distributions}
 \usage{
-dvinecop(u, vinecop)
+dvinecop(u, vinecop, cores = 1)
 
-pvinecop(u, vinecop, n_mc = 10^4)
+pvinecop(u, vinecop, n_mc = 10^4, cores = 1)
 
-rvinecop(n, vinecop, U = NULL, qrng = FALSE)
+rvinecop(n, vinecop, U = NULL, qrng = FALSE, cores = 1)
 }
 \arguments{
 \item{u}{evaluation points, either a length d vector or a d-column matrix,
 where d is the number of variables in the vine.}
 
 \item{vinecop}{an object of class \code{"vinecop_dist"}.}
+
+\item{cores}{number of cores to use; if larger than one, computations are
+done in parallel on \code{cores} batches .}
 
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 

@@ -62,7 +62,7 @@
 #' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
 #' 
 #' # set up vine copula model with Gaussian margins
-#' vc <- vine_dist(list(name = "norm"), pcs, mat)
+#' vc <- vine_dist(list(distr = "norm"), pcs, mat)
 #' 
 #' # show model
 #' summary(vc)
@@ -93,7 +93,7 @@ vine <- function(data,
                                      trunc_lvl = Inf, 
                                      tree_crit = "tau", 
                                      threshold = 0, 
-                                     keep_data = TRUE,
+                                     keep_data = FALSE,
                                      show_trace = FALSE, 
                                      cores = 1)) {
     
@@ -144,8 +144,9 @@ vine <- function(data,
 
 #' @param margins A list with with each element containing the specification of a 
 #' marginal [stats::Distributions]. Each marginal specification 
-#' should be a list with containing at least the name and optionally the 
-#' parameters, e.g. `list(list(name = "norm"), list(name = "norm", mu = 1), list(name = "beta", shape1 = 1, shape2 = 1))`.
+#' should be a list with containing at least the distribution family (`"distr"`) 
+#' and optionally the parameters, e.g. 
+#' `list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))`.
 #' Note that parameters that have no default values have to be provided. 
 #' Furthermore, if `margins` has length one, it will be recycled for every component.
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where 
@@ -233,7 +234,8 @@ finalize_vine <- function(vine, data, keep_data) {
     
     ## add number of observations
     vine$nobs <- nrow(data)
-    
+    vine$names <- vine$copula$names <- colnames(data)
+
     ## create and return object
     structure(vine, class = c("vine", "vine_dist"))
 }

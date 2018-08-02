@@ -10,7 +10,7 @@ test_that("returns proper 'vine' object", {
     expect_identical(
         names(fit),  
         c("margins", "margins_controls", "copula", 
-          "copula_controls", "npars", "loglik", "data", "nobs")
+          "copula_controls", "npars", "loglik", "data", "nobs", "names")
     )
 })
 
@@ -27,8 +27,9 @@ test_that("S3 generics work", {
 
 test_that("print/summary generics work", {
     expect_output(print(fit))
-    expect_s3_class(s <- summary(fit), "vinecop_dist_summary")
-    expect_is(s, "data.frame")
+    s <- summary(fit)
+    expect_is(s$margins, c("summary_df", "data.frame"))
+    expect_is(s$copula, c("summary_df", "data.frame"))
 })
 
 test_that("discrete data work", {
