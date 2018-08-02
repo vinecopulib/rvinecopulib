@@ -170,6 +170,7 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd &data,
         FitControlsVinecop controls)
 {
     d_ = data.cols();
+    nobs_ = data.rows();
     if (data.rows() == 1) {
         throw std::runtime_error("data must have more than one row");
     }
@@ -226,6 +227,7 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd &data,
                         const FitControlsVinecop &controls)
 {
     d_ = data.cols();
+    nobs_ = data.rows();
     if (data.rows() == 1) {
         throw std::runtime_error("data must have more than one row");
     }
@@ -309,6 +311,7 @@ inline void Vinecop::select_all(const Eigen::MatrixXd &data,
     }
     threshold_ = selector.get_threshold();
     loglik_ = selector.get_loglik();
+    nobs_ = data.rows();
     vine_struct_ = selector.get_rvine_matrix();
     pair_copulas_ = selector.get_pair_copulas();
 }
@@ -338,6 +341,7 @@ inline void Vinecop::select_families(const Eigen::MatrixXd &data,
         }
         threshold_ = selector.get_threshold();
         loglik_ = selector.get_loglik();
+        nobs_ = data.rows();
         pair_copulas_ = selector.get_pair_copulas();
     }
 }
@@ -512,13 +516,91 @@ Vinecop::get_struct_array() const
     return vine_struct_.get_struct_array();
 }
 
-//! extracts the log-likelihood (zero when model not fitted to data).
+//! extracts the log-likelihood (throws an error if model has not been 
+//! fitted to data).
 inline double Vinecop::get_loglik() const
 {
     if (std::isnan(loglik_)) {
         throw std::runtime_error("copula has not been fitted from data ");
     }
     return loglik_;
+}
+
+//! extracts the number of observations used for the fit (throws an error if 
+//! model has not been fitted to data).
+inline size_t Vinecop::get_nobs() const
+{
+    if (std::isnan(loglik_)) {
+        throw std::runtime_error("copula has not been fitted from data ");
+    }
+    return nobs_;
+}
+
+//! extracts the AIC (throws an error if model has not been 
+//! fitted to data).
+inline double Vinecop::get_aic() const
+{
+    if (std::isnan(loglik_)) {
+        throw std::runtime_error("copula has not been fitted from data ");
+    }
+    return -2 * loglik_ + 2 * calculate_npars();
+}
+
+//! extracts the BIC (throws an error if model has not been 
+//! fitted to data).
+inline double Vinecop::get_bic() const
+{
+    if (std::isnan(loglik_)) {
+        throw std::runtime_error("copula has not been fitted from data ");
+    }
+    return -2 * loglik_ + calculate_npars() * log(nobs_);;
+}
+
+//! extracts the log-likelihood (throws an error if model has not been 
+//! fitted to data).
+inline double Vinecop::get_mbicv(const double psi0) const
+{
+    if (std::isnan(loglik_)) {
+        throw std::runtime_error("copula has not been fitted from data ");
+    }
+    return -2 * loglik_ + this->calculate_mbicv_penalty(nobs_, psi0);
+}
+
+//! computes the penalty term for mBICV
+inline double Vinecop::calculate_mbicv_penalty(const size_t nobs, 
+                                             const double psi0) const
+{
+    if (!(psi0 > 0.0) | !(psi0 < 1.0)) {
+        throw std::runtime_error("psi0 must be in the interval (0, 1)");
+    }    
+    auto all_fams = get_all_families();
+    Eigen::Matrix<size_t, Eigen::Dynamic, 1> non_indeps(d_ - 1);
+    non_indeps.setZero();
+    for (size_t t = 0; t < d_ - 1; t++) {
+        if (t == all_fams.size()) {
+            break;
+        }
+        for (size_t e = 0; e < d_ - 1 - t; e++) {
+            if (all_fams[t][e] != BicopFamily::indep) {
+                non_indeps(t)++;
+            }
+        }
+    }
+    auto sq0 = tools_stl::seq_int(1, d_ - 1);
+    Eigen::Matrix<size_t, Eigen::Dynamic, 1> sq(d_ - 1);
+    auto psis = Eigen::VectorXd(d_ - 1);
+    for (size_t i = 0; i < d_ - 1; i++) {
+        sq(i) = sq0[i];
+        psis(i) = std::pow(psi0, sq0[i]);
+    }
+    double npars = this->calculate_npars();
+    double log_prior = (
+        non_indeps.cast<double>().array() * psis.array().log() +
+        (d_ - non_indeps.array() - sq.array()).cast<double>() * 
+        (1 - psis.array()).log()
+    ).sum();
+    
+    return std::log(nobs) * npars - 2 * log_prior;
 }
 
 //! extracts the threshold (usually zero except `select_threshold == TRUE` in
@@ -619,8 +701,11 @@ inline Eigen::VectorXd Vinecop::pdf(const Eigen::MatrixXd &u,
 //! @param num_threads the number of threads to use for computations; if greater
 //!   than 1, the function will generate `n` samples concurrently in 
 //!   `num_threads` batches.
+//! @param seeds seeds to scramble the quasi-random numbers; if empty (default),
+//!   the random number quasi-generator is seeded randomly.
 inline Eigen::VectorXd
-Vinecop::cdf(const Eigen::MatrixXd &u, const size_t N, const size_t num_threads) const
+Vinecop::cdf(const Eigen::MatrixXd &u, const size_t N,
+             const size_t num_threads, std::vector<int> seeds) const
 {
     if (d_ > 21201) {
         std::stringstream message;
@@ -635,9 +720,9 @@ Vinecop::cdf(const Eigen::MatrixXd &u, const size_t N, const size_t num_threads)
     // Simulate N quasi-random numbers from the vine model
     Eigen::MatrixXd U(N, d_);
     if (d_ > 300) {
-        U = tools_stats::sobol(N, d_);
+        U = tools_stats::sobol(N, d_, seeds);
     } else {
-        U = tools_stats::ghalton(N, d_);
+        U = tools_stats::ghalton(N, d_, seeds);
     }
     U = inverse_rosenblatt(U, num_threads);
 
@@ -675,9 +760,9 @@ inline Eigen::MatrixXd Vinecop::simulate(const size_t n,
     Eigen::MatrixXd U(n, d_);
     if (qrng) {
         if (d_ > 300) {
-            U = tools_stats::sobol(n, d_);
+            U = tools_stats::sobol(n, d_, seeds);
         } else {
-            U = tools_stats::ghalton(n, d_);
+            U = tools_stats::ghalton(n, d_, seeds);
         }
     } else {
         U = tools_stats::simulate_uniform(n, d_, seeds);
@@ -747,46 +832,18 @@ inline double Vinecop::bic(const Eigen::MatrixXd &u,
 //! parametric sparse vine copula models when \f$ d = o(\sqrt{n \ln n})\f$.
 //!
 //! @param u \f$n \times 2\f$ matrix of observations.
-//! @param pi baseline prior probability of a non-independence copula.
+//! @param psi0 baseline prior probability of a non-independence copula.
 //! @param num_threads the number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
 inline double Vinecop::mbicv(const Eigen::MatrixXd &u, 
-                             const double pi, 
+                             const double psi0, 
                              const size_t num_threads) const
 {
-    if (!(pi > 0.0) | !(pi < 1.0)) {
-        throw std::runtime_error("pi must be in the interval (0, 1)");
-    }    
-    auto all_fams = get_all_families();
-    Eigen::Matrix<size_t, Eigen::Dynamic, 1> non_indeps(d_ - 1);
-    non_indeps.setZero();
-    for (size_t t = 0; t < d_ - 1; t++) {
-        if (t == all_fams.size()) {
-            break;
-        }
-        for (size_t e = 0; e < d_ - 1 - t; e++) {
-            if (all_fams[t][e] != BicopFamily::indep) {
-                non_indeps(t)++;
-            }
-        }
-    }
-    auto sq0 = tools_stl::seq_int(1, d_ - 1);
-    Eigen::Matrix<size_t, Eigen::Dynamic, 1> sq(d_ - 1);
-    auto pis = Eigen::VectorXd(d_ - 1);
-    for (size_t i = 0; i < d_ - 1; i++) {
-        sq(i) = sq0[i];
-        pis(i) = std::pow(pi, sq0[i]);
-    }
-    double npars = this->calculate_npars();
+    
     double n = static_cast<double>(u.rows());
     double ll = this->loglik(u, num_threads);
-    double log_prior = (
-        non_indeps.cast<double>().array() * pis.array().log() +
-        (d_ - non_indeps.array() - sq.array()).cast<double>() * 
-        (1 - pis.array()).log()
-    ).sum();
-    return -2 * ll + std::log(n) * npars - 2 * log_prior;       
+    return -2 * ll + this->calculate_mbicv_penalty(n, psi0);;       
 }
 
 //! returns sum of the number of parameters for all pair copulas (see

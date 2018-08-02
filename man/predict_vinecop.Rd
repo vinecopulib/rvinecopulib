@@ -7,9 +7,11 @@
 \alias{fitted.vinecop}
 \title{Predictions and fitted values for a vine copula model}
 \usage{
-\method{predict}{vinecop}(object, newdata, what = "pdf", n_mc = 10^4, ...)
+\method{predict}{vinecop}(object, newdata, what = "pdf", n_mc = 10^4,
+  cores = 1, ...)
 
-\method{fitted}{vinecop}(object, what = "pdf", n_mc = 10^4, ...)
+\method{fitted}{vinecop}(object, what = "pdf", n_mc = 10^4, cores = 1,
+  ...)
 }
 \arguments{
 \item{object}{a \code{vinecop} object.}

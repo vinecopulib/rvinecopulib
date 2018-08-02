@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git clone --depth 1 https://github.com/vinecopulib/vinecopulib/ -b prepare-v0.3.0 --single-branch
+git clone --depth 1 https://github.com/vinecopulib/vinecopulib/ -b dev --single-branch
 
 rm -rf ../inst/include/vinecopulib*
 mv ./vinecopulib/include/* ../inst/include

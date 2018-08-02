@@ -110,7 +110,8 @@ pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
     
     # Evaluate copula if needed
     if (!is.null(vine$copula)) {
-        vals <- vinecop_cdf_cpp(if_vec_to_matrix(u), vine$copula, n_mc, cores)
+        vals <- vinecop_cdf_cpp(if_vec_to_matrix(u), vine$copula, n_mc, 
+                                cores, get_seeds())
     } else {
         vals <- u
     }
@@ -124,20 +125,22 @@ pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
 #'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
 #'    matrix of independent \eqn{U(0, 1)} variables, this simulates data 
 #'    from `vine`.
+#' @param qrng if `TRUE`, generates quasi-random numbers using the multivariate 
+#' Generalized Halton sequence up to dimension 300 and the Generalized Sobol 
+#' sequence in higher dimensions (default `qrng = FALSE`).
 #' @export
-rvine <- function(n, vine, U = NULL, cores = 1) {
-    stopifnot(inherits(vine, "vine_dist"))
+rvine <- function(n, vine, U = NULL, qrng = FALSE, cores = 1) {
     
-    # prepare uniform data
-    d <- ncol(vine$copula$matrix)
-    U <- prep_uniform_data(n, d, U)
+    assert_that(inherits(vine, "vine_dist"))
     
-    # simulate from copula
-    U <- vinecop_inverse_rosenblatt_cpp(U, vine$copula, cores)
+    # simulate copula data
+    U <- rvinecop(n, vine$copula, U, qrng, cores)
+
     
     # prepare marginals if only one is specified
     if (!inherits(vine, "vine") & depth(vine$margins) == 1) 
-        vine$margins <- replicate(d, vine$margins, simplify = FALSE)
+        vine$margins <- replicate(ncol(vine$copula$matrix), 
+                                  vine$margins, simplify = FALSE)
     
     # use quantile transformation for marginals
     dpq_marg(U, vine, "q")
@@ -164,7 +167,7 @@ get_vine_dist_margin_summary <- function(vd) {
         margins <- rep(list(margins), dim(vd$copula))
     df <- data.frame(
         margin = seq_along(margins),
-        name = sapply(margins, function(x) x$name)
+        distr = sapply(margins, function(x) x$distr)
     )
     class(df) <- c("summary_df", class(df))
     df

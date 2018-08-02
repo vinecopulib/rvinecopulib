@@ -195,6 +195,14 @@ Eigen::VectorXd bicop_hinv2_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bico
 }
 
 // [[Rcpp::export()]]
+Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r, const size_t &n, 
+                              const bool qrng,
+                              std::vector<int> seeds)
+{
+    return bicop_wrap(bicop_r).simulate(n, qrng, seeds);
+}
+
+// [[Rcpp::export()]]
 double bicop_loglik_cpp(Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).loglik(u);
@@ -289,6 +297,16 @@ Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
 }
 
 // [[Rcpp::export()]]
+Eigen::MatrixXd vinecop_sim_cpp(const Rcpp::List& vinecop_r, 
+                                const size_t n, 
+                                const bool qrng,
+                                size_t cores,
+                                std::vector<int> seeds)
+{
+    return vinecop_wrap(vinecop_r).simulate(n, qrng, cores, seeds);
+}
+
+// [[Rcpp::export()]]
 Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, 
                                 const Rcpp::List& vinecop_r,
                                 size_t cores)
@@ -300,9 +318,10 @@ Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u,
 Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u, 
                                 const Rcpp::List& vinecop_r, 
                                 size_t N,
-                                size_t cores)
+                                size_t cores,
+                                std::vector<int> seeds)
 {
-    return vinecop_wrap(vinecop_r).cdf(u, N, cores);
+    return vinecop_wrap(vinecop_r).cdf(u, N, cores, seeds);
 }
 
 // [[Rcpp::export()]]

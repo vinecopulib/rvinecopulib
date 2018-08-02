@@ -69,10 +69,12 @@ dvinecop <- function(u, vinecop, cores = 1) {
 
 #' @rdname vinecop_methods
 #' @param n_mc number of samples used for quasi Monte Carlo integration.
+#' @importFrom assertthat is.count
 #' @export
 pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
-    assert_that(inherits(vinecop, "vinecop_dist"), is.number(n_mc))
-    vinecop_cdf_cpp(if_vec_to_matrix(u), vinecop, n_mc, cores)
+    assert_that(inherits(vinecop, "vinecop_dist"), 
+                is.number(n_mc), is.count(cores))
+    vinecop_cdf_cpp(if_vec_to_matrix(u), vinecop, n_mc, cores, get_seeds())
 }
 
 #' @rdname vinecop_methods
@@ -81,12 +83,15 @@ pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
 #'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
 #'    matrix of independent \eqn{U(0, 1)} variables, this simulates data 
 #'    from `vinecop`.
+#' @param qrng if `TRUE`, generates quasi-random numbers using the multivariate 
+#' Generalized Halton sequence up to dimension 300 and the Generalized Sobol 
+#' sequence in higher dimensions (default `qrng = FALSE`).
 #' @export
-rvinecop <- function(n, vinecop, U = NULL, cores = 1) {
+rvinecop <- function(n, vinecop, U = NULL, qrng = FALSE, cores = 1) {
     assert_that(inherits(vinecop, "vinecop_dist"))
-    d <- ncol(vinecop$matrix)
-    U <- prep_uniform_data(n, d, U)
-    U <- vinecop_inverse_rosenblatt_cpp(U, vinecop, cores)
+    check_u_and_qrng(U, qrng, n, ncol(vinecop$matrix))
+    
+    U <- vinecop_sim_cpp(vinecop, n, qrng, cores, get_seeds())
     if (!is.null(vinecop$names))
         colnames(U) <- vinecop$names
     
@@ -167,8 +172,8 @@ predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4,
     newdata <- if_vec_to_matrix(newdata)
     switch(
         what,
-        "pdf" = vinecop_pdf_cpp(newdata, object),
-        "cdf" = vinecop_cdf_cpp(newdata, object, n_mc)
+        "pdf" = vinecop_pdf_cpp(newdata, object, cores),
+        "cdf" = vinecop_cdf_cpp(newdata, object, n_mc, cores, get_seeds())
     )
 }
 
@@ -185,7 +190,7 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
     switch(
         what,
         "pdf" = vinecop_pdf_cpp(object$data, object, cores),
-        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc, cores)
+        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc, cores, get_seeds())
     )
 }
 

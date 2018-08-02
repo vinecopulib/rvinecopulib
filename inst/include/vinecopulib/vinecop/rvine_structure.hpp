@@ -7,7 +7,7 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include <vinecopulib/vinecop/triangular_array.hpp>
+#include <vinecopulib/misc/triangular_array.hpp>
 
 namespace vinecopulib {
 

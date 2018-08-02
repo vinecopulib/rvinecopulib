@@ -15,6 +15,15 @@ test_that("constructor creates proper `vine_dist` object", {
 test_that("d/p/r- functions work", {
     u <- rvine(50, vc)
     u <- rvine(50, vc, pnorm(u))
+    expect_error(rvine(50, vc, U = u[, -1]))
+    expect_error(rvine(50, vc, U = u[-1, ]))
+    expect_warning(rvine(50, vc, U = u, qrng = TRUE))
+    expect_false(any(rvine(50, vc, qrng = FALSE) == 
+                         rvine(50, vc, qrng = FALSE)))
+    set.seed(1)
+    u <- rvine(50, vc, qrng = TRUE)
+    set.seed(1)
+    expect_true(all(u == rvine(50, vc, qrng = TRUE)))
     expect_gte(min(dvine(u, vc)), 0)
     expect_gte(min(pvine(u, vc, 100)), 0)
     expect_lte(max(pvine(u, vc, 100)), 1)
