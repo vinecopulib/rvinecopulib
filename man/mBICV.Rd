@@ -4,12 +4,14 @@
 \alias{mBICV}
 \title{Modified vine copula Bayesian information criterion (mBICv)}
 \usage{
-mBICV(object, psi0 = 0.9)
+mBICV(object, psi0 = 0.9, newdata = NULL)
 }
 \arguments{
 \item{object}{a fitted \code{vinecop} object.}
 
 \item{psi0}{baseline prior probability of a non-independence copula.}
+
+\item{newdata}{optional; a new data set.}
 }
 \description{
 Calculates the modified vine copula Bayesian information criterion.
@@ -30,7 +32,7 @@ vine copula models.
 }
 \examples{
 u <- sapply(1:5, function(i) runif(50))
-fit <- vinecop(u, "par")
+fit <- vinecop(u, "par", keep_data = TRUE)
 mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 }

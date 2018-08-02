@@ -29,10 +29,14 @@
 Predictions of the density, distribution function,
 h-functions (with their inverses) for a bivariate copula model.
 }
+\details{
+\code{fitted()} can only be called if the model was fit with the
+\code{keep_data = TRUE} option.
+}
 \examples{
 # Simulate and fit a bivariate copula model
 u <- rbicop(500, "gauss", 0, 0.5)
-fit <- bicop(u, "par")
+fit <- bicop(u, "par", keep_data = TRUE)
 
 # Predictions
 all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))

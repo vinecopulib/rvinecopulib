@@ -144,7 +144,10 @@ summary.vinecop_dist <- function(object, ...) {
 #' @param n_mc number of samples used for quasi Monte Carlo integration when
 #'    `what = "cdf"`.
 #' @param ... unused.
-#'
+#' 
+#' @details `fitted()` can only be called if the model was fit with the
+#'    `keep_data = TRUE` option.
+#' 
 #' @return 
 #' `fitted()` and `predict()` have return values similar to [dvinecop()] 
 #' and [pvinecop()].
@@ -152,7 +155,7 @@ summary.vinecop_dist <- function(object, ...) {
 #' @rdname predict_vinecop
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, "par")
+#' fit <- vinecop(u, "par", keep_data = TRUE)
 #' all.equal(predict(fit, u), fitted(fit))
 predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4, 
                             cores = 1, ...) {
@@ -164,8 +167,8 @@ predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4,
     newdata <- if_vec_to_matrix(newdata)
     switch(
         what,
-        "pdf" = vinecop_pdf_cpp(newdata, object, cores),
-        "cdf" = vinecop_cdf_cpp(object$data, object, n_mc, cores)
+        "pdf" = vinecop_pdf_cpp(newdata, object),
+        "cdf" = vinecop_cdf_cpp(newdata, object, n_mc)
     )
 }
 
@@ -210,17 +213,29 @@ logLik.vinecop <- function(object, ...) {
 #'
 #' @param object a fitted `vinecop` object.
 #' @param psi0 baseline prior probability of a non-independence copula.
+#' @param newdata optional; a new data set.
 #' @export mBICV
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, "par")
+#' fit <- vinecop(u, "par", keep_data = TRUE)
 #' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 #' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
-mBICV <- function(object, psi0 = 0.9, cores = 1) {
+mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
     assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
-    if (is.null(object$data))
-        stop("data have not been stored, use keep_data = TRUE when fitting.")
-    vinecop_mbicv_cpp(object$data, object, psi0, cores)
+    ll <- ifelse(is.null(newdata), 
+                 object$loglik, 
+                 sum(log(dvinecop(newdata, object))))
+    - 2 * ll + compute_mBICV_penalty(object, psi0) 
+}
+
+compute_mBICV_penalty <- function(object, psi0) {
+    d <- dim(object)
+    smr <- summary(object)
+    q_m <- tapply(smr$family, smr$tree, function(x) sum(x == "indep"))
+    q_m <- c(q_m, rep(0, d - 1 - length(q_m)))
+    m_seq <- seq_len(d - 1)
+    pen <- object$npars * log(object$nobs)
+    pen - 2 * sum(q_m * log(psi0^m_seq) + (d - 1 - q_m) * log(1 - psi0^m_seq))
 }
 
 #' @export

@@ -166,10 +166,14 @@ ktau_to_par <- function(family, tau) {
 #' @return 
 #' `fitted()` and `logLik()` have return values similar to [dbicop()], 
 #' [pbicop()], and [hbicop()].
+#' 
+#' @details `fitted()` can only be called if the model was fit with the
+#'    `keep_data = TRUE` option.
+#' 
 #' @examples
 #' # Simulate and fit a bivariate copula model
 #' u <- rbicop(500, "gauss", 0, 0.5)
-#' fit <- bicop(u, "par")
+#' fit <- bicop(u, "par", keep_data = TRUE)
 #' 
 #' # Predictions
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
