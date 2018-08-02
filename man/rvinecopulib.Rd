@@ -48,7 +48,7 @@ vc <- vinecop(u, "par")
 summary(vc)
 
 ## vine_dist objects
-vc <- vine_dist(list(name = "norm"), pcs, mat)
+vc <- vine_dist(list(distr = "norm"), pcs, mat)
 summary(vc)
 
 ## vine objects

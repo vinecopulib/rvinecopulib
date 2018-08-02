@@ -163,15 +163,15 @@ check_distr <- function(distr) {
     ## basic sanity checks
     if (!is.list(distr))
         return("a distribution should be a kde1d object or a list")
-    if (!any(is.element(names(distr), "name")))
-        return("a distribution should be a kde1d object or a list with a name element")
-    nn <- distr[["name"]]
+    if (!any(is.element(names(distr), "distr")))
+        return("a distribution should be a kde1d object or a list with a 'distr' element")
+    nn <- distr[["distr"]]
     if (!is.element(nn, supported_distributions))
         return("the provided name does not belong to supported distributions")
     
     ## check that the provided parameters are consistent with the distribution
     qfun <- get(paste0("q", nn))
-    par <- distr[names(distr)!= "name"]
+    par <- distr[names(distr)!= "distr"]
     par$p <- 0.5
     e <- tryCatch(do.call(qfun, par), error = function(e) e)
     if (any(class(e) == "error"))
@@ -181,7 +181,7 @@ check_distr <- function(distr) {
 }
 
 get_npars_distr <- function(distr) {
-    switch(distr$name,
+    switch(distr$distr,
            beta = 2,
            cauchy = 2,
            chisq = ifelse("ncp" %in% names(distr), 2, 1),

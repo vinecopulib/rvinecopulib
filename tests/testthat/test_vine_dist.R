@@ -4,7 +4,7 @@ set.seed(0)
 bicop <- bicop_dist("bb1", 90, c(3, 2))
 pcs <- list(list(bicop, bicop), list(bicop))
 mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-vc <- vine_dist(list(name = "norm"), pcs, mat)
+vc <- vine_dist(list(distr = "norm"), pcs, mat)
 
 test_that("constructor creates proper `vine_dist` object", {
     expect_s3_class(vc, "vine_dist")
@@ -26,14 +26,14 @@ test_that("constructor catches wrong input", {
     expect_error(vine_dist(list(stupid = "norm"), cop))
     
     # unused margin argument
-    expect_error(vine_dist(list(name = "norm", stupid = 42), cop))
+    expect_error(vine_dist(list(distr = "norm", stupid = 42), cop))
     
     # missing margin argument
-    expect_error(vine_dist(list(name = "beta", scale1 = 1), cop))
+    expect_error(vine_dist(list(distr = "beta", scale1 = 1), cop))
     
     # length of margins vector do not correspond to cop
-    expect_error(vine_dist(list(list(name = "norm"), 
-                                list(name = "gamma", shape = 1)), cop))
+    expect_error(vine_dist(list(list(distr = "norm"), 
+                                list(distr = "gamma", shape = 1)), cop))
 
 })
 
