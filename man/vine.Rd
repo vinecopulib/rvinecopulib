@@ -32,8 +32,9 @@ the number of variables after applying \code{\link[cctools:expand_as_numeric]{cc
 
 \item{margins}{A list with with each element containing the specification of a
 marginal \link[stats:Distributions]{stats::Distributions}. Each marginal specification
-should be a list with containing at least the name and optionally the
-parameters, e.g. \code{list(list(name = "norm"), list(name = "norm", mu = 1), list(name = "beta", shape1 = 1, shape2 = 1))}.
+should be a list with containing at least the distribution family (\code{"distr"})
+and optionally the parameters, e.g.
+\code{list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))}.
 Note that parameters that have no default values have to be provided.
 Furthermore, if \code{margins} has length one, it will be recycled for every component.}
 
@@ -101,7 +102,7 @@ pcs <- list(
 mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
 
 # set up vine copula model with Gaussian margins
-vc <- vine_dist(list(name = "norm"), pcs, mat)
+vc <- vine_dist(list(distr = "norm"), pcs, mat)
 
 # show model
 summary(vc)

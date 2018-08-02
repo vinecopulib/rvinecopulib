@@ -163,15 +163,15 @@ check_distr <- function(distr) {
     ## basic sanity checks
     if (!is.list(distr))
         return("a distribution should be a kde1d object or a list")
-    if (!any(is.element(names(distr), "name")))
-        return("a distribution should be a kde1d object or a list with a name element")
-    nn <- distr[["name"]]
+    if (!any(is.element(names(distr), "distr")))
+        return("a distribution should be a kde1d object or a list with a 'distr' element")
+    nn <- distr[["distr"]]
     if (!is.element(nn, supported_distributions))
         return("the provided name does not belong to supported distributions")
     
     ## check that the provided parameters are consistent with the distribution
     qfun <- get(paste0("q", nn))
-    par <- distr[names(distr)!= "name"]
+    par <- distr[names(distr)!= "distr"]
     par$p <- 0.5
     e <- tryCatch(do.call(qfun, par), error = function(e) e)
     if (any(class(e) == "error"))
@@ -181,7 +181,7 @@ check_distr <- function(distr) {
 }
 
 get_npars_distr <- function(distr) {
-    switch(distr$name,
+    switch(distr$distr,
            beta = 2,
            cauchy = 2,
            chisq = ifelse("ncp" %in% names(distr), 2, 1),
@@ -259,3 +259,35 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
     return(res)
 }
 
+#' Truncates output of model data frames.
+#'
+#' @param x a `data.frame` whose print output should be truncated.
+#' @noRd
+#' @export
+print.summary_df <- function(x, ...) {
+    x_print <- x[1:min(nrow(x), 10), ]
+    cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
+    print.data.frame(x_print, digits = 2)
+    if (nrow(x) > 10)
+        cat("# ... with", nrow(x) - 10, "more rows\n")
+    invisible(x)
+}
+
+#' internal function
+print_truncation_info <- function(x) {
+    n_trees <- length(x$pair_copulas)
+    if (n_trees < dim(x) - 1)
+        cat(", ", n_trees, "-truncated", sep = "")
+    cat("\n")
+}
+
+#' internal function
+print_fit_info <- function(x) {
+    ll <- logLik(x)
+    cat("nobs =", x$nobs, "  ")
+    cat("logLik =", round(ll[1], 2), "  ")
+    cat("npars =", round(attr(ll, "df"), 2), "  ")
+    cat("AIC =", round(-2 * ll[1] + 2 * attr(ll, "df"), 2), "  ")
+    cat("BIC =", round(-2 * ll[1] + log(x$nobs) * attr(ll, "df"), 2), "  ")
+    cat("\n")
+}
