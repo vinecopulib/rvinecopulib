@@ -282,35 +282,44 @@ void vinecop_check_cpp(Rcpp::List vinecop_r) {
 
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
-                                               const Rcpp::List& vinecop_r)
+                                               const Rcpp::List& vinecop_r,
+                                               size_t cores)
 {
-    return vinecop_wrap(vinecop_r).inverse_rosenblatt(U);
+    return vinecop_wrap(vinecop_r).inverse_rosenblatt(U, cores);
 }
 
 // [[Rcpp::export()]]
-Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
+Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, 
+                                const Rcpp::List& vinecop_r,
+                                size_t cores)
 {
-    return vinecop_wrap(vinecop_r).pdf(u);
+    return vinecop_wrap(vinecop_r).pdf(u, cores);
 }
 
 // [[Rcpp::export()]]
-Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, size_t N)
+Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u, 
+                                const Rcpp::List& vinecop_r, 
+                                size_t N,
+                                size_t cores)
 {
-    return vinecop_wrap(vinecop_r).cdf(u, N);
+    return vinecop_wrap(vinecop_r).cdf(u, N, cores);
 }
 
 // [[Rcpp::export()]]
-double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r)
+double vinecop_loglik_cpp(const Eigen::MatrixXd& u, 
+                          const Rcpp::List& vinecop_r,
+                          size_t cores)
 {
-    return vinecop_wrap(vinecop_r).loglik(u);
+    return vinecop_wrap(vinecop_r).loglik(u, cores);
 }
 
 // [[Rcpp::export()]]
 double vinecop_mbicv_cpp(const Eigen::MatrixXd& u, 
                          const Rcpp::List& vinecop_r,
-                         double psi0)
+                         double psi0,
+                         size_t cores)
 {
-    return vinecop_wrap(vinecop_r).mbicv(u, psi0);
+    return vinecop_wrap(vinecop_r).mbicv(u, psi0, cores);
 }
 
 // [[Rcpp::export()]]
