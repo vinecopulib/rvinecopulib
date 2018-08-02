@@ -129,7 +129,7 @@ rvine <- function(n, vine, U = NULL) {
     # prepare uniform data
     d <- ncol(vine$copula$matrix)
     U <- prep_uniform_data(n, d, U)
-
+    
     # simulate from copula
     U <- vinecop_inverse_rosenblatt_cpp(U, vine$copula)
     
@@ -143,12 +143,29 @@ rvine <- function(n, vine, U = NULL) {
 
 #' @export
 print.vine_dist <- function(x, ...) {
-    print(x$copula)
+    cat(dim(x), "-dimensional vine distribution model ('vine_dist')", sep = "")
+    print_truncation_info(x$copula)
+    invisible(x)
 }
 
 #' @export
 summary.vine_dist <- function(object, ...) {
-    summary(object$copula)
+    list(
+        margins = get_vine_dist_margin_summary(object),
+        copula = summary(object$copula)
+    )
+}
+
+get_vine_dist_margin_summary <- function(vd) {
+    margins <- vd$margins
+    if (length(margins) == 1) 
+        margins <- rep(list(margins), dim(vd$copula))
+    df <- data.frame(
+        margin = seq_along(margins),
+        name = sapply(margins, function(x) x$name)
+    )
+    class(df) <- c("summary_df", class(df))
+    df
 }
 
 #' Predictions and fitted values for a vine copula model
@@ -203,22 +220,39 @@ logLik.vine <- function(object, ...) {
 
 #' @export
 print.vine <- function(x, ...) {
-    print(collate_u(x)$copula)
+    cat(dim(x), "-dimensional vine distribution fit ('vine')", sep = "")
+    print_truncation_info(x$copula)
+    print_fit_info(x)
+    invisible(x)
 }
-
 
 #' @export
 summary.vine <- function(object, ...) {
-    summary(collate_u(object)$copula)
+    list(
+        margins = get_vine_margin_summary(object),
+        copula = summary(object$copula)
+    )
 }
+
+get_vine_margin_summary <- function(object) {
+    capture.output(info <- sapply(object$margins, summary))
+    info <- as.data.frame(t(info))
+    info <- cbind(
+        data.frame(margin = seq_len(nrow(info)), name = object$names), 
+        info
+    )
+    class(info) <- c("summary_df", "data.frame")
+    info
+}
+
 
 dpq_marg <- function(x, vine, what = "p") {
     d <- ncol(x)
     if (inherits(vine, "vine")) {
         fun <- switch(what,
-                    p = pkde1d,
-                    d = dkde1d,
-                    q = qkde1d)
+                      p = pkde1d,
+                      d = dkde1d,
+                      q = qkde1d)
     } else {
         fun <- function(x, margin) {
             par <- margin[names(margin) != "name"]
