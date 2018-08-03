@@ -495,11 +495,25 @@ inline std::vector<std::vector<double>> Vinecop::get_all_taus() const
     return taus;
 }
 
+//! extracts the dimension of the vine copula model.
+inline size_t
+Vinecop::get_dim() const
+{
+    return d_;
+}
+
 //! extracts the order vector of the vine copula model.
 inline std::vector<size_t>
 Vinecop::get_order() const
 {
     return vine_struct_.get_order();
+}
+
+//! extracts the structure matrix of the vine copula model.
+inline RVineStructure
+Vinecop::get_rvine_structure() const
+{
+    return vine_struct_;
 }
 
 //! extracts the structure matrix of the vine copula model.

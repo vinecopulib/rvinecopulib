@@ -6,9 +6,12 @@
 #' 
 #' @name getters
 #' @aliases get_pair_copula get_all_pair_copulas get_parameters get_all_parameters
-#' get_ktau get_all_ktaus get_matrix
+#' get_ktau get_all_ktaus get_matrix get_structure
 #' @param object a `bicop_dist`, `vinecop_dist` or `vine_dist` object.
 #' @details 
+#' #' The [get_structure] method (for `vinecop_dist` or `vine_dist` objects only) 
+#' extracts the structure (see [check_rvine_structure] for more details).
+#' 
 #' The [get_matrix] method (for `vinecop_dist` or `vine_dist` objects only) 
 #' extracts the structure matrix (see [check_rvine_matrix] for more details).
 #' 
@@ -44,8 +47,9 @@
 #' # set up vine copula model
 #' vc <- vinecop_dist(pcs, mat)
 #' 
-#' # get the structure matrix
-#' all.equal(get_matrix(vc), mat)
+#' # get the structure
+#' get_structure(vc)
+#' all.equal(get_matrix(vc), mat, check.attributes = FALSE)
 #' 
 #' # get pair-copulas
 #' get_pair_copula(vc, 1, 1)
@@ -57,15 +61,21 @@
 #' or families.
 #' @rdname getters
 #' @export
-get_matrix <- function(object) {
+get_structure <- function(object) {
     assert_that(inherits(object, "vinecop_dist") || 
                     inherits(object, "vine_dist"))
     if (inherits(object, "vinecop_dist")) {
-        return(object$matrix)
+        return(object$structure)
     } else {
-        return(object$copula$matrix)
+        return(object$copula$structure)
     }
 }
+
+#' @export
+get_matrix <- function(object) {
+    to_rvine_matrix(get_structure(object))
+}
+
 
 #' @param tree tree index (not required if `object` is of class `bicop_dist`).
 #' @param edge edge index (not required if `object` is of class `bicop_dist`).

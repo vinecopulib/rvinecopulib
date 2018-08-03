@@ -149,6 +149,9 @@ vinecop <- function(data, family_set = "all", matrix = NA,
         function(tree) lapply(tree, as.bicop)
     )
     
+    ## make the structure a rvine-structure object
+    class(vinecop$structure) <- c(class(vinecop$structure), "rvine_structure")
+    
     ## add information about the fit
     vinecop$names <- colnames(data)
     if (keep_data) {
@@ -179,9 +182,11 @@ vinecop <- function(data, family_set = "all", matrix = NA,
 vinecop_dist <- function(pair_copulas, matrix) {
     # create object
     vinecop <- structure(
-        list(pair_copulas = pair_copulas, matrix = matrix),
+        list(pair_copulas = pair_copulas, 
+             structure = to_rvine_structure(matrix)),
         class = "vinecop_dist"
     )
+    class(vinecop$structure) <- c(class(vinecop$structure), "rvine_structure")
     
     # sanity checks
     assert_that(is.list(pair_copulas))
@@ -189,8 +194,8 @@ vinecop_dist <- function(pair_copulas, matrix) {
     if (!all(sapply(pc_lst, function(x) inherits(x, "bicop_dist")))) {
         stop("some objects in pair_copulas aren't of class 'bicop_dist'")
     }
+    check_rvine_structure(vinecop$structure)
     vinecop_check_cpp(vinecop)
-    check_rvine_matrix(matrix)
     vinecop$npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
     vinecop$loglik <- NA
     

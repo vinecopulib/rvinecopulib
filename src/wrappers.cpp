@@ -222,51 +222,118 @@ Eigen::MatrixXd bicop_tau_to_par_cpp(const Rcpp::List& bicop_r, const double& ta
     return bicop_cpp.tau_to_parameters(tau);
 }
 
+TriangularArray<size_t> struct_array_wrap(const Rcpp::List& struct_array_r,
+                                          size_t trunc_lvl)
+{
+    size_t d = struct_array_r.size() + 1;
+    auto struct_array = TriangularArray<size_t>(d, trunc_lvl);
+    for (size_t i = 0; i < d - 1; i++) {
+        struct_array.set_column(i, struct_array_r[i]);
+    }
+    
+    return struct_array;
+}
+
+Rcpp::List struct_array_wrap(const TriangularArray<size_t>& struct_array)
+{
+    size_t d = struct_array.get_dim();
+    size_t trunc_lvl = struct_array.get_trunc_lvl();
+    
+    Rcpp::List struct_array_r(d - 1);
+    for (size_t i = 0; i < d - 1; i++) {
+        struct_array_r[i] = struct_array[i];
+    }
+    
+    return struct_array_r;
+}
+
+RVineStructure rvine_structure_wrap(const Rcpp::List& rvine_structure_r,
+                                    bool check = false)
+{
+    size_t trunc_lvl = rvine_structure_r["trunc_lvl"];
+    std::vector<size_t> order = rvine_structure_r["order"];
+    TriangularArray<size_t> struct_array = struct_array_wrap(
+        rvine_structure_r["struct_array"], trunc_lvl);
+    
+    return RVineStructure(order, struct_array, true, check);
+}
+
+Rcpp::List rvine_structure_wrap(const RVineStructure& rvine_struct)
+{
+    auto struct_array = struct_array_wrap(rvine_struct.get_struct_array());
+    return Rcpp::List::create(
+        Rcpp::Named("order")        = rvine_struct.get_order(),
+        Rcpp::Named("struct_array") = struct_array,
+        Rcpp::Named("d")            = rvine_struct.get_dim(),
+        Rcpp::Named("trunc_lvl")    = rvine_struct.get_trunc_lvl()
+    );
+}
+
+// [[Rcpp::export()]]
+void rvine_structure_check_cpp(const Rcpp::List& rvine_struct) {
+
+    auto rvine_structure = rvine_structure_wrap(rvine_struct, true);
+}
+
 // [[Rcpp::export()]]
 void rvine_matrix_check_cpp(Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix) {
-    auto rvm = RVineStructure(matrix);
+    auto rvine_structure = RVineStructure(matrix);
 }
 
 // vinecop wrappers
 
-Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
+std::vector<std::vector<Bicop>> pair_copulas_wrap(const Rcpp::List& pair_copulas_r,
+                                                  size_t d)
 {
-    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix = vinecop_r["matrix"];
-    size_t d = matrix.cols();
-    
-    Rcpp::List pair_copulas = vinecop_r["pair_copulas"];
-    auto pc_store = Vinecop::make_pair_copula_store(d, pair_copulas.size());
-    Rcpp::List tree_pcs, pc;
-    for (size_t t = 0; t < pc_store.size(); ++t) {
-        tree_pcs = pair_copulas[t];
+    size_t trunc_lvl = pair_copulas_r.size();
+    auto pair_copulas = Vinecop::make_pair_copula_store(d, trunc_lvl);
+    Rcpp::List tree_pcs;
+    for (size_t t = 0; t < trunc_lvl; ++t) {
+        tree_pcs = pair_copulas_r[t];
         if (tree_pcs.size() != d - 1 - t) {
             throw std::runtime_error("length(pair_copulas[[t]]) must be d-t");
         }
         for(size_t e = 0; e < d - 1 - t; ++e) {
-            pc = tree_pcs[e];
-            pc_store[t][e] = bicop_wrap(pc);
+            pair_copulas[t][e] = bicop_wrap(tree_pcs[e]);
         }
     }
+    return pair_copulas;
+}
+
+Rcpp::List pair_copulas_wrap(std::vector<std::vector<Bicop>> pair_copulas,
+                             size_t d,
+                             bool is_fitted)
+{
+    Rcpp::List pair_copulas_r(pair_copulas.size());
+    for (size_t t = 0; t < pair_copulas.size(); ++t) {
+        Rcpp::List tree_pcs(d - 1 - t);
+        for(size_t e = 0; e < d - 1 - t; ++e) {
+            tree_pcs[e] = bicop_wrap(pair_copulas[t][e], is_fitted);
+        }
+        pair_copulas_r[t] = tree_pcs;
+    }
     
+    return pair_copulas_r;
+}
+
+Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
+{
     // omit R-vine matrix check, already done in R
-    return Vinecop(pc_store, matrix, false);
+    auto structure = rvine_structure_wrap(vinecop_r["structure"], false);
+    
+    // extract pair-copulas
+    auto pair_copulas = pair_copulas_wrap(vinecop_r["pair_copulas"],
+                                          structure.get_dim());
+
+    return Vinecop(pair_copulas, structure);
 }
 
 
 Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp, bool is_fitted = FALSE) {
-    auto matrix = vinecop_cpp.get_matrix();
-    auto pcs = vinecop_cpp.get_all_pair_copulas();
-    size_t d = matrix.cols();
     
-    Rcpp::List pair_copulas(pcs.size());
-    
-    for (size_t t = 0; t < pcs.size(); ++t) {
-        Rcpp::List tree_pcs(d - 1 - t);
-        for(size_t e = 0; e < d - 1 - t; ++e) {
-            tree_pcs[e] = bicop_wrap(pcs[t][e], is_fitted);
-        }
-        pair_copulas[t] = tree_pcs;
-    }
+    auto vine_structure = rvine_structure_wrap(vinecop_cpp.get_rvine_structure());
+    auto pair_copulas = pair_copulas_wrap(vinecop_cpp.get_all_pair_copulas(), 
+                                          vinecop_cpp.get_dim(), is_fitted);
     
     double npars = vinecop_cpp.calculate_npars();
     double threshold = vinecop_cpp.get_threshold();
@@ -275,7 +342,7 @@ Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp, bool is_fitted = FALSE) {
         loglik = vinecop_cpp.get_loglik();
     return Rcpp::List::create(
         Rcpp::Named("pair_copulas")      = pair_copulas,
-        Rcpp::Named("matrix")            = matrix,
+        Rcpp::Named("structure")         = vine_structure,
         Rcpp::Named("npars")             = npars,
         Rcpp::Named("loglik")            = loglik,
         Rcpp::Named("threshold")         = threshold

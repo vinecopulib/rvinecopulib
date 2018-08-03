@@ -139,8 +139,7 @@ rvine <- function(n, vine, U = NULL, qrng = FALSE, cores = 1) {
     
     # prepare marginals if only one is specified
     if (!inherits(vine, "vine") & depth(vine$margins) == 1) 
-        vine$margins <- replicate(ncol(vine$copula$matrix), 
-                                  vine$margins, simplify = FALSE)
+        vine$margins <- replicate(dim(vine), vine$margins, simplify = FALSE)
     
     # use quantile transformation for marginals
     dpq_marg(U, vine, "q")

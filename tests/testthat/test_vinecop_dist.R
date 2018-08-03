@@ -9,7 +9,7 @@ vc <- vinecop_dist(pcs, mat)
 
 test_that("constructor creates proper vinecop_dist object", {
     expect_s3_class(vc, "vinecop_dist")
-    expect_identical(names(vc), c("pair_copulas", "matrix", "npars", "loglik"))
+    expect_identical(names(vc), c("pair_copulas", "structure", "npars", "loglik"))
 })
 
 
@@ -99,8 +99,12 @@ test_that("plot functions work", {
 
 test_that("getters work", {
     
+    # test get_structure
+    expect_silent(pcc <- get_structure(vc))
+    expect_error(get_structure(12))
+    
     # test get_matrix
-    expect_identical(mat, get_matrix(vc))
+    expect_equivalent(mat, get_matrix(vc))
     expect_error(get_matrix(12))
     
     # test get_pair_copulas

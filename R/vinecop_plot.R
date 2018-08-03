@@ -69,8 +69,7 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
     if (!requireNamespace("igraph", quietly = TRUE))
         stop("The 'igraph' package must be installed to plot.")
     
-    M <- x$matrix
-    d <- nrow(M)
+    d <- dim(x)
     
     ## sanity checks
     if (tree != "ALL" && any(tree > d - 1))
@@ -144,8 +143,8 @@ plot.vinecop <- plot.vinecop_dist
 
 ## creates a graph object for a tree in a given vinecop_dist
 get_graph <- function(tree, vc, edge_labels, var_names) {
-    M <- vc$matrix
-    d <- ncol(M)
+    M <- to_rvine_matrix(vc$structure)
+    d <- dim(vc)
     
     I <- matrix(0, d - tree + 1, d - tree + 1)
     
@@ -190,7 +189,7 @@ get_graph <- function(tree, vc, edge_labels, var_names) {
 
 ## finds appropriate edge labels for the plot
 set_edge_labels <- function(tree, vc, edge_labels) {
-    d <- nrow(vc$matrix)
+    d <- dim(vc)
     get_edge_label <- switch(edge_labels,
                              family = get_family,
                              tau = function(vc, tree, edge) 
@@ -204,7 +203,8 @@ set_edge_labels <- function(tree, vc, edge_labels) {
 
 ## get info for a pair-copula
 get_name <-  function(vc, tree, edge) {
-    M <- vc$matrix
+    
+    M <- to_rvine_matrix(vc$structure)
     d <- nrow(M)
     # conditioned set
     bef <- paste0(vc$names[M[c(d - edge + 1, tree), edge]], 
@@ -230,7 +230,7 @@ get_family_tau <- function(vc, tree, edge) {
 #' @export
 contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     ## check input
-    d <- nrow(x$matrix)
+    d <- dim(x)
     assert_that(is.number(cex.nums))
     if (tree != "ALL" && any(tree > d - 1))
         stop("Selected tree does not exist.")

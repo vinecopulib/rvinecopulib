@@ -8,6 +8,7 @@
 
 #include <vinecopulib/misc/tools_stl.hpp>
 #include <iostream>
+#include <stdexcept>
 
 namespace vinecopulib {
 
@@ -50,6 +51,8 @@ public:
     std::vector<T> operator[](size_t column) const;
     bool operator==(const TriangularArray<T>& rhs) const;
 
+    void set_column(size_t column, const std::vector<size_t>& new_col);
+
     size_t get_trunc_lvl() const;
     size_t get_dim() const;
     
@@ -62,13 +65,13 @@ private:
 };
 
 
-//! construct a triangular array of dimension `d` (the matrix has `d-1` columns 
+//! construct a triangular array of dimension `d` (the array has `d-1` columns
 //! and `d-1` rows).
 //! @param d the dimension of the underlying vine.
 template<typename T>
 TriangularArray<T>::TriangularArray(size_t d) : TriangularArray(d, d - 1) {}
 
-//! construct a truncated triangular array (the matrix has `d-1` columns and
+//! construct a truncated triangular array (the array has `d-1` columns and
 //! `min(trunv_lvl, d-1)` rows).
 //! @param d the dimension of the vine.
 //! @param trunc_lvl the truncation level.
@@ -123,6 +126,28 @@ std::vector<T> TriangularArray<T>::operator[](size_t column) const
 {
     assert(column < d_ - 1);
     return mat_[column];
+}
+
+//! set one column of the trapezoid.
+//! @param column which column to set.
+//! @param new_column the column column to set.
+template<typename T>
+void TriangularArray<T>::set_column(size_t column,
+                                    const std::vector<size_t>& new_col)
+{
+    if (column >= d_ - 1) {
+        std::stringstream problem;
+        problem << "column should be smaller than " << d_ - 1 << ".";
+        throw std::runtime_error(problem.str());
+    }
+    if (new_col.size() != mat_[column].size()) {
+        std::stringstream problem;
+        problem << "column " << column << " should have size "
+                << mat_[column].size() << ".";
+        throw std::runtime_error(problem.str());
+    }
+
+    mat_[column] = new_col;
 }
 
 //! equality operator to compare two TriangularArray objects.

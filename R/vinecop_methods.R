@@ -89,7 +89,7 @@ pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
 #' @export
 rvinecop <- function(n, vinecop, U = NULL, qrng = FALSE, cores = 1) {
     assert_that(inherits(vinecop, "vinecop_dist"))
-    check_u_and_qrng(U, qrng, n, ncol(vinecop$matrix))
+    check_u_and_qrng(U, qrng, n, dim(vinecop))
     
     U <- vinecop_sim_cpp(vinecop, n, qrng, cores, get_seeds())
     if (!is.null(vinecop$names))
@@ -108,8 +108,8 @@ print.vinecop_dist <- function(x, ...) {
 #' @importFrom utils capture.output
 #' @export
 summary.vinecop_dist <- function(object, ...) {
-    mat <- object$matrix
-    d <- nrow(mat)
+    mat <- to_rvine_matrix(object$structure)
+    d <- dim(object)
     n_trees <- length(object$pair_copulas)
     n_pcs <- length(unlist(object$pair_copulas, recursive = FALSE))
     mdf <- as.data.frame(matrix(NA, n_pcs, 9))
@@ -359,5 +359,5 @@ truncate_model <- function(object, trunc_lvl = NA) {
 
 #' @export
 dim.vinecop_dist <- function(x) {
-    ncol(x$matrix)
+    x$structure$d
 }

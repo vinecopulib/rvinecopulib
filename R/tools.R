@@ -268,12 +268,12 @@ check_u_and_qrng <- function(U, qrng, n, d) {
 #' @param x a `data.frame` whose print output should be truncated.
 #' @noRd
 #' @export
-print.summary_df <- function(x, ...) {
-    x_print <- x[1:min(nrow(x), 10), ]
+print.summary_df <- function(x, ..., n = 10) {
+    x_print <- x[1:min(nrow(x), n), ]
     cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
     print.data.frame(x_print, digits = 2)
-    if (nrow(x) > 10)
-        cat("# ... with", nrow(x) - 10, "more rows\n")
+    if (nrow(x) > n)
+        cat("# ... with", nrow(x) - n, "more rows\n")
     invisible(x)
 }
 
