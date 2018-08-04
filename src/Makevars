@@ -1,5 +1,4 @@
 CXX_STD      = CXX11
-PKG_CXXFLAGS = -Wno-ignored-attributes
 PKG_CPPFLAGS = -I../inst/include -pthread
 
 # strip debug symbols for smaller Linux binaries
