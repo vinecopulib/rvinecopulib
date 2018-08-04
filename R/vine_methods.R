@@ -139,7 +139,7 @@ rvine <- function(n, vine, U = NULL, qrng = FALSE, cores = 1) {
     
     # prepare marginals if only one is specified
     if (!inherits(vine, "vine") & depth(vine$margins) == 1) 
-        vine$margins <- replicate(dim(vine), vine$margins, simplify = FALSE)
+        vine$margins <- replicate(dim(vine)[1], vine$margins, simplify = FALSE)
     
     # use quantile transformation for marginals
     dpq_marg(U, vine, "q")
@@ -147,7 +147,7 @@ rvine <- function(n, vine, U = NULL, qrng = FALSE, cores = 1) {
 
 #' @export
 print.vine_dist <- function(x, ...) {
-    cat(dim(x), "-dimensional vine distribution model ('vine_dist')", sep = "")
+    cat(dim(x)[1], "-dimensional vine distribution model ('vine_dist')", sep = "")
     print_truncation_info(x$copula)
     invisible(x)
 }
@@ -163,7 +163,7 @@ summary.vine_dist <- function(object, ...) {
 get_vine_dist_margin_summary <- function(vd) {
     margins <- vd$margins
     if (length(margins) == 1) 
-        margins <- rep(list(margins), dim(vd$copula))
+        margins <- rep(list(margins), dim(vd$copula)[1])
     df <- data.frame(
         margin = seq_along(margins),
         distr = sapply(margins, function(x) x$distr)
@@ -225,7 +225,7 @@ logLik.vine <- function(object, ...) {
 
 #' @export
 print.vine <- function(x, ...) {
-    cat(dim(x), "-dimensional vine distribution fit ('vine')", sep = "")
+    cat(dim(x)[1], "-dimensional vine distribution fit ('vine')", sep = "")
     print_truncation_info(x$copula)
     print_fit_info(x)
     invisible(x)

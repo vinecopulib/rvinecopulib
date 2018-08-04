@@ -97,14 +97,16 @@ get_pair_copula <- function(object, tree = NA, edge = NA) {
         return(object)
     } else {
         d <- dim(object)
-        assert_that(is.numeric(tree), 
-                    is.scalar(tree),
+        assert_that(is.number(tree), 
                     tree >= 1, 
-                    tree <= d - 1)
-        assert_that(is.numeric(edge), 
-                    is.scalar(edge),
+                    tree <= d[2],
+                    msg = "tree should be a number between 1 and 
+                    the truncation level.")
+        assert_that(is.number(edge),
                     edge >= 1, 
-                    edge <= d - tree)
+                    edge <= d[1] - tree,
+                    msg = "tree should be a number between 1 and 
+                    dimension minus tree.")
         
         ## return pair-copula
         if (inherits(object, "vinecop_dist")) {
@@ -150,7 +152,11 @@ get_all_pair_copulas <- function(object, trees = NA) {
     }
     
     if (!any(is.na(trees)))
-        assert_that(is.numeric(trees), all(trees >= 1), all(trees <= d - 1))
+        assert_that(is.numeric(trees), 
+                    all(trees >= 1), 
+                    all(trees <= d[2]),
+                    msg = "the elements of trees should be numbers between 1 and 
+                    the truncation level.")
     
     t <- length(pcs)
     if (any(is.na(trees))) {
@@ -163,7 +169,8 @@ get_all_pair_copulas <- function(object, trees = NA) {
         }
     }
     res <- structure(pcs[trees], class = c("rvine_list", "pair_copulas"))
-    attr(res, "d") <- d
+    attr(res, "d") <- d[1]
+    attr(res, "trunc_lvl") <- d[2]
     attr(res, "trees") <- trees
     return(res)
 }

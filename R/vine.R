@@ -83,7 +83,7 @@ vine <- function(data,
                                       xmax = NaN, 
                                       bw = NA), 
                  copula_controls = list(family_set = "all", 
-                                     matrix = NA, 
+                                     structure = NA, 
                                      par_method = "mle", 
                                      nonpar_method = "constant",
                                      mult = 1, 
@@ -152,17 +152,20 @@ vine <- function(data,
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where 
 #'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
 #'    tree `t`.
-#' @param matrix a quadratic matrix specifying the structure matrix (see 
-#'   [check_rvine_matrix()]); for [vinecop_dist()], the dimension must be 
-#'   `length(pair_copulas)-1`; for [vinecop()], `matrix = NA` performs
+#' @param structure either an r-vine structure or a quadratic matrix 
+#' specifying the structure of the model (see [check_rvine_structure()] or
+#'  [check_rvine_matrix()]); for [vinecop_dist()], the dimension must be 
+#'   `length(pair_copulas[[1]]) + 1`; for [vinecop()], `matrix = NA` performs
 #'   automatic structure selection.
 #' @rdname vine
 #' @export
-vine_dist <- function(margins, pair_copulas, matrix) {
+vine_dist <- function(margins, pair_copulas, structure) {
+    
+    structure <- to_rvine_structure(structure)
     
     # sanity checks for the marg
-    if (!(length(margins) %in% c(1, ncol(matrix))))
-        stop("marg should have length 1 or ncol(matrix)")
+    if (!(length(margins) %in% c(1, dim(structure)[1])))
+        stop("marg should have length 1 or dim(structure)[1]")
     stopifnot(is.list(margins))
     if (depth(margins) == 1) {
         check_marg <- check_distr(margins)
@@ -180,7 +183,7 @@ vine_dist <- function(margins, pair_copulas, matrix) {
     }
 
     # create the vinecop object
-    copula <- vinecop_dist(pair_copulas, matrix)
+    copula <- vinecop_dist(pair_copulas, structure)
     
     # create object
     structure(list(margins = margins, 

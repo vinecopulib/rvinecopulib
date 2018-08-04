@@ -57,7 +57,8 @@ test_that("print/summary/dim generics work", {
     expect_equal(nrow(s$copula), 3)
     expect_equal(ncol(s$copula), 9)
     
-    expect_equal(dim(vc), 3)
+    expect_equivalent(dim(vc)[1], 3)
+    expect_equivalent(dim(vc)[2], 2)
 })
 
 test_that("getters work", {

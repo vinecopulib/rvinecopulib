@@ -131,8 +131,17 @@ check_rvine_matrix <- function(matrix) {
 #' @rdname rvine_structure
 to_rvine_structure <- function(matrix) {
     
-    assert_that(inherits(structure, "rvine_matrix") || 
-                    check_rvine_matrix(matrix))
+    assert_that(inherits(matrix, "matrix") || 
+                    inherits(matrix, "rvine_matrix") ||
+                    inherits(matrix, "rvine_structure"),
+                msg = "the rvine-structure should be a matrix, rvine_matrix 
+                or an rvine_structure.")
+    
+    if (inherits(matrix, "matrix") && !inherits(matrix, "rvine_matrix"))
+            assert_that(check_rvine_matrix(matrix))
+    
+    if (inherits(matrix, "rvine_structure"))
+        return(matrix)
     
     # compute structure array in natural order
     d <- ncol(matrix)
@@ -181,4 +190,11 @@ print.rvine_matrix <- function(x, ..., zero.print = "") {
 #' @export
 print.rvine_structure <- function(x, ...) {
     print(to_rvine_matrix(x))
+}
+
+#' @export
+dim.rvine_structure <- function(x) {
+    output <- c(x$d, x$trunc_lvl)
+    names(output) <- c("dim", "trunc_lvl")
+    output
 }

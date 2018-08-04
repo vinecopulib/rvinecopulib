@@ -280,9 +280,8 @@ print.summary_df <- function(x, ..., n = 10) {
 #' internal function
 #' @noRd
 print_truncation_info <- function(x) {
-    n_trees <- length(x$pair_copulas)
-    if (n_trees < dim(x) - 1)
-        cat(", ", n_trees, "-truncated", sep = "")
+    if (dim(x)[2] < dim(x)[1] - 1)
+        cat(", ", dim(x)[2], "-truncated", sep = "")
     cat("\n")
 }
 

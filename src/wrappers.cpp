@@ -411,7 +411,8 @@ double vinecop_mbicv_cpp(const Eigen::MatrixXd& u,
 // [[Rcpp::export()]]
 Rcpp::List vinecop_select_cpp(
         const Eigen::MatrixXd& data,
-        Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix,
+        bool is_structure_provided,
+        Rcpp::List& structure,
         std::vector<std::string> family_set,
         std::string par_method,
         std::string nonpar_method,
@@ -452,8 +453,8 @@ Rcpp::List vinecop_select_cpp(
             num_threads
     );
     Vinecop vinecop_cpp(data.cols());
-    if (matrix.cols() > 1) {
-        vinecop_cpp = Vinecop(matrix);
+    if (is_structure_provided) {
+        vinecop_cpp = Vinecop(rvine_structure_wrap(structure, false));
         vinecop_cpp.select_families(data, fit_controls);
     } else {
         vinecop_cpp.select_all(data, fit_controls);

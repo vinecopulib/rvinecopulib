@@ -64,7 +64,7 @@ test_that("print/summary/dim generics work", {
     expect_is(s, "data.frame")
     expect_equal(nrow(s), 3)
     expect_equal(ncol(s), 9)
-    expect_equal(dim(vc), 3)
+    expect_equivalent(dim(vc), c(3, 2))
 })
 
 test_that("plot functions work", {

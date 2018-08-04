@@ -89,7 +89,7 @@ pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
 #' @export
 rvinecop <- function(n, vinecop, U = NULL, qrng = FALSE, cores = 1) {
     assert_that(inherits(vinecop, "vinecop_dist"))
-    check_u_and_qrng(U, qrng, n, dim(vinecop))
+    check_u_and_qrng(U, qrng, n, dim(vinecop)[1])
     
     U <- vinecop_sim_cpp(vinecop, n, qrng, cores, get_seeds())
     if (!is.null(vinecop$names))
@@ -100,7 +100,7 @@ rvinecop <- function(n, vinecop, U = NULL, qrng = FALSE, cores = 1) {
 
 #' @export
 print.vinecop_dist <- function(x, ...) {
-    cat(dim(x), "-dimensional vine copula model ('vinecop_dist')", sep = "")
+    cat(dim(x)[1], "-dimensional vine copula model ('vinecop_dist')", sep = "")
     print_truncation_info(x)
     invisible(x)
 }
@@ -109,8 +109,8 @@ print.vinecop_dist <- function(x, ...) {
 #' @export
 summary.vinecop_dist <- function(object, ...) {
     mat <- to_rvine_matrix(object$structure)
-    d <- dim(object)
-    n_trees <- length(object$pair_copulas)
+    d <- dim(object)[1]
+    n_trees <- dim(object)[2]
     n_pcs <- length(unlist(object$pair_copulas, recursive = FALSE))
     mdf <- as.data.frame(matrix(NA, n_pcs, 9))
     names(mdf) <- c("tree", "edge", 
@@ -234,7 +234,7 @@ mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
 }
 
 compute_mBICV_penalty <- function(object, psi0) {
-    d <- dim(object)
+    d <- dim(object)[1]
     smr <- summary(object)
     q_m <- tapply(smr$family, smr$tree, function(x) sum(x == "indep"))
     q_m <- c(q_m, rep(0, d - 1 - length(q_m)))
@@ -245,7 +245,7 @@ compute_mBICV_penalty <- function(object, psi0) {
 
 #' @export
 print.vinecop <- function(x, ...) {
-    cat(dim(x), "-dimensional vine copula fit ('vinecop')", sep = "")
+    cat(dim(x)[1], "-dimensional vine copula fit ('vinecop')", sep = "")
     print_truncation_info(x)
     print_fit_info(x)
     invisible(x)
@@ -256,10 +256,10 @@ print.vinecop <- function(x, ...) {
 summary.vinecop <- function(object, ...) {
     mdf <- summary.vinecop_dist(object)
     
-    d <- dim(object)
-    n_trees <- length(object$pair_copulas)
+    d <- dim(object)[1]
+    trunc_lvl <- dim(object)[2]
     k <- 1
-    for (t in seq_len(n_trees)) {
+    for (t in seq_len(trunc_lvl)) {
         for (e in seq_len(d - t)) {
             mdf$loglik[k] <- object$pair_copulas[[t]][[e]]$loglik
             k <- k + 1
@@ -269,95 +269,7 @@ summary.vinecop <- function(object, ...) {
     mdf
 }
 
-#' Truncate a vine copula model
-#' 
-#' Extracts a truncated sub-vine based on a truncation level supplied by user.
-#' 
-#' While a vine model for a `d` dimensional random vector contains at most `d-1` 
-#' nested trees, this function extracts a sub-model based on a given truncation 
-#' level. 
-#' 
-#' For instance, `truncate_model(object, 1)` results in a 1-truncated 
-#' vine (i.e., a vine with a single tree). Similarly `truncate_model(object, 2)` 
-#' results in a 2-truncated vine (i.e., a vine with two trees). Note that 
-#' `truncate_model(truncate_model(object, 1), 2)` returns a 1-truncated vine.
-#' 
-#' @param object a `vinecop` or a `vine` object.
-#' @param trunc_lvl truncation level for the vine copula (`NA` corresponds to 
-#' no truncation).
-#'
-#' @export
-#' @examples
-#' # specify pair-copulas
-#' bicop <- bicop_dist("bb1", 90, c(3, 2))
-#' pcs <- list(
-#'     list(bicop, bicop),  # pair-copulas in first tree 
-#'     list(bicop)          # pair-copulas in second tree 
-#' )
-#' 
-#' # specify R-vine matrix
-#' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
-#' 
-#' # set up vine copula model
-#' vc <- vinecop_dist(pcs, mat)
-#' 
-#' # truncate the model
-#' truncate_model(vc, 1)
-truncate_model <- function(object, trunc_lvl = NA) { 
-    assert_that(inherits(object, "vinecop_dist") || 
-                    inherits(object, "vine_dist"))
-    is_vinecop <- inherits(object, "vinecop_dist")
-    if (is_vinecop) {
-        pcs <- object$pair_copulas
-    } else {
-        pcs <- object$copula$pair_copulas
-    }
-    d <- length(pcs[[1]]) + 1
-    if (!all(is.na(trunc_lvl)))
-        assert_that(is.number(trunc_lvl), trunc_lvl <= d - 1, trunc_lvl > 0)
-    
-    if (!is.na(trunc_lvl)) {
-        n_trees <- length(pcs)
-        trunc_lvl <- min(trunc_lvl, n_trees)
-        
-        # truncate pair_copulas
-        if (is_vinecop) {
-            object$pair_copulas <- pcs[seq_len(trunc_lvl)]
-        } else {
-            object$copula$pair_copulas <- pcs[seq_len(trunc_lvl)]
-        }
-        
-        # adjust npars for truncation
-        pcs <- unlist(pcs[min(trunc_lvl+1,n_trees):n_trees], recursive = FALSE)
-        npars <- ifelse(length(pcs) == 0, 0, 
-                        sum(sapply(pcs, function(x) x[["npars"]])))
-        object$npars <- object$npars - npars
-        
-        # adjust loglik for truncation
-        if (!is.na(object$loglik)) {
-            loglik <- ifelse(length(pcs) == 0, 0, 
-                             sum(sapply(pcs, function(x) x[["loglik"]])))
-            object$loglik <- object$loglik - loglik
-        }
-        
-        # adjust copula object for truncation
-        if (!is_vinecop) {
-            object$copula$npars <- object$copula$npars - npars
-            if (!is.na(object$loglik)) {
-                object$copula$loglik <- object$copula$loglik - loglik
-            }
-        }
-    } else {
-        if (is_vinecop) {
-            object$pair_copulas <- pcs
-        } else {
-            object$copula$pair_copulas <- pcs
-        }
-    }
-    return(object)
-}
-
 #' @export
 dim.vinecop_dist <- function(x) {
-    x$structure$d
+    dim(x$structure)
 }

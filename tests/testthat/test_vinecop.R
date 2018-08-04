@@ -24,9 +24,9 @@ test_that("returns proper 'vinecop' object", {
     )
 })
 
-test_that("works with matrix", {
+test_that("works with structure", {
     u <- sapply(1:2, function(i) runif(30))
-    expect_silent(fit <- vinecop(u, matrix = matrix(c(1:2, 1:0), 2, 2)))
+    expect_silent(fit <- vinecop(u, structure = matrix(c(1:2, 1:0), 2, 2)))
 })
 
 test_that("runs in parallel", {
