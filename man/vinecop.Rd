@@ -6,13 +6,13 @@
 \alias{vinecop_dist}
 \title{Vine copula models}
 \usage{
-vinecop(data, family_set = "all", matrix = NA, par_method = "mle",
+vinecop(data, family_set = "all", structure = NA, par_method = "mle",
   nonpar_method = "constant", mult = 1, selcrit = "bic",
   weights = numeric(), psi0 = 0.9, presel = TRUE, trunc_lvl = Inf,
   tree_crit = "tau", threshold = 0, keep_data = FALSE,
   show_trace = FALSE, cores = 1)
 
-vinecop_dist(pair_copulas, matrix)
+vinecop_dist(pair_copulas, structure)
 }
 \arguments{
 \item{data}{a matrix or data.frame (copula data should have approximately
@@ -21,10 +21,14 @@ uniform margins).}
 \item{family_set}{a character vector of families; see \code{\link[=bicop]{bicop()}} for
 additional options.}
 
-\item{matrix}{a quadratic matrix specifying the structure matrix (see
+\item{structure}{either an r-vine structure or a quadratic matrix
+specifying the structure of the model (see \code{\link[=check_rvine_structure]{check_rvine_structure()}} or
 \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
-\code{length(pair_copulas)-1}; for \code{\link[=vinecop]{vinecop()}}, \code{matrix = NA} performs
-automatic structure selection.}
+\code{length(pair_copulas[[1]]) + 1}; for [vinecop()], \code{matrix = NA} performs
+automatic structure selection.
+
+[[1]: R:[1
+[vinecop()]: R:vinecop()}
 
 \item{par_method}{the estimation method for parametric models, either \code{"mle"}
 for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
@@ -82,8 +86,8 @@ Object from the \code{vinecop_dist} class are lists containing:
 \itemize{
 \item \code{pair_copulas}, a list of lists. Each element of \code{pair_copulas} corresponds
 to a tree, which is itself a list of \code{bicop_dist} objects, see \code{\link[=bicop_dist]{bicop_dist()}}.
-\item \code{matrix}, an R-vine matrix, namely a compressed representation of the
-vine structure, see \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}.
+\item \code{structure}, an r-vine structure, namely a compressed representation of the
+vine structure, see \code{\link[=check_rvine_structure]{check_rvine_structure()}}.
 \item \code{npars}, a \code{numeric} with the number of (effective) parameters.
 }
 
