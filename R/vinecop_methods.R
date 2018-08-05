@@ -148,6 +148,8 @@ summary.vinecop_dist <- function(object, ...) {
 #' @param what what to predict, either `"pdf"` or `"cdf"`.
 #' @param n_mc number of samples used for quasi Monte Carlo integration when
 #'    `what = "cdf"`.
+#' @param cores number of cores to use; if larger than one, computations are
+#'   done in parallel on `cores` batches .
 #' @param ... unused.
 #' 
 #' @details `fitted()` can only be called if the model was fit with the

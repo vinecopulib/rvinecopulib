@@ -23,6 +23,9 @@
 \item{n_mc}{number of samples used for quasi Monte Carlo integration when
 \code{what = "cdf"}.}
 
+\item{cores}{number of cores to use; if larger than one, computations are
+done in parallel on \code{cores} batches .}
+
 \item{...}{unused.}
 }
 \value{
