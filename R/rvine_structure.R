@@ -82,7 +82,12 @@
 #' Condition 6 already implies conditions 2-5, but is more difficult to
 #' check by hand. 
 #'
-#' @param structure an R-vine structure, see *Details*.
+#' @param order a vector of positive integers.
+#' @param struct_array a list of vectors of positive integers. The vectors 
+#' represent rows of the r-rvine structure and the number of elements have to 
+#' be compatible with the `order` vector.
+#' @param is_natural_order whether `struct_array` is assumed to be provided 
+#' in natural order already.
 #'
 #' @return 
 #' `is.rvine_structure()` throws an error if its input does not define a 
@@ -105,6 +110,11 @@
 #' mat[3, 1] <- 0
 #' as.rvine_structure(mat)
 #' 
+#' # structures can also be constructed from the order vector and struct_array
+#' rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
+#'                                                  c(2, 2), 
+#'                                                  3))
+#' 
 #' # throws an error
 #' mat[3, 1] <- 5
 #' try(as.rvine_structure(mat))
@@ -113,9 +123,47 @@
 #' @name rvine_structure
 #' @importFrom methods as is
 #' @aliases is.rvine_structure as.rvine_structure as.rvine_matrix
+rvine_structure <- function(order, struct_array, is_natural_order = TRUE) {
+    
+    # sanity checks and extract dimension/trunc_lvl
+    assert_that(is.vector(order) && all(sapply(order, is.count)),
+                msg = "Order should be a vector of positive integers.")
+    assert_that(is.vector(struct_array) || is.list(struct_array))
+    if (is.list(struct_array))
+        struct_array <- unlist(struct_array)
+    assert_that(all(sapply(struct_array, is.count)), 
+                msg = "All elements of struct_array should be positive integers.")
+    d <- length(order)
+    dd <- cumsum((d-1):1)
+    assert_that(length(struct_array) %in% dd, 
+                msg = "The number of elements in struct_array is incompatible 
+                with order.")
+    trunc_lvl <- which(dd == length(struct_array))
+    assert_that(is.flag(is_natural_order))
+    
+    # create column-wise structure array
+    dd <- c(1, 1 + dd[-(d-1)])
+    struct_array <- lapply(1:(d - 1), function(i) 
+        struct_array[dd[1:min((d - i), trunc_lvl)] + (i - 1)])
+    
+    # create and check output
+    output <- structure(list(order = order, 
+                             struct_array = struct_array,
+                             d = d,
+                             trunc_lvl = trunc_lvl),
+                        class = c("list", "rvine_structure"))
+    rvine_structure_check_cpp(output, is_natural_order)
+    
+    # return output
+    return(output)
+}
+
+#' @param structure an R-vine structure, see *Details*.
+#' @export
+#' @rdname rvine_structure
 is.rvine_structure <- function(structure) {
     assert_that(inherits(structure, "rvine_structure"))
-    rvine_structure_check_cpp(structure)
+    rvine_structure_check_cpp(structure, TRUE)
     invisible(TRUE)
 }
 

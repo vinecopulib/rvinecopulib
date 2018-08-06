@@ -22,8 +22,8 @@ uniform margins).}
 additional options.}
 
 \item{structure}{either an r-vine structure or a quadratic matrix
-specifying the structure of the model (see \code{\link[=check_rvine_structure]{check_rvine_structure()}} or
-\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
+specifying the structure of the model (see \code{\link[=is.rvine_structure]{is.rvine_structure()}} or
+\code{\link[=is.rvine_matrix]{is.rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
 \code{length(pair_copulas[[1]]) + 1}; for [vinecop()], \code{matrix = NA} performs
 automatic structure selection.
 
@@ -87,7 +87,7 @@ Object from the \code{vinecop_dist} class are lists containing:
 \item \code{pair_copulas}, a list of lists. Each element of \code{pair_copulas} corresponds
 to a tree, which is itself a list of \code{bicop_dist} objects, see \code{\link[=bicop_dist]{bicop_dist()}}.
 \item \code{structure}, an r-vine structure, namely a compressed representation of the
-vine structure, see \code{\link[=check_rvine_structure]{check_rvine_structure()}}.
+vine structure, see \code{\link[=is.rvine_structure]{is.rvine_structure()}}.
 \item \code{npars}, a \code{numeric} with the number of (effective) parameters.
 }
 
