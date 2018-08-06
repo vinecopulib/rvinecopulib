@@ -49,3 +49,14 @@ test_that("print/summary generics work", {
     expect_s3_class(s <- summary(fit), "summary_df")
     expect_is(s, "data.frame")
 })
+
+test_that("truncation works", {
+    
+    fit_truncated <- truncate_model(fit, trunc_lvl = 1)
+    expect_silent(dvinecop(u, fit_truncated))
+    expect_silent(rvinecop(50, fit_truncated))
+    
+    fit_truncated <- vinecop(u, "par", trunc_lvl = 1)
+    expect_silent(dvinecop(u, fit_truncated))
+    expect_silent(rvinecop(50, fit_truncated))
+})

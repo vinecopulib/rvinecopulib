@@ -144,7 +144,7 @@ plot.vinecop <- plot.vinecop_dist
 
 ## creates a graph object for a tree in a given vinecop_dist
 get_graph <- function(tree, vc, edge_labels, var_names) {
-    M <- to_rvine_matrix(vc$structure)
+    M <- get_matrix(vc)
     d <- dim(vc)[1]
     
     I <- matrix(0, d - tree + 1, d - tree + 1)
@@ -205,7 +205,7 @@ set_edge_labels <- function(tree, vc, edge_labels) {
 ## get info for a pair-copula
 get_name <-  function(vc, tree, edge) {
     
-    M <- to_rvine_matrix(vc$structure)
+    M <- get_matrix(vc)
     d <- nrow(M)
     # conditioned set
     bef <- paste0(vc$names[M[c(d - edge + 1, tree), edge]], 

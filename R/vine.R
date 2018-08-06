@@ -153,15 +153,15 @@ vine <- function(data,
 #'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
 #'    tree `t`.
 #' @param structure either an r-vine structure or a quadratic matrix 
-#' specifying the structure of the model (see [check_rvine_structure()] or
-#'  [check_rvine_matrix()]); for [vinecop_dist()], the dimension must be 
+#' specifying the structure of the model (see [is.rvine_structure()] or
+#'  [is.rvine_matrix()]); for [vinecop_dist()], the dimension must be 
 #'   `length(pair_copulas[[1]]) + 1`; for [vinecop()], `matrix = NA` performs
 #'   automatic structure selection.
 #' @rdname vine
 #' @export
 vine_dist <- function(margins, pair_copulas, structure) {
     
-    structure <- to_rvine_structure(structure)
+    structure <- as.rvine_structure(structure)
     
     # sanity checks for the marg
     if (!(length(margins) %in% c(1, dim(structure)[1])))

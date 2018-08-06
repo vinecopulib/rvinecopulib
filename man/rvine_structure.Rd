@@ -2,21 +2,21 @@
 % Please edit documentation in R/rvine_structure.R
 \name{rvine_structure}
 \alias{rvine_structure}
-\alias{check_rvine_structure}
-\alias{to_rvine_structure}
-\alias{to_rvine_matrix}
-\alias{check_rvine_matrix}
-\alias{to_rvine_structure}
-\alias{to_rvine_matrix}
+\alias{is.rvine_structure}
+\alias{as.rvine_structure}
+\alias{as.rvine_matrix}
+\alias{is.rvine_matrix}
+\alias{as.rvine_structure}
+\alias{as.rvine_matrix}
 \title{R-vine structure}
 \usage{
-check_rvine_structure(structure)
+is.rvine_structure(structure)
 
-check_rvine_matrix(matrix)
+is.rvine_matrix(matrix)
 
-to_rvine_structure(matrix)
+as.rvine_structure(matrix)
 
-to_rvine_matrix(structure)
+as.rvine_matrix(structure)
 }
 \arguments{
 \item{structure}{an R-vine structure, see \emph{Details}.}
@@ -24,19 +24,19 @@ to_rvine_matrix(structure)
 \item{matrix}{an R-vine matrix, see \emph{Details}.}
 }
 \value{
-\code{check_rvine_structure()} throws an error if its input does not define a
+\code{is.rvine_structure()} throws an error if its input does not define a
 valid R-vine structure, otherwise \code{TRUE} is returned invisibly, and
-similarly for \code{check_rvine_matrix()}.
+similarly for \code{is.rvine_matrix()}.
 
-\code{to_rvine_structure()} checks whether the input defines a valid r-vine model
-and returns an r-vine structure. Similarly, \code{to_rvine_matrix()} converts an
+\code{as.rvine_structure()} checks whether the input defines a valid r-vine model
+and returns an r-vine structure. Similarly, \code{as.rvine_matrix()} converts an
 r-vine structure into an r-vine matrix.
 }
 \description{
 R-vine structures are compressed representations encoding the tree
 structure of the vine, i.e. the conditioned/conditioning
 variables of each edge. They need to satisfy several properties that can be
-checked by \code{check_rvine_structure()}, see \emph{Details}.
+checked by \code{is.rvine_structure()}, see \emph{Details}.
 }
 \details{
 The R-vine structure is essentially a lower-triangular matrix/triangular array,
@@ -60,7 +60,7 @@ tree \tab  edge \tab pair-copulas   \cr
 }
 
 An r-vine structure can be converted to an r-vine matrix using
-\code{to_rvine_matrix()}, which encodes the same model with a square matrix
+\code{as.rvine_matrix()}, which encodes the same model with a square matrix
 filled with zeros. For instance, the matrix corresponding to the structure
 above is:\preformatted{1 1 1 1
 2 2 2 0
@@ -69,7 +69,7 @@ above is:\preformatted{1 1 1 1
 }
 
 Similarly, an r-vine matrix can be converted to an r-vine structure using
-\code{to_rvine_structure()}.
+\code{as.rvine_structure()}.
 
 Denoting by \code{M[i, j]} the array entry in row \code{i} and column \code{j} (the
 pair-copula index for edge \code{e} in tree \code{t} of a \code{d} dimensional vine is
@@ -96,7 +96,7 @@ array:\preformatted{1 1 1
 }
 
 A valid R-vine structure or matrix must satisfy several conditions which
-are checked when \code{check_rvine_structure()} or \code{check_rvine_matrix()} is
+are checked when \code{is.rvine_structure()} or \code{is.rvine_matrix()} is
 called:
 \enumerate{
 \item It can only contain numbers between 1 and d (and additionally zeros for
@@ -117,18 +117,18 @@ check by hand.
 }
 \examples{
 mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
-check_rvine_matrix(mat)
+is.rvine_matrix(mat)
 
 # convert to r-vine structure
-to_rvine_structure(mat)
+as.rvine_structure(mat)
 
 # truncate and convert to r-vine structure
 mat[3, 1] <- 0
-to_rvine_structure(mat)
+as.rvine_structure(mat)
 
 # throws an error
 mat[3, 1] <- 5
-try(to_rvine_structure(mat))
-try(check_rvine_matrix(mat))
+try(as.rvine_structure(mat))
+try(is.rvine_matrix(mat))
 
 }

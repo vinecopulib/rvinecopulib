@@ -3,7 +3,7 @@
 #' R-vine structures are compressed representations encoding the tree 
 #' structure of the vine, i.e. the conditioned/conditioning 
 #' variables of each edge. They need to satisfy several properties that can be 
-#' checked by `check_rvine_structure()`, see *Details*.
+#' checked by `is.rvine_structure()`, see *Details*.
 #' 
 #' The R-vine structure is essentially a lower-triangular matrix/triangular array, 
 #' with a notation that differs from the one in the VineCopula package. 
@@ -27,7 +27,7 @@
 #' }
 #' 
 #' An r-vine structure can be converted to an r-vine matrix using 
-#' `to_rvine_matrix()`, which encodes the same model with a square matrix 
+#' `as.rvine_matrix()`, which encodes the same model with a square matrix 
 #' filled with zeros. For instance, the matrix corresponding to the structure 
 #' above is:
 #' ```
@@ -37,7 +37,7 @@
 #' 4 0 0 0
 #' ```
 #' Similarly, an r-vine matrix can be converted to an r-vine structure using 
-#' `to_rvine_structure()`.
+#' `as.rvine_structure()`.
 #' 
 #' Denoting by `M[i, j]` the array entry in row `i` and column `j` (the 
 #' pair-copula index for edge `e` in tree `t` of a `d` dimensional vine is
@@ -65,7 +65,7 @@
 #' ```
 #' 
 #' A valid R-vine structure or matrix must satisfy several conditions which 
-#' are checked when `check_rvine_structure()` or `check_rvine_matrix()` is 
+#' are checked when `is.rvine_structure()` or `is.rvine_matrix()` is 
 #' called:
 #' 1. It can only contain numbers between 1 and d (and additionally zeros for 
 #' r-vine matrices).
@@ -85,34 +85,35 @@
 #' @param structure an R-vine structure, see *Details*.
 #'
 #' @return 
-#' `check_rvine_structure()` throws an error if its input does not define a 
+#' `is.rvine_structure()` throws an error if its input does not define a 
 #' valid R-vine structure, otherwise `TRUE` is returned invisibly, and 
-#' similarly for `check_rvine_matrix()`.
+#' similarly for `is.rvine_matrix()`.
 #' 
-#' `to_rvine_structure()` checks whether the input defines a valid r-vine model 
-#' and returns an r-vine structure. Similarly, `to_rvine_matrix()` converts an 
+#' `as.rvine_structure()` checks whether the input defines a valid r-vine model 
+#' and returns an r-vine structure. Similarly, `as.rvine_matrix()` converts an 
 #' r-vine structure into an r-vine matrix.
 #' @export
 #'
 #' @examples
 #' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
-#' check_rvine_matrix(mat)
+#' is.rvine_matrix(mat)
 #' 
 #' # convert to r-vine structure
-#' to_rvine_structure(mat)
+#' as.rvine_structure(mat)
 #' 
 #' # truncate and convert to r-vine structure
 #' mat[3, 1] <- 0
-#' to_rvine_structure(mat)
+#' as.rvine_structure(mat)
 #' 
 #' # throws an error
 #' mat[3, 1] <- 5
-#' try(to_rvine_structure(mat))
-#' try(check_rvine_matrix(mat))
+#' try(as.rvine_structure(mat))
+#' try(is.rvine_matrix(mat))
 #' 
 #' @name rvine_structure
-#' @aliases check_rvine_structure to_rvine_structure to_rvine_matrix
-check_rvine_structure <- function(structure) {
+#' @importFrom methods as is
+#' @aliases is.rvine_structure as.rvine_structure as.rvine_matrix
+is.rvine_structure <- function(structure) {
     assert_that(inherits(structure, "rvine_structure"))
     rvine_structure_check_cpp(structure)
     invisible(TRUE)
@@ -121,7 +122,7 @@ check_rvine_structure <- function(structure) {
 #' @param matrix an R-vine matrix, see *Details*.
 #' @export
 #' @rdname rvine_structure
-check_rvine_matrix <- function(matrix) {
+is.rvine_matrix <- function(matrix) {
     assert_that(is.matrix(matrix), is.numeric(matrix))
     rvine_matrix_check_cpp(matrix)
     invisible(TRUE)
@@ -129,7 +130,7 @@ check_rvine_matrix <- function(matrix) {
 
 #' @export
 #' @rdname rvine_structure
-to_rvine_structure <- function(matrix) {
+as.rvine_structure <- function(matrix) {
     
     assert_that(inherits(matrix, "matrix") || 
                     inherits(matrix, "rvine_matrix") ||
@@ -138,7 +139,7 @@ to_rvine_structure <- function(matrix) {
                 or an rvine_structure.")
     
     if (inherits(matrix, "matrix") && !inherits(matrix, "rvine_matrix"))
-            assert_that(check_rvine_matrix(matrix))
+            assert_that(is.rvine_matrix(matrix))
     
     if (inherits(matrix, "rvine_structure"))
         return(matrix)
@@ -158,12 +159,12 @@ to_rvine_structure <- function(matrix) {
 
 #' @export
 #' @rdname rvine_structure
-to_rvine_matrix <- function(structure) {
+as.rvine_matrix <- function(structure) {
     assert_that(inherits(structure, "rvine_structure"))
     
     # extract order and dimension
     order <- structure$order
-    d <- length(order)
+    d <- dim(structure)[1]
     
     # set-up output
     matrix <- matrix(0, d, d)
@@ -176,12 +177,28 @@ to_rvine_matrix <- function(structure) {
     }
     
     class(matrix) <- c(class(matrix), "rvine_matrix")
+    attr(matrix, "d") <- d
+    attr(matrix, "trunc_lvl") <- dim(structure)[2]
     matrix
 }
 
 #' @export
+dim.rvine_matrix <- function(x) {
+    output <- c(attr(x, "d"), attr(x, "trunc_lvl"))
+    names(output) <- c("dim", "trunc_lvl")
+    output
+}
+
+#' @export
 #' @importFrom utils write.table
-print.rvine_matrix <- function(x, ..., zero.print = "") {
+print.rvine_matrix <- function(x, ..., zero.print = " ", n = 10, 
+                               structure = FALSE) {
+    if (structure) {
+        cat(dim(x)[1], "-dimensional r-vine structure ('rvine_structure')", sep = "")
+    } else {
+        cat(dim(x)[1], "-dimensional r-vine matrix ('rvine_matrix')", sep = "")
+    }
+    print_truncation_info(x)
     write.table(format(x, zero.print = zero.print), quote = FALSE, 
                 row.names = FALSE, col.names = FALSE)
     invisible(x)
@@ -189,7 +206,7 @@ print.rvine_matrix <- function(x, ..., zero.print = "") {
 
 #' @export
 print.rvine_structure <- function(x, ...) {
-    print(to_rvine_matrix(x))
+    print(as.rvine_matrix(x), structure = TRUE)
 }
 
 #' @export
