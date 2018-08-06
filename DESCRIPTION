@@ -28,7 +28,6 @@ Imports:
     grDevices,
     kde1d,
     lattice,
-    methods,
     Rcpp (>= 0.12.12),
     stats,
     utils

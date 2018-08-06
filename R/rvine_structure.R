@@ -121,7 +121,6 @@
 #' try(is.rvine_matrix(mat))
 #' 
 #' @name rvine_structure
-#' @importFrom methods as is
 #' @aliases is.rvine_structure as.rvine_structure as.rvine_matrix
 rvine_structure <- function(order, struct_array, is_natural_order = TRUE) {
     
