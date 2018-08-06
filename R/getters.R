@@ -10,10 +10,10 @@
 #' @param object a `bicop_dist`, `vinecop_dist` or `vine_dist` object.
 #' @details 
 #' #' The [get_structure] method (for `vinecop_dist` or `vine_dist` objects only) 
-#' extracts the structure (see [check_rvine_structure] for more details).
+#' extracts the structure (see [rvine_structure] for more details).
 #' 
 #' The [get_matrix] method (for `vinecop_dist` or `vine_dist` objects only) 
-#' extracts the structure matrix (see [check_rvine_matrix] for more details).
+#' extracts the structure matrix (see [rvine_structure] for more details).
 #' 
 #' The other `get_xyz` methods for `vinecop_dist` or `vine_dist` objects return 
 #' the entries corresponding to the pair-copula indexed by its `tree` and `edge`. 

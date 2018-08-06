@@ -59,10 +59,10 @@ pair-copulas, their parameters, Kendall's taus, or families
 }
 \details{
 #' The \link{get_structure} method (for \code{vinecop_dist} or \code{vine_dist} objects only)
-extracts the structure (see \link{check_rvine_structure} for more details).
+extracts the structure (see \link{rvine_structure} for more details).
 
 The \link{get_matrix} method (for \code{vinecop_dist} or \code{vine_dist} objects only)
-extracts the structure matrix (see \link{check_rvine_matrix} for more details).
+extracts the structure matrix (see \link{rvine_structure} for more details).
 
 The other \code{get_xyz} methods for \code{vinecop_dist} or \code{vine_dist} objects return
 the entries corresponding to the pair-copula indexed by its \code{tree} and \code{edge}.
