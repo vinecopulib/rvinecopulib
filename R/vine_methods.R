@@ -121,22 +121,16 @@ pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
 
 #' @rdname vine_methods
 #' @param n number of observations.
-#' @param U optionally, an \eqn{n \times d} matrix of values in \eqn{(0,1)}.
-#'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
-#'    matrix of independent \eqn{U(0, 1)} variables, this simulates data 
-#'    from `vine`.
 #' @param qrng if `TRUE`, generates quasi-random numbers using the multivariate 
 #' Generalized Halton sequence up to dimension 300 and the Generalized Sobol 
 #' sequence in higher dimensions (default `qrng = FALSE`).
 #' @export
-rvine <- function(n, vine, U = NULL, qrng = FALSE, cores = 1) {
-    
-    assert_that(inherits(vine, "vine_dist"))
+rvine <- function(n, vine, qrng = FALSE, cores = 1) {
+    assert_that(inherits(vine, "vine_dist"), is.flag(qrng))
     
     # simulate copula data
-    U <- rvinecop(n, vine$copula, U, qrng, cores)
+    U <- rvinecop(n, vine$copula, qrng, cores)
 
-    
     # prepare marginals if only one is specified
     if (!inherits(vine, "vine") & depth(vine$margins) == 1) 
         vine$margins <- replicate(dim(vine)[1], vine$margins, simplify = FALSE)

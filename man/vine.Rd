@@ -43,8 +43,8 @@ Furthermore, if \code{margins} has length one, it will be recycled for every com
 tree \code{t}.}
 
 \item{structure}{either an r-vine structure or a quadratic matrix
-specifying the structure of the model (see \code{\link[=check_rvine_structure]{check_rvine_structure()}} or
-\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
+specifying the structure of the model (see \code{\link[=is.rvine_structure]{is.rvine_structure()}} or
+\code{\link[=is.rvine_matrix]{is.rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
 \code{length(pair_copulas[[1]]) + 1}; for [vinecop()], \code{matrix = NA} performs
 automatic structure selection.
 

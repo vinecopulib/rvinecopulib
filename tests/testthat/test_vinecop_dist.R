@@ -15,10 +15,6 @@ test_that("constructor creates proper vinecop_dist object", {
 
 test_that("d/p/r- functions work", {
     u <- rvinecop(50, vc)
-    u <- rvinecop(50, vc, u)
-    expect_error(rvinecop(50, vc, U = u[, -1]))
-    expect_error(rvinecop(50, vc, U = u[-1, ]))
-    expect_warning(rvinecop(50, vc, U = u, qrng = TRUE))
     expect_false(any(rvinecop(50, vc, qrng = FALSE) == 
                          rvinecop(50, vc, qrng = FALSE)))
     set.seed(1)

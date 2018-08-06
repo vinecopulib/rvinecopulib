@@ -19,7 +19,7 @@ dbicop(u, family, rotation, parameters)
 
 pbicop(u, family, rotation, parameters)
 
-rbicop(n, family, rotation, parameters, U = NULL, qrng = FALSE)
+rbicop(n, family, rotation, parameters, qrng = FALSE)
 
 hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
 }
@@ -35,11 +35,6 @@ hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
 
 \item{n}{number of observations. If `length(n) > 1``, the length is taken to
 be the number required.}
-
-\item{U}{optionally, an \eqn{n \times 2} matrix of values in \eqn{(0,1)}.
-The result is then the inverse Rosenblatt transform of \code{U}; if \code{U} is a
-matrix of independent \eqn{U(0, 1)} variables, this simulates data
-from \code{vinecop}.}
 
 \item{qrng}{if \code{TRUE}, generates quasi-random numbers using the bivariate
 Generalized Halton sequence (default \code{qrng = FALSE}).}

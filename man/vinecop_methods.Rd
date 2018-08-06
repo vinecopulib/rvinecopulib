@@ -10,13 +10,16 @@
 \alias{rvinecop_dist}
 \alias{pvinecop}
 \alias{rvinecop}
+\alias{inverse_rosenblatt}
 \title{Vine copula distributions}
 \usage{
 dvinecop(u, vinecop, cores = 1)
 
 pvinecop(u, vinecop, n_mc = 10^4, cores = 1)
 
-rvinecop(n, vinecop, U = NULL, qrng = FALSE, cores = 1)
+rvinecop(n, vinecop, qrng = FALSE, cores = 1)
+
+inverse_rosenblatt(u, vinecop, cores = 1)
 }
 \arguments{
 \item{u}{evaluation points, either a length d vector or a d-column matrix,
@@ -30,11 +33,6 @@ done in parallel on \code{cores} batches .}
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 
 \item{n}{number of observations.}
-
-\item{U}{optionally, an \eqn{n \times d} matrix of values in \eqn{(0,1)}.
-The result is then the inverse Rosenblatt transform of \code{U}; if \code{U} is a
-matrix of independent \eqn{U(0, 1)} variables, this simulates data
-from \code{vinecop}.}
 
 \item{qrng}{if \code{TRUE}, generates quasi-random numbers using the multivariate
 Generalized Halton sequence up to dimension 300 and the Generalized Sobol
