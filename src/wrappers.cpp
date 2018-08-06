@@ -1,11 +1,6 @@
-#define BOOST_NO_AUTO_PTR
+#include "wrappers.hpp"
 
-#include <RcppEigen.h>
-#include "vinecopulib.hpp"
-
-using namespace vinecopulib;
-
-// tools wrappers
+// tools exports
 
 // [[Rcpp::export]]
 Eigen::MatrixXd pseudo_obs_cpp(Eigen::MatrixXd x, std::string ties_method) 
@@ -118,6 +113,8 @@ Rcpp::List bicop_wrap(Bicop bicop_cpp, bool is_fitted)
     );
 }
 
+// bicop exports
+
 // [[Rcpp::export]]
 void bicop_check_cpp(const Rcpp::List& bicop_r)
 {
@@ -125,18 +122,16 @@ void bicop_check_cpp(const Rcpp::List& bicop_r)
 }
 
 // [[Rcpp::export()]]
-Rcpp::List bicop_select_cpp(
-        const Eigen::MatrixXd& data,
-        std::vector<std::string> family_set,
-        std::string par_method,
-        std::string nonpar_method,
-        double mult,
-        std::string selcrit,
-        const Eigen::VectorXd& weights,
-        double psi0,
-        bool presel,
-        size_t num_threads
-)
+Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
+                            std::vector<std::string> family_set,
+                            std::string par_method,
+                            std::string nonpar_method,
+                            double mult,
+                            std::string selcrit,
+                            const Eigen::VectorXd& weights,
+                            double psi0,
+                            bool presel,
+                            size_t num_threads)
 {
     std::vector<BicopFamily> fam_set(family_set.size());
     for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
@@ -159,43 +154,50 @@ Rcpp::List bicop_select_cpp(
 }
 
 // [[Rcpp::export()]]
-Eigen::VectorXd bicop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
+Eigen::VectorXd bicop_pdf_cpp(const Eigen::MatrixXd& u, 
+                              const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).pdf(u);
 }
 
 // [[Rcpp::export()]]
-Eigen::VectorXd bicop_cdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
+Eigen::VectorXd bicop_cdf_cpp(const Eigen::MatrixXd& u, 
+                              const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).cdf(u);
 }
 
 // [[Rcpp::export()]]
-Eigen::VectorXd bicop_hfunc1_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
+Eigen::VectorXd bicop_hfunc1_cpp(const Eigen::MatrixXd& u, 
+                                 const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).hfunc1(u);
 }
 
 // [[Rcpp::export()]]
-Eigen::VectorXd bicop_hfunc2_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
+Eigen::VectorXd bicop_hfunc2_cpp(const Eigen::MatrixXd& u, 
+                                 const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).hfunc2(u);
 }
 
 // [[Rcpp::export()]]
-Eigen::VectorXd bicop_hinv1_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
+Eigen::VectorXd bicop_hinv1_cpp(const Eigen::MatrixXd& u, 
+                                const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).hinv1(u);
 }
 
 // [[Rcpp::export()]]
-Eigen::VectorXd bicop_hinv2_cpp(const Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
+Eigen::VectorXd bicop_hinv2_cpp(const Eigen::MatrixXd& u, 
+                                const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).hinv2(u);
 }
 
 // [[Rcpp::export()]]
-Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r, const size_t &n, 
+Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r, 
+                              const size_t &n, 
                               const bool qrng,
                               std::vector<int> seeds)
 {
@@ -203,7 +205,8 @@ Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r, const size_t &n,
 }
 
 // [[Rcpp::export()]]
-double bicop_loglik_cpp(Eigen::MatrixXd& u, const Rcpp::List& bicop_r)
+double bicop_loglik_cpp(Eigen::MatrixXd& u, 
+                        const Rcpp::List& bicop_r)
 {
     return bicop_wrap(bicop_r).loglik(u);
 }
@@ -216,11 +219,14 @@ double bicop_par_to_tau_cpp(const Rcpp::List& bicop_r)
 }
 
 // [[Rcpp::export()]]
-Eigen::MatrixXd bicop_tau_to_par_cpp(const Rcpp::List& bicop_r, const double& tau)
+Eigen::MatrixXd bicop_tau_to_par_cpp(const Rcpp::List& bicop_r, 
+                                     const double& tau)
 {
     Bicop bicop_cpp = bicop_wrap(bicop_r);
     return bicop_cpp.tau_to_parameters(tau);
 }
+
+// structure wrappers
 
 TriangularArray<size_t> struct_array_wrap(const Rcpp::List& struct_array_r,
                                           size_t trunc_lvl)
@@ -248,7 +254,7 @@ Rcpp::List struct_array_wrap(const TriangularArray<size_t>& struct_array)
 }
 
 RVineStructure rvine_structure_wrap(const Rcpp::List& rvine_structure_r,
-                                    bool check = false)
+                                    bool check)
 {
     size_t trunc_lvl = rvine_structure_r["trunc_lvl"];
     std::vector<size_t> order = rvine_structure_r["order"];
@@ -268,6 +274,8 @@ Rcpp::List rvine_structure_wrap(const RVineStructure& rvine_struct)
         Rcpp::Named("trunc_lvl")    = rvine_struct.get_trunc_lvl()
     );
 }
+
+// structure exports
 
 // [[Rcpp::export()]]
 void rvine_structure_check_cpp(const Rcpp::List& rvine_struct) {
@@ -328,8 +336,9 @@ Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
     return Vinecop(pair_copulas, structure);
 }
 
-
-Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp, bool is_fitted = FALSE) {
+Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp, 
+                        bool is_fitted) 
+{
     
     auto vine_structure = rvine_structure_wrap(vinecop_cpp.get_rvine_structure());
     auto pair_copulas = pair_copulas_wrap(vinecop_cpp.get_all_pair_copulas(), 
@@ -349,11 +358,12 @@ Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp, bool is_fitted = FALSE) {
     );
 }
 
+// vinecop exports
+
 // [[Rcpp::export()]]
 void vinecop_check_cpp(Rcpp::List vinecop_r) {
     vinecop_wrap(vinecop_r);
 }
-
 
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
@@ -409,26 +419,24 @@ double vinecop_mbicv_cpp(const Eigen::MatrixXd& u,
 }
 
 // [[Rcpp::export()]]
-Rcpp::List vinecop_select_cpp(
-        const Eigen::MatrixXd& data,
-        bool is_structure_provided,
-        Rcpp::List& structure,
-        std::vector<std::string> family_set,
-        std::string par_method,
-        std::string nonpar_method,
-        double mult,
-        int truncation_level,
-        std::string tree_criterion,
-        double threshold,
-        std::string selection_criterion,
-        const Eigen::VectorXd& weights,
-        double psi0,
-        bool select_truncation_level,
-        bool select_threshold,
-        bool preselect_families,
-        bool show_trace,
-        size_t num_threads
-)
+Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
+                              bool is_structure_provided,
+                              Rcpp::List& structure,
+                              std::vector<std::string> family_set,
+                              std::string par_method,
+                              std::string nonpar_method,
+                              double mult,
+                              int truncation_level,
+                              std::string tree_criterion,
+                              double threshold,
+                              std::string selection_criterion,
+                              const Eigen::VectorXd& weights,
+                              double psi0,
+                              bool select_truncation_level,
+                              bool select_threshold,
+                              bool preselect_families,
+                              bool show_trace,
+                              size_t num_threads)
 {
     std::vector<BicopFamily> fam_set(family_set.size());
     for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
