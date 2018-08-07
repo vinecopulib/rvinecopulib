@@ -1,4 +1,3 @@
-#' @rdname rosenblatt
 #' Inverse Rosenblatt transform
 #' 
 #' The inverse Rosenblatt transform computes conditional quantiles and can be 
@@ -25,6 +24,22 @@
 #' \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has 
 #' distribution \eqn{F}.
 #' 
+#' @examples 
+#' # simulate data
+#' x <- replicate(3, rnorm(200))
+#' u <- replicate(3, runif(200))
+#' 
+#' # estimate a vine distribution model
+#' fit <- vine(x, copula_controls = list(family_set = "par"))
+#' 
+#' # inverse rosenblatt transform for vine distribution
+#' pairs(inverse_rosenblatt(u, fit))
+#' 
+#' # inverse rosenblatt transform for vine copula
+#' pairs(inverse_rosenblatt(u, fit$copula))
+#' 
+#' # inverse rosenblatt transform for a bivariate copula
+#' plot(inverse_rosenblatt(u[, 1:2], bicop_dist("clayton", 0, 3)))
 #' @export
 inverse_rosenblatt <- function(u, model, cores = 1) {
     assert_that(
