@@ -42,14 +42,12 @@ Furthermore, if \code{margins} has length one, it will be recycled for every com
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
 tree \code{t}.}
 
-\item{structure}{either an r-vine structure or a quadratic matrix
-specifying the structure of the model (see \code{\link[=is.rvine_structure]{is.rvine_structure()}} or
-\code{\link[=is.rvine_matrix]{is.rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
-\code{length(pair_copulas[[1]]) + 1}; for [vinecop()], \code{matrix = NA} performs
-automatic structure selection.
+\item{structure}{an \code{rvine_structure} object, namely a compressed
+representation of the vine structure, or an object that can be coerced
+into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
+The dimension must be \code{length(pair_copulas[[1]]) + 1}.
 
-[[1]: R:[1
-[vinecop()]: R:vinecop()}
+[[1]: R:[1}
 }
 \value{
 Objects inheriting from \code{vine_dist} for \code{\link[=vine_dist]{vine_dist()}}, and

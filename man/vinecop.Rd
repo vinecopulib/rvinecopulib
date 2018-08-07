@@ -21,11 +21,11 @@ uniform margins).}
 \item{family_set}{a character vector of families; see \code{\link[=bicop]{bicop()}} for
 additional options.}
 
-\item{structure}{either an r-vine structure or a quadratic matrix
-specifying the structure of the model (see \code{\link[=is.rvine_structure]{is.rvine_structure()}} or
-\code{\link[=is.rvine_matrix]{is.rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
-\code{length(pair_copulas[[1]]) + 1}; for [vinecop()], \code{matrix = NA} performs
-automatic structure selection.
+\item{structure}{an \code{rvine_structure} object, namely a compressed
+representation of the vine structure, or an object that can be coerced
+into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
+The dimension must be \code{length(pair_copulas[[1]]) + 1}; for [vinecop()],
+\code{structure = NA} performs automatic structure selection.
 
 [[1]: R:[1
 [vinecop()]: R:vinecop()}
@@ -86,8 +86,9 @@ Object from the \code{vinecop_dist} class are lists containing:
 \itemize{
 \item \code{pair_copulas}, a list of lists. Each element of \code{pair_copulas} corresponds
 to a tree, which is itself a list of \code{bicop_dist} objects, see \code{\link[=bicop_dist]{bicop_dist()}}.
-\item \code{structure}, an r-vine structure, namely a compressed representation of the
-vine structure, see \code{\link[=is.rvine_structure]{is.rvine_structure()}}.
+\item \code{structure}, an \code{rvine_structure} object, namely a compressed
+representation of the vine structure, or an object that can be coerced
+into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
 \item \code{npars}, a \code{numeric} with the number of (effective) parameters.
 }
 

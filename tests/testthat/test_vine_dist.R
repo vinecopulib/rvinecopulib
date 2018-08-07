@@ -64,7 +64,7 @@ test_that("print/summary/dim generics work", {
 test_that("getters work", {
     
     # test get_matrix
-    expect_equivalent(mat, get_matrix(vc))
+    expect_equivalent(as_rvine_matrix(mat), get_matrix(vc))
     expect_error(get_matrix(12))
     
     # test get_pair_copulas

@@ -73,7 +73,7 @@ get_structure <- function(object) {
 
 #' @export
 get_matrix <- function(object) {
-    as.rvine_matrix(get_structure(object))
+    as_rvine_matrix(get_structure(object))
 }
 
 

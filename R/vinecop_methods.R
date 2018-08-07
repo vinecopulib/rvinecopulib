@@ -108,7 +108,7 @@ print.vinecop_dist <- function(x, ...) {
 #' @importFrom utils capture.output
 #' @export
 summary.vinecop_dist <- function(object, ...) {
-    mat <- as.rvine_matrix(object$structure)
+    mat <- as_rvine_matrix(get_structure(object))
     d <- dim(object)[1]
     n_trees <- dim(object)[2]
     n_pcs <- length(unlist(object$pair_copulas, recursive = FALSE))

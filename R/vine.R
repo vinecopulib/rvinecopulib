@@ -152,16 +152,15 @@ vine <- function(data,
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where 
 #'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
 #'    tree `t`.
-#' @param structure either an r-vine structure or a quadratic matrix 
-#' specifying the structure of the model (see [is.rvine_structure()] or
-#'  [is.rvine_matrix()]); for [vinecop_dist()], the dimension must be 
-#'   `length(pair_copulas[[1]]) + 1`; for [vinecop()], `matrix = NA` performs
-#'   automatic structure selection.
+#' @param structure an `rvine_structure` object, namely a compressed 
+#' representation of the vine structure, or an object that can be coerced 
+#' into one (see [rvine_structure()] and [as_rvine_structure()]).
+#' The dimension must be `length(pair_copulas[[1]]) + 1`.
 #' @rdname vine
 #' @export
 vine_dist <- function(margins, pair_copulas, structure) {
     
-    structure <- as.rvine_structure(structure)
+    structure <- as_rvine_structure(structure)
     
     # sanity checks for the marg
     if (!(length(margins) %in% c(1, dim(structure)[1])))

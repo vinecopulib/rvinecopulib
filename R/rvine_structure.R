@@ -2,8 +2,7 @@
 #' 
 #' R-vine structures are compressed representations encoding the tree 
 #' structure of the vine, i.e. the conditioned/conditioning 
-#' variables of each edge. They need to satisfy several properties that can be 
-#' checked by `is.rvine_structure()`, see *Details*.
+#' variables of each edge.
 #' 
 #' The R-vine structure is essentially a lower-triangular matrix/triangular array, 
 #' with a notation that differs from the one in the VineCopula package. 
@@ -27,7 +26,7 @@
 #' }
 #' 
 #' An r-vine structure can be converted to an r-vine matrix using 
-#' `as.rvine_matrix()`, which encodes the same model with a square matrix 
+#' [as_rvine_matrix()], which encodes the same model with a square matrix 
 #' filled with zeros. For instance, the matrix corresponding to the structure 
 #' above is:
 #' ```
@@ -37,7 +36,7 @@
 #' 4 0 0 0
 #' ```
 #' Similarly, an r-vine matrix can be converted to an r-vine structure using 
-#' `as.rvine_structure()`.
+#' [as_rvine_structure()].
 #' 
 #' Denoting by `M[i, j]` the array entry in row `i` and column `j` (the 
 #' pair-copula index for edge `e` in tree `t` of a `d` dimensional vine is
@@ -65,8 +64,8 @@
 #' ```
 #' 
 #' A valid R-vine structure or matrix must satisfy several conditions which 
-#' are checked when `is.rvine_structure()` or `is.rvine_matrix()` is 
-#' called:
+#' are checked when [rvine_structure()], [rvine_matrix()], or some coercion 
+#' methods (see [as_rvine_structure()] and `as_rvine_matrix(`) are called:
 #' 1. It can only contain numbers between 1 and d (and additionally zeros for 
 #' r-vine matrices).
 #' 3. The anti-diagonal must contain the numbers 1, ..., d.
@@ -89,39 +88,37 @@
 #' @param is_natural_order whether `struct_array` is assumed to be provided 
 #' in natural order already.
 #'
-#' @return 
-#' `is.rvine_structure()` throws an error if its input does not define a 
-#' valid R-vine structure, otherwise `TRUE` is returned invisibly, and 
-#' similarly for `is.rvine_matrix()`.
-#' 
-#' `as.rvine_structure()` checks whether the input defines a valid r-vine model 
-#' and returns an r-vine structure. Similarly, `as.rvine_matrix()` converts an 
-#' r-vine structure into an r-vine matrix.
+#' @return Either an `rvine_structure` or an `rvine_matrix`.
 #' @export
-#'
+#' @seealso as_rvine_structure
 #' @examples
-#' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
-#' is.rvine_matrix(mat)
 #' 
-#' # convert to r-vine structure
-#' as.rvine_structure(mat)
-#' 
-#' # truncate and convert to r-vine structure
-#' mat[3, 1] <- 0
-#' as.rvine_structure(mat)
-#' 
-#' # structures can also be constructed from the order vector and struct_array
+#' # r-vine structures can be constructed from the order vector and struct_array
 #' rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
 #'                                                  c(2, 2), 
 #'                                                  3))
 #' 
+#' # r-vine matrices can be constructed from standard matrices
+#' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
+#' rvine_matrix(mat)
+#' 
+#' # coerce to r-vine structure
+#' str(as_rvine_structure(mat))
+#' 
+#' # truncate and construct the r-vine matrix
+#' mat[3, 1] <- 0
+#' rvine_matrix(mat)
+#' 
+#' # or use directly the r-vine structure constructor
+#' rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
+#'                                                  c(2, 2)))
+#' 
 #' # throws an error
 #' mat[3, 1] <- 5
-#' try(as.rvine_structure(mat))
-#' try(is.rvine_matrix(mat))
+#' try(rvine_matrix(mat))
 #' 
 #' @name rvine_structure
-#' @aliases is.rvine_structure as.rvine_structure as.rvine_matrix
+#' @aliases rvine_matrix is.rvine_structure is.rvine_matrix
 rvine_structure <- function(order, struct_array, is_natural_order = TRUE) {
     
     # sanity checks and extract dimension/trunc_lvl
@@ -138,7 +135,6 @@ rvine_structure <- function(order, struct_array, is_natural_order = TRUE) {
                 msg = "The number of elements in struct_array is incompatible 
                 with order.")
     trunc_lvl <- which(dd == length(struct_array))
-    assert_that(is.flag(is_natural_order))
     
     # create column-wise structure array
     dd <- c(1, 1 + dd[-(d-1)])
@@ -150,83 +146,41 @@ rvine_structure <- function(order, struct_array, is_natural_order = TRUE) {
                              struct_array = struct_array,
                              d = d,
                              trunc_lvl = trunc_lvl),
-                        class = c("list", "rvine_structure"))
-    rvine_structure_check_cpp(output, is_natural_order)
+                        class = c("rvine_structure", "list"))
+    validate_rvine_structure(output, is_natural_order)
     
     # return output
-    return(output)
+    output
 }
 
-#' @param structure an R-vine structure, see *Details*.
-#' @export
+#' @param matrix an r-vine matrix, see *Details*.
 #' @rdname rvine_structure
-is.rvine_structure <- function(structure) {
-    assert_that(inherits(structure, "rvine_structure"))
-    rvine_structure_check_cpp(structure, TRUE)
-    invisible(TRUE)
+#' @export
+rvine_matrix <- function(matrix) {
+    validate_rvine_matrix(matrix)
+    rvine_matrix_nocheck(matrix)
 }
 
-#' @param matrix an R-vine matrix, see *Details*.
-#' @export
-#' @rdname rvine_structure
-is.rvine_matrix <- function(matrix) {
-    assert_that(is.matrix(matrix), is.numeric(matrix))
-    rvine_matrix_check_cpp(matrix)
-    invisible(TRUE)
-}
-
-#' @export
-#' @rdname rvine_structure
-as.rvine_structure <- function(matrix) {
-    
-    assert_that(inherits(matrix, "matrix") || 
-                    inherits(matrix, "rvine_matrix") ||
-                    inherits(matrix, "rvine_structure"),
-                msg = "the rvine-structure should be a matrix, rvine_matrix 
-                or an rvine_structure.")
-    
-    if (inherits(matrix, "matrix") && !inherits(matrix, "rvine_matrix"))
-            assert_that(is.rvine_matrix(matrix))
-    
-    if (inherits(matrix, "rvine_structure"))
-        return(matrix)
-    
-    # compute structure array in natural order
+rvine_matrix_nocheck <- function(matrix) {
     d <- ncol(matrix)
-    order <- order(diag(matrix[,d:1]))
-    struct_array <- lapply(1:(d - 1), function(i) order[matrix[1:(d - i), i]])
-    
-    # create and return object
-    structure(list(order = diag(matrix[,d:1]), 
-                   struct_array = struct_array,
-                   d = d,
-                   trunc_lvl = length(struct_array[[1]])),
-              class = c("list", "rvine_structure"))
+    class(matrix) <- c("rvine_matrix", class(matrix))
+    attr(matrix, "d") <- d
+    attr(matrix, "trunc_lvl") <- ifelse(any(matrix[, 1] == 0), 
+                                        min(which(matrix[, 1] == 0)),
+                                        d - 1)
+    matrix
 }
 
-#' @export
-#' @rdname rvine_structure
-as.rvine_matrix <- function(structure) {
-    assert_that(inherits(structure, "rvine_structure"))
-    
-    # extract order and dimension
-    order <- structure$order
-    d <- dim(structure)[1]
-    
-    # set-up output
-    matrix <- matrix(0, d, d)
-    
-    # fill output
-    diag(matrix[,d:1]) <- order
-    for (i in 1:(d-1)) {
-        newcol <- order[structure[["struct_array"]][[i]]]
-        matrix[1:length(newcol), i] <- newcol
-    }
-    
-    class(matrix) <- c(class(matrix), "rvine_matrix")
-    attr(matrix, "d") <- d
-    attr(matrix, "trunc_lvl") <- dim(structure)[2]
-    matrix
+validate_rvine_structure <- function(structure, is_natural_order = TRUE) {
+    assert_that(is.rvine_structure(structure))
+    assert_that(is.flag(is_natural_order))
+    rvine_structure_check_cpp(structure, is_natural_order)
+}
+
+validate_rvine_matrix <- function(matrix) {
+    assert_that(is.rvine_matrix(matrix) || 
+                    (is.matrix(matrix) && is.numeric(matrix)))
+    rvine_matrix_check_cpp(matrix)
 }
 
 #' @export
@@ -253,7 +207,7 @@ print.rvine_matrix <- function(x, ..., zero.print = " ", n = 10,
 
 #' @export
 print.rvine_structure <- function(x, ...) {
-    print(as.rvine_matrix(x), structure = TRUE)
+    print(as_rvine_matrix(x), structure = TRUE)
 }
 
 #' @export
@@ -261,4 +215,14 @@ dim.rvine_structure <- function(x) {
     output <- c(x$d, x$trunc_lvl)
     names(output) <- c("dim", "trunc_lvl")
     output
+}
+
+#' @export
+is.rvine_structure <- function(structure) {
+    inherits(structure, "rvine_structure")
+}
+
+#' @export
+is.rvine_matrix <- function(matrix) {
+    inherits(matrix, "rvine_matrix")
 }
