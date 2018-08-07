@@ -13,13 +13,13 @@
 #' The Rosenblatt transform (Rosenblatt, 1952) \eqn{U = T(V)} of a random vector
 #' \eqn{V = (V_1,\ldots,V_d) ~ F} is defined as
 #' \deqn{ 
-#'   U_1 = V_1, U_2 = F(V_2|V_1), \ldots, U_d =F(V_d|V_1,\ldots,V_{d-1}), 
+#'   U_d= F(V_d), U_{d-1} = F(V_{d-1}|V_d), \ldots, U_1 =F(V_1|V_2,\ldots,V_{d-1}), 
 #' } 
 #' where \eqn{F(v_k|v_1,\ldots,v_{k-1})} is the conditional distribution of 
 #' \eqn{V_k} given \eqn{V_1 \ldots, V_{k-1}, k = 2,\ldots,d}. The vector \eqn{U}
 #' are then independent standard uniform variables. The inverse operation 
 #' \deqn{ 
-#'   V_1 = U_1, V_2 = F^{-1}(U_2|U_1), \ldots, V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}), 
+#'   V_d = F^{-1}(U_d), V_{d - 1} = F^{-1}(U_{d - 1}|U_d), \ldots, V_1 =F^{-1}(U_1|U_2,\ldots,U_{d-1}), 
 #' } 
 #' can can be used to simulate from a distribution. For any copula \eqn{F}, if 
 #' \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has 
@@ -52,7 +52,7 @@ inverse_rosenblatt <- function(u, model, cores = 1) {
     
     if (inherits(model, "bicop_dist")) {
         assert_that(ncol(u) == 2)
-        u <- cbind(bicop_hinv2_cpp(u, model), u[, 2])
+        u <- cbind(u[, 1], bicop_hinv1_cpp(u, model))
     } else if (inherits(model, "vinecop_dist")) {
         u <- vinecop_inverse_rosenblatt_cpp(u, model, cores)
     } else {
