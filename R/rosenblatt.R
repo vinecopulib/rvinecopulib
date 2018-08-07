@@ -9,8 +9,9 @@
 #' @param cores if `>1`, computation is parallelized over `cores` batches (rows
 #'    of `u`).
 #' 
+#' @details 
 #' The Rosenblatt transform (Rosenblatt, 1952) \eqn{U = T(V)} of a random vector
-#' \eqn{V = (V_1,\ldots,V_d) ~ C} is defined as
+#' \eqn{V = (V_1,\ldots,V_d) ~ F} is defined as
 #' \deqn{ 
 #'   U_1 = V_1, U_2 = F(V_2|V_1), \ldots, U_d =F(V_d|V_1,\ldots,V_{d-1}), 
 #' } 

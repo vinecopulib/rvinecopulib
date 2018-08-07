@@ -13,10 +13,15 @@ inverse_rosenblatt(u, model, cores = 1)
 \code{bicop_dist()}, \code{vinecop_dist()}, and \code{vine_dist()}.}
 
 \item{cores}{if \code{>1}, computation is parallelized over \code{cores} batches (rows
-of \code{u}).
-
+of \code{u}).}
+}
+\description{
+The inverse Rosenblatt transform computes conditional quantiles and can be
+used simulate from a stochastic model, see \emph{Details}.
+}
+\details{
 The Rosenblatt transform (Rosenblatt, 1952) \eqn{U = T(V)} of a random vector
-\eqn{V = (V_1,\ldots,V_d) ~ C} is defined as
+\eqn{V = (V_1,\ldots,V_d) ~ F} is defined as
 \deqn{ 
   U_1 = V_1, U_2 = F(V_2|V_1), \ldots, U_d =F(V_d|V_1,\ldots,V_{d-1}), 
 }
@@ -28,11 +33,7 @@ are then independent standard uniform variables. The inverse operation
 }
 can can be used to simulate from a distribution. For any copula \eqn{F}, if
 \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has
-distribution \eqn{F}.}
-}
-\description{
-The inverse Rosenblatt transform computes conditional quantiles and can be
-used simulate from a stochastic model, see \emph{Details}.
+distribution \eqn{F}.
 }
 \examples{
 # simulate data
