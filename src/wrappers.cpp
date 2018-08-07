@@ -378,6 +378,14 @@ Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
 }
 
 // [[Rcpp::export()]]
+Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U,
+                                       const Rcpp::List& vinecop_r,
+                                       size_t cores)
+{
+    return vinecop_wrap(vinecop_r).rosenblatt(U, cores);
+}
+
+// [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_sim_cpp(const Rcpp::List& vinecop_r, 
                                 const size_t n, 
                                 const bool qrng,

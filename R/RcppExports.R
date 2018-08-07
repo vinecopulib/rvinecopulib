@@ -69,6 +69,10 @@ vinecop_inverse_rosenblatt_cpp <- function(U, vinecop_r, cores) {
     .Call(`_rvinecopulib_vinecop_inverse_rosenblatt_cpp`, U, vinecop_r, cores)
 }
 
+vinecop_rosenblatt_cpp <- function(U, vinecop_r, cores) {
+    .Call(`_rvinecopulib_vinecop_rosenblatt_cpp`, U, vinecop_r, cores)
+}
+
 vinecop_sim_cpp <- function(vinecop_r, n, qrng, cores, seeds) {
     .Call(`_rvinecopulib_vinecop_sim_cpp`, vinecop_r, n, qrng, cores, seeds)
 }
