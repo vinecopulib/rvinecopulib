@@ -5,11 +5,14 @@
 \alias{is.rvine_structure}
 \alias{as.rvine_structure}
 \alias{as.rvine_matrix}
+\alias{is.rvine_structure}
 \alias{is.rvine_matrix}
 \alias{as.rvine_structure}
 \alias{as.rvine_matrix}
 \title{R-vine structure}
 \usage{
+rvine_structure(order, struct_array, is_natural_order = TRUE)
+
 is.rvine_structure(structure)
 
 is.rvine_matrix(matrix)
@@ -19,6 +22,15 @@ as.rvine_structure(matrix)
 as.rvine_matrix(structure)
 }
 \arguments{
+\item{order}{a vector of positive integers.}
+
+\item{struct_array}{a list of vectors of positive integers. The vectors
+represent rows of the r-rvine structure and the number of elements have to
+be compatible with the \code{order} vector.}
+
+\item{is_natural_order}{whether \code{struct_array} is assumed to be provided
+in natural order already.}
+
 \item{structure}{an R-vine structure, see \emph{Details}.}
 
 \item{matrix}{an R-vine matrix, see \emph{Details}.}
@@ -125,6 +137,11 @@ as.rvine_structure(mat)
 # truncate and convert to r-vine structure
 mat[3, 1] <- 0
 as.rvine_structure(mat)
+
+# structures can also be constructed from the order vector and struct_array
+rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
+                                                 c(2, 2), 
+                                                 3))
 
 # throws an error
 mat[3, 1] <- 5

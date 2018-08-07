@@ -254,14 +254,15 @@ Rcpp::List struct_array_wrap(const TriangularArray<size_t>& struct_array)
 }
 
 RVineStructure rvine_structure_wrap(const Rcpp::List& rvine_structure_r,
-                                    bool check)
+                                    bool check,
+                                    bool is_natural_order)
 {
     size_t trunc_lvl = rvine_structure_r["trunc_lvl"];
     std::vector<size_t> order = rvine_structure_r["order"];
     TriangularArray<size_t> struct_array = struct_array_wrap(
         rvine_structure_r["struct_array"], trunc_lvl);
     
-    return RVineStructure(order, struct_array, true, check);
+    return RVineStructure(order, struct_array, is_natural_order, check);
 }
 
 Rcpp::List rvine_structure_wrap(const RVineStructure& rvine_struct)
@@ -278,9 +279,11 @@ Rcpp::List rvine_structure_wrap(const RVineStructure& rvine_struct)
 // structure exports
 
 // [[Rcpp::export()]]
-void rvine_structure_check_cpp(const Rcpp::List& rvine_struct) {
+void rvine_structure_check_cpp(const Rcpp::List& rvine_struct,
+                               bool is_natural_order) {
 
-    auto rvine_structure = rvine_structure_wrap(rvine_struct, true);
+    auto rvine_structure = rvine_structure_wrap(rvine_struct, true, 
+                                                is_natural_order);
 }
 
 // [[Rcpp::export()]]

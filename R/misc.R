@@ -27,8 +27,8 @@
 #' # specify R-vine matrix
 #' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
 #' 
-#' # set up vine copula model
-#' structure <- to_rvine_structure(mat)
+#' # set up vine structure
+#' structure <- as.rvine_structure(mat)
 #' 
 #' # truncate the model
 #' truncate_model(structure, 1)

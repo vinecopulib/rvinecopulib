@@ -71,13 +71,15 @@ TriangularArray<size_t> struct_array_wrap(const Rcpp::List& struct_array_r,
 Rcpp::List struct_array_wrap(const TriangularArray<size_t>& struct_array);
 
 RVineStructure rvine_structure_wrap(const Rcpp::List& rvine_structure_r,
-                                    bool check = false);
+                                    bool check = false,
+                                    bool is_natural_order = true);
 
 Rcpp::List rvine_structure_wrap(const RVineStructure& rvine_struct);
 
 // structure exports
 
-void rvine_structure_check_cpp(const Rcpp::List& rvine_struct);
+void rvine_structure_check_cpp(const Rcpp::List& rvine_struct,
+                               bool is_natural_order = true);
 
 void rvine_matrix_check_cpp(Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix);
 
