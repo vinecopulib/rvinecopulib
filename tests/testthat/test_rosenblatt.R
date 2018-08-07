@@ -6,32 +6,23 @@ mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
 vc <- vinecop_dist(pcs, mat)
 vd <- vine_dist(list(distr = "norm"), pcs, mat)
 
-test_that("inverse rosenblatt works with bivariate copulas", {
-    u <- replicate(2, runif(50))
-    expect_equal(
-        inverse_rosenblatt(u, pc), 
-        cbind(u[, 1], hbicop(u, 1, pc, inverse = TRUE))
-    )
+test_that("rosenblatt works with bivariate copulas", {
+    u <- rbicop(20, pc)
+    expect_equal(inverse_rosenblatt(rosenblatt(u, pc), pc), u)
     pc <- bicop(u, family = "clay")
-    expect_equal(
-        inverse_rosenblatt(u, pc), 
-        cbind(u[, 1], hbicop(u, 1, pc, inverse = TRUE))
-    )
+    expect_equal(inverse_rosenblatt(rosenblatt(u, pc), pc), u)
 })
 
-test_that("inverse rosenblatt works with vine copulas", {
-    u <- replicate(3, runif(50))
-    expect_equal(inverse_rosenblatt(u, vc)[, 1], u[, 1])
+test_that("rosenblatt works with vine copulas", {
+    u <- rvinecop(20, vc)
+    expect_equal(inverse_rosenblatt(rosenblatt(u, vc), vc), u)
     vc <- vinecop(u, structure = mat, family = "clay")
-    expect_equal(inverse_rosenblatt(u, vc)[, 1], u[, 1])
+    expect_equal(inverse_rosenblatt(rosenblatt(u, vc), vc), u)
 })
 
-test_that("inverse rosenblatt works with vine distribution", {
-    u <- replicate(3, runif(50))
-    expect_equal(inverse_rosenblatt(u, vd)[, 1], qnorm(u[, 1]))
+test_that("rosenblatt works with vine distribution", {
+    u <- rvine(20, vd)
+    expect_equal(inverse_rosenblatt(rosenblatt(u, vd), vd), u)
     vd <- vine(u, copula_controls = list(structure = mat, family = "clay"))
-    expect_equal(
-        inverse_rosenblatt(u, vd)[, 1], 
-        kde1d::qkde1d(u[, 1], vd$margins[[1]])
-    )
+    expect_equal(inverse_rosenblatt(rosenblatt(u, vd), vd), u)
 })

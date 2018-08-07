@@ -947,7 +947,7 @@ inline Eigen::MatrixXd Vinecop::rosenblatt(const Eigen::MatrixXd &u,
         U_vine.col(j) = hfunc2.col(inverse_order[j]);
     }
 
-    return U_vine;
+    return U_vine.array().min(1 - 1e-10).max(1e-10);
 }
 
 
