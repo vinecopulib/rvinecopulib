@@ -141,6 +141,8 @@ public:
                              const size_t num_threads = 1,
                              const std::vector<int>& seeds = std::vector<int>()) const;
 
+    Eigen::MatrixXd rosenblatt(const Eigen::MatrixXd &u, 
+                               const size_t num_threads = 1) const;
     Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd &u,
                                        const size_t num_threads = 1) const;
 

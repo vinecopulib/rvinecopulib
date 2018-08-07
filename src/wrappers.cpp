@@ -276,6 +276,7 @@ Rcpp::List rvine_structure_wrap(const RVineStructure& rvine_struct)
     );
 }
 
+
 // structure exports
 
 // [[Rcpp::export()]]
