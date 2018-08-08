@@ -7,12 +7,12 @@
 \title{Vine copula models}
 \usage{
 vine(data, margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN, bw =
-  NA), copula_controls = list(family_set = "all", matrix = NA, par_method =
+  NA), copula_controls = list(family_set = "all", structure = NA, par_method =
   "mle", nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9,
   presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data =
   FALSE, show_trace = FALSE, cores = 1))
 
-vine_dist(margins, pair_copulas, matrix)
+vine_dist(margins, pair_copulas, structure)
 }
 \arguments{
 \item{data}{a matrix or data.frame.}
@@ -42,10 +42,12 @@ Furthermore, if \code{margins} has length one, it will be recycled for every com
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
 tree \code{t}.}
 
-\item{matrix}{a quadratic matrix specifying the structure matrix (see
-\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
-\code{length(pair_copulas)-1}; for \code{\link[=vinecop]{vinecop()}}, \code{matrix = NA} performs
-automatic structure selection.}
+\item{structure}{an \code{rvine_structure} object, namely a compressed
+representation of the vine structure, or an object that can be coerced
+into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
+The dimension must be \code{length(pair_copulas[[1]]) + 1}.
+
+[[1]: R:[1}
 }
 \value{
 Objects inheriting from \code{vine_dist} for \code{\link[=vine_dist]{vine_dist()}}, and

@@ -69,11 +69,11 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
     if (!requireNamespace("igraph", quietly = TRUE))
         stop("The 'igraph' package must be installed to plot.")
     
-    M <- x$matrix
-    d <- nrow(M)
+    d <- dim(x)[1]
+    trunc_lvl <- dim(x)[2]
     
     ## sanity checks
-    if (tree != "ALL" && any(tree > d - 1))
+    if (tree != "ALL" && any(tree > trunc_lvl))
         stop("Selected tree does not exist.")
     if (any(tree == "ALL")) {
         if (d > 5) {
@@ -81,7 +81,7 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
                           " it is set as c(1,2), please use tree = 1:d"))
             tree <- c(1,2)
         } else {
-            tree <- 1:(d - 1)
+            tree <- 1:trunc_lvl
         }
     }
     assert_that(in_set(var_names, c("ignore", "use", "legend")))
@@ -144,8 +144,8 @@ plot.vinecop <- plot.vinecop_dist
 
 ## creates a graph object for a tree in a given vinecop_dist
 get_graph <- function(tree, vc, edge_labels, var_names) {
-    M <- vc$matrix
-    d <- ncol(M)
+    M <- get_matrix(vc)
+    d <- dim(vc)[1]
     
     I <- matrix(0, d - tree + 1, d - tree + 1)
     
@@ -190,7 +190,7 @@ get_graph <- function(tree, vc, edge_labels, var_names) {
 
 ## finds appropriate edge labels for the plot
 set_edge_labels <- function(tree, vc, edge_labels) {
-    d <- nrow(vc$matrix)
+    d <- dim(vc)[1]
     get_edge_label <- switch(edge_labels,
                              family = get_family,
                              tau = function(vc, tree, edge) 
@@ -204,7 +204,8 @@ set_edge_labels <- function(tree, vc, edge_labels) {
 
 ## get info for a pair-copula
 get_name <-  function(vc, tree, edge) {
-    M <- vc$matrix
+    
+    M <- get_matrix(vc)
     d <- nrow(M)
     # conditioned set
     bef <- paste0(vc$names[M[c(d - edge + 1, tree), edge]], 
@@ -230,14 +231,16 @@ get_family_tau <- function(vc, tree, edge) {
 #' @export
 contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     ## check input
-    d <- nrow(x$matrix)
+    d <- dim(x)[1]
+    trunc_lvl <- dim(x)[2]
     assert_that(is.number(cex.nums))
-    if (tree != "ALL" && any(tree > d - 1))
-        stop("Selected tree does not exist.")
-    if (any(tree == "ALL")) {
-        tree <- 1:(d - 1)
-    }
-    n.tree <- length(tree)
+    assert_that((length(tree) == 1 && tree == "ALL") || all(tree <= trunc_lvl), 
+                msg = "Selected tree does not exist.")
+
+    if (any(tree == "ALL")) 
+        tree <- 1:trunc_lvl
+
+    n_tree <- length(tree)
 
     if (!is.null(list(...)$var_names))
         stop("Only contour plots allowed. Don't use the var_names argument!")
@@ -264,7 +267,7 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
         x$names <- as.character(1:d)
     
     ## set up for plotting windows (restore settings on exit)
-    usr <- par(mfrow = c(n.tree, d - min(tree)), mar = rep(0, 4))
+    usr <- par(mfrow = c(n_tree, d - min(tree)), mar = rep(0, 4))
     on.exit(par(usr))
     
     # contours: adjust limits for headings

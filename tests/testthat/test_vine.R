@@ -44,3 +44,15 @@ test_that("discrete data work", {
     expect_equal(sort(unique(sim[,2])), 1:5)
 })
 
+test_that("truncation works", {
+
+    fit_truncated <- truncate_model(fit, trunc_lvl = 1)
+    expect_silent(dvine(u, fit_truncated))
+    expect_silent(rvine(50, fit_truncated))
+    
+    fit_truncated <- vine(u, copula_controls = list(family_set = "nonpar", 
+                                                    trunc_lvl = 1))
+    expect_silent(dvine(u, fit_truncated))
+    expect_silent(rvine(50, fit_truncated))
+})
+

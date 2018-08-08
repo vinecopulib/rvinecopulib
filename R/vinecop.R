@@ -6,10 +6,11 @@
 #' @inheritParams bicop
 #' @param family_set a character vector of families; see [bicop()] for 
 #' additional options.
-#' @param matrix a quadratic matrix specifying the structure matrix (see 
-#'   [check_rvine_matrix()]); for [vinecop_dist()], the dimension must be 
-#'   `length(pair_copulas)-1`; for [vinecop()], `matrix = NA` performs
-#'   automatic structure selection.
+#' @param structure an `rvine_structure` object, namely a compressed 
+#' representation of the vine structure, or an object that can be coerced 
+#' into one (see [rvine_structure()] and [as_rvine_structure()]).
+#' The dimension must be `length(pair_copulas[[1]]) + 1`; for [vinecop()], 
+#' `structure = NA` performs automatic structure selection.
 #' @param psi0 prior probability of a non-independence copula (only used for
 #'     `selcrit = "mbic"` and `selcrit = "mbicv"`).
 #' @param trunc_lvl the truncation level of the vine copula; `Inf` means no
@@ -46,8 +47,9 @@
 #' 
 #' * `pair_copulas`, a list of lists. Each element of `pair_copulas` corresponds 
 #' to a tree, which is itself a list of `bicop_dist` objects, see [bicop_dist()].
-#' * `matrix`, an R-vine matrix, namely a compressed representation of the 
-#' vine structure, see [check_rvine_matrix()].
+#' * `structure`, an `rvine_structure` object, namely a compressed 
+#' representation of the vine structure, or an object that can be coerced 
+#' into one (see [rvine_structure()] and [as_rvine_structure()]).
 #' * `npars`, a `numeric` with the number of (effective) parameters.
 #' 
 #' For objects from the `vinecop` class, elements of the sublists in 
@@ -88,14 +90,17 @@
 #' str(fit, 3)
 #' 
 #' @export
-vinecop <- function(data, family_set = "all", matrix = NA, 
+vinecop <- function(data, family_set = "all", structure = NA, 
                     par_method = "mle", nonpar_method = "constant", mult = 1, 
                     selcrit = "bic", weights = numeric(), psi0 = 0.9, 
                     presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", 
                     threshold = 0, keep_data = FALSE, show_trace = FALSE, 
                     cores = 1) {
     assert_that(
-        is.character(family_set), 
+        is.character(family_set),
+        inherits(structure, "matrix") || 
+            inherits(structure, "rvine_structure") || 
+            (is.scalar(structure) && is.na(structure)),
         is.string(par_method), 
         is.string(nonpar_method),
         is.number(mult), mult > 0,
@@ -115,13 +120,15 @@ vinecop <- function(data, family_set = "all", matrix = NA,
     
     ## pre-process input
     data <- if_vec_to_matrix(data)
-    if (any(is.na(matrix)))
-        matrix <- as.matrix(0)
+    is_structure_provided <- !(is.scalar(structure) && is.na(structure))
+    if (is_structure_provided)
+        structure <- as_rvine_structure(structure)
     
     ## fit and select copula model
     vinecop <- vinecop_select_cpp(
         data = data, 
-        matrix = matrix,
+        is_structure_provided = is_structure_provided,
+        structure = structure,
         family_set = family_set,
         par_method = par_method,
         nonpar_method = nonpar_method,
@@ -148,6 +155,9 @@ vinecop <- function(data, family_set = "all", matrix = NA,
         vinecop$pair_copulas, 
         function(tree) lapply(tree, as.bicop)
     )
+    
+    ## make the structure a rvine-structure object
+    class(vinecop$structure) <- c("rvine_structure", class(vinecop$structure))
     
     ## add information about the fit
     vinecop$names <- colnames(data)
@@ -176,10 +186,12 @@ vinecop <- function(data, family_set = "all", matrix = NA,
 #'    tree `t`.
 #' @rdname vinecop
 #' @export
-vinecop_dist <- function(pair_copulas, matrix) {
+vinecop_dist <- function(pair_copulas, structure) {
+    
     # create object
     vinecop <- structure(
-        list(pair_copulas = pair_copulas, matrix = matrix),
+        list(pair_copulas = pair_copulas, 
+             structure = as_rvine_structure(structure)),
         class = "vinecop_dist"
     )
     
@@ -189,8 +201,10 @@ vinecop_dist <- function(pair_copulas, matrix) {
     if (!all(sapply(pc_lst, function(x) inherits(x, "bicop_dist")))) {
         stop("some objects in pair_copulas aren't of class 'bicop_dist'")
     }
+
+    vinecop$structure <- truncate_model(vinecop$structure, 
+                                        length(vinecop$pair_copulas))
     vinecop_check_cpp(vinecop)
-    check_rvine_matrix(matrix)
     vinecop$npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
     vinecop$loglik <- NA
     

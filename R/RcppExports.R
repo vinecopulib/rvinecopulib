@@ -53,6 +53,10 @@ bicop_tau_to_par_cpp <- function(bicop_r, tau) {
     .Call(`_rvinecopulib_bicop_tau_to_par_cpp`, bicop_r, tau)
 }
 
+rvine_structure_check_cpp <- function(rvine_struct, is_natural_order) {
+    invisible(.Call(`_rvinecopulib_rvine_structure_check_cpp`, rvine_struct, is_natural_order))
+}
+
 rvine_matrix_check_cpp <- function(matrix) {
     invisible(.Call(`_rvinecopulib_rvine_matrix_check_cpp`, matrix))
 }
@@ -63,6 +67,10 @@ vinecop_check_cpp <- function(vinecop_r) {
 
 vinecop_inverse_rosenblatt_cpp <- function(U, vinecop_r, cores) {
     .Call(`_rvinecopulib_vinecop_inverse_rosenblatt_cpp`, U, vinecop_r, cores)
+}
+
+vinecop_rosenblatt_cpp <- function(U, vinecop_r, cores) {
+    .Call(`_rvinecopulib_vinecop_rosenblatt_cpp`, U, vinecop_r, cores)
 }
 
 vinecop_sim_cpp <- function(vinecop_r, n, qrng, cores, seeds) {
@@ -85,7 +93,7 @@ vinecop_mbicv_cpp <- function(u, vinecop_r, psi0, cores) {
     .Call(`_rvinecopulib_vinecop_mbicv_cpp`, u, vinecop_r, psi0, cores)
 }
 
-vinecop_select_cpp <- function(data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads) {
-    .Call(`_rvinecopulib_vinecop_select_cpp`, data, matrix, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads)
+vinecop_select_cpp <- function(data, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads) {
+    .Call(`_rvinecopulib_vinecop_select_cpp`, data, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads)
 }
 

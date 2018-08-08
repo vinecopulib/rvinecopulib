@@ -6,11 +6,14 @@
 #' 
 #' @name getters
 #' @aliases get_pair_copula get_all_pair_copulas get_parameters get_all_parameters
-#' get_ktau get_all_ktaus get_matrix
+#' get_ktau get_all_ktaus get_matrix get_structure
 #' @param object a `bicop_dist`, `vinecop_dist` or `vine_dist` object.
 #' @details 
+#' #' The [get_structure] method (for `vinecop_dist` or `vine_dist` objects only) 
+#' extracts the structure (see [rvine_structure] for more details).
+#' 
 #' The [get_matrix] method (for `vinecop_dist` or `vine_dist` objects only) 
-#' extracts the structure matrix (see [check_rvine_matrix] for more details).
+#' extracts the structure matrix (see [rvine_structure] for more details).
 #' 
 #' The other `get_xyz` methods for `vinecop_dist` or `vine_dist` objects return 
 #' the entries corresponding to the pair-copula indexed by its `tree` and `edge`. 
@@ -44,8 +47,9 @@
 #' # set up vine copula model
 #' vc <- vinecop_dist(pcs, mat)
 #' 
-#' # get the structure matrix
-#' all.equal(get_matrix(vc), mat)
+#' # get the structure
+#' get_structure(vc)
+#' all.equal(get_matrix(vc), mat, check.attributes = FALSE)
 #' 
 #' # get pair-copulas
 #' get_pair_copula(vc, 1, 1)
@@ -57,15 +61,21 @@
 #' or families.
 #' @rdname getters
 #' @export
-get_matrix <- function(object) {
+get_structure <- function(object) {
     assert_that(inherits(object, "vinecop_dist") || 
                     inherits(object, "vine_dist"))
     if (inherits(object, "vinecop_dist")) {
-        return(object$matrix)
+        return(object$structure)
     } else {
-        return(object$copula$matrix)
+        return(object$copula$structure)
     }
 }
+
+#' @export
+get_matrix <- function(object) {
+    as_rvine_matrix(get_structure(object))
+}
+
 
 #' @param tree tree index (not required if `object` is of class `bicop_dist`).
 #' @param edge edge index (not required if `object` is of class `bicop_dist`).
@@ -87,14 +97,16 @@ get_pair_copula <- function(object, tree = NA, edge = NA) {
         return(object)
     } else {
         d <- dim(object)
-        assert_that(is.numeric(tree), 
-                    is.scalar(tree),
+        assert_that(is.number(tree), 
                     tree >= 1, 
-                    tree <= d - 1)
-        assert_that(is.numeric(edge), 
-                    is.scalar(edge),
+                    tree <= d[2],
+                    msg = "tree should be a number between 1 and 
+                    the truncation level.")
+        assert_that(is.number(edge),
                     edge >= 1, 
-                    edge <= d - tree)
+                    edge <= d[1] - tree,
+                    msg = "tree should be a number between 1 and 
+                    dimension minus tree.")
         
         ## return pair-copula
         if (inherits(object, "vinecop_dist")) {
@@ -140,7 +152,11 @@ get_all_pair_copulas <- function(object, trees = NA) {
     }
     
     if (!any(is.na(trees)))
-        assert_that(is.numeric(trees), all(trees >= 1), all(trees <= d - 1))
+        assert_that(is.numeric(trees), 
+                    all(trees >= 1), 
+                    all(trees <= d[2]),
+                    msg = "the elements of trees should be numbers between 1 and 
+                    the truncation level.")
     
     t <- length(pcs)
     if (any(is.na(trees))) {
@@ -153,7 +169,8 @@ get_all_pair_copulas <- function(object, trees = NA) {
         }
     }
     res <- structure(pcs[trees], class = c("rvine_list", "pair_copulas"))
-    attr(res, "d") <- d
+    attr(res, "d") <- d[1]
+    attr(res, "trunc_lvl") <- d[2]
     attr(res, "trees") <- trees
     return(res)
 }

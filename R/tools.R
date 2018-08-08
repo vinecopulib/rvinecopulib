@@ -244,45 +244,25 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
     return(res)
 }
 
-#' internal function to check arguments of simulation routines
-#' @noRd
-check_u_and_qrng <- function(U, qrng, n, d) {
-    assert_that(is.flag(qrng))
-    if (!is.null(U)) {
-        if (qrng) {
-            warning(c("U is not NULL and qrng is TRUE: generating quasi-random", 
-                      "numbers instead of using the provided U."))
-        } else {
-            assert_that(is.matrix(U), nrow(U) == n)
-            if (d == 2) {
-                assert_that(ncol(U) == 2)
-            } else {
-                assert_that(ncol(U) == eval(d))
-            }
-        }
-    }
-}
-
 #' Truncates output of model data frames.
 #'
 #' @param x a `data.frame` whose print output should be truncated.
 #' @noRd
 #' @export
-print.summary_df <- function(x, ...) {
-    x_print <- x[1:min(nrow(x), 10), ]
+print.summary_df <- function(x, ..., n = 10) {
+    x_print <- x[1:min(nrow(x), n), ]
     cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
     print.data.frame(x_print, digits = 2)
-    if (nrow(x) > 10)
-        cat("# ... with", nrow(x) - 10, "more rows\n")
+    if (nrow(x) > n)
+        cat("# ... with", nrow(x) - n, "more rows\n")
     invisible(x)
 }
 
 #' internal function
 #' @noRd
 print_truncation_info <- function(x) {
-    n_trees <- length(x$pair_copulas)
-    if (n_trees < dim(x) - 1)
-        cat(", ", n_trees, "-truncated", sep = "")
+    if (dim(x)[2] < dim(x)[1] - 1)
+        cat(", ", dim(x)[2], "-truncated", sep = "")
     cat("\n")
 }
 

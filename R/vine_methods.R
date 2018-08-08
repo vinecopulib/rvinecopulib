@@ -121,26 +121,19 @@ pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
 
 #' @rdname vine_methods
 #' @param n number of observations.
-#' @param U optionally, an \eqn{n \times d} matrix of values in \eqn{(0,1)}.
-#'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
-#'    matrix of independent \eqn{U(0, 1)} variables, this simulates data 
-#'    from `vine`.
 #' @param qrng if `TRUE`, generates quasi-random numbers using the multivariate 
 #' Generalized Halton sequence up to dimension 300 and the Generalized Sobol 
 #' sequence in higher dimensions (default `qrng = FALSE`).
 #' @export
-rvine <- function(n, vine, U = NULL, qrng = FALSE, cores = 1) {
-    
-    assert_that(inherits(vine, "vine_dist"))
+rvine <- function(n, vine, qrng = FALSE, cores = 1) {
+    assert_that(inherits(vine, "vine_dist"), is.flag(qrng))
     
     # simulate copula data
-    U <- rvinecop(n, vine$copula, U, qrng, cores)
+    U <- rvinecop(n, vine$copula, qrng, cores)
 
-    
     # prepare marginals if only one is specified
     if (!inherits(vine, "vine") & depth(vine$margins) == 1) 
-        vine$margins <- replicate(ncol(vine$copula$matrix), 
-                                  vine$margins, simplify = FALSE)
+        vine$margins <- replicate(dim(vine)[1], vine$margins, simplify = FALSE)
     
     # use quantile transformation for marginals
     dpq_marg(U, vine, "q")
@@ -148,7 +141,7 @@ rvine <- function(n, vine, U = NULL, qrng = FALSE, cores = 1) {
 
 #' @export
 print.vine_dist <- function(x, ...) {
-    cat(dim(x), "-dimensional vine distribution model ('vine_dist')", sep = "")
+    cat(dim(x)[1], "-dimensional vine distribution model ('vine_dist')", sep = "")
     print_truncation_info(x$copula)
     invisible(x)
 }
@@ -164,7 +157,7 @@ summary.vine_dist <- function(object, ...) {
 get_vine_dist_margin_summary <- function(vd) {
     margins <- vd$margins
     if (length(margins) == 1) 
-        margins <- rep(list(margins), dim(vd$copula))
+        margins <- rep(list(margins), dim(vd$copula)[1])
     df <- data.frame(
         margin = seq_along(margins),
         distr = sapply(margins, function(x) x$distr)
@@ -228,7 +221,7 @@ logLik.vine <- function(object, ...) {
 
 #' @export
 print.vine <- function(x, ...) {
-    cat(dim(x), "-dimensional vine distribution fit ('vine')", sep = "")
+    cat(dim(x)[1], "-dimensional vine distribution fit ('vine')", sep = "")
     print_truncation_info(x$copula)
     print_fit_info(x)
     invisible(x)

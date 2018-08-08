@@ -294,7 +294,7 @@ inline double pairwise_mcor(
 //! @param n number of observations.
 //! @param d dimension.
 //! @param seeds seeds to scramble the quasi-random numbers; if empty (default),
-//!   the random number quasi-generator is seeded randomly.
+//!   the quasi-random number generator is seeded randomly.
 //!
 //! @return An \f$ n \times d \f$ matrix of quasi-random
 //! \f$ \mathrm{U}[0, 1] \f$ variables.
@@ -357,7 +357,7 @@ inline Eigen::MatrixXd ghalton(const size_t& n, const size_t& d,
 //! @param n number of observations.
 //! @param d dimension.
 //! @param seeds seeds to scramble the quasi-random numbers; if empty (default),
-//!   the random number quasi-generator is seeded randomly.
+//!   the quasi-random number generator is seeded randomly.
 //!
 //! @return An \f$ n \times d \f$ matrix of quasi-random
 //! \f$ \mathrm{U}[0, 1] \f$ variables.

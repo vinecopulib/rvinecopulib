@@ -14,7 +14,7 @@ namespace vinecopulib {
 //! R-vine structures
 //! 
 //! RVineStructure objects encode the tree structure of the vine, i.e. the
-//! conditioned/conditioning variables of edge edge. It is represented by a 
+//! conditioned/conditioning variables of each edge. It is represented by a
 //! triangular array. An exemplary array is
 //! ```
 //! 1 1 1 1
