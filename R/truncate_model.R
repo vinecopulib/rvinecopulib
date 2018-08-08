@@ -58,7 +58,14 @@ truncate_model.rvine_structure <- function(object, trunc_lvl, ...) {
 #' @export
 #' @rdname truncate_model
 truncate_model.rvine_matrix <- function(object, trunc_lvl, ...) {
-    as_rvine_matrix(truncate_model(as_rvine_structure(object), trunc_lvl))
+    check_trunc_lvl(object, trunc_lvl)
+    d <- dim(object)["dim"]
+    trees_to_truncate <- setdiff(seq_len(d - 1), seq_len(trunc_lvl))
+    for (tree in trees_to_truncate) {
+        object[tree, seq_len(d - tree)] <- 0
+    }
+    attr(object, "trunc_lvl") <- trunc_lvl
+    object
 }
 
 #' @export
