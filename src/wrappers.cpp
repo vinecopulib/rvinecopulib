@@ -276,6 +276,7 @@ Rcpp::List rvine_structure_wrap(const RVineStructure& rvine_struct)
     );
 }
 
+
 // structure exports
 
 // [[Rcpp::export()]]
@@ -374,6 +375,14 @@ Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
                                                size_t cores)
 {
     return vinecop_wrap(vinecop_r).inverse_rosenblatt(U, cores);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U,
+                                       const Rcpp::List& vinecop_r,
+                                       size_t cores)
+{
+    return vinecop_wrap(vinecop_r).rosenblatt(U, cores);
 }
 
 // [[Rcpp::export()]]

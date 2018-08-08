@@ -73,25 +73,18 @@ pbicop <- function(u, family, rotation, parameters) {
 
 #' @param n number of observations. If `length(n) > 1``, the length is taken to
 #'   be the number required.
-#' @param U optionally, an \eqn{n \times 2} matrix of values in \eqn{(0,1)}.
-#'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
-#'    matrix of independent \eqn{U(0, 1)} variables, this simulates data 
-#'    from `vinecop`.
 #' @param qrng if `TRUE`, generates quasi-random numbers using the bivariate 
 #' Generalized Halton sequence (default `qrng = FALSE`).
 #' @rdname bicop_methods
 #' @export
-rbicop <- function(n, family, rotation, parameters, U = NULL, qrng = FALSE) {
+rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
     if (length(n) > 1)
         n <- length(n)
-    if (inherits(family, "bicop_dist") & is.null(U) & !missing(rotation))
-        U <- rotation
-    if (inherits(family, "bicop_dist") & !missing(parameters))
-        qrng <- parameters
-    check_u_and_qrng(U, qrng, n, 2)
-    
+    if (inherits(family, "bicop_dist") & !missing(rotation))
+        qrng <- rotation
+    assert_that(is.flag(qrng))
+
     bicop <- args2bicop(family, rotation, parameters)
-    
     U <- bicop_sim_cpp(bicop, n, qrng, get_seeds())
     if (!is.null(bicop$names)) 
         colnames(U) <- bicop$names

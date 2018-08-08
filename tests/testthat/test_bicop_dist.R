@@ -24,10 +24,6 @@ test_that("d/p/r/h functions work", {
     set.seed(0)
     dist <- bicop_dist("bb1", 270, c(1, 2))
     u <- rbicop(50, "bb1", 270, c(1, 2))
-    u <- rbicop(50, dist, U = u)
-    expect_error(rbicop(50, dist, U = u[, -1]))
-    expect_error(rbicop(50, dist, U = u[-1, ]))
-    expect_warning(rbicop(50, dist, U = u, qrng = TRUE))
     expect_false(any(rbicop(50, dist, qrng = FALSE) == 
                         rbicop(50, dist, qrng = FALSE)))
     

@@ -213,6 +213,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// vinecop_rosenblatt_cpp
+Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U, const Rcpp::List& vinecop_r, size_t cores);
+RcppExport SEXP _rvinecopulib_vinecop_rosenblatt_cpp(SEXP USEXP, SEXP vinecop_rSEXP, SEXP coresSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type U(USEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
+    Rcpp::traits::input_parameter< size_t >::type cores(coresSEXP);
+    rcpp_result_gen = Rcpp::wrap(vinecop_rosenblatt_cpp(U, vinecop_r, cores));
+    return rcpp_result_gen;
+END_RCPP
+}
 // vinecop_sim_cpp
 Eigen::MatrixXd vinecop_sim_cpp(const Rcpp::List& vinecop_r, const size_t n, const bool qrng, size_t cores, std::vector<int> seeds);
 RcppExport SEXP _rvinecopulib_vinecop_sim_cpp(SEXP vinecop_rSEXP, SEXP nSEXP, SEXP qrngSEXP, SEXP coresSEXP, SEXP seedsSEXP) {
@@ -330,6 +343,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_rvine_matrix_check_cpp", (DL_FUNC) &_rvinecopulib_rvine_matrix_check_cpp, 1},
     {"_rvinecopulib_vinecop_check_cpp", (DL_FUNC) &_rvinecopulib_vinecop_check_cpp, 1},
     {"_rvinecopulib_vinecop_inverse_rosenblatt_cpp", (DL_FUNC) &_rvinecopulib_vinecop_inverse_rosenblatt_cpp, 3},
+    {"_rvinecopulib_vinecop_rosenblatt_cpp", (DL_FUNC) &_rvinecopulib_vinecop_rosenblatt_cpp, 3},
     {"_rvinecopulib_vinecop_sim_cpp", (DL_FUNC) &_rvinecopulib_vinecop_sim_cpp, 5},
     {"_rvinecopulib_vinecop_pdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_pdf_cpp, 3},
     {"_rvinecopulib_vinecop_cdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_cdf_cpp, 5},

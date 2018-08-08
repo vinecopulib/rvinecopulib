@@ -244,25 +244,6 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
     return(res)
 }
 
-#' internal function to check arguments of simulation routines
-#' @noRd
-check_u_and_qrng <- function(U, qrng, n, d) {
-    assert_that(is.flag(qrng))
-    if (!is.null(U)) {
-        if (qrng) {
-            warning(c("U is not NULL and qrng is TRUE: generating quasi-random", 
-                      "numbers instead of using the provided U."))
-        } else {
-            assert_that(is.matrix(U), nrow(U) == n)
-            if (d == 2) {
-                assert_that(ncol(U) == 2)
-            } else {
-                assert_that(ncol(U) == eval(d))
-            }
-        }
-    }
-}
-
 #' Truncates output of model data frames.
 #'
 #' @param x a `data.frame` whose print output should be truncated.

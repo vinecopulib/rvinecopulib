@@ -15,20 +15,6 @@
 #' Here, the density, distribution function and random generation 
 #' for the vine copulas are standard.
 #' 
-#' The Rosenblatt transform (Rosenblatt, 1952) \eqn{U = T(V)} of a random vector
-#' \eqn{V = (V_1,\ldots,V_d) ~ C} is defined as
-#' \deqn{ 
-#'   U_1 = V_1, U_2 = C(V_2|V_1), \ldots, U_d =C(V_d|V_1,\ldots,V_{d-1}), 
-#' } 
-#' where \eqn{C(v_k|v_1,\ldots,v_{k-1})} is the conditional distribution of 
-#' \eqn{V_k} given \eqn{V_1 \ldots, V_{k-1}, k = 2,\ldots,d}. The vector \eqn{V}
-#' are then independent standard uniform variables. The inverse operation 
-#' \deqn{ 
-#'   V_1 = U_1, V_2 = C^{-1}(U_2|U_1), \ldots, V_d =C^{-1}(U_d|U_1,\ldots,U_{d-1}), 
-#' } 
-#' can can be used to simulate from a copula. For any copula \eqn{C}, if 
-#' \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has 
-#' distribution \eqn{C}.
 #' @return 
 #' `dvinecop()` gives the density, `pvinecop()` gives the distribution function, 
 #' and `rvinecop()` generates random deviates.
@@ -79,18 +65,18 @@ pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
 
 #' @rdname vinecop_methods
 #' @param n number of observations.
-#' @param U optionally, an \eqn{n \times d} matrix of values in \eqn{(0,1)}.
-#'    The result is then the inverse Rosenblatt transform of `U`; if `U` is a
-#'    matrix of independent \eqn{U(0, 1)} variables, this simulates data 
-#'    from `vinecop`.
 #' @param qrng if `TRUE`, generates quasi-random numbers using the multivariate 
 #' Generalized Halton sequence up to dimension 300 and the Generalized Sobol 
 #' sequence in higher dimensions (default `qrng = FALSE`).
 #' @export
-rvinecop <- function(n, vinecop, U = NULL, qrng = FALSE, cores = 1) {
-    assert_that(inherits(vinecop, "vinecop_dist"))
-    check_u_and_qrng(U, qrng, n, dim(vinecop)[1])
-    
+rvinecop <- function(n, vinecop, qrng = FALSE, cores = 1) {
+    assert_that(
+        is.number(n),
+        inherits(vinecop, "vinecop_dist"),
+        is.flag(qrng),
+        is.number(cores)
+    )
+
     U <- vinecop_sim_cpp(vinecop, n, qrng, cores, get_seeds())
     if (!is.null(vinecop$names))
         colnames(U) <- vinecop$names
