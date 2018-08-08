@@ -71,6 +71,7 @@ truncate_model.rvine_matrix <- function(object, trunc_lvl, ...) {
 #' @export
 #' @rdname truncate_model
 truncate_model.vinecop_dist <- function(object, trunc_lvl, ...) {
+    check_trunc_lvl(object, trunc_lvl)
     if (trunc_lvl < dim(object)["trunc_lvl"]) {
         object <- adjust_fit_stats(object, trunc_lvl)
         object$structure <- truncate_model(object$structure, trunc_lvl)
@@ -82,6 +83,7 @@ truncate_model.vinecop_dist <- function(object, trunc_lvl, ...) {
 #' @export
 #' @rdname truncate_model
 truncate_model.vine_dist <- function(object, trunc_lvl, ...) {
+    check_trunc_lvl(object, trunc_lvl)
     if (trunc_lvl < dim(object)["trunc_lvl"]) {
         object <- adjust_fit_stats(object, trunc_lvl)
         object$copula <- truncate_model(object$copula, trunc_lvl)
