@@ -25,7 +25,7 @@
 #' 2    \tab  0    \tab `(4, 3; 2, 1)` 
 #' }
 #' 
-#' An r-vine structure can be converted to an r-vine matrix using 
+#' An R-vine structure can be converted to an R-vine matrix using 
 #' [as_rvine_matrix()], which encodes the same model with a square matrix 
 #' filled with zeros. For instance, the matrix corresponding to the structure 
 #' above is:
@@ -35,7 +35,7 @@
 #' 3 3 0 0
 #' 4 0 0 0
 #' ```
-#' Similarly, an r-vine matrix can be converted to an r-vine structure using 
+#' Similarly, an R-vine matrix can be converted to an R-vine structure using 
 #' [as_rvine_structure()].
 #' 
 #' Denoting by `M[i, j]` the array entry in row `i` and column `j` (the 
@@ -67,7 +67,7 @@
 #' are checked when [rvine_structure()], [rvine_matrix()], or some coercion 
 #' methods (see [as_rvine_structure()] and `as_rvine_matrix(`) are called:
 #' 1. It can only contain numbers between 1 and d (and additionally zeros for 
-#' r-vine matrices).
+#' R-vine matrices).
 #' 3. The anti-diagonal must contain the numbers 1, ..., d.
 #' 4. The anti-diagonal entry of a column must not be contained in any
 #' column further to the right.
@@ -93,23 +93,23 @@
 #' @seealso as_rvine_structure
 #' @examples
 #' 
-#' # r-vine structures can be constructed from the order vector and struct_array
+#' # R-vine structures can be constructed from the order vector and struct_array
 #' rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
 #'                                                  c(2, 2), 
 #'                                                  3))
 #' 
-#' # r-vine matrices can be constructed from standard matrices
+#' # R-vine matrices can be constructed from standard matrices
 #' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
 #' rvine_matrix(mat)
 #' 
-#' # coerce to r-vine structure
+#' # coerce to R-vine structure
 #' str(as_rvine_structure(mat))
 #' 
-#' # truncate and construct the r-vine matrix
+#' # truncate and construct the R-vine matrix
 #' mat[3, 1] <- 0
 #' rvine_matrix(mat)
 #' 
-#' # or use directly the r-vine structure constructor
+#' # or use directly the R-vine structure constructor
 #' rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
 #'                                                  c(2, 2)))
 #' 
@@ -153,7 +153,7 @@ rvine_structure <- function(order, struct_array, is_natural_order = TRUE) {
     output
 }
 
-#' @param matrix an r-vine matrix, see *Details*.
+#' @param matrix an R-vine matrix, see *Details*.
 #' @rdname rvine_structure
 #' @export
 rvine_matrix <- function(matrix) {
@@ -195,9 +195,9 @@ dim.rvine_matrix <- function(x) {
 print.rvine_matrix <- function(x, ..., zero.print = " ", n = 10, 
                                structure = FALSE) {
     if (structure) {
-        cat(dim(x)[1], "-dimensional r-vine structure ('rvine_structure')", sep = "")
+        cat(dim(x)[1], "-dimensional R-vine structure ('rvine_structure')", sep = "")
     } else {
-        cat(dim(x)[1], "-dimensional r-vine matrix ('rvine_matrix')", sep = "")
+        cat(dim(x)[1], "-dimensional R-vine matrix ('rvine_matrix')", sep = "")
     }
     print_truncation_info(x)
     write.table(format(x, zero.print = zero.print), quote = FALSE, 

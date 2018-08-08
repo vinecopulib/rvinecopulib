@@ -12,7 +12,7 @@
 \alias{as_rvine_matrix.rvine_matrix}
 \alias{as_rvine_structure.matrix}
 \alias{as_rvine_matrix.matrix}
-\title{Coerce various kind of objects to r-vine structures and matrices}
+\title{Coerce various kind of objects to R-vine structures and matrices}
 \usage{
 as_rvine_structure(x, ...)
 
@@ -36,7 +36,7 @@ as_rvine_matrix(x, ...)
 }
 \arguments{
 \item{x}{An object of class \code{rvine_structure}, \code{rvine_matrix}, \code{matrix} or
-\code{list} that can be coerced into an r-vine structure or r-vine matrix
+\code{list} that can be coerced into an R-vine structure or R-vine matrix
 (see \emph{Details}).}
 
 \item{...}{Other arguments passed on to individual methods.}
@@ -55,7 +55,7 @@ Either an object of class \code{rvine_structure} or of class
 }
 \description{
 \code{as_rvine_structure} and \code{as_rvine_matrix} are new S3 generics allowing to
-coerce objects into r-vine structures and matrices (see \code{\link[=rvine_structure]{rvine_structure()}}
+coerce objects into R-vine structures and matrices (see \code{\link[=rvine_structure]{rvine_structure()}}
 and \code{\link[=rvine_matrix]{rvine_matrix()}}).
 }
 \details{
@@ -67,39 +67,39 @@ For \code{as_rvine_structure}:
 \itemize{
 \item \code{rvine_structure} : the main usecase is to re-check an object via
 \code{validate = TRUE}.
-\item \code{rvine_matrix} and \code{matrix} : allow to coerce matrices into r-vine
+\item \code{rvine_matrix} and \code{matrix} : allow to coerce matrices into R-vine
 structures (see \code{\link[=rvine_structure]{rvine_structure()}} for more details). The main difference
 between \code{rvine_matrix} and \code{matrix} is the nature of the verifications
 performed.
 \item \code{list} : must contain named elements \code{order} and \code{struct_array} to be
-coerced into an r-vine structure (see \code{\link[=rvine_structure]{rvine_structure()}} for more details).
+coerced into an R-vine structure (see \code{\link[=rvine_structure]{rvine_structure()}} for more details).
 }
 
 #' For \code{as_rvine_matrix}:
 \itemize{
 \item \code{rvine_structure} : allow to coerce an \code{rvine_structure} into an
-r-vine matrix (useful e.g. for printing).
+R-vine matrix (useful e.g. for printing).
 \item \code{rvine_matrix}: similar to \code{as_rvine_structure} for \code{rvine_structure},
 the main usecase is to re-check an object via \code{validate = TRUE}.
-\item \code{matrix} : allow to coerce matrices into r-vine
+\item \code{matrix} : allow to coerce matrices into R-vine
 matrices (mainly by checking that the matrix defines a valid
-r-vine, see \code{\link[=rvine_matrix]{rvine_matrix()}} for more details).
+R-vine, see \code{\link[=rvine_matrix]{rvine_matrix()}} for more details).
 \item \code{list} : must contain named elements \code{order} and \code{struct_array} to be
-coerced into an r-vine matrix (see \code{\link[=rvine_structure]{rvine_structure()}} for more details).
+coerced into an R-vine matrix (see \code{\link[=rvine_structure]{rvine_structure()}} for more details).
 }
 }
 \examples{
-# r-vine structures can be constructed from the order vector and struct_array
+# R-vine structures can be constructed from the order vector and struct_array
 rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
                                                  c(2, 2), 
                                                  3))
 
-# ... or a similar list can be coerced into an r-vine structure
+# ... or a similar list can be coerced into an R-vine structure
 as_rvine_structure(list(order = 1:4, struct_array = list(c(1, 1, 1), 
                                                          c(2, 2), 
                                                          3)))
 
-# similarly, standard matrices can be coerced into r-vine structures
+# similarly, standard matrices can be coerced into R-vine structures
 mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
 as_rvine_structure(mat)
 

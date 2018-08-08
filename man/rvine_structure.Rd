@@ -22,7 +22,7 @@ be compatible with the \code{order} vector.}
 \item{is_natural_order}{whether \code{struct_array} is assumed to be provided
 in natural order already.}
 
-\item{matrix}{an r-vine matrix, see \emph{Details}.}
+\item{matrix}{an R-vine matrix, see \emph{Details}.}
 }
 \value{
 Either an \code{rvine_structure} or an \code{rvine_matrix}.
@@ -53,7 +53,7 @@ tree \tab  edge \tab pair-copulas   \cr
 2    \tab  0    \tab \code{(4, 3; 2, 1)}
 }
 
-An r-vine structure can be converted to an r-vine matrix using
+An R-vine structure can be converted to an R-vine matrix using
 \code{\link[=as_rvine_matrix]{as_rvine_matrix()}}, which encodes the same model with a square matrix
 filled with zeros. For instance, the matrix corresponding to the structure
 above is:\preformatted{1 1 1 1
@@ -62,7 +62,7 @@ above is:\preformatted{1 1 1 1
 4 0 0 0
 }
 
-Similarly, an r-vine matrix can be converted to an r-vine structure using
+Similarly, an R-vine matrix can be converted to an R-vine structure using
 \code{\link[=as_rvine_structure]{as_rvine_structure()}}.
 
 Denoting by \code{M[i, j]} the array entry in row \code{i} and column \code{j} (the
@@ -94,7 +94,7 @@ are checked when \code{\link[=rvine_structure]{rvine_structure()}}, \code{\link[
 methods (see \code{\link[=as_rvine_structure]{as_rvine_structure()}} and \code{as_rvine_matrix(}) are called:
 \enumerate{
 \item It can only contain numbers between 1 and d (and additionally zeros for
-r-vine matrices).
+R-vine matrices).
 \item The anti-diagonal must contain the numbers 1, ..., d.
 \item The anti-diagonal entry of a column must not be contained in any
 column further to the right.
@@ -111,23 +111,23 @@ check by hand.
 }
 \examples{
 
-# r-vine structures can be constructed from the order vector and struct_array
+# R-vine structures can be constructed from the order vector and struct_array
 rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
                                                  c(2, 2), 
                                                  3))
 
-# r-vine matrices can be constructed from standard matrices
+# R-vine matrices can be constructed from standard matrices
 mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
 rvine_matrix(mat)
 
-# coerce to r-vine structure
+# coerce to R-vine structure
 str(as_rvine_structure(mat))
 
-# truncate and construct the r-vine matrix
+# truncate and construct the R-vine matrix
 mat[3, 1] <- 0
 rvine_matrix(mat)
 
-# or use directly the r-vine structure constructor
+# or use directly the R-vine structure constructor
 rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
                                                  c(2, 2)))
 
