@@ -103,8 +103,7 @@ check_trunc_lvl <- function(object, trunc_lvl) {
         dim(object)[1] - 1, ")."
     )
     assert_that(
-        is.scalar(trunc_lvl),
-        is.number(trunc_lvl), 
+        is.count(trunc_lvl), 
         trunc_lvl >= 1, 
         trunc_lvl < dim(object)[1],
         msg = msg
