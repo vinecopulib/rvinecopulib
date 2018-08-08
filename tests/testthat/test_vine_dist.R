@@ -97,8 +97,4 @@ test_that("getters work", {
     # test printed output of getters
     expect_output(print(get_all_pair_copulas(vc)))
     expect_output(print(get_all_pair_copulas(vc, 1)))
-    
-    # test truncate 
-    expect_identical(vc$copulas$pair_copulas[1:1], 
-                     truncate_model(vc, 1)$copulas[[1]])
 })
