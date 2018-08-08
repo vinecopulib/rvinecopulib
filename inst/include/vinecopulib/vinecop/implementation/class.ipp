@@ -207,6 +207,7 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd &data,
 //! the corresponding constructor of RVineStructure.
 //! @param struct_array a triangular array object specifying the vine structure,
 //! see the corresponding constructor of RVineStructure.
+//! @param controls see FitControlsVinecop.
 //! @param check_array whether `order` and `struct_array` shall be checked
 //! for validity.
 inline Vinecop::Vinecop(const Eigen::MatrixXd &data,

@@ -30,6 +30,10 @@ inline FitControlsVinecop::FitControlsVinecop() : FitControlsBicop()
 //!     `"linear"`, `"quadratic"`.
 //! @param nonparametric_mult a factor with which the smoothing parameters
 //!     are multiplied.
+//! @param truncation_level for truncated vines.
+//! @param tree_criterion the criterion for selecting the maximum spanning
+//!     tree ("tau", "hoeffd", "rho", and "mcor" implemented so far).
+//! @param threshold for thresholded vines (0 = no threshold).
 //! @param selection_criterion the selection criterion (`"loglik"`, `"aic"` 
 //!     or `"bic"`).
 //! @param weights a vector of weights for the observations.
@@ -37,8 +41,6 @@ inline FitControlsVinecop::FitControlsVinecop() : FitControlsBicop()
 //!     non-independence.
 //! @param preselect_families whether to exclude families before fitting
 //!     based on symmetry properties of the data.
-//! @param tree_criterion the criterion for selecting the maximum spanning
-//!     tree ("tau", "hoeffd", "rho", and "mcor" implemented so far).
 //! @param select_truncation_level whether the truncation shall be selected
 //!     automatically.
 //! @param select_threshold whether the threshold parameter shall be
