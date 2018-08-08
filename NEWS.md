@@ -6,6 +6,9 @@ relevant changes are summarized below.
 
 NEW FEATURES
 
+   * new generic `truncate_model()` to truncated vine structures and models 
+     (#144).
+
    * new functions `rosenblatt()` and `inverse_rosenblatt()` for computing the 
      (inverse) Rosenblatt transformation (#142).
   
