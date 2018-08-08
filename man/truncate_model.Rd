@@ -8,7 +8,7 @@
 \alias{truncate_model.vine_dist}
 \title{Truncate a vine copula model}
 \usage{
-truncate_model(object, trunc_lvl, ...)
+truncate_model(object, ...)
 
 \method{truncate_model}{rvine_structure}(object, trunc_lvl, ...)
 
@@ -21,9 +21,9 @@ truncate_model(object, trunc_lvl, ...)
 \arguments{
 \item{object}{a model object.}
 
-\item{trunc_lvl}{tree level after which the vine copula should be truncated.}
+\item{...}{further arguments passed to specific methods.}
 
-\item{...}{unused.}
+\item{trunc_lvl}{tree level after which the vine copula should be truncated.}
 }
 \description{
 Extracts a truncated sub-vine based on a truncation level supplied by user.

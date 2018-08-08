@@ -12,8 +12,7 @@
 #' `truncate_model(truncate_model(object, 1), 2)` returns a 1-truncated vine.
 #' 
 #' @param object a model object.
-#' @param trunc_lvl tree level after which the vine copula should be truncated.
-#' @param ... unused.
+#' @param ... further arguments passed to specific methods.
 #'
 #' @export
 #' @examples
@@ -38,11 +37,12 @@
 #' 
 #' # truncate the model
 #' truncate_model(vc, 1)
-truncate_model <- function(object, trunc_lvl, ...) {
+truncate_model <- function(object, ...) {
     UseMethod("truncate_model")
 }
 
 #' @export
+#' @param trunc_lvl tree level after which the vine copula should be truncated.
 #' @rdname truncate_model
 truncate_model.rvine_structure <- function(object, trunc_lvl, ...) {
     check_trunc_lvl(object, trunc_lvl)
