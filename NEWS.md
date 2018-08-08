@@ -16,6 +16,9 @@ NEW FEATURES
 
    * refactor vine structures and related algorithms with triangular arrays 
      to improve efficiency of truncated models (#136).
+     
+   * new classes `rvine_structure` and `rvine_matrix` for storing the vine 
+     structure including `as_`- and `is.`-generics (#136).
 
    * allow for generating quasi-random  numbers (#126).
 
