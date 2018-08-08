@@ -102,14 +102,17 @@ truncate_column <- function(column, trunc_lvl) {
 check_trunc_lvl <- function(object, trunc_lvl) {
     msg <- paste0(
         "trunc_lvl should be a number between 1 and the number of trees (",
-        dim(object)[1] - 1, ")."
+        dim(object)["dim"] - 1, ")."
     )
     assert_that(
         is.count(trunc_lvl), 
         trunc_lvl >= 1, 
-        trunc_lvl < dim(object)[1],
+        trunc_lvl < dim(object)["dim"],
         msg = msg
     )
+    if (trunc_lvl > dim(object)["trunc_lvl"])
+        warning("truncation has no effect; vine is already ", 
+                dim(object)["trunc_lvl"], "-truncated.", call. = FALSE)
     invisible(TRUE)
 }
 
