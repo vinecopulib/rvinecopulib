@@ -37,3 +37,4 @@ vignettes/*.pdf
 # Autoconf files
 config.log
 config.status
+revdep/
