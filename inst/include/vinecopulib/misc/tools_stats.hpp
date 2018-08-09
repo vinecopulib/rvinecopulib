@@ -90,7 +90,8 @@ inline Eigen::MatrixXd qt(const Eigen::MatrixXd &x, double nu)
     return tools_eigen::unaryExpr_or_nan(x, f);
 }
 
-Eigen::MatrixXd simulate_uniform(size_t n, size_t d);
+Eigen::MatrixXd simulate_uniform(const size_t& n, const size_t& d,
+                                 std::vector<int> seeds = std::vector<int>());
 
 Eigen::VectorXd to_pseudo_obs_1d(Eigen::VectorXd x,
                                  std::string ties_method = "average");
@@ -98,11 +99,8 @@ Eigen::VectorXd to_pseudo_obs_1d(Eigen::VectorXd x,
 Eigen::MatrixXd to_pseudo_obs(Eigen::MatrixXd x,
                               std::string ties_method = "average");
 
-double pairwise_tau(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
-
-double pairwise_cor(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
-
-double pairwise_mcor(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
+double pairwise_mcor(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x,
+                     const Eigen::VectorXd &weights = Eigen::VectorXd());
 
 double pairwise_rho(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
 
@@ -111,7 +109,11 @@ double pairwise_hoeffd(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
 Eigen::MatrixXd dependence_matrix(const Eigen::MatrixXd &x,
                                   const std::string &measure);
 
-Eigen::MatrixXd ghalton(size_t n, size_t d);
+Eigen::MatrixXd ghalton(const size_t& n, const size_t& d,
+                        std::vector<int> seeds = std::vector<int>());
+
+Eigen::MatrixXd sobol(const size_t& n, const size_t& d,
+                      std::vector<int> seeds = std::vector<int>());
 
 Eigen::VectorXd pbvt(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
                      int nu, double rho);

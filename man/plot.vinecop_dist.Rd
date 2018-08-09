@@ -5,9 +5,6 @@
 \alias{contour.vinecop_dist}
 \alias{plot.vinecop}
 \alias{contour.vinecop}
-\alias{plot.vinecop}
-\alias{contour.vinecop_dist}
-\alias{contour.vinecop}
 \title{Plotting \code{vinecop_dist} and \code{vinecop} objects.}
 \usage{
 \method{plot}{vinecop_dist}(x, tree = 1, var_names = "ignore",

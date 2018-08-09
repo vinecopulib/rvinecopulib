@@ -10,6 +10,7 @@
 #include <Eigen/Dense>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <vinecopulib/misc/triangular_array.hpp>
 
 namespace vinecopulib {
 
@@ -35,6 +36,48 @@ inline boost::property_tree::ptree matrix_to_ptree(
             col.push_back(std::make_pair("", cell));
         }
         output.push_back(std::make_pair("", col));
+    }
+
+    return output;
+}
+
+//! conversion from vinecopulib::TriangularArray to boost::property_tree::ptree
+//!
+//! @param matrix the vinecopulib::TriangularArray to convert.
+//! @return the corresponding boost::property_tree::ptree.
+template<class T>
+inline boost::property_tree::ptree triangular_array_to_ptree(
+    TriangularArray<T> matrix)
+{
+    boost::property_tree::ptree output;
+    size_t d = matrix.get_dim();
+    size_t trunc_lvl = matrix.get_trunc_lvl();
+    for (size_t i = 0; i < d - 1; i++) {
+        boost::property_tree::ptree col;
+        for (size_t j = 0; j < std::min(d - i - 1, trunc_lvl); j++) {
+            boost::property_tree::ptree cell;
+            cell.put_value(matrix(j, i));
+            col.push_back(std::make_pair("", cell));
+        }
+        output.push_back(std::make_pair("", col));
+    }
+
+    return output;
+}
+
+//! conversion from std::vector to boost::property_tree::ptree
+//!
+//! @param matrix the std::vector to convert.
+//! @return the corresponding boost::property_tree::ptree.
+template<class T>
+inline boost::property_tree::ptree vector_to_ptree(
+    std::vector<T> vec)
+{
+    boost::property_tree::ptree output;
+    for (size_t i = 0; i < vec.size(); i++) {
+        boost::property_tree::ptree cell;
+        cell.put_value(vec[i]);
+        output.push_back(std::make_pair("", cell));
     }
 
     return output;
@@ -78,6 +121,57 @@ inline Eigen::Matrix <T, Eigen::Dynamic, Eigen::Dynamic> ptree_to_matrix(
     }
 
     return matrix.cast<T>();
+}
+
+
+//! conversion from boost::property_tree::ptree to vinecopulib::TriangularArray
+//!
+//! @param iroot the boost::property_tree::ptree to convert.
+//! @return the corresponding vinecopulib::TriangularArray
+template<typename T>
+inline TriangularArray<T> ptree_to_triangular_array(
+    const boost::property_tree::ptree input)
+{
+
+    std::vector<std::vector<T>> vec(input.size());
+    size_t trunc_lvl = 0;
+    size_t d = 0;
+    for (boost::property_tree::ptree::value_type col : input) {
+        std::vector<T> col_vec(col.second.size());
+        size_t count = 0;
+        for (boost::property_tree::ptree::value_type cell : col.second) {
+            col_vec[count] = cell.second.get_value<T>();
+            if (d == 0) {
+                trunc_lvl++;
+            }
+            count++;
+        }
+        vec[d] = col_vec;
+        d++;
+    }
+
+    TriangularArray<T> matrix(d + 1, trunc_lvl);
+    for (size_t i = 0; i < d; i++)
+        matrix[i] = vec[i];
+
+
+    return matrix;
+}
+
+//! conversion from boost::property_tree::ptree to std::vector
+//!
+//! @param iroot the boost::property_tree::ptree to convert.
+//! @return the corresponding std::vector.
+template<typename T>
+inline std::vector<T> ptree_to_vector(
+    const boost::property_tree::ptree input)
+{
+
+    std::vector<T> res;
+    for (boost::property_tree::ptree::value_type cell : input) {
+        res.push_back(cell.second.get_value<T>());
+    }
+    return res;
 }
 
 inline boost::property_tree::ptree json_to_ptree(const char *filename)

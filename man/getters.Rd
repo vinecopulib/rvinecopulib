@@ -2,24 +2,19 @@
 % Please edit documentation in R/getters.R
 \name{getters}
 \alias{getters}
+\alias{get_structure}
+\alias{get_pair_copula}
+\alias{get_all_pair_copulas}
+\alias{get_parameters}
+\alias{get_all_parameters}
+\alias{get_ktau}
+\alias{get_all_ktaus}
 \alias{get_matrix}
-\alias{get_pair_copula}
-\alias{get_all_pair_copulas}
-\alias{get_parameters}
-\alias{get_all_parameters}
-\alias{get_ktau}
-\alias{get_all_ktaus}
-\alias{get_pair_copula}
-\alias{get_parameters}
-\alias{get_ktau}
 \alias{get_family}
-\alias{get_all_pair_copulas}
-\alias{get_all_parameters}
-\alias{get_all_ktaus}
 \alias{get_all_families}
 \title{Extracts components of \code{bicop_dist} and \code{vinecop_dist} objects}
 \usage{
-get_matrix(object)
+get_structure(object)
 
 get_pair_copula(object, tree = NA, edge = NA)
 
@@ -57,8 +52,11 @@ pair-copulas, their parameters, Kendall's taus, or families
 (for \code{bicop_dist} and \code{vinecop_dist}).
 }
 \details{
+#' The \link{get_structure} method (for \code{vinecop_dist} or \code{vine_dist} objects only)
+extracts the structure (see \link{rvine_structure} for more details).
+
 The \link{get_matrix} method (for \code{vinecop_dist} or \code{vine_dist} objects only)
-extracts the structure matrix (see \link{check_rvine_matrix} for more details).
+extracts the structure matrix (see \link{rvine_structure} for more details).
 
 The other \code{get_xyz} methods for \code{vinecop_dist} or \code{vine_dist} objects return
 the entries corresponding to the pair-copula indexed by its \code{tree} and \code{edge}.
@@ -92,8 +90,9 @@ mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
 # set up vine copula model
 vc <- vinecop_dist(pcs, mat)
 
-# get the structure matrix
-all.equal(get_matrix(vc), mat)
+# get the structure
+get_structure(vc)
+all.equal(get_matrix(vc), mat, check.attributes = FALSE)
 
 # get pair-copulas
 get_pair_copula(vc, 1, 1)

@@ -23,15 +23,19 @@
 #endif
 
 // parallel backend
+#include <vinecopulib/misc/tools_batch.hpp>
 #ifdef INTERFACED_FROM_R
-    namespace tools_parallel { 
-        typedef RcppThread::ThreadPool ThreadPool; 
+    namespace vinecopulib {
+    namespace tools_thread {
+        typedef RcppThread::ThreadPool ThreadPool;
+    }
     }
 #else
     #include <vinecopulib/misc/tools_thread.hpp>
 #endif
 
 namespace vinecopulib {
+
 namespace tools_interface {
 
 inline void check_user_interrupt(bool do_check = true)

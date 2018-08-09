@@ -2,35 +2,37 @@
 % Please edit documentation in R/vinecop_methods.R
 \name{mBICV}
 \alias{mBICV}
-\title{calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-\deqn{\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
-}
-where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
-(effective) number of parameters of the model, \eqn{t} is the tree level
-\eqn{\psi_0} is the prior probability of having a non-independence copula and
-\eqn{q_t} is the number of non-independence copulas in tree \eqn{t}.
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models.}
+\title{Modified vine copula Bayesian information criterion (mBICv)}
 \usage{
-mBICV(object, psi0 = 0.9)
+mBICV(object, psi0 = 0.9, newdata = NULL)
 }
 \arguments{
 \item{object}{a fitted \code{vinecop} object.}
 
 \item{psi0}{baseline prior probability of a non-independence copula.}
+
+\item{newdata}{optional; a new data set.}
 }
 \description{
-calculates the vine copula Bayesian information criterion (vBIC), which is
-defined as
-\deqn{\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n), - 2 * 
-\sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t)\}
+Calculates the modified vine copula Bayesian information criterion.
 }
+\details{
+The modified vine copula Bayesian information criterion (mBICv) is defined as
+
+\deqn{\mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \log(n) - 2 * 
+\sum_{t=1}^{d - 1} \{q_t \log(\psi_0^t) - (d - t - q_t) \log(1 - \psi_0^t)\}
+}
+
 where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
 (effective) number of parameters of the model, \eqn{t} is the tree level
 \eqn{\psi_0} is the prior probability of having a non-independence copula and
 \eqn{q_t} is the number of non-independence copulas in tree \eqn{t}.
-The vBIC is a consistent model
-selection criterion for parametric sparse vine copula models.
+The mBICv is a consistent model selection criterion for parametric sparse
+vine copula models.
+}
+\examples{
+u <- sapply(1:5, function(i) runif(50))
+fit <- vinecop(u, "par", keep_data = TRUE)
+mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
+mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 }

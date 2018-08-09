@@ -140,6 +140,13 @@ bool is_same_set(vector <T> x, vector <T> y)
     return ((z.size() == x.size()) & (z.size() == y.size()));
 }
 
+template<class T>
+bool is_member(vector <T> x, vector <T> y)
+{
+    auto z = intersect(x, y);
+    return z.size() == x.size();
+}
+
 //! Integer sequence starting at 1
 inline vector <size_t> seq_int(size_t from, size_t length)
 {
@@ -147,6 +154,26 @@ inline vector <size_t> seq_int(size_t from, size_t length)
     iota(seq.begin(), seq.end(), from);
     return seq;
 }
+
+inline vector<size_t> invert_permutation(const vector<size_t>& perm)
+{
+    auto inv_perm = seq_int(0, perm.size());
+    std::sort(inv_perm.begin(),
+              inv_perm.end(),
+              [&](size_t i, size_t j) { return perm[i] < perm[j]; });
+    return inv_perm;
+}
+
+// safer version of log1p that avoids rounding errors if x ~ -1
+inline double log1p(const double& x)
+{
+    if (x < -0.5) {
+        return std::log(1.0 + x);
+    } else {
+        return std::log1p(x);
+    }
+}
+
 }
 
 }

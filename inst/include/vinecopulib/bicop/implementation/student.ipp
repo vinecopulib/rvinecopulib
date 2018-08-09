@@ -19,7 +19,7 @@ inline StudentBicop::StudentBicop()
     parameters_upper_bounds_ << 1, 50;
 }
 
-inline Eigen::VectorXd StudentBicop::pdf(
+inline Eigen::VectorXd StudentBicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {
@@ -49,21 +49,19 @@ inline Eigen::VectorXd StudentBicop::cdf(
 
     double rho = double(this->parameters_(0));
     double nu = double(this->parameters_(1));
-    double rnu = round(nu);
 
-    if (nu == rnu) {
-        return pbvt(qt(u, static_cast<int>(nu)), static_cast<int>(nu), rho);
+    // for integer nu, just use pbvt
+    // otherwise, interpolate linearly between floor(nu) and ceil(nu)
+    if (nu == round(nu)) {
+        int inu = static_cast<int>(nu);
+        return pbvt(qt(u, inu), inu, rho);
     } else {
-        int nu1, nu2;
-        if (nu > round(nu)) {
-            nu1 = static_cast<int>(round(nu));
-            nu2 = nu1 + 1;
-        } else {
-            nu2 = static_cast<int>(round(nu));
-            nu1 = nu2 - 1;
-        }
-        return pbvt(qt(u, nu1), nu1, rho) +
-               (static_cast<double>(nu2) - nu) * pbvt(qt(u, nu2), nu2, rho);
+        int nu1 = static_cast<int>(std::floor(nu));
+        int nu2 = static_cast<int>(std::ceil(nu));
+        double weight = (nu - static_cast<double>(nu1)) /
+            (static_cast<double>(nu2) - static_cast<double>(nu1));
+        return pbvt(qt(u, nu1), nu1, rho) * (1 - weight) +
+            pbvt(qt(u, nu2), nu2, rho) * weight;
     }
 }
 

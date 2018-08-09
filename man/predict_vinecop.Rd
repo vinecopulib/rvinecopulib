@@ -4,12 +4,13 @@
 \alias{vinecop_predict_and_fitted}
 \alias{predict.vinecop}
 \alias{fitted.vinecop}
-\alias{fitted.vinecop}
 \title{Predictions and fitted values for a vine copula model}
 \usage{
-\method{predict}{vinecop}(object, newdata, what = "pdf", n_mc = 10^4, ...)
+\method{predict}{vinecop}(object, newdata, what = "pdf", n_mc = 10^4,
+  cores = 1, ...)
 
-\method{fitted}{vinecop}(object, what = "pdf", n_mc = 10^4, ...)
+\method{fitted}{vinecop}(object, what = "pdf", n_mc = 10^4,
+  cores = 1, ...)
 }
 \arguments{
 \item{object}{a \code{vinecop} object.}
@@ -21,6 +22,9 @@
 \item{n_mc}{number of samples used for quasi Monte Carlo integration when
 \code{what = "cdf"}.}
 
+\item{cores}{number of cores to use; if larger than one, computations are
+done in parallel on \code{cores} batches .}
+
 \item{...}{unused.}
 }
 \value{
@@ -31,8 +35,12 @@ and \code{\link[=pvinecop]{pvinecop()}}.
 Predictions of the density and distribution function
 for a vine copula model.
 }
+\details{
+\code{fitted()} can only be called if the model was fit with the
+\code{keep_data = TRUE} option.
+}
 \examples{
 u <- sapply(1:5, function(i) runif(50))
-fit <- vinecop(u, "par")
+fit <- vinecop(u, "par", keep_data = TRUE)
 all.equal(predict(fit, u), fitted(fit))
 }

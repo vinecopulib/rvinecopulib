@@ -8,15 +8,13 @@
 \alias{dvine_dist}
 \alias{pvine_dist}
 \alias{rvine_dist}
-\alias{pvine}
-\alias{rvine}
 \title{Vine based distributions}
 \usage{
-dvine(x, vine)
+dvine(x, vine, cores = 1)
 
-pvine(x, vine, n_mc = 10^4)
+pvine(x, vine, n_mc = 10^4, cores = 1)
 
-rvine(n, vine, U = NULL)
+rvine(n, vine, qrng = FALSE, cores = 1)
 }
 \arguments{
 \item{x}{evaluation points, either a length d vector or a d-column matrix,
@@ -24,14 +22,16 @@ where d is the number of variables in the vine.}
 
 \item{vine}{an object of class \code{"vine_dist"}.}
 
+\item{cores}{number of cores to use; if larger than one, computations are
+done in parallel on \code{cores} batches .}
+
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 
 \item{n}{number of observations.}
 
-\item{U}{optionally, an \eqn{n \times d} matrix of values in \eqn{(0,1)}.
-The result is then the inverse Rosenblatt transform of \code{U}; if \code{U} is a
-matrix of independent \eqn{U(0, 1)} variables, this simulates data
-from \code{vine}.}
+\item{qrng}{if \code{TRUE}, generates quasi-random numbers using the multivariate
+Generalized Halton sequence up to dimension 300 and the Generalized Sobol
+sequence in higher dimensions (default \code{qrng = FALSE}).}
 }
 \value{
 \code{dvine()} gives the density, \code{pvine()} gives the distribution function,
@@ -55,8 +55,8 @@ for the vine distributions are standard.
 The functions are based on \code{\link[=dvinecop]{dvinecop()}}, \code{\link[=pvinecop]{pvinecop()}} and \code{\link[=rvinecop]{rvinecop()}} for
 \link{vinecop} objects, and either \code{\link[kde1d:dkde1d]{kde1d::dkde1d()}}, \code{\link[kde1d:pkde1d]{kde1d::pkde1d()}} and
 \code{\link[kde1d:qkde1d]{kde1d::qkde1d()}} for estimated vines (i.e., output of \code{\link[=vine]{vine()}}), or the
-standard \emph{d/p/q-xxx} from \link[stats:Distributions]{stats::Distributions} for customly created vines
-(i.e., output of \code{\link[=vine_dist]{vine_dist()}})
+standard \emph{d/p/q-xxx} from \link[stats:Distributions]{stats::Distributions} for custom vines
+(i.e., output of \code{\link[=vine_dist]{vine_dist()}}).
 }
 \examples{
 # specify pair-copulas
@@ -70,7 +70,7 @@ pcs <- list(
 mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
 
 # set up vine copula model
-vc <- vine_dist(list(name = "norm"), pcs, mat)
+vc <- vine_dist(list(distr = "norm"), pcs, mat)
 
 # simulate from the model
 x <- rvine(200, vc)

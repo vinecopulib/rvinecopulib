@@ -50,7 +50,9 @@ protected:
 
 private:
     void fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
-             std::string method, double);
+             std::string method, 
+             double, 
+             const Eigen::VectorXd& weights);
 
     double calculate_npars();
 

@@ -9,13 +9,18 @@ vc <- vinecop_dist(pcs, mat)
 
 test_that("constructor creates proper vinecop_dist object", {
     expect_s3_class(vc, "vinecop_dist")
-    expect_identical(names(vc), c("pair_copulas", "matrix", "npars", "loglik"))
+    expect_identical(names(vc), c("pair_copulas", "structure", "npars", "loglik"))
 })
 
 
 test_that("d/p/r- functions work", {
     u <- rvinecop(50, vc)
-    u <- rvinecop(50, vc, u)
+    expect_false(any(rvinecop(50, vc, qrng = FALSE) == 
+                         rvinecop(50, vc, qrng = FALSE)))
+    set.seed(1)
+    u <- rvinecop(50, vc, qrng = TRUE)
+    set.seed(1)
+    expect_true(all(u == rvinecop(50, vc, qrng = TRUE)))
     expect_gte(min(dvinecop(u, vc)), 0)
     expect_gte(min(pvinecop(u, vc, 100)), 0)
     expect_lte(max(pvinecop(u, vc, 100)), 1)
@@ -43,19 +48,19 @@ test_that("works with truncated vines", {
     expect_length(trunc_vine$pair_copulas, 1)
     
     # summary table is truncated too
-    expect_s3_class(summary(vinecop_dist(pcs[-2], mat)), "vinecop_dist_summary")
+    expect_s3_class(summary(vinecop_dist(pcs[-2], mat)), "summary_df")
     expect_silent(smr <- summary(vinecop_dist(pcs[-2], mat)))
     expect_equal(nrow(smr), 2)
 })
 
 test_that("print/summary/dim generics work", {
     expect_output(print(vc))
-    expect_s3_class(summary(vc), "vinecop_dist_summary")
+    expect_s3_class(summary(vc), "summary_df")
     expect_silent(s <- summary(vc))
     expect_is(s, "data.frame")
     expect_equal(nrow(s), 3)
     expect_equal(ncol(s), 9)
-    expect_equal(dim(vc), 3)
+    expect_equivalent(dim(vc), c(3, 2))
 })
 
 test_that("plot functions work", {
@@ -90,8 +95,12 @@ test_that("plot functions work", {
 
 test_that("getters work", {
     
+    # test get_structure
+    expect_silent(pcc <- get_structure(vc))
+    expect_error(get_structure(12))
+    
     # test get_matrix
-    expect_identical(mat, get_matrix(vc))
+    expect_equivalent(as_rvine_matrix(mat), get_matrix(vc))
     expect_error(get_matrix(12))
     
     # test get_pair_copulas
@@ -128,7 +137,4 @@ test_that("getters work", {
     # test printed output of getters
     expect_output(print(get_all_pair_copulas(vc)))
     expect_output(print(get_all_pair_copulas(vc, 1)))
-    
-    # test truncate 
-    expect_identical(vc$pair_copulas[1:1], truncate_model(vc, 1)[[1]])
 })

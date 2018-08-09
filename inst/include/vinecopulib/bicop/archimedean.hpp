@@ -33,14 +33,14 @@ private:
 
     Eigen::VectorXd hinv2(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u);
 
-    // generator, its inverse and derivatives
+    // generator, its inverse and derivative
     virtual double generator(const double &u) = 0;
 
     virtual double generator_inv(const double &u) = 0;
 
     virtual double generator_derivative(const double &u) = 0;
 
-    virtual double generator_derivative2(const double &u) = 0;
+    //virtual double generator_derivative2(const double &u) = 0;
 
     Eigen::VectorXd get_start_parameters(const double tau);
 };

@@ -10,7 +10,7 @@ test_that("returns proper 'vine' object", {
     expect_identical(
         names(fit),  
         c("margins", "margins_controls", "copula", 
-          "copula_controls", "npars", "loglik", "data", "nobs")
+          "copula_controls", "npars", "loglik", "data", "nobs", "names")
     )
 })
 
@@ -27,8 +27,9 @@ test_that("S3 generics work", {
 
 test_that("print/summary generics work", {
     expect_output(print(fit))
-    expect_s3_class(s <- summary(fit), "vinecop_dist_summary")
-    expect_is(s, "data.frame")
+    s <- summary(fit)
+    expect_is(s$margins, c("summary_df", "data.frame"))
+    expect_is(s$copula, c("summary_df", "data.frame"))
 })
 
 test_that("discrete data work", {
@@ -41,5 +42,17 @@ test_that("discrete data work", {
     fit <- vine(my_data)
     sim <- rvine(n * 10, fit)
     expect_equal(sort(unique(sim[,2])), 1:5)
+})
+
+test_that("truncation works", {
+
+    fit_truncated <- truncate_model(fit, trunc_lvl = 1)
+    expect_silent(dvine(u, fit_truncated))
+    expect_silent(rvine(50, fit_truncated))
+    
+    fit_truncated <- vine(u, copula_controls = list(family_set = "nonpar", 
+                                                    trunc_lvl = 1))
+    expect_silent(dvine(u, fit_truncated))
+    expect_silent(rvine(50, fit_truncated))
 })
 

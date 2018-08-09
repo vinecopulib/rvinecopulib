@@ -20,7 +20,7 @@ typedef Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> MatrixXb;
 template<typename T>
 Eigen::MatrixXd unaryExpr_or_nan(const Eigen::MatrixXd &x, const T &func)
 {
-    return x.unaryExpr([&func](const double& y) {
+    return x.unaryExpr([&func](const double &y) {
         return tools_stl::unaryFunc_or_nan(func, y);
     });
 }
@@ -36,7 +36,9 @@ Eigen::VectorXd binaryExpr_or_nan(
     return u.col(0).binaryExpr(u.col(1), func_or_nan);
 }
 
-Eigen::MatrixXd nan_omit(const Eigen::MatrixXd &x);
+void remove_nans(Eigen::MatrixXd &x);
+
+void remove_nans(Eigen::MatrixXd &x, Eigen::VectorXd &weights);
 
 bool check_if_in_unit_cube(const Eigen::MatrixXd &u);
 
@@ -48,18 +50,17 @@ Eigen::VectorXd invert_f(
     std::function<Eigen::VectorXd(const Eigen::VectorXd &)> f,
     const double lb = 1e-20,
     const double ub = 1 - 1e-20,
-    int n_iter = 35
-);
+    int n_iter = 35);
 
 Eigen::Matrix<double, Eigen::Dynamic, 2> expand_grid(
-    const Eigen::VectorXd &grid_points
-);
+    const Eigen::VectorXd &grid_points);
 
 Eigen::MatrixXd read_matxd(const char *filename,
                            int max_buffer_size = static_cast<int>(1e6));
 
 Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> read_matxs(
     const char *filename, int max_buffer_size = static_cast<int>(1e6));
+
 }
 
 }

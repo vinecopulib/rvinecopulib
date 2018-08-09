@@ -20,15 +20,16 @@ class Bicop
 {
 public:
     // Constructors
-    Bicop(BicopFamily family = BicopFamily::indep, int rotation = 0,
+    Bicop(const BicopFamily family = BicopFamily::indep,
+          const int rotation = 0,
           const Eigen::MatrixXd &parameters = Eigen::MatrixXd());
 
-    Bicop(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
-          FitControlsBicop controls = FitControlsBicop());
+    Bicop(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
+          const FitControlsBicop &controls = FitControlsBicop());
 
     Bicop(const char *filename);
 
-    Bicop(boost::property_tree::ptree input);
+    Bicop(const boost::property_tree::ptree input);
 
     // Serialize
     boost::property_tree::ptree to_ptree() const;
@@ -47,8 +48,12 @@ public:
     double get_tau() const;
 
     double get_loglik() const;
+    size_t get_nobs() const;
+    double get_aic() const;
+    double get_bic() const;
+    double get_mbic(const double psi0) const;
 
-    void set_rotation(int rotation);
+    void set_rotation(const int rotation);
 
     void set_parameters(const Eigen::MatrixXd &parameters);
 
@@ -71,25 +76,36 @@ public:
     Eigen::VectorXd
     hinv2(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
 
-    Eigen::Matrix<double, Eigen::Dynamic, 2> simulate(const int &n) const;
+    Eigen::Matrix<double, Eigen::Dynamic, 2>
+    simulate(const size_t &n, 
+             const bool qrng = false,
+             const std::vector<int>& seeds = std::vector<int>()) const;
 
 
     // Methods modifying the family/rotation/parameters
     void fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
-             FitControlsBicop controls = FitControlsBicop());
+             const FitControlsBicop &controls = FitControlsBicop());
 
-    void select(Eigen::Matrix<double, Eigen::Dynamic, 2> data,
+    void select(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
                 FitControlsBicop controls = FitControlsBicop());
 
     // Fit statistics
-    double loglik(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+    double loglik(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
+            Eigen::Matrix<double, Eigen::Dynamic, 2>()) const;
 
-    double aic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+    double aic(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
+            Eigen::Matrix<double, Eigen::Dynamic, 2>()) const;
 
-    double bic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+    double bic(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
+            Eigen::Matrix<double, Eigen::Dynamic, 2>()) const;
 
-    double mbic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u, 
-                const double pi) const;
+    double mbic(
+        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
+            Eigen::Matrix<double, Eigen::Dynamic, 2>(),
+        const double psi0 = 0.9) const;
     
     // Misc
     std::string str() const;
@@ -111,11 +127,16 @@ private:
         const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
 
     void check_rotation(int rotation) const;
+    
+    void check_weights_size(const Eigen::VectorXd& weights, 
+                            const Eigen::MatrixXd& data) const;
+    double compute_mbic_penalty(const size_t nobs, const double psi0) const;
 
     BicopPtr get_bicop() const;
 
     BicopPtr bicop_;
     int rotation_;
+    size_t nobs_;
 };
 }
 

@@ -4,12 +4,13 @@
 \alias{vine_predict_and_fitted}
 \alias{predict.vine}
 \alias{fitted.vine}
-\alias{fitted.vine}
 \title{Predictions and fitted values for a vine copula model}
 \usage{
-\method{predict}{vine}(object, newdata, what = "pdf", n_mc = 10^4, ...)
+\method{predict}{vine}(object, newdata, what = "pdf", n_mc = 10^4,
+  cores = 1, ...)
 
-\method{fitted}{vine}(object, what = "pdf", n_mc = 10^4, ...)
+\method{fitted}{vine}(object, what = "pdf", n_mc = 10^4, cores = 1,
+  ...)
 }
 \arguments{
 \item{object}{a \code{vine} object.}
@@ -20,6 +21,9 @@
 
 \item{n_mc}{number of samples used for quasi Monte Carlo integration when
 \code{what = "cdf"}.}
+
+\item{cores}{number of cores to use; if larger than one, computations are
+done in parallel on \code{cores} batches .}
 
 \item{...}{unused.}
 }

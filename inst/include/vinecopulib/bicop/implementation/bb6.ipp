@@ -5,9 +5,7 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/misc/tools_integration.hpp>
-
-#include <boost/math/special_functions/expm1.hpp>
-#include <boost/math/special_functions/log1p.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
 
 namespace vinecopulib {
 inline Bb6Bicop::Bb6Bicop()
@@ -23,13 +21,13 @@ inline Bb6Bicop::Bb6Bicop()
 
 inline double Bb6Bicop::generator(const double &u)
 {
-    double res = boost::math::log1p(-std::pow(1 - u, parameters_(0)));
+    double res = tools_stl::log1p(-std::pow(1 - u, parameters_(0)));
     return std::pow((-1) * res, parameters_(1));
 }
 
 inline double Bb6Bicop::generator_inv(const double &u)
 {
-    double res = boost::math::expm1(-std::pow(u, 1 / parameters_(1)));
+    double res = std::expm1(-std::pow(u, 1 / parameters_(1)));
     return 1 - std::pow(-res, 1 / parameters_(0));
 }
 
@@ -37,24 +35,24 @@ inline double Bb6Bicop::generator_derivative(const double &u)
 {
     double theta = double(parameters_(0));
     double delta = double(parameters_(1));
-    double res = boost::math::log1p(-std::pow(1 - u, theta));
+    double res = tools_stl::log1p(-std::pow(1 - u, theta));
     res = delta * theta * std::pow((-1) * res, delta - 1);
     return res * std::pow(1 - u, theta - 1) / (std::pow(1 - u, theta) - 1);
 }
 
-inline double Bb6Bicop::generator_derivative2(const double &u)
-{
-    double theta = double(parameters_(0));
-    double delta = double(parameters_(1));
-    double tmp = std::pow(1 - u, theta);
-    double tmp2 = boost::math::log1p(-tmp);
-    double res = std::pow((-1) * tmp2, delta - 2);
-    res *= ((delta - 1) * theta * tmp - (tmp + theta - 1) * tmp2);
-    return res * delta * theta * std::pow(1 - u, theta - 2) /
-           std::pow(tmp - 1, 2);
-}
+//inline double Bb6Bicop::generator_derivative2(const double &u)
+//{
+//    double theta = double(parameters_(0));
+//    double delta = double(parameters_(1));
+//    double tmp = std::pow(1 - u, theta);
+//    double tmp2 = tools_stl::log1p(-tmp);
+//    double res = std::pow((-1) * tmp2, delta - 2);
+//    res *= ((delta - 1) * theta * tmp - (tmp + theta - 1) * tmp2);
+//    return res * delta * theta * std::pow(1 - u, theta - 2) /
+//           std::pow(tmp - 1, 2);
+//}
 
-inline Eigen::VectorXd Bb6Bicop::pdf(
+inline Eigen::VectorXd Bb6Bicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {
@@ -123,7 +121,7 @@ inline double Bb6Bicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
         double res = -4 * (1 - v - std::pow(1 - v, -theta) +
                            std::pow(1 - v, -theta) * v);
         return 1 / (delta * theta) *
-               boost::math::log1p(-std::pow(1 - v, theta)) * res;
+               tools_stl::log1p(-std::pow(1 - v, theta)) * res;
     };
     return 1 + tools_integration::integrate_zero_to_one(f);
 }

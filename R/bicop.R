@@ -18,11 +18,12 @@
 #'   than 1 less smooth.
 #' @param selcrit criterion for family selection, either `"loglik"`, `"aic"`, 
 #'   `"bic"`, `"mbic"`. For `vinecop()` there is the additional option `"mbicv"`.
+#' @param weights optional vector of weights for each observation.
 #' @param psi0 see [mBICV()].
 #' @param presel whether the family set should be thinned out according to
 #'   symmetry characteristics of the data.
-#' @param keep_data whether the data should be stored (necessary for computing
-#'   fit statistics and using [fitted()]).
+#' @param keep_data whether the data should be stored (necessary for using 
+#'   [fitted()]).
 #' @param cores number of cores to use; if more than 1, estimation for multiple
 #'   families is done in parallel.
 #' 
@@ -92,13 +93,15 @@
 #' @export
 bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic", 
-                  psi0 = 0.9, presel = TRUE, keep_data = TRUE, cores = 1) {
+                  weights = numeric(), psi0 = 0.9, presel = TRUE, 
+                  keep_data = FALSE, cores = 1) {
     assert_that(
         is.character(family_set), 
         is.string(par_method), 
         is.string(nonpar_method),
         is.number(mult), mult > 0,
         is.string(selcrit),
+        is.numeric(weights),
         is.number(psi0), psi0 > 0, psi0 < 1,
         is.flag(presel),
         is.flag(keep_data),
@@ -118,6 +121,7 @@ bicop <- function(data, family_set = "all", par_method = "mle",
         nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
+        weights = weights,
         psi0 = psi0,
         presel = presel,
         num_threads = cores
@@ -134,6 +138,7 @@ bicop <- function(data, family_set = "all", par_method = "mle",
         nonpar_method = nonpar_method,
         mult = mult,
         selcrit = selcrit,
+        weights = weights,
         psi0 = psi0,
         presel = presel
     )

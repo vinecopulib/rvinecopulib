@@ -21,16 +21,22 @@
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
 <meta property="og:title" content="Bivariate copula models — bicop" />
 
 <meta property="og:description" content="Bivariate copula models" />
 <meta name="twitter:card" content="summary" />
+
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -53,8 +59,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">rvinecopulib</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">rvinecopulib</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0.1.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -67,13 +77,14 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
         
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -81,23 +92,28 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Bivariate copula models</h1>
+    
+    <div class="hidden name"><code>bicop.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>Bivariate copula models</p>
     
+    </div>
 
     <pre class="usage"><span class='fu'>bicop</span>(<span class='no'>data</span>, <span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"all"</span>, <span class='kw'>par_method</span> <span class='kw'>=</span> <span class='st'>"mle"</span>,
-  <span class='kw'>nonpar_method</span> <span class='kw'>=</span> <span class='st'>"quadratic"</span>, <span class='kw'>mult</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>selcrit</span> <span class='kw'>=</span> <span class='st'>"bic"</span>, <span class='kw'>psi0</span> <span class='kw'>=</span> <span class='fl'>0.9</span>,
-  <span class='kw'>presel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>)
+  <span class='kw'>nonpar_method</span> <span class='kw'>=</span> <span class='st'>"quadratic"</span>, <span class='kw'>mult</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>selcrit</span> <span class='kw'>=</span> <span class='st'>"bic"</span>,
+  <span class='kw'>weights</span> <span class='kw'>=</span> <span class='fu'>numeric</span>(), <span class='kw'>psi0</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>presel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
 <span class='fu'>bicop_dist</span>(<span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"indep"</span>, <span class='kw'>rotation</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>parameters</span> <span class='kw'>=</span> <span class='fu'>numeric</span>(<span class='fl'>0</span>))</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -135,6 +151,10 @@ than 1 less smooth.</p></td>
 <code>"bic"</code>, <code>"mbic"</code>. For <code><a href='vinecop.html'>vinecop()</a></code> there is the additional option <code>"mbicv"</code>.</p></td>
     </tr>
     <tr>
+      <th>weights</th>
+      <td><p>optional vector of weights for each observation.</p></td>
+    </tr>
+    <tr>
       <th>psi0</th>
       <td><p>see <code><a href='mBICV.html'>mBICV()</a></code>.</p></td>
     </tr>
@@ -145,8 +165,8 @@ symmetry characteristics of the data.</p></td>
     </tr>
     <tr>
       <th>keep_data</th>
-      <td><p>whether the data should be stored (necessary for computing
-fit statistics and using <code>fitted()</code>).</p></td>
+      <td><p>whether the data should be stored (necessary for using
+<code>fitted()</code>).</p></td>
     </tr>
     <tr>
       <th>cores</th>
@@ -191,30 +211,30 @@ to fit the model.</p></li>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The implemented families are:
-    <code>"indep"</code> = Independence copula.
-<code>"gaussian"</code> = Gaussian copula.
-<code>"t"</code> = Student t copula.
-<code>"clayton"</code> = Clayton copula.
-<code>"gumbel"</code> = Gumbel copula.
-<code>"frank"</code> = Frank copula.
-<code>"joe"</code> = Joe copula.
-<code>"bb1"</code> = BB1 copula.
-<code>"bb6"</code> = BB6 copula.
-<code>"bb7"</code> = BB7 copula.
-<code>"bb8"</code> = BB8 copula.
-<code>"tll"</code> = transformation kernel local likelihood, only for <code>bicop()</code>.</p>
+    <p>The implemented families are:<br /></p>
+<p><code>"indep"</code> = Independence copula.<br />
+<code>"gaussian"</code> = Gaussian copula.<br />
+<code>"t"</code> = Student t copula.<br />
+<code>"clayton"</code> = Clayton copula.<br />
+<code>"gumbel"</code> = Gumbel copula.<br />
+<code>"frank"</code> = Frank copula.<br />
+<code>"joe"</code> = Joe copula.<br />
+<code>"bb1"</code> = BB1 copula.<br />
+<code>"bb6"</code> = BB6 copula.<br />
+<code>"bb7"</code> = BB7 copula.<br />
+<code>"bb8"</code> = BB8 copula.<br />
+<code>"tll"</code> = transformation kernel local likelihood, only for <code>bicop()</code>.<br /></p>
 <p>In addition, the following convenience definitions can be used (and combined)
-with <code>bicop</code>:
-    <code>"all"</code> =  all families.
-<code>"parametric"</code> =  parametric families.
-<code>"nonparametric"</code> =  nonparametric families.
-<code>"archimedean"</code> =  archimedean families.
-<code>"elliptical"</code> =  elliptical families.
-<code>"bbs"</code> =  BB families.
-<code>"oneparametric"</code> =  one parameter families.
-<code>"twoparametric"</code> =  two parameter families.
-<code>"itau"</code> =  one parameter families and Student t copula.
+with <code>bicop</code>:<br /></p>
+<p><code>"all"</code> =  all families.<br />
+<code>"parametric"</code> =  parametric families.<br />
+<code>"nonparametric"</code> =  nonparametric families.<br />
+<code>"archimedean"</code> =  archimedean families.<br />
+<code>"elliptical"</code> =  elliptical families.<br />
+<code>"bbs"</code> =  BB families.<br />
+<code>"oneparametric"</code> =  one parameter families.<br />
+<code>"twoparametric"</code> =  two parameter families.<br />
+<code>"itau"</code> =  one parameter families and Student t copula.<br />
 Partial matching is activated. For example, <code>"gauss"</code> is equivalent to
 <code>"gaussian"</code>, or you can write  <code>"nonpar"</code> instead of <code>"nonparametric"</code>.</p>
     
@@ -229,9 +249,9 @@ Partial matching is activated. For example, <code>"gauss"</code> is equivalent t
 #&gt;  - attr(*, "class")= chr "bicop_dist"</div><div class='input'><span class='no'>bicop</span> <span class='kw'>&lt;-</span> <span class='fu'>bicop_dist</span>(<span class='st'>"clayton"</span>, <span class='fl'>90</span>, <span class='fl'>3</span>)
 
 <span class='co'>## bicop objects</span>
-<span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>rbicop</span>(<span class='fl'>500</span>, <span class='st'>"gauss"</span>, <span class='fl'>0</span>, <span class='fl'>0.5</span>)
+<span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bicop_methods.html'>rbicop</a></span>(<span class='fl'>500</span>, <span class='st'>"gauss"</span>, <span class='fl'>0</span>, <span class='fl'>0.5</span>)
 <span class='no'>fit1</span> <span class='kw'>&lt;-</span> <span class='fu'>bicop</span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
-<span class='no'>fit1</span></div><div class='output co'>#&gt; Bivariate copula fit ('bicop'): family = gaussian, rotation = 0, parameters = 0.52</div><div class='input'>
+<span class='no'>fit1</span></div><div class='output co'>#&gt; Bivariate copula fit ('bicop'): family = gaussian, rotation = 0, parameters = 0.5</div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -261,5 +281,8 @@ Partial matching is activated. For example, <code>"gauss"</code> is equivalent t
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

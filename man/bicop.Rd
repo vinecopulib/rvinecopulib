@@ -3,12 +3,12 @@
 \name{bicop}
 \alias{bicop}
 \alias{bicop_dist}
-\alias{bicop_dist}
 \title{Bivariate copula models}
 \usage{
 bicop(data, family_set = "all", par_method = "mle",
-  nonpar_method = "quadratic", mult = 1, selcrit = "bic", psi0 = 0.9,
-  presel = TRUE, keep_data = TRUE, cores = 1)
+  nonpar_method = "quadratic", mult = 1, selcrit = "bic",
+  weights = numeric(), psi0 = 0.9, presel = TRUE,
+  keep_data = FALSE, cores = 1)
 
 bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
 }
@@ -35,13 +35,15 @@ than 1 less smooth.}
 \item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"},
 \code{"bic"}, \code{"mbic"}. For \code{vinecop()} there is the additional option \code{"mbicv"}.}
 
+\item{weights}{optional vector of weights for each observation.}
+
 \item{psi0}{see \code{\link[=mBICV]{mBICV()}}.}
 
 \item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
 
-\item{keep_data}{whether the data should be stored (necessary for computing
-fit statistics and using \code{\link[=fitted]{fitted()}}).}
+\item{keep_data}{whether the data should be stored (necessary for using
+\code{\link[=fitted]{fitted()}}).}
 
 \item{cores}{number of cores to use; if more than 1, estimation for multiple
 families is done in parallel.}

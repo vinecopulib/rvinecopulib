@@ -3,15 +3,15 @@
 \name{vinecop}
 \alias{vinecop}
 \alias{vinecop_dist}
-\alias{vinecop_dist}
 \title{Vine copula models}
 \usage{
-vinecop(data, family_set = "all", matrix = NA, par_method = "mle",
-  nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9,
-  presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
-  keep_data = TRUE, show_trace = FALSE, cores = 1)
+vinecop(data, family_set = "all", structure = NA, par_method = "mle",
+  nonpar_method = "constant", mult = 1, selcrit = "bic",
+  weights = numeric(), psi0 = 0.9, presel = TRUE, trunc_lvl = Inf,
+  tree_crit = "tau", threshold = 0, keep_data = FALSE,
+  show_trace = FALSE, cores = 1)
 
-vinecop_dist(pair_copulas, matrix)
+vinecop_dist(pair_copulas, structure)
 }
 \arguments{
 \item{data}{a matrix or data.frame (copula data should have approximately
@@ -20,10 +20,11 @@ uniform margins).}
 \item{family_set}{a character vector of families; see \code{\link[=bicop]{bicop()}} for
 additional options.}
 
-\item{matrix}{a quadratic matrix specifying the structure matrix (see
-\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
-\code{length(pair_copulas)-1}; for \code{\link[=vinecop]{vinecop()}}, \code{matrix = NA} performs
-automatic structure selection.}
+\item{structure}{an \code{rvine_structure} object, namely a compressed
+representation of the vine structure, or an object that can be coerced
+into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
+The dimension must be \code{length(pair_copulas[[1]]) + 1}; for \code{\link[=vinecop]{vinecop()}},
+\code{structure = NA} performs automatic structure selection.}
 
 \item{par_method}{the estimation method for parametric models, either \code{"mle"}
 for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
@@ -40,6 +41,8 @@ than 1 less smooth.}
 
 \item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"},
 \code{"bic"}, \code{"mbic"}. For \code{vinecop()} there is the additional option \code{"mbicv"}.}
+
+\item{weights}{optional vector of weights for each observation.}
 
 \item{psi0}{prior probability of a non-independence copula (only used for
 \code{selcrit = "mbic"} and \code{selcrit = "mbicv"}).}
@@ -58,8 +61,8 @@ Hoeffding's \eqn{D}, and maximum correlation, respectively.}
 \item{threshold}{for thresholded vine copulas; \code{NA} indicates that the
 threshold should be selected automatically by \code{\link[=mBICV]{mBICV()}}.}
 
-\item{keep_data}{whether the data should be stored (necessary for computing
-fit statistics and using \code{\link[=fitted]{fitted()}}).}
+\item{keep_data}{whether the data should be stored (necessary for using
+\code{\link[=fitted]{fitted()}}).}
 
 \item{show_trace}{logical; whether a trace of the fitting progress should be
 printed.}
@@ -79,8 +82,9 @@ Object from the \code{vinecop_dist} class are lists containing:
 \itemize{
 \item \code{pair_copulas}, a list of lists. Each element of \code{pair_copulas} corresponds
 to a tree, which is itself a list of \code{bicop_dist} objects, see \code{\link[=bicop_dist]{bicop_dist()}}.
-\item \code{matrix}, an R-vine matrix, namely a compressed representation of the
-vine structure, see \code{\link[=check_rvine_matrix]{check_rvine_matrix()}}.
+\item \code{structure}, an \code{rvine_structure} object, namely a compressed
+representation of the vine structure, or an object that can be coerced
+into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
 \item \code{npars}, a \code{numeric} with the number of (effective) parameters.
 }
 
@@ -100,13 +104,13 @@ to fit the model.
 Automated fitting or creation of custom vine copula models
 }
 \details{
-\code{vinecop_dist()} creates a vine copula by specifying a nested list of
-\code{bicop_dist} objects and a quadratic structure matrix.
+\code{\link[=vinecop_dist]{vinecop_dist()}} creates a vine copula by specifying a nested list of
+\code{\link[=bicop_dist]{bicop_dist()}} objects and a quadratic structure matrix.
 
-\code{vinecop()} provides automated fitting for vine copula models.
+\code{\link[=vinecop]{vinecop()}} provides automated fitting for vine copula models.
 The function inherits the parameters of \code{\link[=bicop]{bicop()}}.
-Optionally, a quadratic \code{matrix} can be used as
-input to pre-specify the vine structure. \code{tree_crit} describes the
+Optionally, an \code{\link[=rvine_structure]{rvine_structure()}} or \code{\link[=rvine_matrix]{rvine_matrix()}} can be used as
+input to specify the vine structure. \code{tree_crit} describes the
 criterion for tree selection, one of \code{"tau"}, \code{"rho"}, \code{"hoeffd"} for
 Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
 \code{threshold} allows to threshold the \code{tree_crit} and \code{trunc_lvl} to truncate

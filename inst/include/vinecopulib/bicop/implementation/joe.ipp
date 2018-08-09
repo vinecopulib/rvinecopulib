@@ -38,15 +38,15 @@ inline double JoeBicop::generator_derivative(const double &u)
     return (-theta) * std::pow(1 - u, theta - 1) / (1 - std::pow(1 - u, theta));
 }
 
-inline double JoeBicop::generator_derivative2(const double &u)
-{
-    double theta = double(parameters_(0));
-    double res = theta * (theta - 1 + std::pow(1 - u, theta));
-    return res * std::pow(1 - u, theta - 2) /
-           std::pow(-1 + std::pow(1 - u, theta), 2);
-}
+//inline double JoeBicop::generator_derivative2(const double &u)
+//{
+//    double theta = double(parameters_(0));
+//    double res = theta * (theta - 1 + std::pow(1 - u, theta));
+//    return res * std::pow(1 - u, theta - 2) /
+//           std::pow(-1 + std::pow(1 - u, theta), 2);
+//}
 
-inline Eigen::VectorXd JoeBicop::pdf(
+inline Eigen::VectorXd JoeBicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {

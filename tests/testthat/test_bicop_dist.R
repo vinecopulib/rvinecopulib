@@ -24,9 +24,13 @@ test_that("d/p/r/h functions work", {
     set.seed(0)
     dist <- bicop_dist("bb1", 270, c(1, 2))
     u <- rbicop(50, "bb1", 270, c(1, 2))
-    u <- rbicop(50, dist, U = u)
-    expect_error(rbicop(50, dist, U = u[, -1]))
-    expect_error(rbicop(50, dist, U = u[-1, ]))
+    expect_false(any(rbicop(50, dist, qrng = FALSE) == 
+                        rbicop(50, dist, qrng = FALSE)))
+    
+    set.seed(1)
+    u1 <- rbicop(50, dist, qrng = TRUE)
+    set.seed(1)
+    expect_true(all(u1 == rbicop(50, dist, qrng = TRUE)))
     expect_gte(min(dbicop(c(0.1, 0.2), dist)), 0)
     expect_gte(min(dbicop(u, dist)), 0)
     expect_gte(min(pbicop(u, dist)), 0)

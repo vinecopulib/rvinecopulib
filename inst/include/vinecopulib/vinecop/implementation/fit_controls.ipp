@@ -21,17 +21,26 @@ inline FitControlsVinecop::FitControlsVinecop() : FitControlsBicop()
 }
 
 //! creates custom controls for fitting vine copula models.
-//! @param family_set see FitControlsBicop.
-//! @param parametric_method see FitControlsBicop.
-//! @param nonparametric_method see FitControlsBicop.
-//! @param nonparametric_mult see FitControlsBicop.
+//! @param family_set the set of copula families to consider (if empty, then
+//!     all families are included).
+//! @param parametric_method the fit method for parametric families;
+//!     possible choices: `"mle"`, `"itau"`.
+//! @param nonparametric_method the fit method for the local-likelihood
+//!     nonparametric family (TLLs); possible choices: `"constant"`,
+//!     `"linear"`, `"quadratic"`.
+//! @param nonparametric_mult a factor with which the smoothing parameters
+//!     are multiplied.
 //! @param truncation_level for truncated vines.
 //! @param tree_criterion the criterion for selecting the maximum spanning
 //!     tree ("tau", "hoeffd", "rho", and "mcor" implemented so far).
 //! @param threshold for thresholded vines (0 = no threshold).
-//! @param selection_criterion see FitControlsBicop.
-//! @param psi0 see FitControlsBicop.
-//! @param preselect_families see FitControlsBicop.
+//! @param selection_criterion the selection criterion (`"loglik"`, `"aic"` 
+//!     or `"bic"`).
+//! @param weights a vector of weights for the observations.
+//! @param psi0 only for `selection_criterion = "mbic"): prior probability of
+//!     non-independence.
+//! @param preselect_families whether to exclude families before fitting
+//!     based on symmetry properties of the data.
 //! @param select_truncation_level whether the truncation shall be selected
 //!     automatically.
 //! @param select_threshold whether the threshold parameter shall be
@@ -49,6 +58,7 @@ inline FitControlsVinecop::FitControlsVinecop(
     std::string tree_criterion,
     double threshold,
     std::string selection_criterion,
+    const Eigen::VectorXd& weights,
     double psi0,
     bool preselect_families,
     bool select_truncation_level,
@@ -60,6 +70,7 @@ inline FitControlsVinecop::FitControlsVinecop(
                      nonparametric_method,
                      nonparametric_mult,
                      selection_criterion,
+                     weights,
                      psi0,
                      preselect_families)
 {
@@ -86,7 +97,7 @@ inline FitControlsVinecop::FitControlsVinecop(
 //! @param num_threads number of concurrent threads to use while fitting
 //!     pair copulas within a tree; never uses more than the number returned
 //!     by `std::thread::hardware_concurrency()``.
-inline FitControlsVinecop::FitControlsVinecop(const FitControlsBicop controls,
+inline FitControlsVinecop::FitControlsVinecop(const FitControlsBicop &controls,
                                               size_t truncation_level,
                                               std::string tree_criterion,
                                               double threshold,
@@ -169,6 +180,7 @@ inline FitControlsBicop FitControlsVinecop::get_fit_controls_bicop() const
                                     get_nonparametric_method(),
                                     get_nonparametric_mult(),
                                     get_selection_criterion(),
+                                    get_weights(),
                                     get_preselect_families());
     return controls_bicop;
 }

@@ -38,14 +38,14 @@ inline double FrankBicop::generator_derivative(const double &u)
     return -theta / boost::math::expm1(theta * u);
 }
 
-inline double FrankBicop::generator_derivative2(const double &u)
-{
-    double theta = double(this->parameters_(0));
-    return std::pow(theta, 2) /
-           std::pow(boost::math::expm1(theta * u) * std::exp(-theta * u / 2), 2);
-}
+//inline double FrankBicop::generator_derivative2(const double &u)
+//{
+//    double theta = double(this->parameters_(0));
+//    return std::pow(theta, 2) /
+//           std::pow(boost::math::expm1(theta * u) * std::exp(-theta * u / 2), 2);
+//}
 
-inline Eigen::VectorXd FrankBicop::pdf(
+inline Eigen::VectorXd FrankBicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {

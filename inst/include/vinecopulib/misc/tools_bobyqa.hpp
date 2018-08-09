@@ -2146,11 +2146,11 @@ std::pair<Eigen::VectorXd, double> bobyqa(
         for (size_t i = 0; i < static_cast<size_t>(n); i++) {
             optimized_parameters(i) = x[i];
         }
-    } catch (std::invalid_argument err) {
+    } catch (std::invalid_argument& err) {
         err_msg = std::string("Invalid arguments. ") + err.what();
-    } catch (std::bad_alloc err) {
+    } catch (std::bad_alloc& err) {
         err_msg = std::string("Ran out of memory. ") + err.what();
-    } catch (std::runtime_error err) {
+    } catch (std::runtime_error& err) {
         err_msg = std::string("Generic failure. ") + err.what();
     } catch (...) {
         // do nothing for other errors (results are fine)

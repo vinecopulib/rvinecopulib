@@ -21,17 +21,23 @@
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
 <meta property="og:title" content="Predictions and fitted values for a vine copula model — vine_predict_and_fitted" />
 
 <meta property="og:description" content="Predictions of the density and distribution function
 for a vine copula model." />
 <meta name="twitter:card" content="summary" />
+
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -54,8 +60,12 @@ for a vine copula model." />
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">rvinecopulib</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">rvinecopulib</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0.1.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -68,13 +78,14 @@ for a vine copula model." />
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
         
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -82,24 +93,30 @@ for a vine copula model." />
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Predictions and fitted values for a vine copula model</h1>
+    
+    <div class="hidden name"><code>predict_vine.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>Predictions of the density and distribution function
 for a vine copula model.</p>
     
+    </div>
 
     <pre class="usage"><span class='co'># S3 method for vine</span>
-<span class='fu'>predict</span>(<span class='no'>object</span>, <span class='no'>newdata</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>, <span class='no'>...</span>)
+<span class='fu'>predict</span>(<span class='no'>object</span>, <span class='no'>newdata</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>,
+  <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>...</span>)
 
 <span class='co'># S3 method for vine</span>
-<span class='fu'>fitted</span>(<span class='no'>object</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>, <span class='no'>...</span>)</pre>
+<span class='fu'>fitted</span>(<span class='no'>object</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='no'>...</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -120,6 +137,11 @@ for a vine copula model.</p>
 <code>what = "cdf"</code>.</p></td>
     </tr>
     <tr>
+      <th>cores</th>
+      <td><p>number of cores to use; if larger than one, computations are
+done in parallel on <code>cores</code> batches .</p></td>
+    </tr>
+    <tr>
       <th>...</th>
       <td><p>unused.</p></td>
     </tr>
@@ -128,7 +150,7 @@ for a vine copula model.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p><code>fitted()</code> and <code>predict()</code> have return values similar to <code><a href='vine_methods.html'>dvine()</a></code>
-and <code>pvine()</code>.</p>
+and <code><a href='vine_methods.html'>pvine()</a></code>.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -161,5 +183,8 @@ and <code>pvine()</code>.</p>
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

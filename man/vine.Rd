@@ -3,16 +3,15 @@
 \name{vine}
 \alias{vine}
 \alias{vine_dist}
-\alias{vine_dist}
 \title{Vine copula models}
 \usage{
-vine(data, margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN, bw =
-  NA), copula_controls = list(family_set = "all", matrix = NA, par_method =
-  "mle", nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9,
-  presel = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data =
-  TRUE, show_trace = FALSE, cores = 1))
+vine(data, margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN,
+  bw = NA), copula_controls = list(family_set = "all", structure = NA,
+  par_method = "mle", nonpar_method = "constant", mult = 1, selcrit =
+  "bic", psi0 = 0.9, presel = TRUE, trunc_lvl = Inf, tree_crit = "tau",
+  threshold = 0, keep_data = FALSE, show_trace = FALSE, cores = 1))
 
-vine_dist(margins, pair_copulas, matrix)
+vine_dist(margins, pair_copulas, structure)
 }
 \arguments{
 \item{data}{a matrix or data.frame.}
@@ -32,8 +31,9 @@ the number of variables after applying \code{\link[cctools:expand_as_numeric]{cc
 
 \item{margins}{A list with with each element containing the specification of a
 marginal \link[stats:Distributions]{stats::Distributions}. Each marginal specification
-should be a list with containing at least the name and optionally the
-parameters, e.g. \code{list(list(name = "norm"), list(name = "norm", mu = 1), list(name = "beta", shape1 = 1, shape2 = 1))}.
+should be a list with containing at least the distribution family (\code{"distr"})
+and optionally the parameters, e.g.
+\code{list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))}.
 Note that parameters that have no default values have to be provided.
 Furthermore, if \code{margins} has length one, it will be recycled for every component.}
 
@@ -41,10 +41,10 @@ Furthermore, if \code{margins} has length one, it will be recycled for every com
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
 tree \code{t}.}
 
-\item{matrix}{a quadratic matrix specifying the structure matrix (see
-\code{\link[=check_rvine_matrix]{check_rvine_matrix()}}); for \code{\link[=vinecop_dist]{vinecop_dist()}}, the dimension must be
-\code{length(pair_copulas)-1}; for \code{\link[=vinecop]{vinecop()}}, \code{matrix = NA} performs
-automatic structure selection.}
+\item{structure}{an \code{rvine_structure} object, namely a compressed
+representation of the vine structure, or an object that can be coerced
+into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
+The dimension must be \code{length(pair_copulas[[1]]) + 1}.}
 }
 \value{
 Objects inheriting from \code{vine_dist} for \code{\link[=vine_dist]{vine_dist()}}, and
@@ -101,7 +101,7 @@ pcs <- list(
 mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
 
 # set up vine copula model with Gaussian margins
-vc <- vine_dist(list(name = "norm"), pcs, mat)
+vc <- vine_dist(list(distr = "norm"), pcs, mat)
 
 # show model
 summary(vc)

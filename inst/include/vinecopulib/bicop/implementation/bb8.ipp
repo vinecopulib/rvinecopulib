@@ -42,17 +42,17 @@ inline double Bb8Bicop::generator_derivative(const double &u)
     return -res / (1 - std::pow(1 - delta * u, theta));
 }
 
-inline double Bb8Bicop::generator_derivative2(const double &u)
-{
-    double theta = double(parameters_(0));
-    double delta = double(parameters_(1));
-    double tmp = std::pow(1 - delta * u, theta);
-    double res =
-        std::pow(delta, 2) * theta * std::pow(1 - delta * u, theta - 2);
-    return res * (theta - 1 + tmp) / std::pow(tmp - 1, 2);
-}
+//inline double Bb8Bicop::generator_derivative2(const double &u)
+//{
+//    double theta = double(parameters_(0));
+//    double delta = double(parameters_(1));
+//    double tmp = std::pow(1 - delta * u, theta);
+//    double res =
+//        std::pow(delta, 2) * theta * std::pow(1 - delta * u, theta - 2);
+//    return res * (theta - 1 + tmp) / std::pow(tmp - 1, 2);
+//}
 
-inline Eigen::VectorXd Bb8Bicop::pdf(
+inline Eigen::VectorXd Bb8Bicop::pdf_raw(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
 {

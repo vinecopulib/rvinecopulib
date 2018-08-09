@@ -1,4 +1,49 @@
-# vinecopulib 0.2.8.1.0 (May 8, 2018)
+# rvinecopulib 0.3.0.1.0 (August 9, 2018)
+
+Release following the updates of vinecopulib to 0.3.0, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+NEW FEATURES
+
+   * new generic `truncate_model()` to truncated vine structures and models 
+     (#144).
+
+   * new functions `rosenblatt()` and `inverse_rosenblatt()` for computing the 
+     (inverse) Rosenblatt transformation (#142).
+  
+   * faster algorithms for nonparametric copulas based on bilinear interpolation.
+
+   * refactor vine structures and related algorithms with triangular arrays 
+     to improve efficiency of truncated models (#136).
+     
+   * new classes `rvine_structure` and `rvine_matrix` for storing the vine 
+     structure including `as_`- and `is.`-generics (#136).
+
+   * allow for generating quasi-random  numbers (#126).
+
+   * improved parallelization: faster of fitting vine copula models and 
+     parallelized versions of many algorithms including pdf, cdf and simulation 
+     (#339, #363).
+     
+   * allow weights for observations (#118).
+
+   * faster compilation using only a single wrapper file (#124).
+
+   * improved print and summary generics (#131).
+
+BUG FIXES
+
+   * fix cdf of StudentBicop
+
+   * improved numerical stability.
+
+   * fix gcc-8 warning.
+   
+   * fix missing variable names for class `vine`.
+
+
+# rvinecopulib 0.2.8.1.0 (May 8, 2018)
 
 Release following the updates of vinecopulib to 0.2.8, see 
 https://github.com/vinecopulib/vinecopulib/releases. The most 
@@ -42,7 +87,7 @@ BUG FIXES
    * improve numerical stability by more restrictive parameter bounds for Joe 
      and BB7 copulas (#103). 
 
-# vinecopulib 0.2.7.1.0 (March 1, 2018)
+# rvinecopulib 0.2.7.1.0 (March 1, 2018)
 
 Release following the updates of vinecopulib to 0.2.7, see 
 https://github.com/vinecopulib/vinecopulib/releases. The most 
@@ -57,7 +102,7 @@ BUG FIXES
    * fix bandwidth scaling for family `"tll"`.
 
 
-# vinecopulib 0.2.6.1.1 (February 24, 2018)
+# rvinecopulib 0.2.6.1.1 (February 24, 2018)
 
 Patch of rvinecopulib 0.2.6.1.0.
 
@@ -66,7 +111,7 @@ BUG FIXES
    * corrected documentation items.
 
 
-# vinecopulib 0.2.6.1.0 (February 23, 2018)
+# rvinecopulib 0.2.6.1.0 (February 23, 2018)
 
 Release following the updates of vinecopulib to 0.2.6, see 
 https://github.com/vinecopulib/vinecopulib/releases. The most 
@@ -87,7 +132,7 @@ BUG FIXES
    * fix calculation of Hoeffding's D.
 
 
-# vinecopulib 0.2.5.1.0 (January 14, 2017)
+# rvinecopulib 0.2.5.1.0 (January 14, 2017)
 
 Release following the updates of vinecopulib to 0.2.4 and 0.2.5, see 
 https://github.com/vinecopulib/vinecopulib/releases. The most 
@@ -114,7 +159,7 @@ BUG FIXES
    * fixed selection algorithm for threshold and truncation level.
 
 
-# vinecopulib 0.2.3.1.0 (November 18, 2017)
+# rvinecopulib 0.2.3.1.0 (November 18, 2017)
 
 Release following the update of vinecopulib to 0.2.3, see 
 https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.3. The most 
@@ -134,7 +179,7 @@ BUG FIXES
    * make `par_method = "itau"` respect the parameter bounds.
 
 
-# vinecopulib 0.2.2.1.0 (November 9, 2017)
+# rvinecopulib 0.2.2.1.0 (November 9, 2017)
 
 Release following the updates of vinecopulib to 0.2.1 and 0.2.2, see 
 https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.1 and
@@ -161,7 +206,7 @@ BUG FIXES
     estimator).
   
 
-# vinecopulib 0.2.0.1.0 (October 30, 2017)
+# rvinecopulib 0.2.0.1.0 (October 30, 2017)
 
 Release following the update of vinecopulib to 0.2.0, see 
 https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.0. The most 
