@@ -1,4 +1,5 @@
 #define BOOST_NO_AUTO_PTR
+#define BOOST_MATH_PROMOTE_DOUBLE_POLICY false
 
 #include <RcppEigen.h>
 #include "vinecopulib.hpp"
