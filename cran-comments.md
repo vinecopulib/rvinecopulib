@@ -2,9 +2,9 @@
 
 This update breaks the current version of the 'vinereg' package. This is caused
 by changes in the internal representation of models in our library. 'vinereg' 
-modifies corresponding S3 objects of manually in a way that 
+modifies corresponding S3 objects manually in a way that 
 is no longer valid. I am also the maintainer of the vinereg package and will
-submit a patched version as soon our update is accepted. 
+submit a patched version as soon our update is on it's way to CRAN. 
 
 ## Non-standard version number
 
@@ -19,6 +19,8 @@ vinecopulib's version.
 * Windows Server 2012 R2 x64 and x86 (appveyor), R 3.5.0
 
 ## R CMD check results
-There were no ERROR, WARNINGs or NOTES. 
+There were no ERRORs or WARNINGs. 
 
 ## Reverse dependencies
+Checked simIReff: 0 errors | 0 warnings | 0 notes
+Checked vinereg : 2 errors | 2 warnings | 1 note
