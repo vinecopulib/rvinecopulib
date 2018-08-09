@@ -8,8 +8,6 @@
 \alias{dvine_dist}
 \alias{pvine_dist}
 \alias{rvine_dist}
-\alias{pvine}
-\alias{rvine}
 \title{Vine based distributions}
 \usage{
 dvine(x, vine, cores = 1)
@@ -57,8 +55,8 @@ for the vine distributions are standard.
 The functions are based on \code{\link[=dvinecop]{dvinecop()}}, \code{\link[=pvinecop]{pvinecop()}} and \code{\link[=rvinecop]{rvinecop()}} for
 \link{vinecop} objects, and either \code{\link[kde1d:dkde1d]{kde1d::dkde1d()}}, \code{\link[kde1d:pkde1d]{kde1d::pkde1d()}} and
 \code{\link[kde1d:qkde1d]{kde1d::qkde1d()}} for estimated vines (i.e., output of \code{\link[=vine]{vine()}}), or the
-standard \emph{d/p/q-xxx} from \link[stats:Distributions]{stats::Distributions} for customly created vines
-(i.e., output of \code{\link[=vine_dist]{vine_dist()}})
+standard \emph{d/p/q-xxx} from \link[stats:Distributions]{stats::Distributions} for custom vines
+(i.e., output of \code{\link[=vine_dist]{vine_dist()}}).
 }
 \examples{
 # specify pair-copulas

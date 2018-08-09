@@ -3,7 +3,6 @@
 \name{as_rvine_structure}
 \alias{as_rvine_structure}
 \alias{as_rvine_matrix}
-\alias{as_rvine_matrix}
 \alias{as_rvine_structure.rvine_structure}
 \alias{as_rvine_matrix.rvine_structure}
 \alias{as_rvine_structure.list}
@@ -65,12 +64,12 @@ different kind of objects Currently, \code{rvine_structure}, \code{rvine_matrix}
 
 For \code{as_rvine_structure}:
 \itemize{
-\item \code{rvine_structure} : the main usecase is to re-check an object via
+\item \code{rvine_structure} : the main use case is to re-check an object via
 \code{validate = TRUE}.
 \item \code{rvine_matrix} and \code{matrix} : allow to coerce matrices into R-vine
 structures (see \code{\link[=rvine_structure]{rvine_structure()}} for more details). The main difference
-between \code{rvine_matrix} and \code{matrix} is the nature of the verifications
-performed.
+between \code{rvine_matrix} and \code{matrix} is the nature of the validity
+checks.
 \item \code{list} : must contain named elements \code{order} and \code{struct_array} to be
 coerced into an R-vine structure (see \code{\link[=rvine_structure]{rvine_structure()}} for more details).
 }
@@ -80,7 +79,7 @@ coerced into an R-vine structure (see \code{\link[=rvine_structure]{rvine_struct
 \item \code{rvine_structure} : allow to coerce an \code{rvine_structure} into an
 R-vine matrix (useful e.g. for printing).
 \item \code{rvine_matrix}: similar to \code{as_rvine_structure} for \code{rvine_structure},
-the main usecase is to re-check an object via \code{validate = TRUE}.
+the main use case is to re-check an object via \code{validate = TRUE}.
 \item \code{matrix} : allow to coerce matrices into R-vine
 matrices (mainly by checking that the matrix defines a valid
 R-vine, see \code{\link[=rvine_matrix]{rvine_matrix()}} for more details).

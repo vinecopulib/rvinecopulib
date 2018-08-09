@@ -10,13 +10,7 @@
 \alias{get_ktau}
 \alias{get_all_ktaus}
 \alias{get_matrix}
-\alias{get_pair_copula}
-\alias{get_parameters}
-\alias{get_ktau}
 \alias{get_family}
-\alias{get_all_pair_copulas}
-\alias{get_all_parameters}
-\alias{get_all_ktaus}
 \alias{get_all_families}
 \title{Extracts components of \code{bicop_dist} and \code{vinecop_dist} objects}
 \usage{

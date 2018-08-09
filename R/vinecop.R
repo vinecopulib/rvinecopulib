@@ -27,13 +27,13 @@
 #'    copulas within a tree is done in parallel.
 #' 
 #' @details
-#' `vinecop_dist()` creates a vine copula by specifying a nested list of 
-#' `bicop_dist` objects and a quadratic structure matrix. 
+#' [vinecop_dist()] creates a vine copula by specifying a nested list of 
+#' [bicop_dist()] objects and a quadratic structure matrix. 
 #' 
-#' `vinecop()` provides automated fitting for vine copula models. 
+#' [vinecop()] provides automated fitting for vine copula models. 
 #' The function inherits the parameters of [bicop()]. 
-#' Optionally, a quadratic `matrix` can be used as
-#' input to pre-specify the vine structure. `tree_crit` describes the
+#' Optionally, an [rvine_structure()] or [rvine_matrix()] can be used as
+#' input to specify the vine structure. `tree_crit` describes the
 #' criterion for tree selection, one of `"tau"`, `"rho"`, `"hoeffd"` for
 #' Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally, 
 #' `threshold` allows to threshold the `tree_crit` and `trunc_lvl` to truncate 

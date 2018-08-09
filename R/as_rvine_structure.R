@@ -1,4 +1,3 @@
-
 #' Coerce various kind of objects to R-vine structures and matrices
 #' 
 #' `as_rvine_structure` and `as_rvine_matrix` are new S3 generics allowing to 
@@ -11,12 +10,12 @@
 #' 
 #' For `as_rvine_structure`:
 #' 
-#'  * `rvine_structure` : the main usecase is to re-check an object via 
+#'  * `rvine_structure` : the main use case is to re-check an object via 
 #'  `validate = TRUE`.
 #'  * `rvine_matrix` and `matrix` : allow to coerce matrices into R-vine 
 #'  structures (see [rvine_structure()] for more details). The main difference 
-#'  between `rvine_matrix` and `matrix` is the nature of the verifications 
-#'  performed.
+#'  between `rvine_matrix` and `matrix` is the nature of the validity 
+#'  checks. 
 #'  * `list` : must contain named elements `order` and `struct_array` to be 
 #'  coerced into an R-vine structure (see [rvine_structure()] for more details).
 #' 
@@ -25,7 +24,7 @@
 #'  * `rvine_structure` : allow to coerce an `rvine_structure` into an 
 #'  R-vine matrix (useful e.g. for printing).
 #'  * `rvine_matrix`: similar to `as_rvine_structure` for `rvine_structure`, 
-#'  the main usecase is to re-check an object via `validate = TRUE`.
+#'  the main use case is to re-check an object via `validate = TRUE`.
 #'  * `matrix` : allow to coerce matrices into R-vine 
 #'  matrices (mainly by checking that the matrix defines a valid 
 #'  R-vine, see [rvine_matrix()] for more details). 

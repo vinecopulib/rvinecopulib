@@ -3,7 +3,6 @@
 \name{rosenblatt}
 \alias{rosenblatt}
 \alias{inverse_rosenblatt}
-\alias{inverse_rosenblatt}
 \title{(Inverse) Rosenblatt transform}
 \usage{
 rosenblatt(x, model, cores = 1)

@@ -4,7 +4,6 @@
 \alias{bicop_predict_and_fitted}
 \alias{predict.bicop}
 \alias{fitted.bicop}
-\alias{fitted.bicop}
 \title{Predictions and fitted values for a bivariate copula model}
 \usage{
 \method{predict}{bicop}(object, newdata, what = "pdf", ...)

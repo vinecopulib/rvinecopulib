@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Pseudo-Observations — pseudo_obs • rvinecopulib</title>
+<title>(Inverse) Rosenblatt transform — rosenblatt • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,12 @@
 
 
 
-<meta property="og:title" content="Pseudo-Observations — pseudo_obs" />
+<meta property="og:title" content="(Inverse) Rosenblatt transform — rosenblatt" />
 
-<meta property="og:description" content="Compute the pseudo-observations for the given data matrix." />
+<meta property="og:description" content="The Rosenblatt transform takes data generated from a model and turns it into
+independent uniform variates, The inverse Rosenblatt transform computes
+conditional quantiles and can be used simulate from a stochastic model,
+see Details." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -95,85 +98,85 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Pseudo-Observations</h1>
+    <h1>(Inverse) Rosenblatt transform</h1>
     
-    <div class="hidden name"><code>pseudo_obs.Rd</code></div>
+    <div class="hidden name"><code>rosenblatt.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Compute the pseudo-observations for the given data matrix.</p>
+    <p>The Rosenblatt transform takes data generated from a model and turns it into
+independent uniform variates, The inverse Rosenblatt transform computes
+conditional quantiles and can be used simulate from a stochastic model,
+see <em>Details</em>.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>pseudo_obs</span>(<span class='no'>x</span>, <span class='kw'>ties_method</span> <span class='kw'>=</span> <span class='st'>"average"</span>, <span class='kw'>lower_tail</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+    <pre class="usage"><span class='fu'>rosenblatt</span>(<span class='no'>x</span>, <span class='no'>model</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>)
+
+<span class='fu'>inverse_rosenblatt</span>(<span class='no'>u</span>, <span class='no'>model</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>vector or matrix random variates to be converted (column wise) to
-pseudo-observations.</p></td>
+      <td><p>matrix of evaluation points; must be in \((0, 1)^d\) for copula
+models.</p></td>
     </tr>
     <tr>
-      <th>ties_method</th>
-      <td><p>similar to <code>ties.method</code> of <code>rank()</code> (only <code>"average"</code>,
-<code>"first"</code> and <code>"random"</code> currently available).</p></td>
+      <th>model</th>
+      <td><p>a model object; classes currently supported are
+<code><a href='bicop.html'>bicop_dist()</a></code>, <code><a href='vinecop.html'>vinecop_dist()</a></code>, and <code><a href='vine.html'>vine_dist()</a></code>.</p></td>
     </tr>
     <tr>
-      <th>lower_tail</th>
-      <td><p><code>logical</code> which, if `FALSE``, returns the pseudo-observations
-when applying the empirical marginal survival functions.</p></td>
+      <th>cores</th>
+      <td><p>if <code>&gt;1</code>, computation is parallelized over <code>cores</code> batches (rows
+of <code>u</code>).</p></td>
+    </tr>
+    <tr>
+      <th>u</th>
+      <td><p>matrix of evaluation points; must be in \((0, 1)^d\).</p></td>
     </tr>
     </table>
     
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>a vector of matrix of the same dimension as the input containing the
-pseudo-observations.</p>
-    
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Given <code>n</code> realizations \(x_i=(x_{i1}, \ldots,x_{id})\),
-\(i \in \left\lbrace 1, \ldots,n \right\rbrace \)
-of a random vector <code>X</code>, the pseudo-observations are defined via
-\(u_{ij}=r_{ij}/(n+1)\) for \(i \in \left\lbrace 1, \ldots,n \right\rbrace \)
-and \(j \in \left\lbrace 1, \ldots,d \right\rbrace \), where
-\(r_{ij}\) denotes the rank of \(x_{ij}\) among all \(x_{kj}\),
-\(k \in \left\lbrace 1, \ldots,n \right\rbrace \).</p>
-<p>The pseudo-observations can thus also be computed by component-wise applying
-the empirical distribution functions to the data and scaling the result by
-\(n/(n+1)\). This asymptotically negligible scaling factor is used to force the
-variates to fall inside the open unit hypercube, for example, to avoid
-problems with density evaluation at the boundaries.</p>
-<p>When <code>lower_tail = FALSE</code>, then <code>pseudo_obs()</code> simply returns <code>1 - pseudo_obs()</code>.</p>
+    <p>The Rosenblatt transform (Rosenblatt, 1952) \(U = T(V)\) of a random vector
+\(V = (V_1,\ldots,V_d) ~ F\) is defined as
+$$ 
+  U_1= F(V_1), U_{2} = F(V_{2}|V_1), \ldots, U_d =F(V_d|V_1,\ldots,V_{d-1}), 
+$$
+where \(F(v_k|v_1,\ldots,v_{k-1})\) is the conditional distribution of
+\(V_k\) given \(V_1 \ldots, V_{k-1}, k = 2,\ldots,d\). The vector \(U\)
+are then independent standard uniform variables. The inverse operation
+$$ 
+  V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}), 
+$$
+can can be used to simulate from a distribution. For any copula \(F\), if
+\(U\) is a vector of independent random variables, \(V = T^{-1}(U)\) has
+distribution \(F\).</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># pseudo-observations for a vector</span>
-<span class='fu'>pseudo_obs</span>(<span class='fu'>rnorm</span>(<span class='fl'>10</span>))</div><div class='output co'>#&gt;  [1] 0.54545455 0.09090909 0.27272727 0.63636364 0.72727273 0.81818182
-#&gt;  [7] 0.45454545 0.18181818 0.90909091 0.36363636</div><div class='input'>
-<span class='co'># pseudo-observations for a matrix</span>
-<span class='fu'>pseudo_obs</span>(<span class='fu'>cbind</span>(<span class='fu'>rnorm</span>(<span class='fl'>10</span>), <span class='fu'>rnorm</span>(<span class='fl'>10</span>)))</div><div class='output co'>#&gt;             [,1]       [,2]
-#&gt;  [1,] 0.90909091 0.27272727
-#&gt;  [2,] 0.45454545 0.72727273
-#&gt;  [3,] 0.36363636 0.81818182
-#&gt;  [4,] 0.63636364 0.18181818
-#&gt;  [5,] 0.27272727 0.09090909
-#&gt;  [6,] 0.54545455 0.36363636
-#&gt;  [7,] 0.09090909 0.63636364
-#&gt;  [8,] 0.18181818 0.54545455
-#&gt;  [9,] 0.72727273 0.45454545
-#&gt; [10,] 0.81818182 0.90909091</div></pre>
+    <pre class="examples"><div class='input'><span class='co'># simulate data with some dependence</span>
+<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'>replicate</span>(<span class='fl'>3</span>, <span class='fu'>rnorm</span>(<span class='fl'>200</span>))
+<span class='no'>x</span>[, <span class='fl'>2</span>:<span class='fl'>3</span>] <span class='kw'>&lt;-</span> <span class='no'>x</span>[, <span class='fl'>2</span>:<span class='fl'>3</span>] + <span class='no'>x</span>[, <span class='fl'>1</span>]
+<span class='fu'>pairs</span>(<span class='no'>x</span>)</div><div class='img'><img src='rosenblatt-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='co'># estimate a vine distribution model</span>
+<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vine.html'>vine</a></span>(<span class='no'>x</span>, <span class='kw'>copula_controls</span> <span class='kw'>=</span> <span class='fu'>list</span>(<span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"par"</span>))
+
+<span class='co'># transform into independent uniforms</span>
+<span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>rosenblatt</span>(<span class='no'>x</span>, <span class='no'>fit</span>)
+<span class='fu'>pairs</span>(<span class='no'>u</span>)</div><div class='img'><img src='rosenblatt-2.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='co'># inversion</span>
+<span class='fu'>pairs</span>(<span class='fu'>inverse_rosenblatt</span>(<span class='no'>u</span>, <span class='no'>fit</span>))</div><div class='img'><img src='rosenblatt-3.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
       
-      <li><a href="#value">Value</a></li>
-
       <li><a href="#details">Details</a></li>
       
       <li><a href="#examples">Examples</a></li>

@@ -3,13 +3,12 @@
 \name{bicop}
 \alias{bicop}
 \alias{bicop_dist}
-\alias{bicop_dist}
 \title{Bivariate copula models}
 \usage{
 bicop(data, family_set = "all", par_method = "mle",
   nonpar_method = "quadratic", mult = 1, selcrit = "bic",
-  weights = numeric(), psi0 = 0.9, presel = TRUE, keep_data = FALSE,
-  cores = 1)
+  weights = numeric(), psi0 = 0.9, presel = TRUE,
+  keep_data = FALSE, cores = 1)
 
 bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
 }

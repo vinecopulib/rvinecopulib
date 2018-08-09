@@ -5,7 +5,6 @@
 \alias{rvine_matrix}
 \alias{is.rvine_structure}
 \alias{is.rvine_matrix}
-\alias{rvine_matrix}
 \title{R-vine structure}
 \usage{
 rvine_structure(order, struct_array, is_natural_order = TRUE)

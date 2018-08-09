@@ -18,8 +18,8 @@
 #' The functions are based on [dvinecop()], [pvinecop()] and [rvinecop()] for 
 #' [vinecop] objects, and either [kde1d::dkde1d()], [kde1d::pkde1d()] and 
 #' [kde1d::qkde1d()] for estimated vines (i.e., output of [vine()]), or the 
-#' standard *d/p/q-xxx* from [stats::Distributions] for customly created vines 
-#' (i.e., output of [vine_dist()])
+#' standard *d/p/q-xxx* from [stats::Distributions] for custom vines 
+#' (i.e., output of [vine_dist()]).
 #' @return 
 #' `dvine()` gives the density, `pvine()` gives the distribution function, 
 #' and `rvine()` generates random deviates.

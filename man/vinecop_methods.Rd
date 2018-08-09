@@ -8,8 +8,6 @@
 \alias{dvinecop_dist}
 \alias{pvinecop_dist}
 \alias{rvinecop_dist}
-\alias{pvinecop}
-\alias{rvinecop}
 \title{Vine copula distributions}
 \usage{
 dvinecop(u, vinecop, cores = 1)

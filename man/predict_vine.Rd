@@ -4,13 +4,13 @@
 \alias{vine_predict_and_fitted}
 \alias{predict.vine}
 \alias{fitted.vine}
-\alias{fitted.vine}
 \title{Predictions and fitted values for a vine copula model}
 \usage{
 \method{predict}{vine}(object, newdata, what = "pdf", n_mc = 10^4,
   cores = 1, ...)
 
-\method{fitted}{vine}(object, what = "pdf", n_mc = 10^4, cores = 1, ...)
+\method{fitted}{vine}(object, what = "pdf", n_mc = 10^4, cores = 1,
+  ...)
 }
 \arguments{
 \item{object}{a \code{vine} object.}

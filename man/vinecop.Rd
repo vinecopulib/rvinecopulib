@@ -3,7 +3,6 @@
 \name{vinecop}
 \alias{vinecop}
 \alias{vinecop_dist}
-\alias{vinecop_dist}
 \title{Vine copula models}
 \usage{
 vinecop(data, family_set = "all", structure = NA, par_method = "mle",
@@ -24,11 +23,8 @@ additional options.}
 \item{structure}{an \code{rvine_structure} object, namely a compressed
 representation of the vine structure, or an object that can be coerced
 into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
-The dimension must be \code{length(pair_copulas[[1]]) + 1}; for [vinecop()],
-\code{structure = NA} performs automatic structure selection.
-
-[[1]: R:[1
-[vinecop()]: R:vinecop()}
+The dimension must be \code{length(pair_copulas[[1]]) + 1}; for \code{\link[=vinecop]{vinecop()}},
+\code{structure = NA} performs automatic structure selection.}
 
 \item{par_method}{the estimation method for parametric models, either \code{"mle"}
 for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
@@ -108,13 +104,13 @@ to fit the model.
 Automated fitting or creation of custom vine copula models
 }
 \details{
-\code{vinecop_dist()} creates a vine copula by specifying a nested list of
-\code{bicop_dist} objects and a quadratic structure matrix.
+\code{\link[=vinecop_dist]{vinecop_dist()}} creates a vine copula by specifying a nested list of
+\code{\link[=bicop_dist]{bicop_dist()}} objects and a quadratic structure matrix.
 
-\code{vinecop()} provides automated fitting for vine copula models.
+\code{\link[=vinecop]{vinecop()}} provides automated fitting for vine copula models.
 The function inherits the parameters of \code{\link[=bicop]{bicop()}}.
-Optionally, a quadratic \code{matrix} can be used as
-input to pre-specify the vine structure. \code{tree_crit} describes the
+Optionally, an \code{\link[=rvine_structure]{rvine_structure()}} or \code{\link[=rvine_matrix]{rvine_matrix()}} can be used as
+input to specify the vine structure. \code{tree_crit} describes the
 criterion for tree selection, one of \code{"tau"}, \code{"rho"}, \code{"hoeffd"} for
 Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
 \code{threshold} allows to threshold the \code{tree_crit} and \code{trunc_lvl} to truncate
