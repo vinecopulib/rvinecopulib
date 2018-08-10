@@ -243,7 +243,6 @@ TriangularArray<size_t> struct_array_wrap(const Rcpp::List& struct_array_r,
 Rcpp::List struct_array_wrap(const TriangularArray<size_t>& struct_array)
 {
     size_t d = struct_array.get_dim();
-    size_t trunc_lvl = struct_array.get_trunc_lvl();
     
     Rcpp::List struct_array_r(d - 1);
     for (size_t i = 0; i < d - 1; i++) {
