@@ -568,7 +568,7 @@ inline double Vinecop::get_bic() const
     if (std::isnan(loglik_)) {
         throw std::runtime_error("copula has not been fitted from data ");
     }
-    return -2 * loglik_ + calculate_npars() * log(nobs_);;
+    return -2 * loglik_ + calculate_npars() * std::log(nobs_);;
 }
 
 //! extracts the log-likelihood (throws an error if model has not been 
