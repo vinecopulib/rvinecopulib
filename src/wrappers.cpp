@@ -301,7 +301,7 @@ std::vector<std::vector<Bicop>> pair_copulas_wrap(const Rcpp::List& pair_copulas
     Rcpp::List tree_pcs;
     for (size_t t = 0; t < trunc_lvl; ++t) {
         tree_pcs = pair_copulas_r[t];
-        if (tree_pcs.size() != d - 1 - t) {
+        if (static_cast<size_t>(tree_pcs.size()) != d - 1 - t) {
             throw std::runtime_error("length(pair_copulas[[t]]) must be d-t");
         }
         for(size_t e = 0; e < d - 1 - t; ++e) {
