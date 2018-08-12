@@ -18,7 +18,7 @@ namespace tools_optimization {
 //! @param lower_bounds
 //! @param upper_bounds
 //! @param objective The optimizer's objective function
-inline Optimizer::Optimizer(unsigned int n_parameters,
+inline Optimizer::Optimizer(size_t n_parameters,
                             const Eigen::MatrixXd &lower_bounds,
                             const Eigen::MatrixXd &upper_bounds)
 {
@@ -171,7 +171,7 @@ inline Eigen::VectorXd Optimizer::optimize(Eigen::VectorXd initial_parameters,
                                            objective,
                                            void *data)
 {
-    if (initial_parameters.size() != n_parameters_) {
+    if (static_cast<size_t>(initial_parameters.size()) != n_parameters_) {
         throw std::runtime_error("initial_parameters.size() should be n_parameters_.");
     }
     ParBicopOptData *newdata = static_cast<ParBicopOptData*>(data);
