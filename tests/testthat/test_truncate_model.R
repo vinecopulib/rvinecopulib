@@ -8,7 +8,7 @@ test_that("works with rvine_structure", {
     expect_equal(unname(dim(struct)), c(3, 1))
     expect_equal(struct$order, 1:3)
     expect_length(struct$struct_array[[1]], 1)
-    expect_identical(struct, truncate_model(struct, 2))
+    expect_warning(expect_identical(struct, truncate_model(struct, 2)))
     expect_error(truncate_model(struct, 7))
 })
 
@@ -34,7 +34,7 @@ test_that("works with vinecop objects", {
     expect_equal(unname(dim(vc_trunc)), c(4, 1))
     expect_equal(vc_trunc$pair_copulas, vc$pair_copulas[1])
     expect_length(vc_trunc$structure$struct_array[[1]], 1)
-    expect_identical(vc_trunc, truncate_model(vc_trunc, 2))
+    expect_warning(expect_identical(vc_trunc, truncate_model(vc_trunc, 2)))
 })
 
 test_that("works with vine objects", {
@@ -47,5 +47,5 @@ test_that("works with vine objects", {
     expect_equal(unname(dim(vd_trunc)), c(3, 1))
     expect_equal(vd_trunc$copula$pair_copulas, vd$copula$pair_copulas[1])
     expect_length(vd_trunc$copula$structure$struct_array[[1]], 1)
-    expect_identical(vd_trunc, truncate_model(vd_trunc, 2))
+    expect_warning(expect_identical(vd_trunc, truncate_model(vd_trunc, 2)))
 })

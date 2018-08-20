@@ -29,9 +29,11 @@ test_that("works with structure", {
     expect_silent(fit <- vinecop(u, structure = matrix(c(1:2, 1:0), 2, 2)))
 })
 
-test_that("runs in parallel", {
-    expect_silent(fit <- vinecop(u, cores = 2))
-})
+if (Sys.info()['sysname'] != "SunOS") {
+    test_that("runs in parallel", {
+        expect_silent(fit <- vinecop(u, cores = 2))
+    })   
+}
 
 test_that("S3 generics work", {
     expect_equal(predict(fit, u), fitted(fit_with_data))

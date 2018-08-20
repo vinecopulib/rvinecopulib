@@ -59,7 +59,7 @@ private:
 class Optimizer
 {
 public:
-    Optimizer(unsigned int n_parameters,
+    Optimizer(size_t n_parameters,
               const Eigen::MatrixXd &lower_bounds,
               const Eigen::MatrixXd &upper_bounds);
 
@@ -73,7 +73,7 @@ public:
                              void *f_data);
 
 private:
-    unsigned int n_parameters_;
+    size_t n_parameters_;
     BobyqaControls controls_;
     Eigen::MatrixXd lb_;
     Eigen::MatrixXd ub_;
