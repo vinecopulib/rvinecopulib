@@ -1,4 +1,4 @@
-# rvinecopulib 0.3.0.1.1 (August 10, 2018)
+# rvinecopulib 0.3.0.1.1 (August 22, 2018)
 
 BUG FIXES
 
