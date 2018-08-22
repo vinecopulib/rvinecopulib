@@ -1,3 +1,11 @@
+# rvinecopulib 0.3.0.1.1 (August 22, 2018)
+
+BUG FIXES
+
+   * fix non-portable use of `log()` in C++ code (#147).
+   
+   * remove parallelized unit test to avoid segfault on Solaris (#147).
+
 # rvinecopulib 0.3.0.1.0 (August 9, 2018)
 
 Release following the updates of vinecopulib to 0.3.0, see 

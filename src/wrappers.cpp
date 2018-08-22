@@ -243,7 +243,6 @@ TriangularArray<size_t> struct_array_wrap(const Rcpp::List& struct_array_r,
 Rcpp::List struct_array_wrap(const TriangularArray<size_t>& struct_array)
 {
     size_t d = struct_array.get_dim();
-    size_t trunc_lvl = struct_array.get_trunc_lvl();
     
     Rcpp::List struct_array_r(d - 1);
     for (size_t i = 0; i < d - 1; i++) {
@@ -302,7 +301,7 @@ std::vector<std::vector<Bicop>> pair_copulas_wrap(const Rcpp::List& pair_copulas
     Rcpp::List tree_pcs;
     for (size_t t = 0; t < trunc_lvl; ++t) {
         tree_pcs = pair_copulas_r[t];
-        if (tree_pcs.size() != d - 1 - t) {
+        if (static_cast<size_t>(tree_pcs.size()) != d - 1 - t) {
             throw std::runtime_error("length(pair_copulas[[t]]) must be d-t");
         }
         for(size_t e = 0; e < d - 1 - t; ++e) {
