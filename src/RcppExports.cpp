@@ -169,6 +169,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rvine_structure_cpp
+Rcpp::List rvine_structure_cpp(const Rcpp::List& rvine_structure_r, bool check, bool is_natural_order);
+RcppExport SEXP _rvinecopulib_rvine_structure_cpp(SEXP rvine_structure_rSEXP, SEXP checkSEXP, SEXP is_natural_orderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type rvine_structure_r(rvine_structure_rSEXP);
+    Rcpp::traits::input_parameter< bool >::type check(checkSEXP);
+    Rcpp::traits::input_parameter< bool >::type is_natural_order(is_natural_orderSEXP);
+    rcpp_result_gen = Rcpp::wrap(rvine_structure_cpp(rvine_structure_r, check, is_natural_order));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rvine_structure_check_cpp
 void rvine_structure_check_cpp(const Rcpp::List& rvine_struct, bool is_natural_order);
 RcppExport SEXP _rvinecopulib_rvine_structure_check_cpp(SEXP rvine_structSEXP, SEXP is_natural_orderSEXP) {
@@ -339,6 +352,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_bicop_loglik_cpp", (DL_FUNC) &_rvinecopulib_bicop_loglik_cpp, 2},
     {"_rvinecopulib_bicop_par_to_tau_cpp", (DL_FUNC) &_rvinecopulib_bicop_par_to_tau_cpp, 1},
     {"_rvinecopulib_bicop_tau_to_par_cpp", (DL_FUNC) &_rvinecopulib_bicop_tau_to_par_cpp, 2},
+    {"_rvinecopulib_rvine_structure_cpp", (DL_FUNC) &_rvinecopulib_rvine_structure_cpp, 3},
     {"_rvinecopulib_rvine_structure_check_cpp", (DL_FUNC) &_rvinecopulib_rvine_structure_check_cpp, 2},
     {"_rvinecopulib_rvine_matrix_check_cpp", (DL_FUNC) &_rvinecopulib_rvine_matrix_check_cpp, 1},
     {"_rvinecopulib_vinecop_check_cpp", (DL_FUNC) &_rvinecopulib_vinecop_check_cpp, 1},

@@ -87,6 +87,8 @@
 #' be compatible with the `order` vector.
 #' @param is_natural_order whether `struct_array` is assumed to be provided 
 #' in natural order already.
+#' @param byrow whether `struct_array` is assumed to be provided 
+#' by column or by row.
 #'
 #' @return Either an `rvine_structure` or an `rvine_matrix`.
 #' @export
@@ -119,7 +121,7 @@
 #' 
 #' @name rvine_structure
 #' @aliases rvine_matrix is.rvine_structure is.rvine_matrix
-rvine_structure <- function(order, struct_array, is_natural_order = TRUE) {
+rvine_structure <- function(order, struct_array, is_natural_order = FALSE, byrow = TRUE) {
     
     # sanity checks and extract dimension/trunc_lvl
     assert_that(is.vector(order) && all(sapply(order, is.count)),
@@ -135,19 +137,21 @@ rvine_structure <- function(order, struct_array, is_natural_order = TRUE) {
                 msg = "The number of elements in struct_array is incompatible 
                 with order.")
     trunc_lvl <- which(dd == length(struct_array))
-    
+
     # create column-wise structure array
-    dd <- c(1, 1 + dd[-(d-1)])
-    struct_array <- lapply(1:(d - 1), function(i) 
-        struct_array[dd[1:min((d - i), trunc_lvl)] + (i - 1)])
+    if (byrow) {
+        dd <- c(1, 1 + dd[-(d-1)])
+        struct_array <- lapply(1:(d - 1), function(i) 
+            struct_array[dd[1:min((d - i), trunc_lvl)] + (i - 1)])
+    }
     
     # create and check output
-    output <- structure(list(order = order, 
-                             struct_array = struct_array,
-                             d = d,
-                             trunc_lvl = trunc_lvl),
-                        class = c("rvine_structure", "list"))
-    validate_rvine_structure(output, is_natural_order)
+    output <- rvine_structure_cpp(list(order = order, 
+                                       struct_array = struct_array,
+                                       d = d,
+                                       trunc_lvl = trunc_lvl), 
+                                  TRUE, is_natural_order)
+    output <- structure(output, class = c("rvine_structure", "list"))
     
     # return output
     output
@@ -171,7 +175,7 @@ rvine_matrix_nocheck <- function(matrix) {
     matrix
 }
 
-validate_rvine_structure <- function(structure, is_natural_order = TRUE) {
+# validate_rvine_structure <- function(structure, is_natural_order = TRUE) {
     assert_that(is.rvine_structure(structure))
     assert_that(is.flag(is_natural_order))
     rvine_structure_check_cpp(structure, is_natural_order)
