@@ -228,7 +228,9 @@ compute_mBICV_penalty <- function(object, psi0) {
     q_m <- c(q_m, rep(0, d - 1 - length(q_m)))
     m_seq <- seq_len(d - 1)
     pen <- object$npars * log(object$nobs)
-    pen - 2 * sum(q_m * log(psi0^m_seq) + (d - 1 - q_m) * log(1 - psi0^m_seq))
+    pen - 2 * sum(
+        q_m * log(psi0^m_seq) + (d - seq_len(d - 1) - q_m) * log(1 - psi0^m_seq)
+    )
 }
 
 #' @export
