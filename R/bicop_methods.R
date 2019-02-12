@@ -262,18 +262,15 @@ print.bicop <- function(x, ...) {
 summary.bicop <- function(object, ...) {
     print.bicop(object, ...)
     cat("nobs =", object$nobs, "  ")
-    if (!is.null(object$dat))
-        info <- bicop_fit_info(object)
-    if (!is.null(object$dat)) {
-        cat("logLik =", round(info$logLik, 2), "  ")
-        cat("npars =", round(info$npars, 2), "  ")
-        cat("AIC =", round(info$AIC, 2), "  ")
-        cat("BIC =", round(info$BIC, 2), "  ")
-        attr(object, "info") <- info
-    } else {
-        cat("(for mor information, fit model with keep_data = TRUE)")
-    }
+    
+    info <- bicop_fit_info(object)
+    cat("logLik =", round(info$logLik, 2), "  ")
+    cat("npars =", round(info$npars, 2), "  ")
+    cat("AIC =", round(info$AIC, 2), "  ")
+    cat("BIC =", round(info$BIC, 2), "  ")
+    attr(object, "info") <- info
     cat("\n")
+    
     invisible(object)
 }
 
