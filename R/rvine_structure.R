@@ -175,7 +175,7 @@ rvine_matrix_nocheck <- function(matrix) {
     matrix
 }
 
-# validate_rvine_structure <- function(structure, is_natural_order = TRUE) {
+validate_rvine_structure <- function(structure, is_natural_order = TRUE) {
     assert_that(is.rvine_structure(structure))
     assert_that(is.flag(is_natural_order))
     rvine_structure_check_cpp(structure, is_natural_order)
