@@ -13,7 +13,9 @@
 #'   * `xmax` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
-#' 
+#' @param keep_data whether the original data should be stored; if you want to 
+#'   store the pseudo-observations used for fitting the copula, use the 
+#'   `copula_controls` argument.
 #' @details
 #' `vine_dist()` creates a vine copula by specifying the margins, a nested list 
 #' of `bicop_dist` objects and a quadratic structure matrix. 
@@ -39,7 +41,7 @@
 #' * `copula_controls`, a `list` with the set of fit controls that was passed 
 #' to [vinecop()] when estimating the copula.
 #' * `data` (optionally, if `keep_data = TRUE` was used), the dataset that was 
-#' passed to [vinecop()].
+#' passed to [vine()].
 #' * `nobs`, an `integer` containing the number of observations that was used 
 #' to fit the model.
 #' 
@@ -95,7 +97,8 @@ vine <- function(data,
                                      threshold = 0, 
                                      keep_data = FALSE,
                                      show_trace = FALSE, 
-                                     cores = 1)) {
+                                     cores = 1),
+                 keep_data = FALSE) {
     
     ## continuous convolution
     data_cc <- cont_conv(data)
@@ -125,17 +128,9 @@ vine <- function(data,
     if (d > 1) {
         ## transform to copula data
         copula_controls$data <- sapply(1:d, function(k) pkde1d(data_cc[, k],
-                                                            vine$margins[[k]]))
-        
-        ## to avoid saving copula data
-        keep_data <- copula_controls$keep_data
-        copula_controls$keep_data <- FALSE
-        
+                                                               vine$margins[[k]]))
         ## estimate the copula
-        vine$copula  <- do.call(vinecop, copula_controls)
-        
-        ## to potentially save the data on the standard scale
-        copula_controls$keep_data <- keep_data
+        vine$copula <- do.call(vinecop, copula_controls)
     }
     vine$copula_controls <- copula_controls[-which(names(copula_controls) == "data")]
     

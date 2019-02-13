@@ -189,7 +189,7 @@ get_vine_dist_margin_summary <- function(vd) {
 #' @rdname predict_vine
 #' @examples
 #' x <- sapply(1:5, function(i) rnorm(50))
-#' fit <- vine(x, copula_controls = list(family_set = "par"))
+#' fit <- vine(x, copula_controls = list(family_set = "par"), keep_data = TRUE)
 #' all.equal(predict(fit, x), fitted(fit))
 predict.vine <- function(object, newdata, what = "pdf", n_mc = 10^4, 
                          cores = 1, ...) {
