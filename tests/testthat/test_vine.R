@@ -56,3 +56,11 @@ test_that("truncation works", {
     expect_silent(rvine(50, fit_truncated))
 })
 
+test_that("margins_controls works", {
+    fit_mult <- vine(u, margins_controls = list(mult = 2))
+    expect_equal(sapply(fit_mult$margins, "[[", "bw"), 
+                 2 / log(6) * sapply(fit$margins, "[[", "bw"))
+    
+    fit_xmin <- vine(abs(u), margins_controls = list(xmin = 0))
+    expect_equal(sapply(fit_xmin$margins, "[[", "xmin"), rep(0, 5))
+})
