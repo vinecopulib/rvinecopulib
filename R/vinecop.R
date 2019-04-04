@@ -116,7 +116,7 @@ vinecop <- function(data, family_set = "all", structure = NA,
     )
     
     # check if families known (w/ partial matching) and expand convenience defs
-    family_set <- process_family_set(family_set)
+    family_set <- process_family_set(family_set, par_method)
     
     ## pre-process input
     data <- if_vec_to_matrix(data)

@@ -27,7 +27,7 @@ family_set_nonparametric <- c(
 )
 
 family_set_itau <- c(
-    "t", family_set_onepar
+    "indep", family_set_onepar, "t"
 )
 
 family_set_all <- unique(
