@@ -7,7 +7,8 @@
 \alias{is.rvine_matrix}
 \title{R-vine structure}
 \usage{
-rvine_structure(order, struct_array, is_natural_order = TRUE)
+rvine_structure(order, struct_array, is_natural_order = FALSE,
+  byrow = TRUE)
 
 rvine_matrix(matrix)
 }
@@ -20,6 +21,9 @@ be compatible with the \code{order} vector.}
 
 \item{is_natural_order}{whether \code{struct_array} is assumed to be provided
 in natural order already.}
+
+\item{byrow}{whether \code{struct_array} is assumed to be provided
+by column or by row.}
 
 \item{matrix}{an R-vine matrix, see \emph{Details}.}
 }
