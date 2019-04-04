@@ -110,7 +110,7 @@ bicop <- function(data, family_set = "all", par_method = "mle",
     
     stopifnot(ncol(data) == 2)
     # check if families known (w/ partial matching) and expand convenience defs
-    family_set <- process_family_set(family_set)
+    family_set <- process_family_set(family_set, par_method)
     
     ## fit and select copula model
     data <- if_vec_to_matrix(data)
