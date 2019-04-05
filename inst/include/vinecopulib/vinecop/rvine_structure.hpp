@@ -1,4 +1,4 @@
-// Copyright © 2018 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -12,26 +12,26 @@
 namespace vinecopulib {
 
 //! R-vine structures
-//! 
+//!
 //! RVineStructure objects encode the tree structure of the vine, i.e. the
 //! conditioned/conditioning variables of each edge. It is represented by a
 //! triangular array. An exemplary array is
 //! ```
-//! 1 1 1 1
-//! 2 2 2 
-//! 3 3 
-//! 4 
+//! 4 4 4 4
+//! 3 3 3
+//! 2 2
+//! 1
 //! ```
 //! which encodes the following pair-copulas:
 //! ```
 //! | tree | edge | pair-copulas   |
 //! |------|------|----------------|
-//! | 0    | 0    | `(4, 1)`       |
-//! |      | 1    | `(3, 1)`       |
-//! |      | 2    | `(2, 1)`       |
-//! | 1    | 0    | `(4, 2; 1)`    |
-//! |      | 1    | `(3, 2; 1)`    |
-//! | 2    | 0    | `(4, 3; 2, 1)` |
+//! | 0    | 0    | `(1, 4)`       |
+//! |      | 1    | `(2, 4)`       |
+//! |      | 2    | `(3, 4)`       |
+//! | 1    | 0    | `(1, 3; 4)`    |
+//! |      | 1    | `(2, 3; 4)`    |
+//! | 2    | 0    | `(1, 2; 3, 4)` |
 //! ```
 //! Denoting by `M[i, j]` the array entry in row `i` and column `j`,
 //! the pair-copula index for edge `e` in tree `t` of a `d` dimensional vine
@@ -55,16 +55,17 @@ namespace vinecopulib {
 //!    `(M[d-j-1, j], {M[0, j], ..., M[t-1, j]})` or
 //!    `(M[t-1, j], {M[d-j-1, j], M[0, j], ..., M[t-2, j]})`.
 //!
-//! An R-vine array is said to be in natural order when the diagonal entries are
-//! \f$ d, \dots, 1 \f$ (from left to right). The exemplary arrray above is 
-//! in natural order. Any R-vine array can be characterized by the diagonal 
-//! entries (called order) and the entries below the diagonal of the corresponding
-//! R-vine array in natural order. Since most algorithms work with the structure
-//! in natural order, this is how RVineStructure stores the structure internally.
+//! An R-vine array is said to be in natural order when the anti-diagonal
+//! entries are \f$ 1, \dots, d \f$ (from left to right). The exemplary arrray
+//! above is in natural order. Any R-vine array can be characterized by the
+//! diagonal entries (called order) and the entries below the diagonal of the
+//! corresponding R-vine array in natural order. Since most algorithms work
+//! with the structure in natural order, this is how RVineStructure stores the
+//! structure internally.
 class RVineStructure {
 public:
     RVineStructure() {}
-    
+
     RVineStructure(
         const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& mat,
         bool check = true);
@@ -82,14 +83,16 @@ public:
     size_t get_trunc_lvl() const;
     std::vector<size_t> get_order() const;
     TriangularArray<size_t> get_struct_array() const;
-    TriangularArray<size_t> get_max_array() const;
+    TriangularArray<size_t> get_min_array() const;
     TriangularArray<size_t> get_needed_hfunc1() const;
     TriangularArray<size_t> get_needed_hfunc2() const;
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
 
     size_t struct_array(size_t tree, size_t edge) const;
-    size_t max_array(size_t tree, size_t edge) const;
+    size_t min_array(size_t tree, size_t edge) const;
 
+    void truncate(size_t trunc_lvl);
+    std::string str() const;
 private:
 
     size_t find_trunc_lvl(
@@ -101,7 +104,7 @@ private:
 
     TriangularArray<size_t> to_natural_order() const;
     TriangularArray<size_t> compute_dvine_struct_array() const;
-    TriangularArray<size_t> compute_max_array() const;
+    TriangularArray<size_t> compute_min_array() const;
     TriangularArray<size_t> compute_needed_hfunc1() const;
     TriangularArray<size_t> compute_needed_hfunc2() const;
 
@@ -118,10 +121,12 @@ private:
     size_t d_;
     size_t trunc_lvl_;
     TriangularArray<size_t> struct_array_;
-    TriangularArray<size_t> max_array_;
+    TriangularArray<size_t> min_array_;
     TriangularArray<size_t> needed_hfunc1_;
     TriangularArray<size_t> needed_hfunc2_;
 };
+
+std::ostream& operator<<(std::ostream& os, const RVineStructure& rvs);
 
 }
 

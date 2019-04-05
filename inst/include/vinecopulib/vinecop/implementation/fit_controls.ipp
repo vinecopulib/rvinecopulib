@@ -1,4 +1,4 @@
-// Copyright © 2018 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -12,10 +12,10 @@ namespace vinecopulib {
 //! creates default controls for fitting vine copula models.
 inline FitControlsVinecop::FitControlsVinecop() : FitControlsBicop()
 {
-    truncation_level_ = std::numeric_limits<int>::max();
+    trunc_lvl_ = std::numeric_limits<int>::max();
     threshold_ = 0.0;
     tree_criterion_ = "tau";
-    select_truncation_level_ = false;
+    select_trunc_lvl_ = false;
     select_threshold_ = false;
     show_trace_ = false;
 }
@@ -30,7 +30,7 @@ inline FitControlsVinecop::FitControlsVinecop() : FitControlsBicop()
 //!     `"linear"`, `"quadratic"`.
 //! @param nonparametric_mult a factor with which the smoothing parameters
 //!     are multiplied.
-//! @param truncation_level for truncated vines.
+//! @param trunc_lvl truncation level for truncated vines.
 //! @param tree_criterion the criterion for selecting the maximum spanning
 //!     tree ("tau", "hoeffd", "rho", and "mcor" implemented so far).
 //! @param threshold for thresholded vines (0 = no threshold).
@@ -41,7 +41,7 @@ inline FitControlsVinecop::FitControlsVinecop() : FitControlsBicop()
 //!     non-independence.
 //! @param preselect_families whether to exclude families before fitting
 //!     based on symmetry properties of the data.
-//! @param select_truncation_level whether the truncation shall be selected
+//! @param select_trunc_lvl whether the truncation shall be selected
 //!     automatically.
 //! @param select_threshold whether the threshold parameter shall be
 //!     selected automatically.
@@ -54,14 +54,14 @@ inline FitControlsVinecop::FitControlsVinecop(
     std::string parametric_method,
     std::string nonparametric_method,
     double nonparametric_mult,
-    size_t truncation_level,
+    size_t trunc_lvl,
     std::string tree_criterion,
     double threshold,
     std::string selection_criterion,
     const Eigen::VectorXd& weights,
     double psi0,
     bool preselect_families,
-    bool select_truncation_level,
+    bool select_trunc_lvl,
     bool select_threshold,
     bool show_trace,
     size_t num_threads) :
@@ -74,22 +74,22 @@ inline FitControlsVinecop::FitControlsVinecop(
                      psi0,
                      preselect_families)
 {
-    set_truncation_level(truncation_level);
+    set_trunc_lvl(trunc_lvl);
     set_tree_criterion(tree_criterion);
     set_threshold(threshold);
-    set_select_truncation_level(select_truncation_level);
+    set_select_trunc_lvl(select_trunc_lvl);
     set_select_threshold(select_threshold);
     set_show_trace(show_trace);
     set_num_threads(num_threads);
 }
 
 //! creates custom controls for fitting vine copula models.
-//! @param truncation_level for truncated vines.
+//! @param trunc_lvl truncation level for truncated vines.
 //! @param tree_criterion the criterion for selecting the maximum spanning
 //!     tree ("tau", "hoeffd" and "rho" implemented so far).
 //! @param threshold for thresholded vines (0 = no threshold).
 //! @param show_trace whether to show a trace of the building progress.
-//! @param select_truncation_level whether the truncation shall be selected
+//! @param select_trunc_lvl whether the truncation shall be selected
 //!     automatically.
 //! @param select_threshold whether the threshold parameter shall be
 //!     selected automatically.
@@ -98,19 +98,19 @@ inline FitControlsVinecop::FitControlsVinecop(
 //!     pair copulas within a tree; never uses more than the number returned
 //!     by `std::thread::hardware_concurrency()``.
 inline FitControlsVinecop::FitControlsVinecop(const FitControlsBicop &controls,
-                                              size_t truncation_level,
+                                              size_t trunc_lvl,
                                               std::string tree_criterion,
                                               double threshold,
-                                              bool select_truncation_level,
+                                              bool select_trunc_lvl,
                                               bool select_threshold,
                                               bool show_trace,
                                               size_t num_threads) :
     FitControlsBicop(controls)
 {
-    set_truncation_level(truncation_level);
+    set_trunc_lvl(trunc_lvl);
     set_tree_criterion(tree_criterion);
     set_threshold(threshold);
-    set_select_truncation_level(select_truncation_level);
+    set_select_trunc_lvl(select_trunc_lvl);
     set_select_threshold(select_threshold);
     set_show_trace(show_trace);
     set_num_threads(num_threads);
@@ -140,7 +140,12 @@ inline void FitControlsVinecop::check_threshold(double threshold)
 //! @{
 inline size_t FitControlsVinecop::get_truncation_level() const
 {
-    return truncation_level_;
+    return trunc_lvl_;
+}
+
+inline size_t FitControlsVinecop::get_trunc_lvl() const
+{
+    return trunc_lvl_;
 }
 
 inline std::string FitControlsVinecop::get_tree_criterion() const
@@ -160,7 +165,12 @@ inline bool FitControlsVinecop::get_show_trace() const
 
 inline bool FitControlsVinecop::get_select_truncation_level() const
 {
-    return select_truncation_level_;
+    return select_trunc_lvl_;
+}
+
+inline bool FitControlsVinecop::get_select_trunc_lvl() const
+{
+    return select_trunc_lvl_;
 }
 
 inline bool FitControlsVinecop::get_select_threshold() const
@@ -170,7 +180,7 @@ inline bool FitControlsVinecop::get_select_threshold() const
 
 inline bool FitControlsVinecop::needs_sparse_select() const
 {
-    return (select_truncation_level_ | select_threshold_);
+    return (select_trunc_lvl_ | select_threshold_);
 }
 
 inline FitControlsBicop FitControlsVinecop::get_fit_controls_bicop() const
@@ -185,9 +195,13 @@ inline FitControlsBicop FitControlsVinecop::get_fit_controls_bicop() const
     return controls_bicop;
 }
 
-inline void FitControlsVinecop::set_truncation_level(size_t truncation_level)
+inline void FitControlsVinecop::set_trunc_lvl(size_t trunc_lvl)
 {
-    truncation_level_ = truncation_level;
+    if (trunc_lvl == 0) { // select level (likely passed from R)
+        trunc_lvl_ = std::numeric_limits<size_t>::max();
+    } else {
+        trunc_lvl_ = trunc_lvl;
+    }
 }
 
 inline void FitControlsVinecop::set_tree_criterion(std::string tree_criterion)
@@ -210,7 +224,13 @@ inline void FitControlsVinecop::set_show_trace(bool show_trace)
 inline void
 FitControlsVinecop::set_select_truncation_level(bool select_truncation_level)
 {
-    select_truncation_level_ = select_truncation_level;
+    select_trunc_lvl_ = select_truncation_level;
+}
+
+inline void
+FitControlsVinecop::set_select_trunc_lvl(bool select_trunc_lvl)
+{
+    select_trunc_lvl_ = select_trunc_lvl;
 }
 
 inline void FitControlsVinecop::set_select_threshold(bool select_threshold)
