@@ -96,7 +96,7 @@ Rcpp::List pair_copulas_wrap(std::vector<std::vector<Bicop>> pair_copulas,
                              size_t d,
                              bool is_fitted);
 
-Vinecop vinecop_wrap(const Rcpp::List& vinecop_r);
+Vinecop vinecop_wrap(const Rcpp::List& vinecop_r, bool check = FALSE);
 
 
 Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp, bool is_fitted = FALSE);
