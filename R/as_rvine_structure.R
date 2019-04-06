@@ -39,21 +39,21 @@
 #' `rvine_matrix` (see [rvine_structure()] or [rvine_matrix()]).
 #' @examples
 #' # R-vine structures can be constructed from the order vector and struct_array
-#' rvine_structure(order = 4:1, struct_array = list(
-#'   c(1, 1, 1),
-#'   c(2, 2),
-#'   3
+#' rvine_structure(order = 1:4, struct_array = list(
+#'   c(4, 4, 4),
+#'   c(3, 3),
+#'   2
 #' ))
 #' 
 #' # ... or a similar list can be coerced into an R-vine structure
-#' as_rvine_structure(list(order = 4:1, struct_array = list(
-#'   c(1, 1, 1),
-#'   c(2, 2),
-#'   3
+#' as_rvine_structure(list(order = 1:4, struct_array = list(
+#'   c(4, 4, 4),
+#'   c(3, 3),
+#'   2
 #' )))
 #' 
 #' # similarly, standard matrices can be coerced into R-vine structures
-#' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
+#' mat <- matrix(c(4, 3, 2, 1, 4, 3, 2, 0, 4, 3, 0, 0, 4, 0, 0, 0), 4, 4)
 #' as_rvine_structure(mat)
 #' 
 #' # or truncate and construct the structure
@@ -113,7 +113,7 @@ as_rvine_matrix.rvine_structure <- function(x, ..., validate = FALSE) {
   matrix <- matrix(0, d, d)
 
   # fill output
-  diag(matrix[, d:1]) <- order
+  diag(matrix[d:1, ]) <- order
   for (i in 1:(d - 1)) {
     newcol <- order[x[["struct_array"]][[i]]]
     matrix[1:length(newcol), i] <- newcol
@@ -126,8 +126,9 @@ as_rvine_matrix.rvine_structure <- function(x, ..., validate = FALSE) {
 }
 
 #' @param is_natural_order A flag indicating whether the `struct_array` element
-#' of `x` is assumed to be provided in natural order already (see
-#' *Details*).
+#' of `x` is assumed to be provided in natural order already (a structure is in 
+#' natural order if the anti-diagonal is 1, .., d from bottom left to top 
+#' right).
 #' @param byrow whether the element of the list named `struct_array` 
 #' is assumed to be provided by column or by row.
 #' @export
@@ -181,12 +182,12 @@ as_rvine_structure.rvine_matrix <- function(x, ..., validate = FALSE) {
 
   # compute structure array in natural order
   d <- dim(x)[1]
-  order <- order(diag(x[, d:1]))
+  order <- order(diag(x[d:1, ]))
   struct_array <- lapply(1:(d - 1), function(i) order[x[1:(d - i), i]])
 
   # create and return x
   structure(list(
-    order = diag(x[, d:1]),
+    order = diag(x[d:1, ]),
     struct_array = struct_array,
     d = d,
     trunc_lvl = dim(x)[2]
