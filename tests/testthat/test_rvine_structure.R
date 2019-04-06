@@ -1,7 +1,7 @@
 context("Class 'rvine_structure'")
 
-mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
-mylist <- list(order = 1:4, struct_array = list(c(1, 1, 1), c(2, 2), 3))
+mat <- matrix(c(4, 3, 2, 1, 4, 3, 2, 0, 4, 3, 0, 0, 4, 0, 0, 0), 4, 4)
+mylist <- list(order = 1:4, struct_array = list(c(4, 4, 4), c(3, 3), 2))
 
 test_that("constructor and as/is generics work", {
     expect_silent(rvs <- as_rvine_structure(mylist)) ## calls the constructor
