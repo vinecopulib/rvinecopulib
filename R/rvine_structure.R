@@ -150,6 +150,9 @@ rvine_structure <- function(order, struct_array, is_natural_order = FALSE, byrow
     dd <- c(1, 1 + dd[-(d - 1)])
     struct_array <- lapply(1:(d - 1), function(i)
       struct_array[dd[1:min((d - i), trunc_lvl)] + (i - 1)])
+  } else {
+     struct_array <- lapply(1:(d - 1), function(i)
+      struct_array[1:min((d - i), trunc_lvl) + (i - 1)])
   }
 
   # create and check output
