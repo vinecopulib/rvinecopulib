@@ -48,8 +48,9 @@ know that you already have a valid structure and you want to save some time,
 or to explicitly enable it if you have a structure that you want to re-check.}
 
 \item{is_natural_order}{A flag indicating whether the \code{struct_array} element
-of \code{x} is assumed to be provided in natural order already (see
-\emph{Details}).}
+of \code{x} is assumed to be provided in natural order already (a structure is in
+natural order if the anti-diagonal is 1, .., d from bottom left to top
+right).}
 
 \item{byrow}{whether the element of the list named \code{struct_array}
 is assumed to be provided by column or by row.}
@@ -95,21 +96,21 @@ coerced into an R-vine matrix (see \code{\link[=rvine_structure]{rvine_structure
 }
 \examples{
 # R-vine structures can be constructed from the order vector and struct_array
-rvine_structure(order = 4:1, struct_array = list(
-  c(1, 1, 1),
-  c(2, 2),
-  3
+rvine_structure(order = 1:4, struct_array = list(
+  c(4, 4, 4),
+  c(3, 3),
+  2
 ))
 
 # ... or a similar list can be coerced into an R-vine structure
-as_rvine_structure(list(order = 4:1, struct_array = list(
-  c(1, 1, 1),
-  c(2, 2),
-  3
+as_rvine_structure(list(order = 1:4, struct_array = list(
+  c(4, 4, 4),
+  c(3, 3),
+  2
 )))
 
 # similarly, standard matrices can be coerced into R-vine structures
-mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
+mat <- matrix(c(4, 3, 2, 1, 4, 3, 2, 0, 4, 3, 0, 0, 4, 0, 0, 0), 4, 4)
 as_rvine_structure(mat)
 
 # or truncate and construct the structure

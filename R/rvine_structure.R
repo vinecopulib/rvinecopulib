@@ -8,21 +8,21 @@
 #' with a notation that differs from the one in the VineCopula package.
 #' An example array is
 #' ```
-#' 1 1 1 1
-#' 2 2 2
-#' 3 3
-#' 4
+#' 4 4 4 4
+#' 3 3 3
+#' 2 2
+#' 1
 #' ```
 #' which encodes the following pair-copulas:
 #'
 #' \tabular{lll}{
 #' tree \tab  edge \tab pair-copulas   \cr
-#' 0    \tab  0    \tab `(4, 1)`       \cr
-#'      \tab  1    \tab `(3, 1)`       \cr
-#'      \tab  2    \tab `(2, 1)`       \cr
-#' 1    \tab  0    \tab `(4, 2; 1)`    \cr
-#'      \tab  1    \tab `(3, 2; 1)`    \cr
-#' 2    \tab  0    \tab `(4, 3; 2, 1)`
+#' 0    \tab  0    \tab `(1, 4)`       \cr
+#'      \tab  1    \tab `(2, 4)`       \cr
+#'      \tab  2    \tab `(3, 4)`       \cr
+#' 1    \tab  0    \tab `(1, 3; 2)`    \cr
+#'      \tab  1    \tab `(2, 3; 4)`    \cr
+#' 2    \tab  0    \tab `(1, 2; 3, 4)`
 #' }
 #'
 #' An R-vine structure can be converted to an R-vine matrix using
@@ -30,10 +30,10 @@
 #' filled with zeros. For instance, the matrix corresponding to the structure
 #' above is:
 #' ```
-#' 1 1 1 1
-#' 2 2 2 0
-#' 3 3 0 0
-#' 4 0 0 0
+#' 4 4 4 4
+#' 3 3 3 0
+#' 2 2 0 0
+#' 1 0 0 0
 #' ```
 #' Similarly, an R-vine matrix can be converted to an R-vine structure using
 #' [as_rvine_structure()].
@@ -50,17 +50,17 @@
 #' which are stored as a triangular array. For instance, the off-diagonal elements
 #' off the structure above are stored as
 #' ```
-#' 1 1 1
-#' 2 2
-#' 3
+#' 4 4 4
+#' 3 3
+#' 2
 #' ```
 #' for the structure above. The reason is that it allows for parsimonious
 #' representations of truncated models. For instance, the 2-truncated model
 #' is represented by the same diagonal and the following truncated triangular
 #' array:
 #' ```
-#' 1 1 1
-#' 2 2
+#' 4 4 4
+#' 3 3
 #' ```
 #'
 #' A valid R-vine structure or matrix must satisfy several conditions which
@@ -86,7 +86,8 @@
 #' represent rows of the r-rvine structure and the number of elements have to
 #' be compatible with the `order` vector.
 #' @param is_natural_order whether `struct_array` is assumed to be provided
-#' in natural order already.
+#' in natural order already (a structure is in natural order if the anti-
+#' diagonal is 1, .., d from bottom left to top right).
 #' @param byrow whether `struct_array` is assumed to be provided
 #' by column or by row.
 #'
@@ -96,14 +97,14 @@
 #' @examples
 #' 
 #' # R-vine structures can be constructed from the order vector and struct_array
-#' rvine_structure(order = 4:1, struct_array = list(
-#'   c(1, 1, 1),
-#'   c(2, 2),
-#'   3
+#' rvine_structure(order = 1:4, struct_array = list(
+#'   c(4, 4, 4),
+#'   c(3, 3),
+#'   2
 #' ))
 #' 
 #' # R-vine matrices can be constructed from standard matrices
-#' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
+#' mat <- matrix(c(4, 3, 2, 1, 4, 3, 2, 0, 4, 3, 0, 0, 4, 0, 0, 0), 4, 4)
 #' rvine_matrix(mat)
 #' 
 #' # coerce to R-vine structure
@@ -114,9 +115,9 @@
 #' rvine_matrix(mat)
 #' 
 #' # or use directly the R-vine structure constructor
-#' rvine_structure(order = 4:1, struct_array = list(
-#'   c(1, 1, 1),
-#'   c(2, 2)
+#' rvine_structure(order = 1:4, struct_array = list(
+#'   c(4, 4, 4),
+#'   c(3, 3)
 #' ))
 #' 
 #' # throws an error
