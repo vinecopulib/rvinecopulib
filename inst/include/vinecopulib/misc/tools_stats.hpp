@@ -1,4 +1,4 @@
-// Copyright © 2018 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -101,10 +101,6 @@ Eigen::MatrixXd to_pseudo_obs(Eigen::MatrixXd x,
 
 double pairwise_mcor(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x,
                      const Eigen::VectorXd &weights = Eigen::VectorXd());
-
-double pairwise_rho(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
-
-double pairwise_hoeffd(const Eigen::Matrix<double, Eigen::Dynamic, 2>& x);
 
 Eigen::MatrixXd dependence_matrix(const Eigen::MatrixXd &x,
                                   const std::string &measure);

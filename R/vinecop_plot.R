@@ -73,7 +73,7 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
     trunc_lvl <- dim(x)[2]
     
     ## sanity checks
-    if (tree != "ALL" && any(tree > trunc_lvl))
+    if (!identical(tree, "ALL") && any(tree > trunc_lvl))
         stop("Selected tree does not exist.")
     if (any(tree == "ALL")) {
         if (d > 5) {

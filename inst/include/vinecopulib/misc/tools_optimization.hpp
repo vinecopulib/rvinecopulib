@@ -1,4 +1,4 @@
-// Copyright © 2018 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -20,7 +20,7 @@ typedef struct
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &U; //!< the data.
     vinecopulib::ParBicop *bicop; //!< a pointer to the bivariate copula to optimize.
     double par0;  //!< main dependence parameter.
-    unsigned int objective_calls; //!< number of evaluations of the objective.
+    size_t objective_calls; //!< number of evaluations of the objective.
     Eigen::VectorXd weights; //!< weights for the observations.
     double objective_min;  //!< final value of the objective function 
 } ParBicopOptData;
