@@ -14,8 +14,6 @@ NEW FEATURES
 
    * refactoring for enhanced extensibility of the class `Vinecop` (vinecopulib #407)
 
-   * add an `str` method to `RVineStructure` (vinecopulib #406) 
-
    * simplify algorithms by reversing definition of natural order (vinecopulib #387)
 
    * improve selection of truncation level (vinecopulib #373)
@@ -24,31 +22,7 @@ NEW FEATURES
 
 BUG FIXES
 
-   * don't strip debug symbols unconditionally on linux (vinecopulib #174)
-
-    * fix triangular array print method (vinecopulib #405)
-
-    * fix potential nan when using Kendall's tau inversion to fit (vinecopulib #403)
-
-    * stabilize clayton pdf close to independence (vinecopulib #402)
-
-    * fix warning-generating typos in the tests (vinecopulib #391)
-
-    * fix deprecated warnings from gtest (vinecopulib #390)
-
-    * initializer list constructor for `VinecopSelector` (vinecopulib #384)
-
-    * fix baseline criterion in `Bicop::select()` (vinecopulib #382)
-
-    * use the `trunc_lvl` of `vine_struct` in `select_families` (vinecopulib #380)
-
-    * fix incompatible size (vinecopulib #378)
-
-    * remove definitions of `pairwise_rho` and `pairwise_hoeffd` (vinecopulib #375)
-
-    * fix windows warnings (vinecopulib #371)
-
-    * use `std::log()` (vinecopulib #370)
+   * don't strip debug symbols unconditionally on linux (#174)
 
 # rvinecopulib 0.3.0.1.1 (August 22, 2018)
 
