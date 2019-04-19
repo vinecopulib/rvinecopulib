@@ -1,3 +1,29 @@
+# rvinecopulib 0.3.1.1.0 (April 19, 2019)
+
+Release following the updates of vinecopulib to 0.3.1, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+NEW FEATURES
+
+   * import vinecopulib 0.3.1 (#171)
+
+   * improve documentation (#168, #170)
+
+   * warning message for wrong family in itau method (#169)
+
+   * refactoring for enhanced extensibility of the class `Vinecop` (vinecopulib #407)
+
+   * simplify algorithms by reversing definition of natural order (vinecopulib #387)
+
+   * improve selection of truncation level (vinecopulib #373)
+
+   * add truncate methods for `TriangularArray`, `RVineStructure` and `Vinecop` (vinecopulib #372)
+
+BUG FIXES
+
+   * don't strip debug symbols unconditionally on linux (#174)
+
 # rvinecopulib 0.3.0.1.1 (August 22, 2018)
 
 BUG FIXES
