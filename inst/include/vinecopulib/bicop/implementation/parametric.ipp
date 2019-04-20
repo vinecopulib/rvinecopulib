@@ -1,4 +1,4 @@
-// Copyright © 2018 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -165,13 +165,15 @@ inline void ParBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
     }
     set_parameters(newpar);
     
+    // loglik has not been computed
     if (npars == 0) {
-        // loglik has not been computed
+        Eigen::MatrixXd log_pdf = pdf(data);
+        log_pdf = log_pdf.array().log();
         if (weights.size() > 0) {
-            set_loglik((pdf(data).array().log() * weights.array()).sum());
-        } else {
-            set_loglik(pdf(data).array().log().sum());
-        }
+            log_pdf = log_pdf.cwiseProduct(weights);
+        }  
+        tools_eigen::remove_nans(log_pdf);
+        set_loglik(log_pdf.sum());
     }
 }
 

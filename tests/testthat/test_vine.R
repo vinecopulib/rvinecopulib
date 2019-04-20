@@ -2,7 +2,7 @@ context("Fitting 'vine' models")
 
 set.seed(5)
 u <- sapply(1:5, function(i) rnorm(30))
-fit <- vine(u, copula_controls = list(family_set = "nonpar"))
+fit <- vine(u, copula_controls = list(family_set = "nonpar"), keep_data = TRUE)
 
 test_that("returns proper 'vine' object", {
     expect_s3_class(fit, "vine")

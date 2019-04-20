@@ -9,7 +9,8 @@ vine(data, margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN,
   bw = NA), copula_controls = list(family_set = "all", structure = NA,
   par_method = "mle", nonpar_method = "constant", mult = 1, selcrit =
   "bic", psi0 = 0.9, presel = TRUE, trunc_lvl = Inf, tree_crit = "tau",
-  threshold = 0, keep_data = FALSE, show_trace = FALSE, cores = 1))
+  threshold = 0, keep_data = FALSE, show_trace = FALSE, cores = 1),
+  keep_data = FALSE)
 
 vine_dist(margins, pair_copulas, structure)
 }
@@ -28,6 +29,10 @@ the number of variables after applying \code{\link[cctools:expand_as_numeric]{cc
 }}
 
 \item{copula_controls}{a list with arguments to be passed to \code{\link[=vinecop]{vinecop()}}.}
+
+\item{keep_data}{whether the original data should be stored; if you want to
+store the pseudo-observations used for fitting the copula, use the
+\code{copula_controls} argument.}
 
 \item{margins}{A list with with each element containing the specification of a
 marginal \link[stats:Distributions]{stats::Distributions}. Each marginal specification
@@ -64,7 +69,7 @@ to \code{\link[kde1d:kde1d]{kde1d::kde1d()}} when estimating the margins.
 \item \code{copula_controls}, a \code{list} with the set of fit controls that was passed
 to \code{\link[=vinecop]{vinecop()}} when estimating the copula.
 \item \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset that was
-passed to \code{\link[=vinecop]{vinecop()}}.
+passed to \code{\link[=vine]{vine()}}.
 \item \code{nobs}, an \code{integer} containing the number of observations that was used
 to fit the model.
 }

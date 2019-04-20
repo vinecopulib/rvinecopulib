@@ -1,4 +1,4 @@
-// Copyright © 2018 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -14,7 +14,7 @@ namespace vinecopulib {
 
 //! @brief Triangular arrays.
 //!
-//! A triangular array behaves like a matrix with the structure 
+//! A triangular array behaves like a matrix with the structure
 //! ```
 //! x x x x x
 //! x x x x
@@ -23,11 +23,11 @@ namespace vinecopulib {
 //! x
 //! ```
 //! and all other elements omitted. This structure appears naturally in the
-//! representation of a vine copula model and related algorithms. Each row 
-//! corresponds to one tree in the vine, starting from the top. In each row 
+//! representation of a vine copula model and related algorithms. Each row
+//! corresponds to one tree in the vine, starting from the top. In each row
 //! (= tree), each column represents an edge in this tree.
-//! 
-//! For truncated vine models the last few rows are omitted. For example, a 
+//!
+//! For truncated vine models the last few rows are omitted. For example, a
 //! 3-truncated version of the above array contains the elements
 //! ```
 //! x x x x x
@@ -35,7 +35,7 @@ namespace vinecopulib {
 //! x x x
 //! ```
 //! Only the elements indicated by `x`s are stored and can be accessed.
-//! 
+//!
 //! The data structure is templated and any type or class can be used to fill
 //! the entries (`x`s) of the triangular array.
 template<typename T>
@@ -52,10 +52,11 @@ public:
     bool operator==(const TriangularArray<T>& rhs) const;
 
     void set_column(size_t column, const std::vector<size_t>& new_col);
+    void truncate(size_t trunc_lvl);
 
     size_t get_trunc_lvl() const;
     size_t get_dim() const;
-    
+
     std::string str() const;
 
 private:
@@ -76,8 +77,8 @@ TriangularArray<T>::TriangularArray(size_t d) : TriangularArray(d, d - 1) {}
 //! @param d the dimension of the vine.
 //! @param trunc_lvl the truncation level.
 template<typename T>
-TriangularArray<T>::TriangularArray(size_t d, size_t trunc_lvl) : 
-    d_(d), 
+TriangularArray<T>::TriangularArray(size_t d, size_t trunc_lvl) :
+    d_(d),
     trunc_lvl_(std::min(d - 1, trunc_lvl))
 {
     if (d < 2)
@@ -103,7 +104,7 @@ T& TriangularArray<T>::operator()(size_t tree, size_t edge)
 //! @param tree the tree level.
 //! @param edge the edge in this tree.
 template<typename T>
-T TriangularArray<T>::operator()(size_t tree, size_t edge) const 
+T TriangularArray<T>::operator()(size_t tree, size_t edge) const
 {
     assert(tree < trunc_lvl_);
     assert(edge < d_ - 1 - tree);
@@ -113,7 +114,7 @@ T TriangularArray<T>::operator()(size_t tree, size_t edge) const
 //! access one column of the trapezoid (writable).
 //! @param column which column to extract.
 template<typename T>
-std::vector<T>& TriangularArray<T>::operator[](size_t column) 
+std::vector<T>& TriangularArray<T>::operator[](size_t column)
 {
     assert(column < d_ - 1);
     return mat_[column];
@@ -122,7 +123,7 @@ std::vector<T>& TriangularArray<T>::operator[](size_t column)
 //! access one column of the trapezoid (non-writable).
 //! @param column which column to extract.
 template<typename T>
-std::vector<T> TriangularArray<T>::operator[](size_t column) const 
+std::vector<T> TriangularArray<T>::operator[](size_t column) const
 {
     assert(column < d_ - 1);
     return mat_[column];
@@ -150,6 +151,21 @@ void TriangularArray<T>::set_column(size_t column,
     mat_[column] = new_col;
 }
 
+//! truncates the trapezoid.
+//! @param trunc_lvl the truncation level.
+//! If the trapezoid is already truncated at a level
+//! less than `trunc_lvl`, the function does nothing.
+template<typename T>
+void TriangularArray<T>::truncate(size_t trunc_lvl)
+{
+    if (trunc_lvl < this->get_trunc_lvl()) {
+        trunc_lvl_ = trunc_lvl;
+        for (size_t column = 0; column < d_ - 1 - trunc_lvl; column++) {
+            mat_[column].resize(trunc_lvl);
+        }
+    }
+}
+
 //! equality operator to compare two TriangularArray objects.
 //! @param right-hand-side of the equality operator.
 template<typename T>
@@ -167,7 +183,7 @@ bool TriangularArray<T>::operator==(const TriangularArray<T>& rhs) const
 
 //! get the truncation level of the underlying vine.
 template<typename T>
-size_t TriangularArray<T>::get_trunc_lvl() const 
+size_t TriangularArray<T>::get_trunc_lvl() const
 {
     return trunc_lvl_;
 }
@@ -194,14 +210,14 @@ std::string TriangularArray<T>::str() const
     return str.str();
 }
 
-} // end of namespace vinecopulib!
-
 //! ostream method for RightTrapezoid, to be used with `std::cout`
 //! @param os an output stream.
-//! @param rvm n triangular array.
+//! @param tri_array n triangular array.
 template<typename T>
-std::ostream& operator<<(std::ostream& os, const vinecopulib::TriangularArray<T>& rvm) 
-{  
-    os << rvm.str();
-    return os;  
-}  
+std::ostream& operator<<(std::ostream& os, const TriangularArray<T>& tri_array)
+{
+    os << tri_array.str();
+    return os;
+}
+
+} // end of namespace vinecopulib!

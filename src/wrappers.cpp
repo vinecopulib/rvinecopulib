@@ -277,6 +277,15 @@ Rcpp::List rvine_structure_wrap(const RVineStructure& rvine_struct)
 
 
 // structure exports
+// [[Rcpp::export()]]
+Rcpp::List rvine_structure_cpp(const Rcpp::List& rvine_structure_r,
+                               bool check,
+                               bool is_natural_order)
+{
+    auto rvine_structure = rvine_structure_wrap(rvine_structure_r, check, 
+                                                is_natural_order);
+    return(rvine_structure_wrap(rvine_structure));
+}
 
 // [[Rcpp::export()]]
 void rvine_structure_check_cpp(const Rcpp::List& rvine_struct,
@@ -327,10 +336,10 @@ Rcpp::List pair_copulas_wrap(std::vector<std::vector<Bicop>> pair_copulas,
     return pair_copulas_r;
 }
 
-Vinecop vinecop_wrap(const Rcpp::List& vinecop_r)
+Vinecop vinecop_wrap(const Rcpp::List& vinecop_r, bool check)
 {
     // omit R-vine matrix check, already done in R
-    auto structure = rvine_structure_wrap(vinecop_r["structure"], false);
+    auto structure = rvine_structure_wrap(vinecop_r["structure"], check);
     
     // extract pair-copulas
     auto pair_copulas = pair_copulas_wrap(vinecop_r["pair_copulas"],
@@ -364,8 +373,9 @@ Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp,
 // vinecop exports
 
 // [[Rcpp::export()]]
-void vinecop_check_cpp(Rcpp::List vinecop_r) {
-    vinecop_wrap(vinecop_r);
+void vinecop_check_cpp(Rcpp::List vinecop_r) 
+{
+    vinecop_wrap(vinecop_r, true);
 }
 
 // [[Rcpp::export()]]

@@ -1,4 +1,4 @@
-// Copyright © 2018 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -78,15 +78,16 @@ typedef std::pair<EdgeIterator, bool> FoundEdge;
 class VinecopSelector
 {
 public:
-    virtual ~VinecopSelector() = 0;
+    VinecopSelector(const Eigen::MatrixXd& data, 
+                    const FitControlsVinecop& controls);
 
     std::vector<std::vector<Bicop>> get_pair_copulas() const;
 
-    RVineStructure get_rvine_matrix() const;
+    RVineStructure get_rvine_structure() const;
 
     static std::vector<std::vector<Bicop>> make_pair_copula_store(
         size_t d,
-        size_t truncation_level);
+        size_t trunc_lvl);
 
     void select_all_trees(const Eigen::MatrixXd &data);
 
@@ -95,9 +96,14 @@ public:
     double get_loglik() const;
 
     double get_threshold() const;
+    
+    size_t get_nobs() const;
+
+    std::vector<VineTree> get_trees() const {return trees_;};
+    std::vector<VineTree> get_trees_opt() const {return trees_opt_;};
 
 protected:
-    void select_tree(size_t t);
+    virtual void select_tree(size_t t);
 
     virtual void finalize(size_t trunc_lvl) = 0;
     
@@ -116,7 +122,7 @@ protected:
     void initialize_new_fit(const Eigen::MatrixXd &data);
 
     void set_current_fit_as_opt(const double& loglik);
-
+    
     
     virtual void add_allowed_edges(VineTree &tree) = 0;
 
@@ -125,21 +131,21 @@ protected:
     ptrdiff_t find_common_neighbor(size_t v0, size_t v1,
                                    const VineTree &tree);
 
+    virtual double compute_fit_id(const EdgeProperties& e);
 
     size_t n_;
     size_t d_;
     FitControlsVinecop controls_;
+    tools_thread::ThreadPool pool_;
+    std::vector<VineTree> trees_;
     RVineStructure vine_struct_;
     std::vector<std::vector<Bicop>> pair_copulas_;
-    std::vector<VineTree> trees_;
     // for sparse selction
     std::vector<VineTree> trees_opt_;
     double loglik_;
     double threshold_;
     double psi0_; // initial prior probability for mbicv
-    std::unique_ptr<tools_thread::ThreadPool> pool_;
 
-private:
     double get_next_threshold(std::vector<double> &thresholded_crits);
 
     // functions for manipulation of trees ----------------
@@ -155,7 +161,7 @@ private:
 
     void remove_vertex_data(VineTree &tree);
 
-    void select_pair_copulas(VineTree &tree,
+    void select_pair_copulas(VineTree &tree, 
                              const VineTree &tree_opt = VineTree());
 
     FoundEdge find_old_fit(double fit_id, const VineTree &old_graph);
@@ -179,7 +185,7 @@ public:
     {
     }
 
-private:
+protected:
     void add_allowed_edges(VineTree &tree);
 
     void finalize(size_t trunc_lvl);
@@ -196,8 +202,7 @@ public:
     {
     }
 
-private:
-
+protected:
     void add_allowed_edges(VineTree &tree);
 
     void finalize(size_t trunc_lvl);

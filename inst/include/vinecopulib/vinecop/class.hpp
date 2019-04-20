@@ -1,4 +1,4 @@
-// Copyright © 2018 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -93,8 +93,10 @@ public:
     int get_rotation(size_t tree, size_t edge) const;
 
     Eigen::MatrixXd get_parameters(size_t tree, size_t edge) const;
-    
+
     double get_tau(size_t tree, size_t edge) const;
+
+    size_t get_trunc_lvl() const;
 
     // Getters for all pair copulas
     std::vector <std::vector<Bicop>> get_all_pair_copulas() const;
@@ -104,7 +106,7 @@ public:
     std::vector <std::vector<int>> get_all_rotations() const;
 
     std::vector <std::vector<Eigen::MatrixXd>> get_all_parameters() const;
-    
+
     std::vector <std::vector<double>> get_all_taus() const;
 
     // Getters for the structure
@@ -117,7 +119,7 @@ public:
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
 
     TriangularArray<size_t> get_struct_array() const;
-    
+
     // getters for fit statistics
     double get_threshold() const;
     double get_loglik() const;
@@ -131,17 +133,17 @@ public:
     Eigen::VectorXd pdf(const Eigen::MatrixXd &u,
                         const size_t num_threads = 1) const;
 
-    Eigen::VectorXd cdf(const Eigen::MatrixXd &u, 
+    Eigen::VectorXd cdf(const Eigen::MatrixXd &u,
                         const size_t N = 1e4,
                         const size_t num_threads = 1,
                         std::vector<int> seeds = std::vector<int>()) const;
 
-    Eigen::MatrixXd simulate(const size_t n, 
-                             const bool qrng = false, 
+    Eigen::MatrixXd simulate(const size_t n,
+                             const bool qrng = false,
                              const size_t num_threads = 1,
                              const std::vector<int>& seeds = std::vector<int>()) const;
 
-    Eigen::MatrixXd rosenblatt(const Eigen::MatrixXd &u, 
+    Eigen::MatrixXd rosenblatt(const Eigen::MatrixXd &u,
                                const size_t num_threads = 1) const;
     Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd &u,
                                        const size_t num_threads = 1) const;
@@ -154,15 +156,16 @@ public:
     double aic(const Eigen::MatrixXd &u, const size_t num_threads = 1) const;
 
     double bic(const Eigen::MatrixXd &u, const size_t num_threads = 1) const;
-    
+
     double mbicv(const Eigen::MatrixXd &u, const double psi0, const size_t num_threads = 1) const;
 
     // Misc methods
     static std::vector <std::vector<Bicop>>
     make_pair_copula_store(const size_t d,
-                           const size_t truncation_level = std::numeric_limits<size_t>::max());
+                           const size_t trunc_lvl = std::numeric_limits<size_t>::max());
+    void truncate(size_t trunc_lvl);
 
-private:
+protected:
     size_t d_;
     RVineStructure vine_struct_;
     std::vector <std::vector<Bicop>> pair_copulas_;
@@ -174,6 +177,10 @@ private:
     void check_pair_copulas_rvine_structure(
         const std::vector<std::vector<Bicop>> &pair_copulas) const;
     double calculate_mbicv_penalty(const size_t nobs, const double psi0) const;
+    void finalize_fit(const tools_select::VinecopSelector& selector);
+    void check_weights_size(const Eigen::VectorXd& weights,
+                            const Eigen::MatrixXd& data) const;
+    void check_enough_data(const Eigen::MatrixXd& data) const;
 };
 
 }

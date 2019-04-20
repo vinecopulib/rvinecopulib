@@ -7,7 +7,8 @@
 \alias{is.rvine_matrix}
 \title{R-vine structure}
 \usage{
-rvine_structure(order, struct_array, is_natural_order = TRUE)
+rvine_structure(order, struct_array, is_natural_order = FALSE,
+  byrow = TRUE)
 
 rvine_matrix(matrix)
 }
@@ -19,7 +20,11 @@ represent rows of the r-rvine structure and the number of elements have to
 be compatible with the \code{order} vector.}
 
 \item{is_natural_order}{whether \code{struct_array} is assumed to be provided
-in natural order already.}
+in natural order already (a structure is in natural order if the anti-
+diagonal is 1, .., d from bottom left to top right).}
+
+\item{byrow}{whether \code{struct_array} is assumed to be provided
+by column or by row.}
 
 \item{matrix}{an R-vine matrix, see \emph{Details}.}
 }
@@ -34,31 +39,31 @@ variables of each edge.
 \details{
 The R-vine structure is essentially a lower-triangular matrix/triangular array,
 with a notation that differs from the one in the VineCopula package.
-An example array is\preformatted{1 1 1 1
-2 2 2
-3 3
-4
+An example array is\preformatted{4 4 4 4
+3 3 3
+2 2
+1
 }
 
 which encodes the following pair-copulas:
 
 \tabular{lll}{
 tree \tab  edge \tab pair-copulas   \cr
-0    \tab  0    \tab \code{(4, 1)}       \cr
-\tab  1    \tab \code{(3, 1)}       \cr
-\tab  2    \tab \code{(2, 1)}       \cr
-1    \tab  0    \tab \code{(4, 2; 1)}    \cr
-\tab  1    \tab \code{(3, 2; 1)}    \cr
-2    \tab  0    \tab \code{(4, 3; 2, 1)}
+0    \tab  0    \tab \code{(1, 4)}       \cr
+\tab  1    \tab \code{(2, 4)}       \cr
+\tab  2    \tab \code{(3, 4)}       \cr
+1    \tab  0    \tab \code{(1, 3; 2)}    \cr
+\tab  1    \tab \code{(2, 3; 4)}    \cr
+2    \tab  0    \tab \code{(1, 2; 3, 4)}
 }
 
 An R-vine structure can be converted to an R-vine matrix using
 \code{\link[=as_rvine_matrix]{as_rvine_matrix()}}, which encodes the same model with a square matrix
 filled with zeros. For instance, the matrix corresponding to the structure
-above is:\preformatted{1 1 1 1
-2 2 2 0
-3 3 0 0
-4 0 0 0
+above is:\preformatted{4 4 4 4
+3 3 3 0
+2 2 0 0
+1 0 0 0
 }
 
 Similarly, an R-vine matrix can be converted to an R-vine structure using
@@ -76,16 +81,16 @@ variable).
 
 Internally, the diagonal is stored separately from the off-diagonal elements,
 which are stored as a triangular array. For instance, the off-diagonal elements
-off the structure above are stored as\preformatted{1 1 1
-2 2
-3
+off the structure above are stored as\preformatted{4 4 4
+3 3
+2
 }
 
 for the structure above. The reason is that it allows for parsimonious
 representations of truncated models. For instance, the 2-truncated model
 is represented by the same diagonal and the following truncated triangular
-array:\preformatted{1 1 1
-2 2
+array:\preformatted{4 4 4
+3 3
 }
 
 A valid R-vine structure or matrix must satisfy several conditions which
@@ -111,12 +116,14 @@ check by hand.
 \examples{
 
 # R-vine structures can be constructed from the order vector and struct_array
-rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
-                                                 c(2, 2), 
-                                                 3))
+rvine_structure(order = 1:4, struct_array = list(
+  c(4, 4, 4),
+  c(3, 3),
+  2
+))
 
 # R-vine matrices can be constructed from standard matrices
-mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
+mat <- matrix(c(4, 3, 2, 1, 4, 3, 2, 0, 4, 3, 0, 0, 4, 0, 0, 0), 4, 4)
 rvine_matrix(mat)
 
 # coerce to R-vine structure
@@ -127,13 +134,14 @@ mat[3, 1] <- 0
 rvine_matrix(mat)
 
 # or use directly the R-vine structure constructor
-rvine_structure(order = 1:4, struct_array = list(c(1, 1, 1), 
-                                                 c(2, 2)))
+rvine_structure(order = 1:4, struct_array = list(
+  c(4, 4, 4),
+  c(3, 3)
+))
 
 # throws an error
 mat[3, 1] <- 5
 try(rvine_matrix(mat))
-
 }
 \seealso{
 as_rvine_structure
