@@ -1,3 +1,5 @@
+#prgma once
+
 #define BOOST_NO_AUTO_PTR
 #define BOOST_MATH_PROMOTE_DOUBLE_POLICY false
 
@@ -35,25 +37,25 @@ Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
                             bool presel,
                             size_t num_threads);
 
-Eigen::VectorXd bicop_pdf_cpp(const Eigen::MatrixXd& u, 
+Eigen::VectorXd bicop_pdf_cpp(const Eigen::MatrixXd& u,
                               const Rcpp::List& bicop_r);
 
-Eigen::VectorXd bicop_cdf_cpp(const Eigen::MatrixXd& u, 
+Eigen::VectorXd bicop_cdf_cpp(const Eigen::MatrixXd& u,
                               const Rcpp::List& bicop_r);
 
-Eigen::VectorXd bicop_hfunc1_cpp(const Eigen::MatrixXd& u, 
+Eigen::VectorXd bicop_hfunc1_cpp(const Eigen::MatrixXd& u,
                                  const Rcpp::List& bicop_r);
 
-Eigen::VectorXd bicop_hfunc2_cpp(const Eigen::MatrixXd& u, 
+Eigen::VectorXd bicop_hfunc2_cpp(const Eigen::MatrixXd& u,
                                  const Rcpp::List& bicop_r);
 
-Eigen::VectorXd bicop_hinv1_cpp(const Eigen::MatrixXd& u, 
+Eigen::VectorXd bicop_hinv1_cpp(const Eigen::MatrixXd& u,
                                 const Rcpp::List& bicop_r);
 
-Eigen::VectorXd bicop_hinv2_cpp(const Eigen::MatrixXd& u, 
+Eigen::VectorXd bicop_hinv2_cpp(const Eigen::MatrixXd& u,
                                 const Rcpp::List& bicop_r);
 
-Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r, const size_t &n, 
+Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r, const size_t &n,
                               const bool qrng,
                               std::vector<int> seeds);
 
@@ -61,7 +63,7 @@ double bicop_loglik_cpp(Eigen::MatrixXd& u, const Rcpp::List& bicop_r);
 
 double bicop_par_to_tau_cpp(const Rcpp::List& bicop_r);
 
-Eigen::MatrixXd bicop_tau_to_par_cpp(const Rcpp::List& bicop_r, 
+Eigen::MatrixXd bicop_tau_to_par_cpp(const Rcpp::List& bicop_r,
                                      const double& tau);
 
 // structure wrappers
@@ -113,27 +115,27 @@ Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U,
                                        const Rcpp::List& vinecop_r,
                                        size_t cores);
 
-Eigen::MatrixXd vinecop_sim_cpp(const Rcpp::List& vinecop_r, 
-                                const size_t n, 
+Eigen::MatrixXd vinecop_sim_cpp(const Rcpp::List& vinecop_r,
+                                const size_t n,
                                 const bool qrng,
                                 size_t cores,
                                 std::vector<int> seeds);
 
-Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, 
+Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u,
                                 const Rcpp::List& vinecop_r,
                                 size_t cores);
 
-Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u, 
-                                const Rcpp::List& vinecop_r, 
+Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u,
+                                const Rcpp::List& vinecop_r,
                                 size_t N,
                                 size_t cores,
                                 std::vector<int> seeds);
 
-double vinecop_loglik_cpp(const Eigen::MatrixXd& u, 
+double vinecop_loglik_cpp(const Eigen::MatrixXd& u,
                           const Rcpp::List& vinecop_r,
                           size_t cores);
 
-double vinecop_mbicv_cpp(const Eigen::MatrixXd& u, 
+double vinecop_mbicv_cpp(const Eigen::MatrixXd& u,
                          const Rcpp::List& vinecop_r,
                          double psi0,
                          size_t cores);
