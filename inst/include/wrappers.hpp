@@ -1,7 +1,16 @@
 #pragma once
 
-#define BOOST_NO_AUTO_PTR
-#define BOOST_MATH_PROMOTE_DOUBLE_POLICY false
+#ifndef BOOST_NO_AUTO_PTR
+    #define BOOST_NO_AUTO_PTR
+#endif
+
+#ifndef BOOST_MATH_PROMOTE_DOUBLE_POLICY
+    #define BOOST_MATH_PROMOTE_DOUBLE_POLICY false
+#else 
+    #undef BOOST_MATH_PROMOTE_DOUBLE_POLICY
+    #define BOOST_MATH_PROMOTE_DOUBLE_POLICY false
+#endif
+
 
 #include <RcppEigen.h>
 #include "vinecopulib.hpp"
