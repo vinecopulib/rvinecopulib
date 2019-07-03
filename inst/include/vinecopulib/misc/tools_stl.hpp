@@ -6,48 +6,18 @@
 
 #pragma once
 
+#include <cmath>
 #include <vector>
 #include <algorithm>
-#include <iterator>
 #include <numeric>
-#include <cstddef>
-#include <boost/math/special_functions/fpclassify.hpp> // isnan
-#include <limits>
+#include <iterator>
 
 namespace vinecopulib {
 
 namespace tools_stl {
 
-using namespace std;
-
-template<class... T>
-void unused(T &&...)
-{
-
-}
-
-template<typename T, typename V>
-V unaryFunc_or_nan(T f, V y)
-{
-    if ((boost::math::isnan)(y)) {
-        return std::numeric_limits<V>::quiet_NaN();
-    } else {
-        return f(y);
-    }
-}
-
-template<typename T, typename V>
-V binaryFunc_or_nan(T f, V u1, V u2)
-{
-    if ((boost::math::isnan)(u1) | (boost::math::isnan)(u2)) {
-        return std::numeric_limits<V>::quiet_NaN();
-    } else {
-        return f(u1, u2);
-    }
-}
-
 template<typename T>
-std::vector <size_t> get_order(const std::vector <T> &x)
+std::vector <size_t> get_order(const std::vector<T> &x)
 {
     std::vector <size_t> order(x.size());
     std::iota(order.begin(), order.end(), 0);
@@ -60,49 +30,49 @@ std::vector <size_t> get_order(const std::vector <T> &x)
 }
 
 template<typename T>
-bool is_member(T element, vector <T> set)
+bool is_member(T element, std::vector<T> set)
 {
-    return find(set.begin(), set.end(), element) != set.end();
+    return std::find(set.begin(), set.end(), element) != set.end();
 }
 
 template<class T>
-vector <T> intersect(vector <T> x, vector <T> y)
+std::vector<T> intersect(std::vector<T> x, std::vector<T> y)
 {
-    sort(x.begin(), x.end());
-    sort(y.begin(), y.end());
-    vector <T> common;
-    set_intersection(
+    std::sort(x.begin(), x.end());
+    std::sort(y.begin(), y.end());
+    std::vector <T> common;
+    std::set_intersection(
         x.begin(), x.end(),
         y.begin(), y.end(),
-        back_inserter(common)
+        std::back_inserter(common)
     );
 
     return common;
 }
 
 template<class T>
-size_t find_position(T x, vector <T> vec)
+size_t find_position(T x, std::vector<T> vec)
 {
-    return distance(vec.begin(), find(vec.begin(), vec.end(), x));
+    return std::distance(vec.begin(), find(vec.begin(), vec.end(), x));
 }
 
 template<class T>
-vector <T> set_diff(vector <T> x, vector <T> y)
+std::vector<T> set_diff(std::vector<T> x, std::vector<T> y)
 {
-    sort(x.begin(), x.end());
-    sort(y.begin(), y.end());
-    vector <T> different;
+    std::sort(x.begin(), x.end());
+    std::sort(y.begin(), y.end());
+    std::vector<T> different;
     set_difference(
         x.begin(), x.end(),
         y.begin(), y.end(),
-        back_inserter(different)
+        std::back_inserter(different)
     );
 
     return different;
 }
 
 template<class T>
-vector <T> cat(vector <T> x, const vector <T> &y)
+std::vector<T> cat(std::vector<T> x, const std::vector<T> &y)
 {
     x.reserve(x.size() + y.size());
     x.insert(x.end(), y.begin(), y.end());
@@ -110,9 +80,9 @@ vector <T> cat(vector <T> x, const vector <T> &y)
 }
 
 template<class T>
-vector <T> cat(T x, const vector <T> &y)
+std::vector<T> cat(T x, const std::vector<T> &y)
 {
-    vector <T> out(1);
+    std::vector<T> out(1);
     out[0] = x;
     out.reserve(1 + y.size());
     out.insert(out.end(), y.begin(), y.end());
@@ -120,42 +90,42 @@ vector <T> cat(T x, const vector <T> &y)
 }
 
 template<class T>
-vector <T> set_sym_diff(vector <T> x, vector <T> y)
+std::vector <T> set_sym_diff(std::vector<T> x, std::vector<T> y)
 {
-    vector <T> dxy = set_diff(x, y);
+    std::vector<T> dxy = set_diff(x, y);
     auto dyx = set_diff(y, x);
     return cat(dxy, dyx);
 }
 
 template<class T>
-void reverse(vector <T> &x)
+void reverse(std::vector<T> &x)
 {
-    reverse(x.begin(), x.end());
+    std::reverse(x.begin(), x.end());
 }
 
 template<class T>
-bool is_same_set(vector <T> x, vector <T> y)
+bool is_same_set(std::vector<T> x, std::vector<T> y)
 {
     auto z = intersect(x, y);
     return ((z.size() == x.size()) & (z.size() == y.size()));
 }
 
 template<class T>
-bool is_member(vector <T> x, vector <T> y)
+bool is_member(std::vector<T> x, std::vector<T> y)
 {
     auto z = intersect(x, y);
     return z.size() == x.size();
 }
 
 //! Integer sequence starting at 1
-inline vector <size_t> seq_int(size_t from, size_t length)
+inline std::vector<size_t> seq_int(size_t from, size_t length)
 {
-    vector <size_t> seq(length);
-    iota(seq.begin(), seq.end(), from);
+    std::vector<size_t> seq(length);
+    std::iota(seq.begin(), seq.end(), from);
     return seq;
 }
 
-inline vector<size_t> invert_permutation(const vector<size_t>& perm)
+inline std::vector<size_t> invert_permutation(const std::vector<size_t>& perm)
 {
     auto inv_perm = seq_int(0, perm.size());
     std::sort(inv_perm.begin(),

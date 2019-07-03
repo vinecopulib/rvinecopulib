@@ -6,6 +6,7 @@
 
 #include <vinecopulib/bicop/family.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
+#include <vinecopulib/misc/tools_interpolation.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> // isnan
 #include <wdm/eigen.hpp>
 
@@ -212,10 +213,12 @@ inline double TllBicop::calculate_infl(const size_t &n,
 
 
 inline void TllBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
-                          std::string method, 
-                          double mult, 
+                          std::string method,
+                          double mult,
                           const Eigen::VectorXd& weights)
 {
+    using namespace tools_interpolation;
+
     // construct default grid (equally spaced on Gaussian scale)
     size_t m = 30;
     Eigen::VectorXd grid_points(m);
@@ -248,7 +251,7 @@ inline void TllBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
     // for interpolation, we shift the limiting gridpoints to 0 and 1
     grid_points(0) = 0.0;
     grid_points(m - 1) = 1.0;
-    interp_grid_ = tools_interpolation::InterpolationGrid(grid_points, values);
+    interp_grid_ = std::make_shared<InterpolationGrid>(grid_points, values);
 
     // compute effective degrees of freedom via interpolation ---------
     Eigen::VectorXd infl_vec = ll_fit.col(1);
@@ -257,9 +260,8 @@ inline void TllBicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
     Eigen::MatrixXd infl(m, m);
     infl = Eigen::Map<Eigen::MatrixXd>(infl_vec.data(), m, m).transpose();
     // don't normalize margins of the EDF! (norm_times = 0)
-    auto infl_grid = tools_interpolation::InterpolationGrid(grid_points, infl,
-                                                            0);
+    auto infl_grid = InterpolationGrid(grid_points, infl, 0);
     npars_ = infl_grid.interpolate(data).sum();
-    set_loglik(pdf(data).array().log().sum());
+    set_loglik(loglik(data, weights));
 }
 }

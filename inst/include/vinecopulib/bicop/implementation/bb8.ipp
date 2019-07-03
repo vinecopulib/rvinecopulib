@@ -5,6 +5,7 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/misc/tools_integration.hpp>
+#include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
 inline Bb8Bicop::Bb8Bicop()
@@ -110,6 +111,6 @@ inline double Bb8Bicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
 
 inline Eigen::MatrixXd Bb8Bicop::tau_to_parameters(const double &tau)
 {
-    return vinecopulib::no_tau_to_parameters(tau);
+    return no_tau_to_parameters(tau);
 }
 }

@@ -4,9 +4,10 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <iostream>
 #include <fstream>
 #include <boost/math/special_functions/fpclassify.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
+#include <iostream>
 
 namespace vinecopulib {
 
@@ -34,7 +35,7 @@ inline void remove_nans(Eigen::MatrixXd &x, Eigen::VectorXd &weights)
 {
     if ((weights.size() > 0) & (weights.size() != x.rows()))
         throw std::runtime_error("sizes of x and weights don't match.");
-    
+
     // if a row has nan or weight is zero, move it to the end
     size_t last = x.rows() - 1;
     for (size_t i = 0; i < last + 1; i++) {
@@ -49,7 +50,7 @@ inline void remove_nans(Eigen::MatrixXd &x, Eigen::VectorXd &weights)
             x.row(i--).swap(x.row(last--));
         }
     }
-    
+
     // remove nan rows
     x.conservativeResize(last + 1, x.cols());
     if (weights.size() > 0)
@@ -95,18 +96,27 @@ inline Eigen::VectorXd invert_f(
     std::function<Eigen::VectorXd(const Eigen::VectorXd &)> f,
     const double lb,
     const double ub,
-    int n_iter) 
+    int n_iter)
 {
     Eigen::VectorXd xl = Eigen::VectorXd::Constant(x.size(), lb);
     Eigen::VectorXd xh = Eigen::VectorXd::Constant(x.size(), ub);
     Eigen::VectorXd x_tmp = x;
+    Eigen::VectorXd fm(x.size());
     for (int iter = 0; iter < n_iter; ++iter) {
         x_tmp = (xh + xl) / 2.0;
-        Eigen::VectorXd fm = f(x_tmp) - x;
+        fm = f(x_tmp) - x;
         xl = (fm.array() < 0).select(x_tmp, xl);
         xh = (fm.array() < 0).select(xh, x_tmp);
     }
-    
+    if (fm.array().isNaN().any()) {
+        size_t n = x.size();
+        for (size_t j = 0; j < n; j++) {
+            if ((boost::math::isnan)(fm(j))) {
+                x_tmp(j) = std::numeric_limits<double>::quiet_NaN();
+            }
+        }
+    }
+
     return x_tmp;
 }
 

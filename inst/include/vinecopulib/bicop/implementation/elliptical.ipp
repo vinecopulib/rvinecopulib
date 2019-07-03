@@ -5,12 +5,10 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <cmath>
-
-#ifndef M_PI
-#define M_PI       3.14159265358979323846
-#endif
+#include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
+
 inline Eigen::VectorXd EllipticalBicop::hfunc2(
     const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
 )
@@ -28,7 +26,7 @@ inline Eigen::VectorXd EllipticalBicop::hinv2(
 inline double
 EllipticalBicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
 {
-    double tau = (2 / M_PI) * asin(parameters(0));
+    double tau = (2 / constant::pi) * asin(parameters(0));
     return tau;
 }
 }

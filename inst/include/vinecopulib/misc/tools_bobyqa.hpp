@@ -9,18 +9,16 @@
 #pragma once
 
 #include <cmath>
-#include <cstdlib>
 #include <algorithm>
-#include <vinecopulib/misc/tools_eigen.hpp>
+#include <Eigen/Dense>
 
 namespace vinecopulib {
 
 namespace tools_bobyqa {
 
-#define BOBYQA_DEBUG_LOG(what)
-const double sqrt_2 = std::sqrt(2.0);
-const double sqrt_0_5 = std::sqrt(0.5);
-const double one_plus_sqrt_2 = 1.0 + sqrt_2;
+constexpr double sqrt_2 = 1.41421356237309504880168872420969807;
+constexpr double sqrt_0_5 = 1.0 / sqrt_2;
+constexpr double one_plus_sqrt_2 = 1.0 + sqrt_2;
 
 inline constexpr double square(const double x)
 {
@@ -1287,9 +1285,8 @@ double bobyqb(
     }
     fsave = fval[1];
     if (nf < npt) {
-        BOBYQA_DEBUG_LOG(
-            "Return from BOBYQA because the objective function has been called "
-                "max_f_evals times.\n");
+        // Return from BOBYQA because the objective function has been called
+        // max_f_evals times.;
         goto L720;
     }
     kbase = 1;
@@ -1562,8 +1559,7 @@ double bobyqb(
             goto L230;
         }
         if (denom <= 0.5 * square(vlag[knew])) {
-            BOBYQA_DEBUG_LOG(
-                "Return from BOBYQA because of much cancellation in a denominator.\n");
+            // Return from BOBYQA because of much cancellation in a denominator
             goto L720;
         }
 
@@ -1601,8 +1597,7 @@ double bobyqb(
             L350:;
         }
         if (scaden <= 0.5 * biglsq) {
-            BOBYQA_DEBUG_LOG(
-                "Return from BOBYQA because of much cancellation in a denominator.\n");
+            // Return from BOBYQA because of much cancellation in a denominator
             goto L720;
         }
     }
@@ -1625,9 +1620,8 @@ double bobyqb(
         }
     }
     if (nf >= maxfun) {
-        BOBYQA_DEBUG_LOG(
-            "Return from BOBYQA because the objective function has been called "
-                "max_f_evals times.\n");
+        // Return from BOBYQA because the objective function has been called
+        // max_f_evals times
         goto L720;
     }
     ++nf;
@@ -1669,8 +1663,7 @@ double bobyqb(
 
     if (ntrits > 0) {
         if (vquad >= 0.0) {
-            BOBYQA_DEBUG_LOG(
-                "Return from BOBYQA because a trust region step has failed to reduce Q.\n");
+            // Return from BOBYQA because a trust region step has failed to reduce Q
             goto L720;
         }
         ratio = (f - fopt) / vquad;
@@ -2024,8 +2017,7 @@ double impl(
 
     /*     Return if the value of NPT is unacceptable. */
     if (npt < n + 2 || npt > (n + 2) * np / 2) {
-        BOBYQA_DEBUG_LOG(
-            "Return from BOBYQA because NPT is not in the required interval.\n");
+        // Return from BOBYQA because NPT is not in the required interval
         return 0.0;
     }
 
@@ -2061,9 +2053,8 @@ double impl(
     for (long j = 1; j <= n; ++j) {
         const double temp = xu[j] - xl[j];
         if (temp < rhobeg + rhobeg) {
-            BOBYQA_DEBUG_LOG(
-                "Return from BOBYQA because one of the differences in x_lower and x_upper "
-                    "is less than 2*rho_begin.\n");
+            // Return from BOBYQA because one of the differences in x_lower and
+            // x_upper  is less than 2*rho_begin
             return 0.0;
         }
         const long jsl = isl + j - 1;
@@ -2173,4 +2164,3 @@ std::pair<Eigen::VectorXd, double> bobyqa(
 
 }
 }
-
