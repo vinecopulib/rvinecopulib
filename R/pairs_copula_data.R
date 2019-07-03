@@ -85,6 +85,7 @@ dp_pairs_copula_data <- function(x, ...) {
                border = "white",
                main = "",
                col = "grey")
-  call_with_dots(hist.default, args, ..., except = "col")
+  call_with_dots(hist.default, args, ..., except = c("col", "freq"))
   box()
+  abline(h = 1, col = "black", lty = 3)
 }
