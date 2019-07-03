@@ -14,8 +14,8 @@
 #'
 #' @examples
 #' u <- replicate(3, runif(100))
-#' copula_pairs(u)
-copula_pairs <- function(data, ...) {
+#' pairs_copula_data(u)
+pairs_copula_data <- function(data, ...) {
   assert_that(is.matrix(data) || is.data.frame(data))
   assert_that(all(data < 1) && all(data > 0))
 
@@ -27,9 +27,9 @@ copula_pairs <- function(data, ...) {
     labels <- paste0("var", seq_len(ncol(data)))
   args <- list(x = data,
                labels = labels,
-               lower.panel = function(x, y) lp_copula_pairs(x, y, ...),
-               diag.panel = function(x) dp_copula_pairs(x, ...),
-               upper.panel = function(x, y)  up_copula_pairs(x, y, ...),
+               lower.panel = function(x, y) lp_pairs_copula_data(x, y, ...),
+               diag.panel = function(x) dp_pairs_copula_data(x, ...),
+               upper.panel = function(x, y)  up_pairs_copula_data(x, y, ...),
                label.pos = 0.85,
                cex.labels = 1,
                gap = 0)
@@ -44,7 +44,7 @@ call_with_dots <- function(fun, args, ..., except = "") {
 }
 
 ## lower panel: empirical contour plot
-lp_copula_pairs <- function(x, y, ...) {
+lp_pairs_copula_data <- function(x, y, ...) {
   old_par <- par(usr = c(-3, 3, -3, 3), new = TRUE)
   on.exit(par(old_par))
 
@@ -59,7 +59,7 @@ lp_copula_pairs <- function(x, y, ...) {
 }
 
 ## upper panel: scatter plot (copula data) and correlation
-up_copula_pairs <- function(x, y, ...) {
+up_pairs_copula_data <- function(x, y, ...) {
   old_par <- par(usr = c(0, 1, 0, 1), new = TRUE)
   on.exit(par(old_par))
 
@@ -75,7 +75,7 @@ up_copula_pairs <- function(x, y, ...) {
 }
 
 ## diagonal panel: histograms (copula data)
-dp_copula_pairs <- function(x, ...) {
+dp_pairs_copula_data <- function(x, ...) {
   old_par <- par(usr = c(0, 1, 0, 1.6), new = TRUE)
   on.exit(par(old_par))
 
