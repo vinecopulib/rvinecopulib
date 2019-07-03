@@ -126,10 +126,10 @@ as_rvine_matrix.rvine_structure <- function(x, ..., validate = FALSE) {
 }
 
 #' @param is_natural_order A flag indicating whether the `struct_array` element
-#' of `x` is assumed to be provided in natural order already (a structure is in 
-#' natural order if the anti-diagonal is 1, .., d from bottom left to top 
+#' of `x` is assumed to be provided in natural order already (a structure is in
+#' natural order if the anti-diagonal is 1, .., d from bottom left to top
 #' right).
-#' @param byrow whether the element of the list named `struct_array` 
+#' @param byrow whether the element of the list named `struct_array`
 #' is assumed to be provided by column or by row.
 #' @export
 #' @rdname as_rvine_structure
