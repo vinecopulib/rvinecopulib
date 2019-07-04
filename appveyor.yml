@@ -2,10 +2,6 @@ platform:
   - x86
   - x64
 
-environment:
-  global:
-    - R_REMOTES_NO_ERRORS_FROM_WARNINGS: false
-
 init:
   - ps: |
         $ErrorActionPreference = "Stop"
@@ -42,3 +38,7 @@ artifacts:
 
   - path: '\*_*.zip'
     name: Bits
+
+environment:
+  global:
+    R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
