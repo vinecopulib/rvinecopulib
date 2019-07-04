@@ -31,17 +31,17 @@
 #'   list(bicop, bicop), # pair-copulas in first tree
 #'   list(bicop) # pair-copulas in second tree
 #' )
-#' 
+#'
 #' # specify R-vine matrix
 #' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-#' 
+#'
 #' # set up vine copula model
 #' vc <- vinecop_dist(pcs, mat)
-#' 
+#'
 #' # simulate from the model
 #' u <- rvinecop(200, vc)
 #' pairs(u)
-#' 
+#'
 #' # evaluate the density and cdf
 #' dvinecop(u[1, ], vc)
 #' pvinecop(u[1, ], vc)
@@ -117,6 +117,8 @@ summary.vinecop_dist <- function(object, ...) {
       mdf$family[k] <- pc$family
       mdf$rotation[k] <- pc$rotation
       mdf$parameters[k] <- list(pc$parameters)
+      if (pc$family %in% setdiff(family_set_nonparametric, "indep"))
+        mdf$parameters[k] <- list("[30x30 grid]")
       mdf$df[k] <- pc$npars
       mdf$tau[k] <- par_to_ktau(pc)
       k <- k + 1
