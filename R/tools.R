@@ -285,12 +285,16 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
 #' @param x a `data.frame` whose print output should be truncated.
 #' @noRd
 #' @export
-print.summary_df <- function(x, ..., n = 10) {
-  x_print <- x[1:min(nrow(x), n), ]
+print.summary_df <- function(x, ..., rows = 1:10) {
+  assert_that(
+    is.numeric(rows),
+    all(rows > 0) && all(rows <= nrow(x))
+  )
+  x_print <- x[rows, ]
   cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
-  print.data.frame(x_print, digits = 2)
-  if (nrow(x) > n) {
-    cat("# ... with", nrow(x) - n, "more rows\n")
+  print.data.frame(x_print, digits = 2, row.names = FALSE)
+  if (nrow(x) > length(rows)) {
+    cat("# ... with", nrow(x) - length(rows), "more rows\n")
   }
   invisible(x)
 }
