@@ -286,10 +286,8 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
 #' @noRd
 #' @export
 print.summary_df <- function(x, ..., rows = 1:10) {
-  assert_that(
-    is.numeric(rows),
-    all(rows > 0) && all(rows <= nrow(x))
-  )
+  assert_that(is.numeric(rows), all(rows > 0))
+  rows <- intersect(seq_len(nrow(x)), rows)
   x_print <- x[rows, ]
   cat("# A data.frame:", nrow(x), "x", ncol(x), "\n")
   print.data.frame(x_print, digits = 2, row.names = FALSE)
