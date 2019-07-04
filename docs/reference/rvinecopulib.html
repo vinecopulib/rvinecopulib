@@ -16,8 +16,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
@@ -74,7 +73,7 @@ the MIT License, and 'rvinecopulib' is licensed under the GNU GPL version 3." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2.1.0</span>
       </span>
     </div>
 
@@ -82,7 +81,7 @@ the MIT License, and 'rvinecopulib' is licensed under the GNU GPL version 3." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fa fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -143,13 +142,13 @@ the MIT License, and 'rvinecopulib' is licensed under the GNU GPL version 3.</p>
 <span class='co'>## bicop objects</span>
 <span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bicop_methods.html'>rbicop</a></span>(<span class='fl'>500</span>, <span class='st'>"gauss"</span>, <span class='fl'>0</span>, <span class='fl'>0.5</span>)
 <span class='no'>fit1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bicop.html'>bicop</a></span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
-<span class='no'>fit1</span></div><div class='output co'>#&gt; Bivariate copula fit ('bicop'): family = gaussian, rotation = 0, parameters = 0.49</div><div class='input'>
+<span class='no'>fit1</span></div><div class='output co'>#&gt; Bivariate copula fit ('bicop'): family = gaussian, rotation = 0, parameters = 0.53</div><div class='input'>
 <span class='co'>## vinecop_dist objects</span>
 <span class='co'>## specify pair-copulas</span>
 <span class='no'>bicop</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bicop.html'>bicop_dist</a></span>(<span class='st'>"bb1"</span>, <span class='fl'>90</span>, <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>3</span>, <span class='fl'>2</span>))
 <span class='no'>pcs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(
-    <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='no'>bicop</span>, <span class='no'>bicop</span>),  <span class='co'># pair-copulas in first tree </span>
-    <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='no'>bicop</span>)          <span class='co'># pair-copulas in second tree </span>
+  <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='no'>bicop</span>, <span class='no'>bicop</span>), <span class='co'># pair-copulas in first tree</span>
+  <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='no'>bicop</span>) <span class='co'># pair-copulas in second tree</span>
 )
 <span class='co'>## specify R-vine matrix</span>
 <span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/matrix'>matrix</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>3</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>0</span>, <span class='fl'>0</span>), <span class='fl'>3</span>, <span class='fl'>3</span>)
@@ -164,10 +163,10 @@ the MIT License, and 'rvinecopulib' is licensed under the GNU GPL version 3.</p>
 <span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/lapply'>sapply</a></span>(<span class='fl'>1</span>:<span class='fl'>3</span>, <span class='kw'>function</span>(<span class='no'>i</span>) <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/Uniform'>runif</a></span>(<span class='fl'>50</span>))
 <span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vinecop.html'>vinecop</a></span>(<span class='no'>u</span>, <span class='st'>"par"</span>)
 <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/summary'>summary</a></span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; # A data.frame: 3 x 10 
-#&gt;   tree edge conditioned conditioning family rotation parameters df tau loglik
-#&gt; 1    1    1        1, 2               indep        0             0   0      0
-#&gt; 2    1    2        2, 3               indep        0             0   0      0
-#&gt; 3    2    1        1, 3            2  indep        0             0   0      0</div><div class='input'>
+#&gt;   tree edge conditioned conditioning  family rotation parameters df  tau loglik
+#&gt; 1    1    1        1, 2                indep        0             0 0.00    0.0
+#&gt; 2    1    2        2, 3              clayton        0       0.43  1 0.18    3.6
+#&gt; 3    2    1        1, 3            2   indep        0             0 0.00    0.0</div><div class='input'>
 <span class='co'>## vine_dist objects</span>
 <span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vine.html'>vine_dist</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='kw'>distr</span> <span class='kw'>=</span> <span class='st'>"norm"</span>), <span class='no'>pcs</span>, <span class='no'>mat</span>)
 <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/summary'>summary</a></span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; $margins
@@ -190,16 +189,16 @@ the MIT License, and 'rvinecopulib' is licensed under the GNU GPL version 3.</p>
 <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/summary'>summary</a></span>(<span class='no'>vc</span>)</div><div class='output co'>#&gt; $margins
 #&gt; # A data.frame: 3 x 6 
 #&gt;   margin name nobs   bw loglik d.f.
-#&gt; 1      1   V1   50 0.61    -70  4.1
-#&gt; 2      2   V2   50 0.69    -70  4.0
-#&gt; 3      3   V3   50 0.56    -65  4.4
+#&gt; 1      1   V1   50 0.41    -61  5.2
+#&gt; 2      2   V2   50 0.49    -62  5.6
+#&gt; 3      3   V3   50 0.62    -64  4.0
 #&gt; 
 #&gt; $copula
 #&gt; # A data.frame: 3 x 10 
 #&gt;   tree edge conditioned conditioning family rotation parameters df tau loglik
-#&gt; 1    1    1        2, 1               indep        0             0   0      0
-#&gt; 2    1    2        1, 3               indep        0             0   0      0
-#&gt; 3    2    1        2, 3            1  indep        0             0   0      0
+#&gt; 1    1    1        1, 3               indep        0             0   0      0
+#&gt; 2    1    2        2, 3               indep        0             0   0      0
+#&gt; 3    2    1        1, 2            3  indep        0             0   0      0
 #&gt; </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -220,7 +219,7 @@ the MIT License, and 'rvinecopulib' is licensed under the GNU GPL version 3.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
 </div>
       </footer>
    </div>

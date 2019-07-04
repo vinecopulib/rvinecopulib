@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Predictions and fitted values for a vine copula model — vine_predict_and_fitted • rvinecopulib</title>
+<title>Exploratory pairs plot for copula data — pairs_copula_data • rvinecopulib</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,10 +30,11 @@
 
 
 
-<meta property="og:title" content="Predictions and fitted values for a vine copula model — vine_predict_and_fitted" />
+<meta property="og:title" content="Exploratory pairs plot for copula data — pairs_copula_data" />
 
-<meta property="og:description" content="Predictions of the density and distribution function
-for a vine copula model." />
+<meta property="og:description" content="This function provides pair plots for copula data. It shows
+bivariate contour plots on the lower panel, scatter plots and
+correlations on the upper panel and histograms on the diagonal panel." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -98,75 +99,45 @@ for a vine copula model." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Predictions and fitted values for a vine copula model</h1>
+    <h1>Exploratory pairs plot for copula data</h1>
     
-    <div class="hidden name"><code>predict_vine.Rd</code></div>
+    <div class="hidden name"><code>pairs_copula_data.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Predictions of the density and distribution function
-for a vine copula model.</p>
+    <p>This function provides pair plots for copula data. It shows
+bivariate contour plots on the lower panel, scatter plots and
+correlations on the upper panel and histograms on the diagonal panel.</p>
     
     </div>
 
-    <pre class="usage"><span class='co'># S3 method for vine</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/predict'>predict</a></span>(<span class='no'>object</span>, <span class='no'>newdata</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>,
-  <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>...</span>)
-
-<span class='co'># S3 method for vine</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/fitted.values'>fitted</a></span>(<span class='no'>object</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"pdf"</span>, <span class='kw'>n_mc</span> <span class='kw'>=</span> <span class='fl'>10</span>^<span class='fl'>4</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>pairs_copula_data</span>(<span class='no'>data</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>object</th>
-      <td><p>a <code>vine</code> object.</p></td>
+      <th>data</th>
+      <td><p>the data (must lie in the unit hypercube).</p></td>
     </tr>
     <tr>
-      <th>newdata</th>
-      <td><p>points where the fit shall be evaluated.</p></td>
-    </tr>
-    <tr>
-      <th>what</th>
-      <td><p>what to predict, either <code>"pdf"</code> or <code>"cdf"</code>.</p></td>
-    </tr>
-    <tr>
-      <th>n_mc</th>
-      <td><p>number of samples used for quasi Monte Carlo integration when
-<code>what = "cdf"</code>.</p></td>
-    </tr>
-    <tr>
-      <th>cores</th>
-      <td><p>number of cores to use; if larger than one, computations are
-done in parallel on <code>cores</code> batches .</p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>unused.</p></td>
+      <th>&#8230;</th>
+      <td><p>other parameters passed to <code><a href='https://www.rdocumentation.org/packages/graphics/topics/pairs'>pairs.default()</a></code>,
+<code><a href='plot.bicop_dist.html'>contour.bicop()</a></code>, <code><a href='https://www.rdocumentation.org/packages/graphics/topics/points'>points.default()</a></code>, <code><a href='https://www.rdocumentation.org/packages/graphics/topics/hist'>hist.default()</a></code>, or <code><a href='bicop.html'>bicop()</a></code>.</p></td>
     </tr>
     </table>
     
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p><code><a href='https://www.rdocumentation.org/packages/stats/topics/fitted.values'>fitted()</a></code> and <code><a href='https://www.rdocumentation.org/packages/stats/topics/predict'>predict()</a></code> have return values similar to <code><a href='vine_methods.html'>dvine()</a></code>
-and <code><a href='vine_methods.html'>pvine()</a></code>.</p>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/lapply'>sapply</a></span>(<span class='fl'>1</span>:<span class='fl'>5</span>, <span class='kw'>function</span>(<span class='no'>i</span>) <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/Normal'>rnorm</a></span>(<span class='fl'>50</span>))
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vine.html'>vine</a></span>(<span class='no'>x</span>, <span class='kw'>copula_controls</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"par"</span>), <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/all.equal'>all.equal</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/predict'>predict</a></span>(<span class='no'>fit</span>, <span class='no'>x</span>), <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/fitted.values'>fitted</a></span>(<span class='no'>fit</span>))</div><div class='output co'>#&gt; [1] TRUE</div></pre>
+    <pre class="examples"><div class='input'><span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/lapply'>replicate</a></span>(<span class='fl'>3</span>, <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/Uniform'>runif</a></span>(<span class='fl'>100</span>))
+<span class='fu'>pairs_copula_data</span>(<span class='no'>u</span>)</div><div class='img'><img src='pairs_copula_data-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-      
+            
       <li><a href="#examples">Examples</a></li>
     </ul>
 

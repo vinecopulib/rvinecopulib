@@ -63,14 +63,14 @@ up_pairs_copula_data <- function(x, y, ...) {
   old_par <- par(usr = c(0, 1, 0, 1), new = TRUE)
   on.exit(par(old_par))
 
-  args <- list(x = x, y = y, pch = ".", cex = 2)
+  args <- list(x = x, y = y, pch = ".", cex = 2, col = "gray40")
   call_with_dots(points.default, args, ...)
 
   cor <- call_with_dots(cor, list(x = x, y = y, method = "kendall"), ...)
   txt <- format(x = cor, digits = 2, nsmall = 2)[1]
   args <- list(x = 0.5, y = 0.5,
                labels = txt,
-               cex = 1 + abs(cor) * 3)
+               cex = 1 + abs(cor) * 2)
   call_with_dots(text.default, args, ...)
 }
 

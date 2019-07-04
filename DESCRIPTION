@@ -1,7 +1,7 @@
 Package: rvinecopulib
 Type: Package
 Title: High Performance Algorithms for Vine Copula Modeling
-Version: 0.3.1.1.0
+Version: 0.3.2.1.0
 Authors@R: c(
         person("Thomas", "Nagler",, "info@vinecopulib.org", role = c("aut", "cre")),
         person("Thibault", "Vatter",, "info@vinecopulib.org", role = c("aut"))
