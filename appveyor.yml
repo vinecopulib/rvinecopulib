@@ -3,7 +3,8 @@ platform:
   - x64
 
 environment:
-  - R_REMOTES_NO_ERRORS_FROM_WARNINGS: false
+  global:
+    - R_REMOTES_NO_ERRORS_FROM_WARNINGS: false
 
 init:
   - ps: |
