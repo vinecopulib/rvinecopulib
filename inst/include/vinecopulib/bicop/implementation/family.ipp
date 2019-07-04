@@ -4,7 +4,6 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <stdexcept>
 #include <boost/bimap.hpp>
 #include <boost/assign.hpp>
 

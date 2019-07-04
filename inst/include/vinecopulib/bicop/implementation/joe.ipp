@@ -9,6 +9,7 @@
 #include <boost/math/special_functions/expm1.hpp>
 #include <boost/math/special_functions/log1p.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> // isnan
+#include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
 inline JoeBicop::JoeBicop()
@@ -89,9 +90,9 @@ inline Eigen::MatrixXd JoeBicop::tau_to_parameters(const double &tau)
     auto f = [&](const Eigen::VectorXd &v) {
         return Eigen::VectorXd::Constant(1, std::fabs(parameters_to_tau(v)));
     };
-    return tools_eigen::invert_f(tau0, 
-                                 f, 
-                                 parameters_lower_bounds_(0) + 1e-6, 
+    return tools_eigen::invert_f(tau0,
+                                 f,
+                                 parameters_lower_bounds_(0) + 1e-6,
                                  parameters_upper_bounds_(0) - 1e-6);
 }
 
@@ -180,6 +181,6 @@ inline double qcondjoe(double *q, double *u, double *de)
     } else if (v >= 1) {
         v = 1 - 1e-10;
     }
-    
+
     return v;
 }

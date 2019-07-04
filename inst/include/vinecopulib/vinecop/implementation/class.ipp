@@ -7,12 +7,15 @@
 #include <vinecopulib/misc/tools_stl.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_interface.hpp>
+#include <vinecopulib/misc/tools_serialization.hpp>
+#include <vinecopulib/vinecop/tools_select.hpp>
+#include <vinecopulib/bicop/class.hpp>
 
 #include <stdexcept>
 
 namespace vinecopulib {
 
-//! creates a D-vine on `d` variables with all pair-copulas set to
+//! @brief creates a D-vine on `d` variables with all pair-copulas set to
 //! independence.
 //! @param d the dimension (= number of variables) of the model.
 inline Vinecop::Vinecop(const size_t d)
@@ -28,7 +31,7 @@ inline Vinecop::Vinecop(const size_t d)
     loglik_ = NAN;
 }
 
-//! creates a vine copula with structure specified by an RVineStructure object;
+//! @brief creates a vine copula with structure specified by an RVineStructure object;
 //! all pair-copulas are set to independence.
 //! @param vine_struct an RVineStructure object representing the structure of
 //! the vine.
@@ -41,7 +44,7 @@ inline Vinecop::Vinecop(const RVineStructure &vine_struct)
     loglik_ = NAN;
 }
 
-//! creates a vine copula with structure specified by an R-vine matrix; all
+//! @brief creates a vine copula with structure specified by an R-vine matrix; all
 //! pair-copulas are set to independence.
 //! @param matrix an R-vine matrix.
 //! @param check_matrix whether to check if `matrix` is a valid R-vine
@@ -51,7 +54,7 @@ inline Vinecop::Vinecop(
     const bool check_matrix) :
     Vinecop(RVineStructure(matrix, check_matrix)) {}
 
-//! creates a vine copula with structure specified by an R-vine matrix; all
+//! @brief creates a vine copula with structure specified by an R-vine matrix; all
 //! pair-copulas are set to independence.
 //! @param order the order of the variables in the vine structure, see
 //! RVineStructure's corresponding constructor.
@@ -64,7 +67,7 @@ inline Vinecop::Vinecop(const std::vector<size_t> &order,
         const bool check_array)  :
     Vinecop(RVineStructure(order, struct_array, false, check_array)) {}
 
-//! creates an arbitrary vine copula model.
+//! @brief creates an arbitrary vine copula model.
 //! @param pair_copulas Bicop objects specifying the pair-copulas, see
 //!     make_pair_copula_store().
 //! @param vine_struct an RVineStructure object specifying the vine structure.
@@ -83,7 +86,7 @@ inline Vinecop::Vinecop(const std::vector<std::vector<Bicop>> &pair_copulas,
     loglik_ = NAN;
 }
 
-//! creates an arbitrary vine copula model.
+//! @brief creates an arbitrary vine copula model.
 //! @param pair_copulas Bicop objects specifying the pair-copulas, see
 //!     make_pair_copula_store().
 //! @param matrix an R-vine matrix specifying the vine structure.
@@ -95,7 +98,7 @@ inline Vinecop::Vinecop(const std::vector<std::vector<Bicop>> &pair_copulas,
     Vinecop(pair_copulas,
             RVineStructure(matrix, check_matrix)) {}
 
-//! creates an arbitrary vine copula model.
+//! @brief creates an arbitrary vine copula model.
 //! @param pair_copulas Bicop objects specifying the pair-copulas, see
 //!     make_pair_copula_store().
 //! @param order the order of the variables in the vine structure, see
@@ -111,7 +114,7 @@ inline Vinecop::Vinecop(const std::vector<std::vector<Bicop>> &pair_copulas,
     Vinecop(pair_copulas,
             RVineStructure(order, struct_array, false, check_array)) {}
 
-//! creates from a boost::property_tree::ptree object
+//! @brief creates from a boost::property_tree::ptree object
 //! @param input the boost::property_tree::ptree object to convert from
 //! (see to_ptree() for the structure of the input).
 //! @param check_matrix whether to check if the `"matrix"` node represents
@@ -150,7 +153,7 @@ inline Vinecop::Vinecop(const boost::property_tree::ptree input,
     loglik_ = NAN;
 }
 
-//! creates from a JSON file
+//! @brief creates from a JSON file.
 //! @param filename the name of the JSON file to read (see to_ptree() for the
 //! structure of the file).
 //! @param check_matrix whether to check if the `"matrix"` node represents
@@ -160,7 +163,7 @@ inline Vinecop::Vinecop(const char *filename, const bool check_matrix) :
 {
 }
 
-//! constructs a vine copula model from data by creating a model and calling
+//! @brief constructs a vine copula model from data by creating a model and calling
 //! select_family().
 //!
 //! @param data an \f$ n \times d \f$ matrix of observations.
@@ -182,7 +185,7 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd &data,
     select_families(data, controls);
 }
 
-//! constructs a vine copula model from data by creating a model and calling
+//! @brief constructs a vine copula model from data by creating a model and calling
 //! select_family().
 //!
 //! @param data an \f$ n \times d \f$ matrix of observations.
@@ -199,7 +202,7 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd &data,
             RVineStructure(matrix, check_matrix),
             controls) {}
 
-//! constructs a vine copula model from data by creating a model and calling
+//! @brief constructs a vine copula model from data by creating a model and calling
 //! select_family().
 //!
 //! @param data an \f$ n \times d \f$ matrix of observations.
@@ -219,7 +222,7 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd &data,
             RVineStructure(order, struct_array, false, check_array),
             controls) {}
 
-//! constructs a vine copula model from data by creating a model and
+//! @brief constructs a vine copula model from data by creating a model and
 //! calling select_all().
 //!
 //! @param data an \f$ n \times d \f$ matrix of observations.
@@ -234,8 +237,9 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd &data,
     select_all(data, controls);
 }
 
-//! Convert the copula into a boost::property_tree::ptree object, which
-//! contains two nodes : `"matrix"` and `"pair copulas"`.
+//! @brief converts the copula into a boost::property_tree::ptree object.
+//!
+//! The `ptree` object contains two nodes : `"matrix"` and `"pair copulas"`.
 //! The former is encodes the R-Vine structure and the latter is a list of
 //! child nodes for the trees (`"tree1"`, `"tree2"`, etc), each containing
 //! a list of child nodes for the edges (`"pc1"`, `"pc2"`, etc).
@@ -264,16 +268,16 @@ inline boost::property_tree::ptree Vinecop::to_ptree() const
     return output;
 }
 
-//! Write the copula object into a JSON file. See to_ptree() for the structure
-//! of the file.
+//! @brief write the copula object into a JSON file.
 //!
+//! See to_ptree() for the structure of the file.
 //! @param filename the name of the file to write.
 inline void Vinecop::to_json(const char *filename) const
 {
     boost::property_tree::write_json(filename, to_ptree());
 }
 
-//! Initialize object for storing pair copulas
+//! @brief initializes object for storing pair copulas.
 //!
 //! @param d dimension of the vine copula.
 //! @param trunc_lvl a truncation level (optional).
@@ -288,8 +292,9 @@ inline std::vector<std::vector<Bicop>> Vinecop::make_pair_copula_store(
 }
 
 
-//! automatically fits and selects a vine copula model. Selection of the
-//! structure is performed using the algorithm of
+//! @brief automatically fits and selects a vine copula model.
+//!
+//! Selection of the structure is performed using the algorithm of
 //! Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka (2013).
 //! *Selecting and estimating regular vine copulae and application to
 //! financial returns.* Computational Statistics & Data Analysis, 59 (1),
@@ -313,7 +318,7 @@ inline void Vinecop::select_all(const Eigen::MatrixXd &data,
     finalize_fit(selector);
 }
 
-//! automatically selects all pair-copula families and fits all parameters.
+//! @brief automatically selects all pair-copula families and fits all parameters.
 //!
 //! @param data nxd matrix of copula data.
 //! @param controls the controls to the algorithm (see FitControlsVinecop).
@@ -339,7 +344,7 @@ inline void Vinecop::select_families(const Eigen::MatrixXd &data,
 //! @name Getters
 //! @{
 
-//! extracts a pair copula.
+//! @brief extracts a pair copula.
 //!
 //! @param tree tree index (starting with 0).
 //! @param edge edge index (starting with 0).
@@ -369,7 +374,7 @@ inline Bicop Vinecop::get_pair_copula(const size_t tree, const size_t edge) cons
     return pair_copulas_[tree][edge];
 }
 
-//! extracts all pair copulas.
+//! @brief extracts all pair copulas.
 //!
 //! @return a nested std::vector with entry `[t][e]` corresponding to
 //! edge `e` in tree `t`.
@@ -378,7 +383,7 @@ inline std::vector<std::vector<Bicop>> Vinecop::get_all_pair_copulas() const
     return pair_copulas_;
 }
 
-//! extracts the family of a pair copula.
+//! @brief extracts the family of a pair copula.
 //!
 //! @param tree tree index (starting with 0).
 //! @param edge edge index (starting with 0).
@@ -387,7 +392,7 @@ inline BicopFamily Vinecop::get_family(const size_t tree, const size_t edge) con
     return get_pair_copula(tree, edge).get_family();
 }
 
-//! extracts the families of all pair copulas.
+//! @brief extracts the families of all pair copulas.
 //!
 //! @return a nested std::vector with entry `[t][e]` corresponding to
 //! edge `e` in tree `t`.
@@ -404,7 +409,7 @@ inline std::vector<std::vector<BicopFamily>> Vinecop::get_all_families() const
     return families;
 }
 
-//! extracts the rotation of a pair copula.
+//! @brief extracts the rotation of a pair copula.
 //!
 //! @param tree tree index (starting with 0).
 //! @param edge edge index (starting with 0).
@@ -413,7 +418,7 @@ inline int Vinecop::get_rotation(const size_t tree, const size_t edge) const
     return get_pair_copula(tree, edge).get_rotation();
 }
 
-//! extracts the rotations of all pair copulas.
+//! @brief extracts the rotations of all pair copulas.
 //!
 //! @return a nested std::vector with entry `[t][e]` corresponding to
 //! edge `e` in tree `t`.
@@ -430,7 +435,7 @@ inline std::vector<std::vector<int>> Vinecop::get_all_rotations() const
     return rotations;
 }
 
-//! extracts the parameters of a pair copula.
+//! @brief extracts the parameters of a pair copula.
 //!
 //! @param tree tree index (starting with 0).
 //! @param edge edge index (starting with 0).
@@ -439,7 +444,7 @@ inline Eigen::MatrixXd Vinecop::get_parameters(const size_t tree, const size_t e
     return get_pair_copula(tree, edge).get_parameters();
 }
 
-//! extracts the Kendall's \f$ tau \f$ of a pair copula.
+//! @brief extracts the Kendall's \f$ tau \f$ of a pair copula.
 //!
 //! @param tree tree index (starting with 0).
 //! @param edge edge index (starting with 0).
@@ -455,7 +460,7 @@ inline size_t Vinecop::get_trunc_lvl() const
 
 
 
-//! extracts the parameters of all pair copulas.
+//! @brief extracts the parameters of all pair copulas.
 //!
 //! @return a nested std::vector with entry `[t][e]` corresponding to
 //! edge `e` in tree `t`.
@@ -474,7 +479,7 @@ Vinecop::get_all_parameters() const
     return parameters;
 }
 
-//! extracts the Kendall's \f$ tau \f$s of all pair copulas.
+//! @brief extracts the Kendall's \f$ tau \f$s of all pair copulas.
 //!
 //! @return a nested std::vector with entry `[t][e]` corresponding to
 //! edge `e` in tree `t`.
@@ -491,88 +496,82 @@ inline std::vector<std::vector<double>> Vinecop::get_all_taus() const
     return taus;
 }
 
-//! extracts the dimension of the vine copula model.
+//! @brief extracts the dimension of the vine copula model.
 inline size_t
 Vinecop::get_dim() const
 {
     return d_;
 }
 
-//! extracts the order vector of the vine copula model.
+//! @brief extracts the order vector of the vine copula model.
 inline std::vector<size_t>
 Vinecop::get_order() const
 {
     return vine_struct_.get_order();
 }
 
-//! extracts the structure matrix of the vine copula model.
+//! @brief extracts the structure matrix of the vine copula model.
 inline RVineStructure
 Vinecop::get_rvine_structure() const
 {
     return vine_struct_;
 }
 
-//! extracts the structure matrix of the vine copula model.
+//! @brief extracts the structure matrix of the vine copula model.
 inline Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>
 Vinecop::get_matrix() const
 {
     return vine_struct_.get_matrix();
 }
 
-//! extracts the above diagonal coefficients of the vine copula model.
+//! @brief extracts the above diagonal coefficients of the vine copula model.
 inline TriangularArray<size_t>
 Vinecop::get_struct_array() const
 {
     return vine_struct_.get_struct_array();
 }
 
-//! extracts the log-likelihood (throws an error if model has not been
+//! @brief extracts the log-likelihood (throws an error if model has not been
 //! fitted to data).
 inline double Vinecop::get_loglik() const
 {
-    if (std::isnan(loglik_)) {
-        throw std::runtime_error("copula has not been fitted from data ");
-    }
+    check_fitted();
     return loglik_;
 }
 
-//! extracts the number of observations used for the fit (throws an error if
-//! model has not been fitted to data).
+//! @brief extracts the number of observations used for the fit.
+//!
+//! The function throws an error if model has not been fitted to data.
 inline size_t Vinecop::get_nobs() const
 {
-    if (std::isnan(loglik_)) {
-        throw std::runtime_error("copula has not been fitted from data ");
-    }
+    check_fitted();
     return nobs_;
 }
 
-//! extracts the AIC (throws an error if model has not been
-//! fitted to data).
+//! @brief extracts the AIC.
+//!
+//! The function throws an error if model has not been fitted to data.
 inline double Vinecop::get_aic() const
 {
-    if (std::isnan(loglik_)) {
-        throw std::runtime_error("copula has not been fitted from data ");
-    }
+    check_fitted();
     return -2 * loglik_ + 2 * calculate_npars();
 }
 
-//! extracts the BIC (throws an error if model has not been
-//! fitted to data).
+//! @brief extracts the BIC.
+//!
+//! The function throws an error if model has not been fitted to data.
 inline double Vinecop::get_bic() const
 {
-    if (std::isnan(loglik_)) {
-        throw std::runtime_error("copula has not been fitted from data ");
-    }
+    check_fitted();
     return -2 * loglik_ + calculate_npars() * std::log(nobs_);;
 }
 
-//! extracts the log-likelihood (throws an error if model has not been
-//! fitted to data).
+//! @brief extracts the log-likelihood.
+//!
+//! The function throws an error if model has not been fitted to data.
 inline double Vinecop::get_mbicv(const double psi0) const
 {
-    if (std::isnan(loglik_)) {
-        throw std::runtime_error("copula has not been fitted from data ");
-    }
+    check_fitted();
     return -2 * loglik_ + this->calculate_mbicv_penalty(nobs_, psi0);
 }
 
@@ -613,7 +612,7 @@ inline double Vinecop::calculate_mbicv_penalty(const size_t nobs,
     return std::log(nobs) * npars - 2 * log_prior;
 }
 
-//! extracts the threshold (usually zero except `select_threshold == TRUE` in
+//! @brief extracts the threshold (usually zero except `select_threshold == TRUE` in
 //! `FitControlsVinecop()`).
 inline double Vinecop::get_threshold() const
 {
@@ -623,7 +622,7 @@ inline double Vinecop::get_threshold() const
 
 //! @}
 
-//! calculates the density function of the vine copula model.
+//! @brief calculates the density function of the vine copula model.
 //!
 //! @param u \f$ n \times d \f$ matrix of evaluation points.
 //! @param num_threads the number of threads to use for computations; if greater
@@ -702,7 +701,7 @@ inline Eigen::VectorXd Vinecop::pdf(const Eigen::MatrixXd &u,
     return vine_density;
 }
 
-//! calculates the cumulative distribution of the vine copula model.
+//! @brief calculates the cumulative distribution of the vine copula model.
 //!
 //! @param u \f$ n \times d \f$ matrix of evaluation points.
 //! @param N integer for the number of quasi-random numbers to draw
@@ -727,16 +726,8 @@ Vinecop::cdf(const Eigen::MatrixXd &u, const size_t N,
     check_data_dim(u);
 
     // Simulate N quasi-random numbers from the vine model
-    Eigen::MatrixXd U(N, d_);
-    if (d_ > 300) {
-        U = tools_stats::sobol(N, d_, seeds);
-    } else {
-        U = tools_stats::ghalton(N, d_, seeds);
-    }
-    U = inverse_rosenblatt(U, num_threads);
-
-    // Alternative: simulate N pseudo-random numbers from the vine model
-    //auto U = simulate(N);
+    auto u_sim = tools_stats::simulate_uniform(N, d_, true, seeds);
+    u_sim = inverse_rosenblatt(u_sim, num_threads);
 
     size_t n = u.rows();
     Eigen::VectorXd vine_distribution(n);
@@ -745,13 +736,13 @@ Vinecop::cdf(const Eigen::MatrixXd &u, const size_t N,
     for (size_t i = 0; i < n; i++) {
         tools_interface::check_user_interrupt(i % 1000 == 0);
         temp = u.block(i, 0, 1, d_);
-        x = (U.rowwise() - temp).rowwise().maxCoeff().array();
+        x = (u_sim.rowwise() - temp).rowwise().maxCoeff().array();
         vine_distribution(i) = (x <= 0.0).count();
     }
     return vine_distribution / static_cast<double>(N);
 }
 
-//! simulates from a vine copula model, see inverse_rosenblatt().
+//! @brief simulates from a vine copula model, see inverse_rosenblatt().
 //!
 //! @param n number of observations.
 //! @param qrng set to true for quasi-random numbers.
@@ -766,21 +757,13 @@ inline Eigen::MatrixXd Vinecop::simulate(const size_t n,
                                          const size_t num_threads,
                                          const std::vector<int>& seeds) const
 {
-    Eigen::MatrixXd U(n, d_);
-    if (qrng) {
-        if (d_ > 300) {
-            U = tools_stats::sobol(n, d_, seeds);
-        } else {
-            U = tools_stats::ghalton(n, d_, seeds);
-        }
-    } else {
-        U = tools_stats::simulate_uniform(n, d_, seeds);
-    }
-
-    return inverse_rosenblatt(U, num_threads);
+    auto u = tools_stats::simulate_uniform(n, d_, qrng, seeds);
+    return inverse_rosenblatt(u, num_threads);
 }
 
-//! calculates the log-likelihood, which is defined as
+//! @brief calculates the log-likelihood.
+//!
+//! The log-likelihood is defined as
 //! \f[ \mathrm{loglik} = \sum_{i = 1}^n \ln c(U_{1, i}, ..., U_{d, i}), \f]
 //! where \f$ c \f$ is the copula density pdf().
 //!
@@ -794,7 +777,9 @@ inline double Vinecop::loglik(const Eigen::MatrixXd &u,
     return pdf(u, num_threads).array().log().sum();
 }
 
-//! calculates the Akaike information criterion (AIC), whic is defined as
+//! @brief calculates the Akaike information criterion (AIC).
+//!
+//! The AIC is defined as
 //! \f[ \mathrm{AIC} = -2\, \mathrm{loglik} + 2 p, \f]
 //! where \f$ \mathrm{loglik} \f$ is the log-liklihood and \f$ p \f$ is the
 //! (effective) number of parameters of the model, see loglik() and
@@ -811,7 +796,9 @@ inline double Vinecop::aic(const Eigen::MatrixXd &u,
     return -2 * loglik(u, num_threads) + 2 * calculate_npars();
 }
 
-//! calculates the Bayesian information criterion (BIC), which is defined as
+//! @brief calculates the Bayesian information criterion (BIC).
+//!
+//! The BIC is defined as
 //! \f[ \mathrm{BIC} = -2\, \mathrm{loglik} +  \ln(n) p, \f]
 //! where \f$ \mathrm{loglik} \f$ is the log-liklihood and \f$ p \f$ is the
 //! (effective) number of parameters of the model, see loglik() and
@@ -829,8 +816,9 @@ inline double Vinecop::bic(const Eigen::MatrixXd &u,
         calculate_npars() * log(static_cast<double>(u.rows()));
 }
 
-//! calculates the modified Bayesian information criterion for vines (mBICV),
-//! which is defined as
+//! @brief calculates the modified Bayesian information criterion for vines (mBICV).
+//!
+//! The mBICV is defined as
 //! \f[ \mathrm{mBICV} = -2\, \mathrm{loglik} +  \ln(n) \nu, - 2 *
 //! \sum_{t=1}^(d - 1) \{q_t log(\psi_0^t) - (d - t - q_t) log(1 -\psi_0^t)\}\f]
 //! where \f$ \mathrm{loglik} \f$ is the log-liklihood, \f$ \nu \f$ is the
@@ -855,7 +843,7 @@ inline double Vinecop::mbicv(const Eigen::MatrixXd &u,
     return -2 * ll + this->calculate_mbicv_penalty(n, psi0);;
 }
 
-//! returns sum of the number of parameters for all pair copulas (see
+//! @brief returns sum of the number of parameters for all pair copulas (see
 //! Bicop::calculate_npars()).
 inline double Vinecop::calculate_npars() const
 {
@@ -868,8 +856,10 @@ inline double Vinecop::calculate_npars() const
     return npars;
 }
 
-//! calculates the Rosenblatt transform for a vine copula model. It transforms
-//! data from this model into independent uniform variates.
+//! @brief calculates the Rosenblatt transform for a vine copula model.
+//!
+//! The Rosenblatt transform converts data from this model into independent
+//! uniform variates.
 //!
 //! @param u \f$ n \times d \f$ matrix of evaluation points.
 //! @param num_threads the number of threads to use for computations; if greater
@@ -945,8 +935,9 @@ inline Eigen::MatrixXd Vinecop::rosenblatt(const Eigen::MatrixXd &u,
 }
 
 
-//! calculates the inverse Rosenblatt transform for a vine copula model,
-//! which can be used for simulation: the
+//! @brief calculates the inverse Rosenblatt transform for a vine copula model.
+//!
+//! The inverse Rosenblatt transform can be used for simulation: the
 //! function applied to independent uniform variates resembles simulated
 //! data from the vine copula model.
 //!
@@ -1072,7 +1063,7 @@ inline void Vinecop::check_data_dim(const Eigen::MatrixXd &data) const
     }
 }
 
-//! checks if pair copulas are compatible with the R-vine structure
+//! checks if pair copulas are compatible with the R-vine structure.
 inline  void Vinecop::check_pair_copulas_rvine_structure(
     const std::vector<std::vector<Bicop>> &pair_copulas) const
 {
@@ -1106,7 +1097,7 @@ inline void Vinecop::finalize_fit(const tools_select::VinecopSelector& selector)
     pair_copulas_ = selector.get_pair_copulas();
 }
 
-//! checks if weights are compatible with the data
+//! checks if weights are compatible with the data.
 inline void Vinecop::check_weights_size(const Eigen::VectorXd& weights,
                                       const Eigen::MatrixXd& data) const
 {
@@ -1123,7 +1114,14 @@ inline void Vinecop::check_enough_data(const Eigen::MatrixXd& data) const
   }
 }
 
-//! truncate the vine copula model.
+inline void Vinecop::check_fitted() const
+{
+    if (std::isnan(loglik_)) {
+        throw std::runtime_error("copula has not been fitted from data ");
+    }
+}
+
+//! @brief truncate the vine copula model.
 //! @param trunc_lvl the truncation level.
 //! If the model is already truncated at a level less than `trunc_lvl`,
 //! the function does nothing.
@@ -1133,6 +1131,30 @@ inline void Vinecop::truncate(size_t trunc_lvl)
         vine_struct_.truncate(trunc_lvl);
         pair_copulas_.resize(trunc_lvl);
     }
+}
+
+//! summarizes the model into a string (can be used for printing).
+inline std::string Vinecop::str() const
+{
+    std::stringstream str;
+    auto arr = vine_struct_.get_struct_array();
+    auto order = vine_struct_.get_order();
+    for (size_t t = 0; t < vine_struct_.get_trunc_lvl(); ++t) {
+        str << "** Tree: " << t << std::endl;
+        for (size_t e = 0; e < d_ - 1 - t; ++e) {
+            str << order[e] << "," << order[arr(t, e) - 1];
+            if (t > 0) {
+                str << " | ";
+                for (size_t cv = t - 1; cv > 1; --cv) {
+                    str << order[arr(cv, e) - 1] << ",";
+                }
+                str << order[arr(0, e) - 1];
+            }
+            str <<
+                " <-> " << pair_copulas_[t][e].str() << std::endl;
+        }
+    }
+    return str.str();
 }
 
 }

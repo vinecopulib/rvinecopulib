@@ -42,11 +42,11 @@ public:
     double get_nonparametric_mult() const;
 
     std::string get_selection_criterion() const;
-    
+
     Eigen::VectorXd get_weights() const;
 
     bool get_preselect_families() const;
-    
+
     double get_psi0() const;
 
     size_t get_num_threads() const;
@@ -61,11 +61,11 @@ public:
     void set_nonparametric_mult(double nonparametric_mult);
 
     void set_selection_criterion(std::string selection_criterion);
-    
+
     void set_weights(const Eigen::VectorXd& weights);
-    
+
     void set_preselect_families(bool preselect_families);
-    
+
     void set_psi0(double psi0);
 
     void set_num_threads(size_t num_threads);
@@ -88,7 +88,7 @@ private:
     void check_nonparametric_mult(double nonparametric_mult);
 
     void check_selection_criterion(std::string selection_criterion);
-    
+
     void check_psi0(double psi0);
 
     size_t process_num_threads(size_t num_threads);

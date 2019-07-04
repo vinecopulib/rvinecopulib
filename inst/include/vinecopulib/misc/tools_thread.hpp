@@ -11,7 +11,7 @@
 #include <queue>
 #include <future>
 #include <condition_variable>
-#include <memory>
+#include <atomic>
 
 namespace vinecopulib {
 

@@ -6,6 +6,7 @@
 
 #include <vinecopulib/misc/tools_integration.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
+#include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
 inline Bb6Bicop::Bb6Bicop()
@@ -128,6 +129,6 @@ inline double Bb6Bicop::parameters_to_tau(const Eigen::MatrixXd &parameters)
 
 inline Eigen::MatrixXd Bb6Bicop::tau_to_parameters(const double &tau)
 {
-    return vinecopulib::no_tau_to_parameters(tau);
+    return no_tau_to_parameters(tau);
 }
 }

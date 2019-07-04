@@ -7,9 +7,7 @@
 #pragma once
 
 #include <vector>
-
-#include <vinecopulib/misc/tools_eigen.hpp>
-#include <vinecopulib/bicop/family.hpp>
+#include <Eigen/Dense>
 #include <vinecopulib/bicop/class.hpp>
 
 namespace vinecopulib {
@@ -29,7 +27,7 @@ void preselect_candidates(
     const Eigen::VectorXd& weights);
 
 std::vector<double> get_c1c2(
-    const Eigen::Matrix<double, Eigen::Dynamic, 2> &data, 
+    const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
     double tau,
     const Eigen::VectorXd& weights);
 

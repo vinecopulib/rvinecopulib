@@ -4,16 +4,18 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <vinecopulib/bicop/abstract.hpp>
 #include <vinecopulib/bicop/tools_select.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
 #include <vinecopulib/misc/tools_interface.hpp>
+#include <vinecopulib/misc/tools_serialization.hpp>
 #include <mutex>
 
 //! Tools for bivariate and vine copula modeling
 namespace vinecopulib {
 
-//! creates a specific bivariate copula model.
+//! @brief creates a specific bivariate copula model.
 //! @param family the copula family.
 //! @param rotation the rotation of the copula; one of 0, 90, 180, or 270
 //!     (for Independence, Gaussian, Student, Frank, and nonparametric
@@ -32,8 +34,9 @@ inline Bicop::Bicop(const BicopFamily family, const int rotation,
     }
 }
 
-//! create a copula model from the data,
+//! @brief create a copula model from the data,
 //! equivalent to `Bicop cop; cop.select(data, controls)`.
+//!
 //! @param data see select().
 //! @param controls see select().
 inline Bicop::Bicop(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
@@ -42,7 +45,7 @@ inline Bicop::Bicop(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
     select(data, controls);
 }
 
-//! creates from a boost::property_tree::ptree object
+//! @brief creates from a boost::property_tree::ptree object
 //! @param input the boost::property_tree::ptree object to convert from
 //! (see to_ptree() for the structure of the input).
 inline Bicop::Bicop(const boost::property_tree::ptree input) :
@@ -55,7 +58,7 @@ inline Bicop::Bicop(const boost::property_tree::ptree input) :
 {
 }
 
-//! creates from a JSON file
+//! @brief creates from a JSON file
 //! @param filename the name of the JSON file to read (see to_ptree() for the
 //! structure of the file).
 inline Bicop::Bicop(const char *filename) :
@@ -63,7 +66,7 @@ inline Bicop::Bicop(const char *filename) :
 {
 }
 
-//! Convert the copula into a boost::property_tree::ptree object
+//! @brief Convert the copula into a boost::property_tree::ptree object
 //!
 //! The boost::property_tree::ptree is contains of three values named
 //! `"family"`, `"rotation"`, `"parameters"`, respectively a string
@@ -83,7 +86,7 @@ inline boost::property_tree::ptree Bicop::to_ptree() const
     return output;
 }
 
-//! Write the copula object into a JSON file
+//! @brief Write the copula object into a JSON file
 //!
 //! See to_ptree() for the structure of the file.
 //!
@@ -93,7 +96,7 @@ inline void Bicop::to_json(const char *filename) const
     boost::property_tree::write_json(filename, to_ptree());
 }
 
-//! evaluates the copula density.
+//! @brief evaluates the copula density.
 //!
 //! @param u \f$n \times 2\f$ matrix of evaluation points.
 //! @return The copula density evaluated at \c u.
@@ -105,7 +108,7 @@ const
     return bicop_->pdf(cut_and_rotate(u));
 }
 
-//! evaluates the copula distribution.
+//! @brief evaluates the copula distribution.
 //!
 //! @param u \f$n \times 2\f$ matrix of evaluation points.
 //! @return The copula distribution evaluated at \c u.
@@ -133,7 +136,9 @@ const
     }
 }
 
-//! calculates the first h-function, i.e.,
+//! @brief calculates the first h-function.
+//!
+//! The first h-function is
 //! \f$ h_1(u_1, u_2) = \int_0^{u_2} c(u_1, s) \f$.
 //! @param u \f$m \times 2\f$ matrix of evaluation points.
 inline Eigen::VectorXd
@@ -156,7 +161,9 @@ const
     }
 }
 
-//! calculates the second h-function, i.e.,
+//! @brief calculates the second h-function.
+//!
+//! The second h-function is
 //! \f$ h_2(u_1, u_2) = \int_0^{u_1} c(s, u_2) \f$.
 //! @param u \f$m \times 2\f$ matrix of evaluation points.
 inline Eigen::VectorXd
@@ -179,7 +186,7 @@ const
     }
 }
 
-//! calculates the inverse of \f$ h_1 f\f$ (see hfunc1()) w.r.t. the second
+//! @brief calculates the inverse of \f$ h_1 \f$ (see hfunc1()) w.r.t. the second
 //! argument.
 //! @param u \f$m \times 2\f$ matrix of evaluation points.
 inline Eigen::VectorXd
@@ -202,7 +209,7 @@ const
     }
 }
 
-//! calculates the inverse of \f$ h_2 f\f$ (see hfunc2()) w.r.t. the first
+//! @brief calculates the inverse of \f$ h_2 \f$ (see hfunc2()) w.r.t. the first
 //! argument.
 //! @param u \f$m \times 2\f$ matrix of evaluation points.
 inline Eigen::VectorXd
@@ -227,7 +234,7 @@ const
 //! @}
 
 
-//! simulates from a bivariate copula.
+//! @brief simulates from a bivariate copula.
 //!
 //! @param n number of observations.
 //! @param qrng set to true for quasi-random numbers.
@@ -235,23 +242,20 @@ const
 //!   the (quasi-)random number generator is seeded randomly.
 //! @return An \f$ n \times 2 \f$ matrix of samples from the copula model.
 inline Eigen::Matrix<double, Eigen::Dynamic, 2>
-Bicop::simulate(const size_t& n, 
+Bicop::simulate(const size_t& n,
                 const bool qrng,
                 const std::vector<int>& seeds) const
 {
-    Eigen::Matrix<double, Eigen::Dynamic, 2> U;
-    if (qrng) {
-        U = tools_stats::ghalton(n, 2, seeds);
-    } else {
-        U = tools_stats::simulate_uniform(n, 2, seeds);
-    }
+    auto u = tools_stats::simulate_uniform(n, 2, qrng, seeds);
 
     // use inverse Rosenblatt transform to generate a sample from the copula
-    U.col(1) = hinv1(U);
-    return U;
+    u.col(1) = hinv1(u);
+    return u;
 }
 
-//! calculates the log-likelihood, defined as
+//! @brief calculates the log-likelihood.
+//!
+//! The log-likelihood is defined as
 //! \f[ \mathrm{loglik} = \sum_{i = 1}^n \ln c(U_{1, i}, U_{2, i}), \f]
 //! where \f$ c \f$ is the copula density pdf().
 //!
@@ -262,13 +266,14 @@ inline double Bicop::loglik(
     if (u.rows() < 1) {
         return get_loglik();
     } else {
-        Eigen::MatrixXd u_no_nan = u;
-        tools_eigen::remove_nans(u_no_nan);
-        return pdf(u_no_nan).array().log().sum();
+        tools_eigen::check_if_in_unit_cube(u);
+        return bicop_->loglik(cut_and_rotate(u));
     }
 }
 
-//! calculates the Akaike information criterion (AIC), defined as
+//! @brief calculates the Akaike information criterion (AIC).
+//!
+//! The AIC is defined as
 //! \f[ \mathrm{AIC} = -2\, \mathrm{loglik} + 2 p, \f]
 //! where \f$ \mathrm{loglik} \f$ is the log-liklihood and \f$ p \f$ is the
 //! (effective) number of parameters of the model, see loglik() and
@@ -282,7 +287,9 @@ Bicop::aic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
     return -2 * loglik(u) + 2 * calculate_npars();
 }
 
-//! calculates the Bayesian information criterion (BIC), defined as
+//! @brief calculates the Bayesian information criterion (BIC).
+//!
+//! The BIC is defined as
 //! \f[ \mathrm{BIC} = -2\, \mathrm{loglik} +  \ln(n) p, \f]
 //! where \f$ \mathrm{loglik} \f$ is the log-liklihood and \f$ p \f$ is the
 //! (effective) number of parameters of the model, see loglik() and
@@ -299,8 +306,9 @@ Bicop::bic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
     return -2 * loglik(u_no_nan) + calculate_npars() * log(n);
 }
 
-//! calculates the modified Bayesian information criterion
-//! (mBIC), defined as
+//! @brief calculates the modified Bayesian information criterion (mBIC).
+//!
+//! The mBIC is defined as
 //! \f[ \mathrm{BIC} = -2\, \mathrm{loglik} +  \nu \ln(n)
 //!  - 2 (I log(\psi_0) + (1 - I) log(1 - \psi_0) \f]
 //! where \f$ \mathrm{loglik} \f$ is the log-liklihood and \f$ \nu \f$ is the
@@ -312,37 +320,39 @@ Bicop::bic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const
 //! @param u \f$n \times 2\f$ matrix of observations.
 //! @param psi0 prior probability of a non-independence copula.
 inline double
-Bicop::mbic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u, const double psi0) 
+Bicop::mbic(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u, const double psi0)
 const
 {
     bool is_indep = (this->get_family() == BicopFamily::indep);
     double npars = this->calculate_npars();
     double n = static_cast<double>(u.rows());
     double ll = this->loglik(u);
-    double log_prior = 
+    double log_prior =
         static_cast<double>(!is_indep) * std::log(psi0) +
         static_cast<double>(is_indep) * std::log(1.0 - psi0);
     return -2 * ll + std::log(n) * npars - 2 * log_prior;
 }
 
-//! Returns the actual number of parameters for parameteric families. For
-//! nonparametric families, there is a conceptually similar definition in
+//! @brief returns the actual number of parameters for parameteric families.
+//!
+//! For nonparametric families, there is a conceptually similar definition in
 //! the sense that it can be used in the calculation of fit statistics.
 inline double Bicop::calculate_npars() const
 {
     return bicop_->calculate_npars();
 }
 
-//! converts a Kendall's \f$ \tau \f$ to the copula parameters of the
-//! current family (only works for one-parameter families).
+//! @brief converts a Kendall's \f$ \tau \f$ to the copula parameters of the
+//! current family
 //!
+//! (only works for one-parameter families)
 //! @param tau a value in \f$ (-1, 1) \f$.
 inline Eigen::MatrixXd Bicop::tau_to_parameters(const double &tau) const
 {
     return bicop_->tau_to_parameters(tau);
 }
 
-//! converts the parameters to the Kendall's \f$ tau \f$ for the current
+//! @brief converts the parameters to the Kendall's \f$ tau \f$ for the current
 //! family.
 //!
 //! @param parameters the parameters (must be a valid parametrization of
@@ -382,60 +392,40 @@ inline Eigen::MatrixXd Bicop::get_parameters() const
 
 inline double Bicop::get_loglik() const
 {
-    double loglik = bicop_->get_loglik();
-    if ((boost::math::isnan)(loglik)) {
-        throw std::runtime_error("copula has not been fitted from data or its "
-                                     "parameters have been modified manually");
-    }
-    return loglik;
+    check_fitted();
+    return bicop_->get_loglik();
 }
 
 inline size_t Bicop::get_nobs() const
 {
-    if ((boost::math::isnan)(bicop_->get_loglik())) {
-        throw std::runtime_error("copula has not been fitted from data or its "
-                                     "parameters have been modified manually");
-    }
+    check_fitted();
     return nobs_;
 }
 
 inline double Bicop::get_aic() const
 {
-    double loglik = bicop_->get_loglik();
-    if ((boost::math::isnan)(loglik)) {
-        throw std::runtime_error("copula has not been fitted from data or its "
-                                     "parameters have been modified manually");
-    }
-    double npars = bicop_->calculate_npars();
-    return -2 * loglik + 2 * npars;
+    check_fitted();
+    return -2 * bicop_->get_loglik() + 2 * bicop_->calculate_npars();
 }
 
 inline double Bicop::get_bic() const
 {
-    double loglik = bicop_->get_loglik();
-    if ((boost::math::isnan)(loglik)) {
-        throw std::runtime_error("copula has not been fitted from data or its "
-                                     "parameters have been modified manually");
-    }
+    check_fitted();
     double npars = bicop_->calculate_npars();
-    return -2 * loglik + std::log(nobs_) * npars;
+    return -2 * bicop_->get_loglik() + std::log(nobs_) * npars;
 }
 
 inline double Bicop::get_mbic(const double psi0) const
 {
-    double loglik = bicop_->get_loglik();
-    if ((boost::math::isnan)(loglik)) {
-        throw std::runtime_error("copula has not been fitted from data or its "
-                                     "parameters have been modified manually");
-    }
-    return -2 * loglik + compute_mbic_penalty(nobs_, psi0);
+    check_fitted();
+    return -2 * bicop_->get_loglik() + compute_mbic_penalty(nobs_, psi0);
 }
 
 inline double Bicop::compute_mbic_penalty(const size_t nobs, const double psi0) const
 {
     double npars = bicop_->calculate_npars();
     bool is_indep = (this->get_family() == BicopFamily::indep);
-    double log_prior = 
+    double log_prior =
         static_cast<double>(!is_indep) * std::log(psi0) +
         static_cast<double>(is_indep) * std::log(1.0 - psi0);
     return std::log(nobs) * npars  - 2 * log_prior;
@@ -490,10 +480,11 @@ inline std::string Bicop::str() const
     if (get_rotation() != 0) {
         bicop_str << " " << get_rotation() << "°";
     }
-    if (get_family() != BicopFamily::indep) {
+    if (get_family() == BicopFamily::tll) {
+        bicop_str << ", parameters = [30x30 grid]";
+    } else if (get_family() != BicopFamily::indep) {
         bicop_str << ", parameters = " << get_parameters();
     }
-
     return bicop_str.str().c_str();
 }
 //! @}
@@ -503,7 +494,7 @@ inline BicopPtr Bicop::get_bicop() const
     return bicop_;
 }
 
-//! fits a bivariate copula (with fixed family) to data.
+//! @brief fits a bivariate copula (with fixed family) to data.
 //!
 //! For parametric models, two different methods are available. `"mle"` fits
 //! the parameters by maximum-likelihood. `"itau"` uses inversion of
@@ -527,20 +518,22 @@ inline void Bicop::fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
         method = controls.get_nonparametric_method();
     }
     tools_eigen::check_if_in_unit_cube(data);
-    
+
     auto w = controls.get_weights();
     Eigen::MatrixXd data_no_nan = data;
     check_weights_size(w, data);
     tools_eigen::remove_nans(data_no_nan, w);
 
-    bicop_->fit(cut_and_rotate(data_no_nan), 
+    bicop_->fit(cut_and_rotate(data_no_nan),
                 method,
                 controls.get_nonparametric_mult(),
                 w);
     nobs_ = data_no_nan.rows();
 }
 
-//! selects the best fitting model, by calling fit() for all families in
+//! @brief selects the best fitting model.
+//!
+//! The function calls fit() for all families in
 //! `family_set` and selecting the best fitting model by either BIC or AIC,
 //! see bic() and aic().
 //!
@@ -574,7 +567,7 @@ inline void Bicop::select(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
         std::mutex m;
         auto fit_and_compare = [&](Bicop cop) {
             tools_interface::check_user_interrupt();
-            
+
             // Estimate the model
             cop.fit(data_no_nan, controls);
 
@@ -592,13 +585,13 @@ inline void Bicop::select(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
                     n_eff /= controls.get_weights().array().pow(2).sum();
                 }
                 double npars = cop.calculate_npars();
-                
+
                 new_criterion = -2 * ll + log(n_eff) * npars;  // BIC
                 if (controls.get_selection_criterion() == "mbic") {
                     // correction for mBIC
                     bool is_indep = (this->get_family() == BicopFamily::indep);
                     double psi0 = controls.get_psi0();
-                    double log_prior = 
+                    double log_prior =
                         static_cast<double>(!is_indep) * log(psi0) +
                         static_cast<double>(is_indep) * log(1.0 - psi0);
                     new_criterion -= 2 * log_prior;
@@ -624,7 +617,19 @@ inline void Bicop::select(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
     }
 }
 
-//! Data manipulations for rotated families
+//! extract lower bounds for copula parameters.
+inline Eigen::MatrixXd Bicop::get_parameters_lower_bounds() const
+{
+    return bicop_->get_parameters_lower_bounds();
+}
+
+//! extract upper bounds for copula parameters.
+inline Eigen::MatrixXd Bicop::get_parameters_upper_bounds() const
+{
+    return bicop_->get_parameters_upper_bounds();
+}
+
+//! @brief Data manipulations for rotated families
 //!
 //! @param u \f$m \times 2\f$ matrix of data.
 //! @return The manipulated data.
@@ -684,6 +689,14 @@ inline void Bicop::check_weights_size(const Eigen::VectorXd& weights,
 {
     if ((weights.size() > 0) & (weights.size() != data.rows())) {
         throw std::runtime_error("sizes of weights and data don't match.");
+    }
+}
+
+inline void Bicop::check_fitted() const
+{
+    if ((boost::math::isnan)(bicop_->get_loglik())) {
+        throw std::runtime_error("copula has not been fitted from data or its "
+                                     "parameters have been modified manually");
     }
 }
 }

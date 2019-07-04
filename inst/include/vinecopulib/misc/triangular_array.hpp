@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <vinecopulib/misc/tools_stl.hpp>
 #include <iostream>
+#include <vector>
 #include <stdexcept>
 
 namespace vinecopulib {
@@ -51,7 +51,7 @@ public:
     std::vector<T> operator[](size_t column) const;
     bool operator==(const TriangularArray<T>& rhs) const;
 
-    void set_column(size_t column, const std::vector<size_t>& new_col);
+    void set_column(size_t column, const std::vector<size_t>& new_column);
     void truncate(size_t trunc_lvl);
 
     size_t get_trunc_lvl() const;
@@ -66,14 +66,16 @@ private:
 };
 
 
-//! construct a triangular array of dimension `d` (the array has `d-1` columns
-//! and `d-1` rows).
+//! @brief construct a triangular array of dimension `d`.
+//!
+//! The array has `d-1` columns and `d-1` rows.
 //! @param d the dimension of the underlying vine.
 template<typename T>
 TriangularArray<T>::TriangularArray(size_t d) : TriangularArray(d, d - 1) {}
 
-//! construct a truncated triangular array (the array has `d-1` columns and
-//! `min(trunv_lvl, d-1)` rows).
+//! @brief construct a truncated triangular array
+//!
+//! The array has `d-1` columns and `min(trunv_lvl, d-1)` rows.
 //! @param d the dimension of the vine.
 //! @param trunc_lvl the truncation level.
 template<typename T>
@@ -89,7 +91,7 @@ TriangularArray<T>::TriangularArray(size_t d, size_t trunc_lvl) :
         mat_[i] = std::vector<T>(std::min(d - i - 1, trunc_lvl));
 }
 
-//! access one element of the trapezoid (writable).
+//! @brief access one element of the trapezoid (writable).
 //! @param tree the tree level.
 //! @param edge the edge in this tree.
 template<typename T>
@@ -100,7 +102,7 @@ T& TriangularArray<T>::operator()(size_t tree, size_t edge)
     return mat_[edge][tree];
 }
 
-//! access one element of the trapezoid (non-writable).
+//! @brief access one element of the trapezoid (non-writable).
 //! @param tree the tree level.
 //! @param edge the edge in this tree.
 template<typename T>
@@ -111,7 +113,7 @@ T TriangularArray<T>::operator()(size_t tree, size_t edge) const
     return mat_[edge][tree];
 }
 
-//! access one column of the trapezoid (writable).
+//! @brief access one column of the trapezoid (writable).
 //! @param column which column to extract.
 template<typename T>
 std::vector<T>& TriangularArray<T>::operator[](size_t column)
@@ -120,7 +122,7 @@ std::vector<T>& TriangularArray<T>::operator[](size_t column)
     return mat_[column];
 }
 
-//! access one column of the trapezoid (non-writable).
+//! @brief access one column of the trapezoid (non-writable).
 //! @param column which column to extract.
 template<typename T>
 std::vector<T> TriangularArray<T>::operator[](size_t column) const
@@ -129,32 +131,32 @@ std::vector<T> TriangularArray<T>::operator[](size_t column) const
     return mat_[column];
 }
 
-//! set one column of the trapezoid.
+//! @brief set one column of the trapezoid.
 //! @param column which column to set.
 //! @param new_column the column column to set.
 template<typename T>
 void TriangularArray<T>::set_column(size_t column,
-                                    const std::vector<size_t>& new_col)
+                                    const std::vector<size_t>& new_column)
 {
     if (column >= d_ - 1) {
         std::stringstream problem;
         problem << "column should be smaller than " << d_ - 1 << ".";
         throw std::runtime_error(problem.str());
     }
-    if (new_col.size() != mat_[column].size()) {
+    if (new_column.size() != mat_[column].size()) {
         std::stringstream problem;
         problem << "column " << column << " should have size "
                 << mat_[column].size() << ".";
         throw std::runtime_error(problem.str());
     }
 
-    mat_[column] = new_col;
+    mat_[column] = new_column;
 }
 
-//! truncates the trapezoid.
-//! @param trunc_lvl the truncation level.
+//! @brief truncates the trapezoid.
 //! If the trapezoid is already truncated at a level
 //! less than `trunc_lvl`, the function does nothing.
+//! @param trunc_lvl the truncation level.
 template<typename T>
 void TriangularArray<T>::truncate(size_t trunc_lvl)
 {
@@ -166,8 +168,8 @@ void TriangularArray<T>::truncate(size_t trunc_lvl)
     }
 }
 
-//! equality operator to compare two TriangularArray objects.
-//! @param right-hand-side of the equality operator.
+//! @brief equality operator to compare two TriangularArray objects.
+//! @param rhs right-hand-side of the equality operator.
 template<typename T>
 bool TriangularArray<T>::operator==(const TriangularArray<T>& rhs) const
 {
@@ -210,7 +212,7 @@ std::string TriangularArray<T>::str() const
     return str.str();
 }
 
-//! ostream method for RightTrapezoid, to be used with `std::cout`
+//! @brief ostream method for RightTrapezoid, to be used with `std::cout`
 //! @param os an output stream.
 //! @param tri_array n triangular array.
 template<typename T>

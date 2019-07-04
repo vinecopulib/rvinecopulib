@@ -6,4 +6,5 @@
 
 #include <vinecopulib/bicop/class.hpp>
 #include <vinecopulib/vinecop/class.hpp>
+#include <vinecopulib/misc/tools_stats.hpp>
 #include <wdm/eigen.hpp>

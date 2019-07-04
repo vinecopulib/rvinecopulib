@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <vinecopulib/misc/tools_stl.hpp>
-#include <vector>
+#include <functional>
 #include <Eigen/Dense>
+#include <boost/math/special_functions/fpclassify.hpp> // isnan
 
 namespace vinecopulib {
 
@@ -21,7 +21,11 @@ template<typename T>
 Eigen::MatrixXd unaryExpr_or_nan(const Eigen::MatrixXd &x, const T &func)
 {
     return x.unaryExpr([&func](const double &y) {
-        return tools_stl::unaryFunc_or_nan(func, y);
+        if ((boost::math::isnan)(y)) {
+            return std::numeric_limits<double>::quiet_NaN();
+        } else {
+            return func(y);
+        }
     });
 }
 
@@ -31,7 +35,11 @@ Eigen::VectorXd binaryExpr_or_nan(
     const T &func)
 {
     auto func_or_nan = [&func](const double &u1, const double &u2) {
-        return tools_stl::binaryFunc_or_nan(func, u1, u2);
+        if ((boost::math::isnan)(u1) | (boost::math::isnan)(u2)) {
+            return std::numeric_limits<double>::quiet_NaN();
+        } else {
+            return func(u1, u2);
+        }
     };
     return u.col(0).binaryExpr(u.col(1), func_or_nan);
 }

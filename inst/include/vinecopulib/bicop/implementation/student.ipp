@@ -35,8 +35,7 @@ inline Eigen::VectorXd StudentBicop::pdf_raw(
     f = f.array().pow(-(nu + 2.0) / 2.0);
     f = f.cwiseQuotient(tools_stats::dt(tmp, nu).rowwise().prod());
     f *= boost::math::tgamma_ratio((nu + 2.0) / 2.0, nu / 2.0);
-    f /= (nu * boost::math::constants::pi<double>() *
-          sqrt(1.0 - pow(rho, 2.0)));
+    f /= (nu * constant::pi * sqrt(1.0 - pow(rho, 2.0)));
 
     return f;
 }
@@ -105,13 +104,13 @@ inline Eigen::VectorXd StudentBicop::hinv1(
 inline Eigen::VectorXd StudentBicop::get_start_parameters(const double tau)
 {
     Eigen::VectorXd parameters = get_parameters();
-    parameters(0) = sin(tau * boost::math::constants::pi<double>() / 2);;
+    parameters(0) = std::sin(tau * constant::pi / 2);;
     parameters(1) = 5;
     return parameters;
 }
 
 inline Eigen::MatrixXd StudentBicop::tau_to_parameters(const double &tau)
 {
-    return vinecopulib::no_tau_to_parameters(tau);
+    return no_tau_to_parameters(tau);
 }
 }

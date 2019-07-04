@@ -16,11 +16,11 @@
 //  VINECOPULIB_VERSION / 100 % 1000 is the minor version
 //  VINECOPULIB_VERSION / 100000 is the major version
 
-#define VINECOPULIB_VERSION 000301
+#define VINECOPULIB_VERSION 000302
 
 //
 //  VINECOPULIB_LIB_VERSION must be defined to be the same as VINECOPULIB_VERSION
 //  but as a *string* in the form "x_y[_z]" where x is the major version
 //  number, y is the minor version number, and z is the patch level if not 0.
 
-#define VINECOPULIB_LIB_VERSION "0_3_1"
+#define VINECOPULIB_LIB_VERSION "0_3_2"

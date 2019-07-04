@@ -6,11 +6,19 @@
 
 #pragma once
 
-#include <vinecopulib/bicop/class.hpp>
+#include <Eigen/Dense>
+#include <vinecopulib/vinecop/fit_controls.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <vinecopulib/vinecop/rvine_structure.hpp>
-#include <vinecopulib/vinecop/tools_select.hpp>
 
 namespace vinecopulib {
+
+// forward declarations
+class Bicop;
+namespace tools_select {
+    class VinecopSelector;
+}
+
 //! @brief A class for vine copula models
 //!
 //! A vine copula model is characterized by the structure matrix (see
@@ -160,15 +168,17 @@ public:
     double mbicv(const Eigen::MatrixXd &u, const double psi0, const size_t num_threads = 1) const;
 
     // Misc methods
-    static std::vector <std::vector<Bicop>>
+    static std::vector<std::vector<Bicop>>
     make_pair_copula_store(const size_t d,
                            const size_t trunc_lvl = std::numeric_limits<size_t>::max());
     void truncate(size_t trunc_lvl);
 
+    std::string str() const;
+
 protected:
     size_t d_;
     RVineStructure vine_struct_;
-    std::vector <std::vector<Bicop>> pair_copulas_;
+    std::vector<std::vector<Bicop>> pair_copulas_;
     double threshold_;
     double loglik_;
     size_t nobs_;
@@ -181,6 +191,7 @@ protected:
     void check_weights_size(const Eigen::VectorXd& weights,
                             const Eigen::MatrixXd& data) const;
     void check_enough_data(const Eigen::MatrixXd& data) const;
+    void check_fitted() const;
 };
 
 }

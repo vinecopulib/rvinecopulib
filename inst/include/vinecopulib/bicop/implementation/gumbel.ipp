@@ -4,10 +4,10 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <vinecopulib/misc/tools_stl.hpp>
 #include <cmath>
 #include <boost/math/special_functions/fpclassify.hpp> // isnan
 #include <boost/math/special_functions/log1p.hpp>
+#include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
 inline GumbelBicop::GumbelBicop()

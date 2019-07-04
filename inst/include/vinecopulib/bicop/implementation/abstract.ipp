@@ -5,10 +5,8 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <stdexcept>
-#include <cmath>
 
-#include <vinecopulib/misc/tools_stl.hpp>
-
+#include <vinecopulib/misc/tools_eigen.hpp>
 #include <vinecopulib/bicop/bb1.hpp>
 #include <vinecopulib/bicop/bb6.hpp>
 #include <vinecopulib/bicop/bb7.hpp>
@@ -23,6 +21,7 @@
 #include <vinecopulib/bicop/tll.hpp>
 
 namespace vinecopulib {
+
 //! virtual destructor
 inline AbstractBicop::~AbstractBicop()
 {
@@ -90,7 +89,7 @@ inline BicopPtr AbstractBicop::create(BicopFamily family,
 
 //!@}
 
-inline Eigen::VectorXd no_tau_to_parameters(const double &)
+inline Eigen::MatrixXd AbstractBicop::no_tau_to_parameters(const double &)
 {
     throw std::runtime_error("Method not implemented for this family");
 }
@@ -130,6 +129,21 @@ inline Eigen::VectorXd AbstractBicop::pdf(
     return tools_eigen::unaryExpr_or_nan(pdf_raw(u), trim);
 }
 
+//! evaluates the log-likelihood.
+//! @param u data matrix.
+//! @param weights optional weights for each observation.
+inline double AbstractBicop::loglik(
+    const Eigen::Matrix<double, Eigen::Dynamic, 2> &u,
+    const Eigen::VectorXd weights)
+{
+    Eigen::MatrixXd log_pdf = this->pdf(u).array().log();
+    if (weights.size() > 0) {
+        log_pdf = log_pdf.cwiseProduct(weights);
+    }
+    tools_eigen::remove_nans(log_pdf);
+    return log_pdf.sum();
+}
+
 //! Numerical inversion of h-functions
 //!
 //! These are generic functions to invert the hfunctions numerically.
@@ -146,14 +160,8 @@ AbstractBicop::hinv1_num(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u)
         u_new.col(1) = v;
         return hfunc1(u_new);
     };
-    auto res = tools_eigen::invert_f(u.col(1), h1);
-    size_t n = u.rows();
-    for (size_t j = 0; j < n; j++) {
-        if ((boost::math::isnan)(u(j, 0)) | (boost::math::isnan)(u(j, 1))) {
-            res(j) = std::numeric_limits<double>::quiet_NaN();
-        }
-    }
-    return res;
+
+    return tools_eigen::invert_f(u.col(1), h1);
 }
 
 inline Eigen::VectorXd
@@ -165,14 +173,7 @@ AbstractBicop::hinv2_num(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u)
         return hfunc2(u_new);
     };
 
-    auto res = tools_eigen::invert_f(u.col(0), h1);
-    size_t n = u.rows();
-    for (size_t j = 0; j < n; j++) {
-        if ((boost::math::isnan)(u(j, 0)) | (boost::math::isnan)(u(j, 1))) {
-            res(j) = std::numeric_limits<double>::quiet_NaN();
-        }
-    }
-    return res;
+    return tools_eigen::invert_f(u.col(0), h1);
 }
 //! @}
 }

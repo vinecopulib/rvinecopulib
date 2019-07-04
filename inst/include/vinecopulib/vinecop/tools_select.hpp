@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <cstddef>
 #include <boost/graph/adjacency_list.hpp>
 #include <vinecopulib/bicop/class.hpp>
 #include <vinecopulib/vinecop/fit_controls.hpp>
@@ -78,7 +77,7 @@ typedef std::pair<EdgeIterator, bool> FoundEdge;
 class VinecopSelector
 {
 public:
-    VinecopSelector(const Eigen::MatrixXd& data, 
+    VinecopSelector(const Eigen::MatrixXd& data,
                     const FitControlsVinecop& controls);
 
     std::vector<std::vector<Bicop>> get_pair_copulas() const;
@@ -96,7 +95,7 @@ public:
     double get_loglik() const;
 
     double get_threshold() const;
-    
+
     size_t get_nobs() const;
 
     std::vector<VineTree> get_trees() const {return trees_;};
@@ -106,7 +105,7 @@ protected:
     virtual void select_tree(size_t t);
 
     virtual void finalize(size_t trunc_lvl) = 0;
-    
+
     double get_mbicv_of_tree(size_t t, double loglik);
 
     double get_loglik_of_tree(size_t t);
@@ -118,12 +117,12 @@ protected:
     void print_pair_copulas_of_tree(size_t);
 
     std::vector<double> get_thresholded_crits();
-    
+
     void initialize_new_fit(const Eigen::MatrixXd &data);
 
     void set_current_fit_as_opt(const double& loglik);
-    
-    
+
+
     virtual void add_allowed_edges(VineTree &tree) = 0;
 
     Eigen::MatrixXd get_pc_data(size_t v0, size_t v1, const VineTree &tree);
@@ -161,7 +160,7 @@ protected:
 
     void remove_vertex_data(VineTree &tree);
 
-    void select_pair_copulas(VineTree &tree, 
+    void select_pair_copulas(VineTree &tree,
                              const VineTree &tree_opt = VineTree());
 
     FoundEdge find_old_fit(double fit_id, const VineTree &old_graph);
@@ -169,7 +168,7 @@ protected:
     double get_tree_loglik(const VineTree &tree);
 
     double get_tree_npars(const VineTree &tree);
-    
+
     size_t get_num_non_indeps_of_tree(size_t t);
 
     std::string get_pc_index(const EdgeIterator &e, const VineTree &tree);
