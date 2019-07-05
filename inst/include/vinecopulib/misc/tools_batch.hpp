@@ -19,6 +19,7 @@ struct Batch {
 
 inline std::vector<Batch> create_batches(size_t num_tasks, size_t num_threads)
 {
+    num_threads = std::max(static_cast<size_t>(1), num_threads);
     std::vector<Batch> batches(std::min(num_tasks, num_threads));
     size_t min_size = num_tasks / num_threads;
     ptrdiff_t rem_size = num_tasks % num_threads;

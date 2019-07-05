@@ -4,7 +4,7 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <vinecopulib/misc/tools_stl.hpp>
+#include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
 //inline Eigen::VectorXd ArchimedeanBicop::pdf(

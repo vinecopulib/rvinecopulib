@@ -80,12 +80,12 @@ The returned lists have two additional attributes: \cr
 # specify pair-copulas
 bicop <- bicop_dist("bb1", 90, c(3, 2))
 pcs <- list(
-    list(bicop, bicop),  # pair-copulas in first tree 
-    list(bicop)          # pair-copulas in second tree 
+  list(bicop, bicop), # pair-copulas in first tree
+  list(bicop) # pair-copulas in second tree
 )
 
 # specify R-vine matrix
-mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3) 
+mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
 
 # set up vine copula model
 vc <- vinecop_dist(pcs, mat)
@@ -98,5 +98,4 @@ all.equal(get_matrix(vc), mat, check.attributes = FALSE)
 get_pair_copula(vc, 1, 1)
 get_all_pair_copulas(vc)
 all.equal(get_all_pair_copulas(vc), pcs, check.attributes = FALSE)
-
 }

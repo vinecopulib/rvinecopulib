@@ -6,24 +6,14 @@
 
 #pragma once
 
-#include <vinecopulib/misc/tools_bobyqa.hpp>
-#include <vinecopulib/misc/tools_eigen.hpp>
-#include <vinecopulib/bicop/parametric.hpp>
+#include <Eigen/Dense>
 
 namespace vinecopulib {
 
-namespace tools_optimization {
+// forward declaration of parametric subclass
+class ParBicop;
 
-//! @brief A helper struct for (profile) maximum likelihood estimation
-typedef struct
-{
-    const Eigen::Matrix<double, Eigen::Dynamic, 2> &U; //!< the data.
-    vinecopulib::ParBicop *bicop; //!< a pointer to the bivariate copula to optimize.
-    double par0;  //!< main dependence parameter.
-    size_t objective_calls; //!< number of evaluations of the objective.
-    Eigen::VectorXd weights; //!< weights for the observations.
-    double objective_min;  //!< final value of the objective function 
-} ParBicopOptData;
+namespace tools_optimization {
 
 //! @brief A class for the controls to Bobyqa
 class BobyqaControls
@@ -59,24 +49,29 @@ private:
 class Optimizer
 {
 public:
-    Optimizer(size_t n_parameters,
-              const Eigen::MatrixXd &lower_bounds,
-              const Eigen::MatrixXd &upper_bounds);
+    Optimizer();
 
     void set_controls(double initial_trust_region,
                       double final_trust_region,
                       int maxeval);
 
-    Eigen::VectorXd optimize(Eigen::VectorXd initial_parameters,
-                             std::function<double(void *, long,
-                                                  const double *)> objective,
-                             void *f_data);
+    Eigen::VectorXd optimize(
+        const Eigen::VectorXd &initial_parameters,
+        const Eigen::VectorXd &lower_bounds,
+        const Eigen::VectorXd &upper_bounds,
+        std::function<double(const Eigen::VectorXd&)> objective);
+
+    size_t get_objective_calls() const;
+    double get_objective_max() const;
 
 private:
-    size_t n_parameters_;
+    void check_parameters_size(const Eigen::VectorXd &initial_parameters,
+                           const Eigen::VectorXd &lower_bounds,
+                           const Eigen::VectorXd &upper_bounds) const;
+
     BobyqaControls controls_;
-    Eigen::MatrixXd lb_;
-    Eigen::MatrixXd ub_;
+    size_t objective_calls_{0};
+    double objective_max_{0};
 };
 }
 

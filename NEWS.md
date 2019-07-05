@@ -1,3 +1,22 @@
+# rvinecopulib 0.3.1.1.0 (July 4, 2019)
+
+Release following the updates of vinecopulib to 0.3.2, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+NEW FEATURES
+
+   * improved extensibility for packages including on the C++-headers of vinecopulib (#178)
+
+   * new EDA function `pairs_copula_data()` (#181).
+
+BUG FIXES
+
+   * ensure that input and output type of `pseudo_obs()` match (#182).
+   
+   * fix printing of `"tll"` family in `summary.vinecop() (#183).
+
+
 # rvinecopulib 0.3.1.1.0 (April 19, 2019)
 
 Release following the updates of vinecopulib to 0.3.1, see 

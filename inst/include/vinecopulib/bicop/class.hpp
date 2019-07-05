@@ -6,18 +6,22 @@
 
 #pragma once
 
-#include <vinecopulib/bicop/abstract.hpp>
 #include <vinecopulib/bicop/fit_controls.hpp>
-#include <vinecopulib/misc/tools_interface.hpp>
-#include <vinecopulib/misc/tools_serialization.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 namespace vinecopulib {
+
+// forward declaration of Abstract class
+class AbstractBicop;
+using BicopPtr = std::shared_ptr<AbstractBicop>;
+
 //! @brief A class for bivariate copula models.
 //!
 //! The copula model is fully characterized by the family, rotation,
 //! and parameters.
 class Bicop
 {
+
 public:
     // Constructors
     Bicop(const BicopFamily family = BicopFamily::indep,
@@ -44,7 +48,7 @@ public:
     int get_rotation() const;
 
     Eigen::MatrixXd get_parameters() const;
-    
+
     double get_tau() const;
 
     double get_loglik() const;
@@ -77,7 +81,7 @@ public:
     hinv2(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
 
     Eigen::Matrix<double, Eigen::Dynamic, 2>
-    simulate(const size_t &n, 
+    simulate(const size_t &n,
              const bool qrng = false,
              const std::vector<int>& seeds = std::vector<int>()) const;
 
@@ -106,7 +110,7 @@ public:
         const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
             Eigen::Matrix<double, Eigen::Dynamic, 2>(),
         const double psi0 = 0.9) const;
-    
+
     // Misc
     std::string str() const;
 
@@ -118,18 +122,22 @@ public:
 
     void flip();
 
-private:
     Eigen::MatrixXd get_parameters_lower_bounds() const;
 
     Eigen::MatrixXd get_parameters_upper_bounds() const;
+
+private:
 
     Eigen::Matrix<double, Eigen::Dynamic, 2> cut_and_rotate(
         const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
 
     void check_rotation(int rotation) const;
-    
-    void check_weights_size(const Eigen::VectorXd& weights, 
+
+    void check_weights_size(const Eigen::VectorXd& weights,
                             const Eigen::MatrixXd& data) const;
+
+    void check_fitted() const;
+
     double compute_mbic_penalty(const size_t nobs, const double psi0) const;
 
     BicopPtr get_bicop() const;

@@ -4,9 +4,10 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <vinecopulib/misc/tools_stats.hpp>
+#include <vinecopulib/bicop/parametric.hpp>
+#include <vinecopulib/misc/tools_bobyqa.hpp>
 #include <boost/math/tools/minima.hpp>
-#include <iostream>
+
 namespace vinecopulib {
 
 //! Utilities for numerical optimization (based on Bobyqa)
@@ -18,17 +19,8 @@ namespace tools_optimization {
 //! @param lower_bounds
 //! @param upper_bounds
 //! @param objective The optimizer's objective function
-inline Optimizer::Optimizer(size_t n_parameters,
-                            const Eigen::MatrixXd &lower_bounds,
-                            const Eigen::MatrixXd &upper_bounds)
+inline Optimizer::Optimizer() : controls_(BobyqaControls())
 {
-    if (n_parameters < 1) {
-        throw std::runtime_error("n_parameters should be larger than 0.");
-    }
-    n_parameters_ = n_parameters;
-    controls_ = BobyqaControls();
-    lb_ = lower_bounds;
-    ub_ = upper_bounds;
 }
 
 //! set the optimizer's controls.
@@ -43,6 +35,91 @@ inline void Optimizer::set_controls(double initial_trust_region,
     controls_ = BobyqaControls(initial_trust_region,
                                final_trust_region,
                                maxeval);
+}
+
+//! @brief solve the maximization problem.
+//!
+//! @param initial_parameters of starting values for the optimization
+//!     algorithm.
+//! @param lower_bounds lower bounds for the parameters.
+//! @param upper_bounds upper bounds for the parameters.
+//! @param the objective function to maximize.
+//! @return the optimal parameters.
+inline Eigen::VectorXd Optimizer::optimize(
+    const Eigen::VectorXd &initial_parameters,
+    const Eigen::VectorXd &lower_bounds,
+    const Eigen::VectorXd &upper_bounds,
+    std::function<double(const Eigen::VectorXd&)> objective)
+{
+    check_parameters_size(initial_parameters, lower_bounds, upper_bounds);
+    size_t n_parameters = initial_parameters.size();
+    auto optimal_parameters = initial_parameters;
+    if (n_parameters > 1) {
+        //const int number_interpolation_conditions = (n_parameters + 1) *
+        //        (n_parameters + 2)/2;
+        int number_interpolation_conditions = n_parameters + 3;
+        std::function<double(long, const double*)> f =
+            [objective, this](long n, const double *x) {
+            Eigen::Map<const Eigen::VectorXd> par(x, n);
+            this->objective_calls_++;
+            return -objective(par);
+        };
+        auto result = tools_bobyqa::bobyqa(f, n_parameters,
+                                           number_interpolation_conditions,
+                                           initial_parameters,
+                                           lower_bounds, upper_bounds,
+                                           controls_.get_initial_trust_region(),
+                                           controls_.get_final_trust_region(),
+                                           controls_.get_maxeval());
+        optimal_parameters = result.first;
+        objective_max_ = -result.second;
+    } else {
+        double eps = 1e-6;
+        std::function<double(double)> f = [objective, this](double x) {
+            Eigen::Map<const Eigen::VectorXd> par(&x, 1);
+            this->objective_calls_++;
+            return -objective(par);
+        };
+        auto result = boost::math::tools::brent_find_minima(
+            f,
+            static_cast<double>(lower_bounds(0)) + eps,
+            static_cast<double>(upper_bounds(0)) - eps,
+            20);
+        optimal_parameters(0) = result.first;
+        objective_max_ = -result.second;
+    }
+
+    return optimal_parameters;
+}
+
+//! @brief returns how often the objective function was called.
+inline size_t Optimizer::get_objective_calls() const
+{
+    return objective_calls_;
+}
+
+//! @brief returns the objective value at the maximum.
+inline double Optimizer::get_objective_max() const
+{
+    return objective_max_;
+}
+
+//! checks whether sizes of parameters and bounds match.
+inline void Optimizer::check_parameters_size(
+    const Eigen::VectorXd &initial_parameters,
+    const Eigen::VectorXd &lower_bounds,
+    const Eigen::VectorXd &upper_bounds) const
+{
+    if (initial_parameters.size() != upper_bounds.size()) {
+        throw std::runtime_error(
+            "initial parameters and and bounds must have same size.");
+    }
+    if (lower_bounds.size() != upper_bounds.size()) {
+        throw std::runtime_error("lower and upper bounds must have same size.");
+    }
+    if (lower_bounds.size() < 1) {
+        throw std::runtime_error("n_parameters should be larger than 0.");
+    }
 }
 
 //! Create controls using the default contructor
@@ -95,15 +172,13 @@ inline void BobyqaControls::check_parameters(double initial_trust_region,
 //! @{
 
 //! @return the initial trust region.
-inline double
-BobyqaControls::get_initial_trust_region()
+inline double BobyqaControls::get_initial_trust_region()
 {
     return initial_trust_region_;
 }
 
 //! @return the final trust region.
-inline double
-BobyqaControls::get_final_trust_region()
+inline double BobyqaControls::get_final_trust_region()
 {
     return final_trust_region_;
 }
@@ -116,98 +191,5 @@ inline int BobyqaControls::get_maxeval()
 
 //! @}
 
-//! @name (Pseudo-) maximum likelihood estimation
-//! @param f_data a pointer to a ParBicopOptData object.
-//! @param n number of parameters.
-//! @param x the parameters.
-//! @{
-
-//! evaluates the objective function for maximum likelihood estimation.
-inline double mle_objective(void *f_data, long n, const double *x)
-{
-    ParBicopOptData *newdata = static_cast<ParBicopOptData *>(f_data);
-    ++newdata->objective_calls;
-    Eigen::Map<const Eigen::VectorXd> par(&x[0], n);
-    newdata->bicop->set_parameters(par);
-    if (newdata->weights.size() > 0) {
-        return -(newdata->bicop->pdf(newdata->U).array().log() * 
-                    newdata->weights.array()).sum();
-    } else {
-        return -newdata->bicop->pdf(newdata->U).array().log().sum();
-    }
 }
-
-//! evaluates the objective function for profile maximum likelihood
-//! estimation.
-inline double pmle_objective(void *f_data, long n, const double *x)
-{
-    ParBicopOptData *newdata = static_cast<ParBicopOptData *>(f_data);
-    ++newdata->objective_calls;
-    Eigen::VectorXd par = Eigen::VectorXd::Ones(n + 1);
-    par(0) = newdata->par0;
-    for (long i = 0; i < n; ++i) {
-        par(i + 1) = x[i];
-    }
-    newdata->bicop->set_parameters(par);
-    if (newdata->weights.size() > 0) {
-        return -(newdata->bicop->pdf(newdata->U).array().log() * 
-                    newdata->weights.array()).sum();
-    } else {
-        return -newdata->bicop->pdf(newdata->U).array().log().sum();
-    }
-
-}
-
-//! @}
-
-//! solve the optimization problem.
-//!
-//! @param initial_parameters of starting values for the optimization
-//!     algorithm.
-//! @return the optimal parameters.
-inline Eigen::VectorXd Optimizer::optimize(Eigen::VectorXd initial_parameters,
-                                           std::function<double(void *, long,
-                                                                const double *)>
-                                           objective,
-                                           void *data)
-{
-    if (static_cast<size_t>(initial_parameters.size()) != n_parameters_) {
-        throw std::runtime_error("initial_parameters.size() should be n_parameters_.");
-    }
-    ParBicopOptData *newdata = static_cast<ParBicopOptData*>(data);
-
-    Eigen::VectorXd optimized_parameters = initial_parameters;
-    if (n_parameters_ > 1) {
-        //const int number_interpolation_conditions = (n_parameters_ + 1) *
-        //        (n_parameters_ + 2)/2;
-        int number_interpolation_conditions = n_parameters_ + 3;
-        auto f = [newdata, objective](long n, const double *x) -> double {
-            return objective(newdata, n, x);
-        };
-        auto result = tools_bobyqa::bobyqa(f, n_parameters_,
-                                           number_interpolation_conditions,
-                                           initial_parameters, lb_, ub_,
-                                           controls_.get_initial_trust_region(),
-                                           controls_.get_final_trust_region(),
-                                           controls_.get_maxeval());
-        optimized_parameters = result.first;
-        newdata->objective_min = result.second;
-    } else {
-        double eps = 1e-6;
-        auto f = [newdata, objective](double x) -> double {
-            return objective(newdata, 1, &x);
-        };
-        auto result =
-            boost::math::tools::brent_find_minima(f,
-                                                  static_cast<double>(lb_(0)) + eps,
-                                                  static_cast<double>(ub_(0)) - eps,
-                                                  20);
-        optimized_parameters(0) = result.first;
-        newdata->objective_min = result.second;
-    }
-
-    return optimized_parameters;
-}
-}
-
 }

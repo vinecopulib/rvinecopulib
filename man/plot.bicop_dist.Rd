@@ -41,13 +41,12 @@ plot. Optionally, the density can be coupled with standard normal margins
 \examples{
 
 ## construct bicop_dist object for a student t copula
-obj <- bicop_dist(family = "t", rotation = 0, parameters = c(0.7,4))
+obj <- bicop_dist(family = "t", rotation = 0, parameters = c(0.7, 4))
 
 ## plots
-plot(obj)  # surface plot of copula density
-contour(obj)  # contour plot with standard normal margins
-contour(obj, margins = "unif")  # contour plot of copula density
-
+plot(obj) # surface plot of copula density
+contour(obj) # contour plot with standard normal margins
+contour(obj, margins = "unif") # contour plot of copula density
 }
 \seealso{
 \code{\link{bicop_dist}}, \code{\link{contour}}, \code{\link{wireframe}}

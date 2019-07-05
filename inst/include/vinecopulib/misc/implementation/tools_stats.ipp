@@ -7,6 +7,7 @@
 #include <vinecopulib/misc/tools_stats_ghalton.hpp>
 #include <vinecopulib/misc/tools_stats_sobol.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
+#include <random>
 #include <unsupported/Eigen/FFT>
 #include <wdm/eigen.hpp>
 
@@ -15,7 +16,7 @@ namespace vinecopulib {
 //! Utilities for statistical analysis
 namespace tools_stats {
 
-//! simulates from the multivariate uniform distribution
+//! @brief simulates from the multivariate uniform distribution.
 //!
 //! @param n number of observations.
 //! @param d dimension.
@@ -30,12 +31,12 @@ inline Eigen::MatrixXd simulate_uniform(const size_t& n, const size_t& d,
     if ((n < 1) | (d < 1)) {
         throw std::runtime_error("both n and d must be at least 1.");
     }
-    
+
     if (seeds.size() == 0) {
         // no seeds provided, seed randomly
         std::random_device rd{};
         seeds = std::vector<int>(5);
-        for (auto& s : seeds) 
+        for (auto& s : seeds)
             s = static_cast<int>(rd());
     }
 
@@ -48,7 +49,36 @@ inline Eigen::MatrixXd simulate_uniform(const size_t& n, const size_t& d,
     return U.unaryExpr([&](double) { return distribution(generator); });
 }
 
-//! applies the empirical probability integral transform to a data matrix.
+//! simulates from the multivariate uniform distribution
+//!
+//! @param n number of observations.
+//! @param d dimension.
+//! @param qrng if true, quasi-numbers are generated.
+//! @param seeds seeds of the random number generator; if empty (default),
+//!   the random number generator is seeded randomly.
+//!
+//! If `qrng = TRUE`, generalized Halton sequences (see `ghalton()`) are used
+//! for `d <= 300` and Sobol sequences otherwise (see `sobol()`).
+//!
+//! @return An \f$ n \times d \f$ matrix of independent
+//! \f$ \mathrm{U}[0, 1] \f$ random variables.
+inline Eigen::MatrixXd simulate_uniform(const size_t& n, const size_t& d,
+                                        bool qrng, std::vector<int> seeds)
+{
+    Eigen::MatrixXd u(n, d);
+    if (qrng) {
+        if (d > 300) {
+            u = tools_stats::sobol(n, d, seeds);
+        } else {
+            u = tools_stats::ghalton(n, d, seeds);
+        }
+    } else {
+        u = tools_stats::simulate_uniform(n, d, seeds);
+    }
+    return u;
+}
+
+//! @brief applies the empirical probability integral transform to a data matrix.
 //!
 //! Gives pseudo-observations from the copula by applying the empirical
 //! distribution function (scaled by n + 1) to each margin/column.
@@ -67,7 +97,7 @@ to_pseudo_obs(Eigen::MatrixXd x, std::string ties_method)
     return x;
 }
 
-//! applies the empirical probability integral transform to a data vector.
+//! @brief applies the empirical probability integral transform to a data vector.
 //!
 //! Gives pseudo-observations from the copula by applying the empirical
 //! distribution function (scaled by n + 1) to each margin/column.
@@ -125,7 +155,7 @@ to_pseudo_obs_1d(Eigen::VectorXd x, std::string ties_method)
 }
 
 //! window smoother
-inline Eigen::VectorXd win(const Eigen::VectorXd &x, size_t wl = 5) 
+inline Eigen::VectorXd win(const Eigen::VectorXd &x, size_t wl = 5)
 {
     size_t n = x.size();
     Eigen::VectorXd xx = Eigen::VectorXd::Zero(n + 2 * wl);
@@ -150,7 +180,7 @@ inline Eigen::VectorXd win(const Eigen::VectorXd &x, size_t wl = 5)
 inline Eigen::VectorXd cef(const Eigen::VectorXd &x,
                     const Eigen::Matrix<size_t, Eigen::Dynamic, 1> &ind,
                     const Eigen::Matrix<size_t, Eigen::Dynamic, 1> &ranks,
-                    size_t wl = 5) 
+                    size_t wl = 5)
 {
     size_t n_ind = ind.size();
     Eigen::VectorXd cey(n_ind);
@@ -285,7 +315,7 @@ inline double pairwise_mcor(
 }
 //! @}
 
-//! simulates from the multivariate Generalized Halton Sequence
+//! @brief simulates from the multivariate Generalized Halton Sequence.
 //!
 //! For more information on Generalized Halton Sequence, see
 //! Faure, H., Lemieux, C. (2009). Generalized Halton Sequences in 2008:
@@ -348,7 +378,7 @@ inline Eigen::MatrixXd ghalton(const size_t& n, const size_t& d,
     return res.transpose();
 }
 
-//! simulates from the multivariate Sobol sequence
+//! @brief simulates from the multivariate Sobol sequence.
 //!
 //! For more information on the Sobol sequence, see S. Joe and F. Y. Kuo
 //! (2008), Constructing Sobol  sequences with better two-dimensional
@@ -437,7 +467,7 @@ inline Eigen::MatrixXd sobol(const size_t& n, const size_t& d,
     return output;
 }
 
-//! Compute bivariate t probabilities
+//! @brief computes bivariate t probabilities.
 //!
 //! Based on the method described by
 //! Dunnett, C.W. and M. Sobel, (1954),
@@ -570,7 +600,7 @@ inline Eigen::VectorXd pbvt(const Eigen::Matrix<double, Eigen::Dynamic, 2> &z,
     return tools_eigen::binaryExpr_or_nan(z, f);
 }
 
-//! Compute bivariate normal probabilities
+//! @brief compute bivariate normal probabilities.
 //!
 //! A function for computing bivariate normal probabilities;
 //! developed using Drezner, Z. and Wesolowsky, G. O. (1989),

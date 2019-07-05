@@ -6,7 +6,6 @@
 
 #include <vinecopulib/misc/tools_stl.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
-#include <vinecopulib/misc/tools_interface.hpp>
 
 #include <cmath>
 #include <iostream>
@@ -788,7 +787,7 @@ inline ptrdiff_t VinecopSelector::find_common_neighbor(size_t v0, size_t v1,
 // compute a fit id; can be used to re-use already fitted pair-copulas.
 //
 // @param edge.
-double VinecopSelector::compute_fit_id(const EdgeProperties& e)
+inline double VinecopSelector::compute_fit_id(const EdgeProperties& e)
 {
     double id = 0.0;
     if (controls_.needs_sparse_select()) {

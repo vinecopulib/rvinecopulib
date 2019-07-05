@@ -6,7 +6,6 @@
 
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
-#include <cmath>
 #include <wdm/eigen.hpp>
 
 namespace vinecopulib {
@@ -92,16 +91,15 @@ inline void preselect_candidates(std::vector <Bicop> &bicops,
 }
 
 inline std::vector<double> get_c1c2(
-    const Eigen::Matrix<double, Eigen::Dynamic, 2> &data, 
+    const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
     double tau,
     const Eigen::VectorXd& weights)
 {
-    using namespace tools_stats;
     size_t n = data.rows();
     Eigen::MatrixXd x = Eigen::MatrixXd::Zero(n, 2);
     Eigen::MatrixXd z1 = x;
     Eigen::MatrixXd z2 = x;
-    x = qnorm(data);
+    x = tools_stats::qnorm(data);
 
     int count1 = 0, count2 = 0;
     for (size_t j = 0; j < n; ++j) {
@@ -129,19 +127,19 @@ inline std::vector<double> get_c1c2(
     // if one of the quadrants is empty, we see it as independent
     double c1, c2;
     Eigen::VectorXd w;
-    
+
     w = (weights.size() > 0) ? weights.head(count1 - 1) : weights;
     if (count1 == 0) {
         c1 = 0.0;
     } else {
         c1 = wdm::wdm(z1.block(0, 0, count1 - 1, 2), "cor",  w)(0, 1);
     }
-    
+
     w = (weights.size() > 0) ? weights.head(count2 - 1) : weights;
     if (count2 == 0) {
         c2 = 0.0;
     } else {
-        c2 = wdm::wdm(z2.block(0, 0, count2 - 1, 2), "cor",  w)(0, 1);    
+        c2 = wdm::wdm(z2.block(0, 0, count2 - 1, 2), "cor",  w)(0, 1);
     }
 
     return {c1, c2};

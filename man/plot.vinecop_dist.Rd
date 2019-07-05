@@ -54,22 +54,21 @@ be \code{1.25/length(tree)*(d - min(tree))} times the plot width.
 # set up vine copula model
 d <- 20
 n <- 2e2
-u <- matrix(runif(n*d), n, d)
+u <- matrix(runif(n * d), n, d)
 vc <- vinecop(u, "indep")
 
 # plot
-plot(vc, tree = c(1,2))
+plot(vc, tree = c(1, 2))
 plot(vc, edge_labels = "pair")
 
 # set up another vine copula model
 pcs <- lapply(1:3, function(j) # pair-copulas in tree j
-    lapply(runif(4-j), function(cor) bicop_dist("gaussian", 0, cor)))
+  lapply(runif(4 - j), function(cor) bicop_dist("gaussian", 0, cor)))
 mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
 vc <- vinecop_dist(pcs, mat)
 
 # contour plot
 contour(vc)
-
 }
 \seealso{
 \code{\link[rvinecopulib:vinecop_dist]{vinecop_dist}},

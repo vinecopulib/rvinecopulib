@@ -121,5 +121,4 @@ bicop <- bicop_dist("clayton", 90, 3)
 u <- rbicop(500, "gauss", 0, 0.5)
 fit1 <- bicop(u, "par")
 fit1
-
 }

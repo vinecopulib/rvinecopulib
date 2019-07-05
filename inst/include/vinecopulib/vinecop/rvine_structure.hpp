@@ -11,7 +11,7 @@
 
 namespace vinecopulib {
 
-//! R-vine structures
+//! @brief R-vine structures
 //!
 //! RVineStructure objects encode the tree structure of the vine, i.e. the
 //! conditioned/conditioning variables of each edge. It is represented by a
@@ -93,8 +93,8 @@ public:
 
     void truncate(size_t trunc_lvl);
     std::string str() const;
-private:
 
+protected:
     size_t find_trunc_lvl(
         const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& mat) const;
     std::vector<size_t> get_order(

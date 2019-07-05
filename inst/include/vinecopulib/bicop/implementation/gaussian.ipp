@@ -5,7 +5,6 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/misc/tools_stats.hpp>
-#include <boost/math/constants/constants.hpp>
 
 namespace vinecopulib {
 inline GaussianBicop::GaussianBicop()
@@ -78,7 +77,7 @@ inline Eigen::VectorXd GaussianBicop::get_start_parameters(const double tau)
 inline Eigen::MatrixXd GaussianBicop::tau_to_parameters(const double &tau)
 {
     Eigen::VectorXd parameters = this->parameters_;
-    parameters(0) = sin(tau * boost::math::constants::pi<double>() / 2);
+    parameters(0) = std::sin(tau * constant::pi / 2);
     return parameters;
 }
 }

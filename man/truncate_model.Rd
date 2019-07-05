@@ -42,8 +42,8 @@ results in a 2-truncated vine (i.e., a vine with two trees). Note that
 # specify pair-copulas
 bicop <- bicop_dist("bb1", 90, c(3, 2))
 pcs <- list(
-    list(bicop, bicop),  # pair-copulas in first tree 
-    list(bicop)          # pair-copulas in second tree 
+  list(bicop, bicop), # pair-copulas in first tree
+  list(bicop) # pair-copulas in second tree
 )
 
 # specify R-vine matrix

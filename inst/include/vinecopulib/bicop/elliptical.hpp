@@ -9,6 +9,11 @@
 #include <vinecopulib/bicop/parametric.hpp>
 
 namespace vinecopulib {
+
+namespace constant {
+    constexpr double pi = 3.141592653589793238462643383279502884;
+}
+
 //! @brief An abstract class for elliptical copula families
 //!
 //! This class is used in the implementation underlying the Bicop class.
