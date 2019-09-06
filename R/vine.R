@@ -13,6 +13,7 @@
 #'   * `xmax` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
+#' @param weights optional vector of weights for each observation.
 #' @param keep_data whether the original data should be stored; if you want to
 #'   store the pseudo-observations used for fitting the copula, use the
 #'   `copula_controls` argument.
