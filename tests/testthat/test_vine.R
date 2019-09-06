@@ -66,6 +66,7 @@ test_that("margins_controls works", {
     2 / log(6) * sapply(fit$margins, "[[", "bw")
   )
 
-  fit_xmin <- vine(abs(u), margins_controls = list(xmin = 0))
+  fit_xmin <- vine(abs(u), margins_controls = list(xmin = 0, deg = 1))
   expect_equal(sapply(fit_xmin$margins, "[[", "xmin"), rep(0, 5))
+  expect_equal(sapply(fit_xmin$margins, "[[", "deg"), rep(1, 5))
 })
