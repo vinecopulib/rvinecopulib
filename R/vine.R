@@ -59,19 +59,19 @@
 #'   list(bicop, bicop), # pair-copulas in first tree
 #'   list(bicop) # pair-copulas in second tree
 #' )
-#' 
+#'
 #' # specify R-vine matrix
 #' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-#' 
+#'
 #' # set up vine copula model with Gaussian margins
 #' vc <- vine_dist(list(distr = "norm"), pcs, mat)
-#' 
+#'
 #' # show model
 #' summary(vc)
-#' 
+#'
 #' # simulate some data
 #' x <- rvine(50, vc)
-#' 
+#'
 #' # estimate a vine copula model
 #' fit <- vine(x, copula_controls = list(family_set = "par"))
 #' summary(fit)
@@ -101,6 +101,7 @@ vine <- function(data,
                    show_trace = FALSE,
                    cores = 1
                  ),
+                 weights = numeric(),
                  keep_data = FALSE) {
 
   ## continuous convolution
@@ -125,7 +126,8 @@ vine <- function(data,
       xmin = margins_controls$xmin[k],
       xmax = margins_controls$xmax[k],
       bw = margins_controls$bw[k],
-      mult = margins_controls$mult
+      mult = margins_controls$mult,
+      weights = weights
     ))
   vine$margins_controls <- margins_controls
 
@@ -137,11 +139,12 @@ vine <- function(data,
         vine$margins[[k]]
       ))
     ## estimate the copula
+    copula_controls$weights <- weights
     vine$copula <- do.call(vinecop, copula_controls)
   }
   vine$copula_controls <- copula_controls[-which(names(copula_controls) == "data")]
 
-  finalize_vine(vine, data_cc, keep_data)
+  finalize_vine(vine, data_cc, weights, keep_data)
 }
 
 #' @param margins A list with with each element containing the specification of a
@@ -208,7 +211,7 @@ expand_margin_controls <- function(controls, d, data) {
   controls
 }
 
-finalize_vine <- function(vine, data, keep_data) {
+finalize_vine <- function(vine, data, weights, keep_data) {
   ## compute npars/loglik and adjust margins for discrete data and
   npars <- loglik <- 0
   for (k in seq_len(ncol(data))) {
@@ -227,6 +230,7 @@ finalize_vine <- function(vine, data, keep_data) {
   ## add data
   if (keep_data) {
     vine$data <- data
+    vine$weights <- weights
   } else {
     vine$data <- matrix(NA, ncol = ncol(data))
     colnames(vine$data) <- colnames(data)
