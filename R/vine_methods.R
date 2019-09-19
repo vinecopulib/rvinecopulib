@@ -277,7 +277,8 @@ dpq_marg <- function(x, vine, what = "p") {
       do.call(get(paste0(what, margin$distr)), par)
     }
   }
-  sapply(seq_len(d), function(i) fun(x[, i], vine$margins[[i]]))
+  res <- lapply(seq_len(d), function(i) fun(x[, i], vine$margins[[i]]))
+  do.call(cbind, res)
 }
 
 collate_u <- function(x) {
