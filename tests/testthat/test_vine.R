@@ -25,6 +25,7 @@ test_that("S3 generics work", {
   )
   expect_error(predict(fit, u, what = "hfunc1"))
   expect_length(attr(logLik(fit), "df"), 1)
+  expect_length(predict(fit, u[1, ], what = "pdf"), 1)
 })
 
 test_that("print/summary generics work", {
