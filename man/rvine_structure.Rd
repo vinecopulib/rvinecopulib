@@ -71,7 +71,7 @@ Similarly, an R-vine matrix can be converted to an R-vine structure using
 
 Denoting by \code{M[i, j]} the array entry in row \code{i} and column \code{j} (the
 pair-copula index for edge \code{e} in tree \code{t} of a \code{d} dimensional vine is
-\code{(M[d - 1 - t, e], M[t, e]; M[t - 1, e], ..., M[0, e])}. Less formally,
+\code{(M[d + 1 - e, e], M[t, e]; M[t - 1, e], ..., M[1, e])}. Less formally,
 \enumerate{
 \item Start with the counter-diagonal element of column \code{e} (first conditioned
 variable).
@@ -104,10 +104,10 @@ R-vine matrices).
 column further to the right.
 \item The entries of a column must be contained in all columns to the left.
 \item The proximity condition must hold: For all t = 1, ..., d - 2 and
-e = 0, ..., d - t - 1 there must exist an index j > d, such that
-\code{(M[t, e], {M[0, e], ..., M[t-1, e]})} equals either
-\code{(M[d-j-1, j], {M[0, j], ..., M[t-1, j]})} or
-\code{(M[t-1, j], {M[d-j-1, j], M[0, j], ..., M[t-2, j]})}.
+e = 1, ..., d - t there must exist an index j > d, such that
+\code{(M[t, e], {M[1, e], ..., M[t - 1, e]})} equals either
+\code{(M[d + 1 - j, j], {M[1, j], ..., M[t - 1, j]})} or
+\code{(M[t - 1, j], {M[d + 1 - j, j], M[1, j], ..., M[t - 2, j]})}.
 }
 
 Condition 6 already implies conditions 2-5, but is more difficult to

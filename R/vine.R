@@ -6,12 +6,14 @@
 #' @param data a matrix or data.frame.
 #' @param margins_controls a list with arguments to be passed to
 #' [kde1d::kde1d()]. Currently, there can be
-#'   * `mult` numeric; all bandwidths for marginal kernel density estimation
-#'   are multiplied with \code{mult_1d}. Defaults to `log(1 + d)` where `d` is
-#'   the number of variables after applying [cctools::expand_as_numeric()].
+#'   * `mult` numeric vector of length one or d; all bandwidths for marginal
+#'   kernel density estimation are multiplied with `mult`. Defaults to
+#'   `log(1 + d)` where `d` is the number of variables after applying
+#'   [cctools::expand_as_numeric()].
 #'   * `xmin` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `xmax` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
+#'   * `deg` numeric vector of length one or d; [kde1d::kde1d()].
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
 #' @param weights optional vector of weights for each observation.
 #' @param keep_data whether the original data should be stored; if you want to
@@ -84,7 +86,8 @@ vine <- function(data,
                    mult = NULL,
                    xmin = NaN,
                    xmax = NaN,
-                   bw = NA
+                   bw = NA,
+                   deg = 2
                  ),
                  copula_controls = list(
                    family_set = "all",
@@ -112,7 +115,8 @@ vine <- function(data,
   assert_that(NCOL(data_cc) > 1, msg = "data must be multivariate.")
   d <- ncol(data_cc)
   assert_that(is.list(margins_controls))
-  assert_that(in_set(names(margins_controls), c("mult", "xmin", "xmax", "bw")))
+  allowed_margins_controls <- c("mult", "xmin", "xmax", "bw", "deg")
+  assert_that(in_set(names(margins_controls), allowed_margins_controls))
   assert_that(is.list(copula_controls))
   if (is.null(copula_controls$keep_data)) {
     copula_controls$keep_data <- TRUE
@@ -124,10 +128,11 @@ vine <- function(data,
   ## estimation of the marginals
   vine <- list()
   vine$margins <- lapply(1:d, function(k) kde1d(data_cc[, k],
+      mult = margins_controls$mult[k],
       xmin = margins_controls$xmin[k],
       xmax = margins_controls$xmax[k],
       bw = margins_controls$bw[k],
-      mult = margins_controls$mult,
+      deg = margins_controls$deg[k],
       weights = weights
     ))
   vine$margins_controls <- margins_controls
@@ -202,12 +207,12 @@ vine_dist <- function(margins, pair_copulas, structure) {
 }
 
 expand_margin_controls <- function(controls, d, data) {
-  default_controls <- list(mult = NULL, xmin = NaN, xmax = NaN, bw = NA)
+  default_controls <- list(mult = NULL, xmin = NaN, xmax = NaN, bw = NA, deg = 2)
   controls <- modifyList(default_controls, controls)
   if (is.null(controls[["mult"]])) {
     controls[["mult"]] <- log(1 + d)
   }
-  for (par in setdiff(names(controls), "mult"))
+  for (par in names(controls))
     controls[[par]] <- expand_vec(controls[[par]], data)
   controls
 }
