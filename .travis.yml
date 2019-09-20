@@ -19,6 +19,7 @@ apt_packages:
   - libcurl4-openssl-dev
   - libxml2-dev
   - libudunits2-dev
+  - libgsl-dev
 
 r_packages:
   - cctools
