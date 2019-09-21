@@ -15,6 +15,7 @@
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `deg` numeric vector of length one or d; [kde1d::kde1d()].
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
+#' @param weights optional vector of weights for each observation.
 #' @param keep_data whether the original data should be stored; if you want to
 #'   store the pseudo-observations used for fitting the copula, use the
 #'   `copula_controls` argument.
@@ -104,6 +105,7 @@ vine <- function(data,
                    show_trace = FALSE,
                    cores = 1
                  ),
+                 weights = numeric(),
                  keep_data = FALSE) {
 
   ## continuous convolution
@@ -130,7 +132,8 @@ vine <- function(data,
       xmin = margins_controls$xmin[k],
       xmax = margins_controls$xmax[k],
       bw = margins_controls$bw[k],
-      deg = margins_controls$deg[k]
+      deg = margins_controls$deg[k],
+      weights = weights
     ))
   vine$margins_controls <- margins_controls
 
@@ -142,11 +145,12 @@ vine <- function(data,
         vine$margins[[k]]
       ))
     ## estimate the copula
+    copula_controls$weights <- weights
     vine$copula <- do.call(vinecop, copula_controls)
   }
   vine$copula_controls <- copula_controls[-which(names(copula_controls) == "data")]
 
-  finalize_vine(vine, data_cc, keep_data)
+  finalize_vine(vine, data_cc, weights, keep_data)
 }
 
 #' @param margins A list with with each element containing the specification of a
@@ -213,7 +217,7 @@ expand_margin_controls <- function(controls, d, data) {
   controls
 }
 
-finalize_vine <- function(vine, data, keep_data) {
+finalize_vine <- function(vine, data, weights, keep_data) {
   ## compute npars/loglik and adjust margins for discrete data and
   npars <- loglik <- 0
   for (k in seq_len(ncol(data))) {
@@ -232,6 +236,7 @@ finalize_vine <- function(vine, data, keep_data) {
   ## add data
   if (keep_data) {
     vine$data <- data
+    vine$weights <- weights
   } else {
     vine$data <- matrix(NA, ncol = ncol(data))
     colnames(vine$data) <- colnames(data)

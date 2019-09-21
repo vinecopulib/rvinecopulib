@@ -10,7 +10,7 @@ vine(data, margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN,
   = NA, par_method = "mle", nonpar_method = "constant", mult = 1, selcrit =
   "bic", psi0 = 0.9, presel = TRUE, trunc_lvl = Inf, tree_crit = "tau",
   threshold = 0, keep_data = FALSE, show_trace = FALSE, cores = 1),
-  keep_data = FALSE)
+  weights = numeric(), keep_data = FALSE)
 
 vine_dist(margins, pair_copulas, structure)
 }
@@ -31,6 +31,8 @@ kernel density estimation are multiplied with \code{mult}. Defaults to
 }}
 
 \item{copula_controls}{a list with arguments to be passed to \code{\link[=vinecop]{vinecop()}}.}
+
+\item{weights}{optional vector of weights for each observation.}
 
 \item{keep_data}{whether the original data should be stored; if you want to
 store the pseudo-observations used for fitting the copula, use the

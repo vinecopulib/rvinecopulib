@@ -11,7 +11,7 @@ test_that("returns proper 'vine' object", {
     names(fit),
     c(
       "margins", "margins_controls", "copula",
-      "copula_controls", "npars", "loglik", "data", "nobs", "names"
+      "copula_controls", "npars", "loglik", "data", "weights", "nobs", "names"
     )
   )
 })
@@ -70,4 +70,12 @@ test_that("margins_controls works", {
   fit_xmin <- vine(abs(u), margins_controls = list(xmin = 0, deg = 1, mult = 1:5))
   expect_equal(sapply(fit_xmin$margins, "[[", "xmin"), rep(0, 5))
   expect_equal(sapply(fit_xmin$margins, "[[", "deg"), rep(1, 5))
+})
+
+test_that("weights work", {
+  w <- rexp(nrow(u))
+  fit_weights <- vine(u, copula_controls = list(family_set = "nonpar"),
+                     weights = w, keep_data = TRUE)
+  expect_equal(fit_weights$weights, w)
+  expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
 })
