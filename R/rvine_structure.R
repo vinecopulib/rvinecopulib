@@ -88,8 +88,6 @@
 #' @param is_natural_order whether `struct_array` is assumed to be provided
 #' in natural order already (a structure is in natural order if the anti-
 #' diagonal is 1, .., d from bottom left to top right).
-#' @param byrow whether `struct_array` is assumed to be provided
-#' by column or by row.
 #'
 #' @return Either an `rvine_structure` or an `rvine_matrix`.
 #' @export
@@ -125,36 +123,23 @@
 #' try(rvine_matrix(mat))
 #' @name rvine_structure
 #' @aliases rvine_matrix is.rvine_structure is.rvine_matrix
-rvine_structure <- function(order, struct_array, is_natural_order = FALSE, byrow = TRUE) {
+rvine_structure <- function(order, struct_array, is_natural_order = FALSE) {
 
   # sanity checks and extract dimension/trunc_lvl
   assert_that(is.vector(order) && all(sapply(order, is.count)),
     msg = "Order should be a vector of positive integers."
   )
   assert_that(is.vector(struct_array) || is.list(struct_array))
-  if (is.list(struct_array)) {
-    struct_array <- unlist(struct_array)
-  }
-  assert_that(all(sapply(struct_array, is.count)),
+  assert_that(all(rapply(struct_array, function(i) sapply(i, is.count))),
     msg = "All elements of struct_array should be positive integers."
   )
   d <- length(order)
-  dd <- cumsum((d - 1):1)
-  assert_that(length(struct_array) %in% dd,
-    msg = "The number of elements in struct_array is incompatible
-                with order."
-  )
-  trunc_lvl <- which(dd == length(struct_array))
+  trunc_lvl <- length(struct_array)
 
-  # create column-wise structure array
-  if (byrow) {
-    dd <- c(1, 1 + dd[-(d - 1)])
-    struct_array <- lapply(1:(d - 1), function(i)
-      struct_array[dd[1:min((d - i), trunc_lvl)] + (i - 1)])
-  } else {
-    struct_array <- lapply(1:(d - 1), function(i)
-      struct_array[1:min((d - i), trunc_lvl) + (i - 1)])
-  }
+  lens <- sapply(seq_len(trunc_lvl), function(j) length(struct_array[[j]]))
+  assert_that(all(lens == seq(d - 1, d - trunc_lvl)),
+    msg = "The number of elements in struct_array is incompatible with order."
+  )
 
   # create and check output
   output <- rvine_structure_cpp(

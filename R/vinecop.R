@@ -70,19 +70,19 @@
 #'   list(bicop, bicop), # pair-copulas in first tree
 #'   list(bicop) # pair-copulas in second tree
 #' )
-#' 
+#'
 #' # specify R-vine matrix
 #' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-#' 
+#'
 #' # set up vine copula model
 #' vc <- vinecop_dist(pcs, mat)
-#' 
+#'
 #' # show model
 #' summary(vc)
-#' 
+#'
 #' # simulate some data
 #' u <- rvinecop(50, vc)
-#' 
+#'
 #' # estimate a vine copula model
 #' fit <- vinecop(u, "par")
 #' fit
@@ -187,7 +187,6 @@ vinecop <- function(data, family_set = "all", structure = NA,
 #' @rdname vinecop
 #' @export
 vinecop_dist <- function(pair_copulas, structure) {
-
   # create object
   vinecop <- structure(
     list(

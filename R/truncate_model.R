@@ -22,19 +22,19 @@
 #'   list(bicop, bicop), # pair-copulas in first tree
 #'   list(bicop) # pair-copulas in second tree
 #' )
-#' 
+#'
 #' # specify R-vine matrix
 #' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-#' 
+#'
 #' # set up vine structure
 #' structure <- as_rvine_structure(mat)
-#' 
+#'
 #' # truncate the model
 #' truncate_model(structure, 1)
-#' 
+#'
 #' # set up vine copula model
 #' vc <- vinecop_dist(pcs, mat)
-#' 
+#'
 #' # truncate the model
 #' truncate_model(vc, 1)
 truncate_model <- function(object, ...) {
@@ -47,10 +47,7 @@ truncate_model <- function(object, ...) {
 truncate_model.rvine_structure <- function(object, trunc_lvl, ...) {
   check_trunc_lvl(object, trunc_lvl)
   if (trunc_lvl < dim(object)["trunc_lvl"]) {
-    object$struct_array <- lapply(object$struct_array,
-      truncate_column,
-      trunc_lvl = trunc_lvl
-    )
+    object$struct_array <- object$struct_array[seq_len(trunc_lvl)]
     object$trunc_lvl <- trunc_lvl
   }
   object
