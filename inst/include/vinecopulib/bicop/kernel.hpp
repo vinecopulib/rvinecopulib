@@ -11,7 +11,7 @@
 namespace vinecopulib {
 
 namespace tools_interpolation {
-    class InterpolationGrid;
+class InterpolationGrid;
 }
 
 //! @brief An abstract class for kernel copulas
@@ -29,51 +29,39 @@ namespace tools_interpolation {
 class KernelBicop : public AbstractBicop
 {
 public:
-    KernelBicop();
+  KernelBicop();
 
 protected:
-    Eigen::VectorXd pdf_raw(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
-    );
+  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u);
 
-    Eigen::VectorXd cdf(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
-    );
+  Eigen::VectorXd cdf(const Eigen::MatrixXd& u);
 
-    Eigen::VectorXd hfunc1(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
-    );
+  Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u);
 
-    Eigen::VectorXd hfunc2(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
-    );
+  Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u);
 
-    Eigen::VectorXd hinv1(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
-    );
+  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u);
 
-    Eigen::VectorXd hinv2(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u
-    );
+  Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u);
 
-    double parameters_to_tau(const Eigen::MatrixXd &parameters);
+  double get_npars();
 
-    Eigen::MatrixXd tau_to_parameters(const double &tau);
+  Eigen::MatrixXd get_parameters() const;
 
-    double calculate_npars();
+  Eigen::MatrixXd get_parameters_lower_bounds() const;
 
-    Eigen::MatrixXd get_parameters() const;
+  Eigen::MatrixXd get_parameters_upper_bounds() const;
 
-    Eigen::MatrixXd get_parameters_lower_bounds() const;
+  void set_parameters(const Eigen::MatrixXd& parameters);
 
-    Eigen::MatrixXd get_parameters_upper_bounds() const;
+  double parameters_to_tau(const Eigen::MatrixXd& parameters);
 
-    void set_parameters(const Eigen::MatrixXd &parameters);
+  void flip();
 
-    void flip();
+  Eigen::MatrixXd tau_to_parameters(const double& tau);
 
-    std::shared_ptr<tools_interpolation::InterpolationGrid> interp_grid_;
-    double npars_;
+  std::shared_ptr<tools_interpolation::InterpolationGrid> interp_grid_;
+  double npars_;
 };
 }
 
