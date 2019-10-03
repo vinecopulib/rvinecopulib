@@ -11,6 +11,8 @@
 #'
 #' @noRd
 if_vec_to_matrix <- function(u, to_col = FALSE) {
+  if (is.null(u))
+    return(NULL)
   assert_that(is.numeric(u) | is.data.frame(u))
   if (NCOL(u) == 1) {
     if (to_col) {
@@ -32,7 +34,7 @@ if_vec_to_matrix <- function(u, to_col = FALSE) {
 #' @param parameters the parameters as passed in function call.
 #' @return A `bicop_dist` object.
 #' @noRd
-args2bicop <- function(family, rotation, parameters) {
+args2bicop <- function(family, rotation, parameters, var_types = c("c", "c")) {
   if (all(inherits(family, "bicop_dist"))) {
     return(family)
   } else {
@@ -43,7 +45,7 @@ args2bicop <- function(family, rotation, parameters) {
       parameters <- numeric(0)
     }
     assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
-    return(bicop_dist(family, rotation, parameters))
+    return(bicop_dist(family, rotation, parameters, var_types))
   }
 }
 
@@ -230,6 +232,18 @@ on_failure(in_set) <- function(call, env) {
   )
 }
 
+correct_var_types <- function(var_types) {
+  (length(var_types) == 2) &&
+    is.character(var_types) &&
+    in_set(var_types, c("c", "d"))
+}
+
+on_failure(correct_var_types) <- function(call, env) {
+  paste0(
+    deparse(call$el),
+    " must be a length to vector with elements 'c' or 'd'."
+  )
+}
 #' Pseudo-Observations
 #'
 #' Compute the pseudo-observations for the given data matrix.

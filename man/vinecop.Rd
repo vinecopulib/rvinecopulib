@@ -14,8 +14,8 @@ vinecop(data, family_set = "all", structure = NA, par_method = "mle",
 vinecop_dist(pair_copulas, structure)
 }
 \arguments{
-\item{data}{a matrix or data.frame (copula data should have approximately
-uniform margins).}
+\item{data}{an $n \times 2$ matrix or data.frame (copula data should have
+approximately uniform margins).}
 
 \item{family_set}{a character vector of families; see \code{\link[=bicop]{bicop()}} for
 additional options.}
@@ -40,7 +40,8 @@ families. Values larger than 1 make the estimate more smooth, values less
 than 1 less smooth.}
 
 \item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"},
-\code{"bic"}, \code{"mbic"}. For \code{vinecop()} there is the additional option \code{"mbicv"}.}
+\code{"bic"}, \code{"mbic"}. For \code{vinecop()} there is the additional option
+\code{"mbicv"}.}
 
 \item{weights}{optional vector of weights for each observation.}
 

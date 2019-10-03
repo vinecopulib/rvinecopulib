@@ -9,8 +9,8 @@ bicop_check_cpp <- function(bicop_r) {
     invisible(.Call(`_rvinecopulib_bicop_check_cpp`, bicop_r))
 }
 
-bicop_select_cpp <- function(data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads) {
-    .Call(`_rvinecopulib_bicop_select_cpp`, data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads)
+bicop_select_cpp <- function(data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads, var_types) {
+    .Call(`_rvinecopulib_bicop_select_cpp`, data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads, var_types)
 }
 
 bicop_pdf_cpp <- function(u, bicop_r) {

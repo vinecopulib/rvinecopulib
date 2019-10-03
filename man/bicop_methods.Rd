@@ -12,13 +12,16 @@
 \alias{hbicop_dist}
 \title{Bivariate copula distributions}
 \usage{
-dbicop(u, family, rotation, parameters)
+dbicop(u, family, rotation, parameters, var_types = c("c", "c"),
+  u_sub = NULL)
 
-pbicop(u, family, rotation, parameters)
+pbicop(u, family, rotation, parameters, var_types = c("c", "c"),
+  u_sub = NULL)
 
 rbicop(n, family, rotation, parameters, qrng = FALSE)
 
-hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
+hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE,
+  var_types = c("c", "c"), u_sub = NULL)
 }
 \arguments{
 \item{u}{evaluation points, either a length 2 vector or a two-column matrix.}
@@ -29,6 +32,13 @@ hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
 \item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
 
 \item{parameters}{a vector or matrix of copula parameters.}
+
+\item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
+both continuous (default), or \code{c("c", "d")} for first variable continuous
+and second discrete.}
+
+\item{u_sub}{(optional) an \eqn{n \times 2} or \eqn{n \times k}
+matrix/data frame for discrete variables (see \emph{Details}).}
 
 \item{n}{number of observations. If `length(n) > 1``, the length is taken to
 be the number required.}
@@ -66,6 +76,16 @@ from a copula. If \eqn{C(u, v) = P(U \le u, V \le v)} is a copula, then
 In other words, the H-function number refers to the conditioning variable.
 When inverting H-functions, the inverse is then taken with respect to the
 other variable, that is \code{v} when \code{cond_var = 1} and \code{u} when \code{cond_var = 2}.
+
+\strong{Discrete variables} When at least one variable is discrete, two types of
+evaluation points are required: the first \eqn{n \times 2} block (\code{data}
+argument) contains realizations of \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The
+second \eqn{n \times 2} block (argument \code{data_sub}) contains realizations of
+\eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a left-sided limit
+of the cdf. For, e.g., an integer-valued variable, it holds
+\eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
+limit and the cdf itself coincide. Respective columns can be omitted in the
+second block.
 }
 \note{
 The functions can optionally be used with a \link{bicop_dist}

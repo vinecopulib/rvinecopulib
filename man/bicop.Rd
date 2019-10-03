@@ -8,13 +8,15 @@
 bicop(data, family_set = "all", par_method = "mle",
   nonpar_method = "quadratic", mult = 1, selcrit = "bic",
   weights = numeric(), psi0 = 0.9, presel = TRUE,
-  keep_data = FALSE, cores = 1)
+  keep_data = FALSE, cores = 1, data_sub = NULL, var_types = c("c",
+  "c"))
 
-bicop_dist(family = "indep", rotation = 0, parameters = numeric(0))
+bicop_dist(family = "indep", rotation = 0, parameters = numeric(0),
+  var_types = c("c", "c"))
 }
 \arguments{
-\item{data}{a matrix or data.frame (copula data should have approximately
-uniform margins).}
+\item{data}{an $n \times 2$ matrix or data.frame (copula data should have
+approximately uniform margins).}
 
 \item{family_set}{a character vector of families; see \emph{Details} for
 additional options.}
@@ -33,7 +35,8 @@ families. Values larger than 1 make the estimate more smooth, values less
 than 1 less smooth.}
 
 \item{selcrit}{criterion for family selection, either \code{"loglik"}, \code{"aic"},
-\code{"bic"}, \code{"mbic"}. For \code{vinecop()} there is the additional option \code{"mbicv"}.}
+\code{"bic"}, \code{"mbic"}. For \code{vinecop()} there is the additional option
+\code{"mbicv"}.}
 
 \item{weights}{optional vector of weights for each observation.}
 
@@ -48,33 +51,42 @@ symmetry characteristics of the data.}
 \item{cores}{number of cores to use; if more than 1, estimation for multiple
 families is done in parallel.}
 
+\item{data_sub}{(optional) an \eqn{n \times 2} or \eqn{n \times k}
+matrix/data frame for discrete variables (see \emph{Details}).}
+
+\item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
+both continuous (default), or \code{c("c", "d")} for first variable continuous
+and second discrete.}
+
 \item{family}{the copula family, a string containing the family name (see
 \emph{Details} for all possible families).}
 
 \item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
 
 \item{parameters}{a vector or matrix of copula parameters.}
+
+\item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
+both continuous (default), or \code{c("c", "d")} for first variable continuous
+and second discrete.}
 }
 \value{
-Objects inheriting from \code{bicop_dist} for \code{bicop_dist()}, and
-\code{bicop} and \code{bicop_dist} for \code{bicop()}.
+Objects inheriting from \code{bicop_dist} for \code{bicop_dist()}, and \code{bicop}
+and \code{bicop_dist} for \code{bicop()}.
 
 Object from the \code{bicop_dist} class are lists containing:
 \itemize{
-\item \code{family}, a \code{character} indicating the copula family.
-\item \code{rotation}, an \code{integer} indicating the rotation (i.e., either 0, 90, 180,
-or 270).
-\item \code{parameters}, a \code{numeric} vector or matrix of parameters.
-\item \code{npars}, a \code{numeric} with the (effective) number of parameters.
+\item \code{family}, a \code{character} indicating the copula family. * \code{rotation}, an
+\code{integer} indicating the rotation (i.e., either 0, 90, 180, or 270). *
+\code{parameters}, a \code{numeric} vector or matrix of parameters. * \code{npars}, a
+\code{numeric} with the (effective) number of parameters.
 }
 
 Additionally, objects from the \code{bicop} class contain:
 \itemize{
-\item \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset that was
-passed to \code{\link[=bicop]{bicop()}}.
-\item \code{controls}, a \code{list} with the set of fit controls that was passed to \code{\link[=bicop]{bicop()}}.
-\item \code{nobs}, an \code{integer} with the number of observations that was used
-to fit the model.
+\item \code{data}/\code{data_sub} (optionally, if \code{keep_data = TRUE} was used), the
+dataset that was passed to \code{\link[=bicop]{bicop()}}. * \code{controls}, a \code{list} with the set
+of fit controls that was passed to \code{\link[=bicop]{bicop()}}. * \code{nobs}, an \code{integer} with
+the number of observations that was used to fit the model.
 }
 }
 \description{
@@ -83,33 +95,34 @@ Bivariate copula models
 \details{
 The implemented families are:\cr
 
-\code{"indep"} = Independence copula.\cr
-\code{"gaussian"} = Gaussian copula.\cr
-\code{"t"} = Student t copula.\cr
-\code{"clayton"} = Clayton copula.\cr
-\code{"gumbel"} = Gumbel copula.\cr
-\code{"frank"} = Frank copula.\cr
-\code{"joe"} = Joe copula.\cr
-\code{"bb1"} = BB1 copula.\cr
-\code{"bb6"} = BB6 copula.\cr
-\code{"bb7"} = BB7 copula.\cr
-\code{"bb8"} = BB8 copula.\cr
-\code{"tll"} = transformation kernel local likelihood, only for \code{bicop()}.\cr
+\code{"indep"} = Independence copula.\cr \code{"gaussian"} = Gaussian copula.\cr \code{"t"}
+= Student t copula.\cr \code{"clayton"} = Clayton copula.\cr \code{"gumbel"} = Gumbel
+copula.\cr \code{"frank"} = Frank copula.\cr \code{"joe"} = Joe copula.\cr \code{"bb1"} =
+BB1 copula.\cr \code{"bb6"} = BB6 copula.\cr \code{"bb7"} = BB7 copula.\cr \code{"bb8"} =
+BB8 copula.\cr \code{"tll"} = transformation kernel local likelihood, only for
+\code{bicop()}.\cr
 
 In addition, the following convenience definitions can be used (and combined)
 with \code{bicop}:\cr
 
-\code{"all"} =  all families.\cr
-\code{"parametric"} =  parametric families.\cr
-\code{"nonparametric"} =  nonparametric families.\cr
-\code{"archimedean"} =  archimedean families.\cr
-\code{"elliptical"} =  elliptical families.\cr
-\code{"bbs"} =  BB families.\cr
-\code{"oneparametric"} =  one parameter families.\cr
-\code{"twoparametric"} =  two parameter families.\cr
-\code{"itau"} =  one parameter families and Student t copula.\cr
-Partial matching is activated. For example, \code{"gauss"} is equivalent to
-\code{"gaussian"}, or you can write  \code{"nonpar"} instead of \code{"nonparametric"}.
+\code{"all"} =  all families.\cr \code{"parametric"} =  parametric families.\cr
+\code{"nonparametric"} =  nonparametric families.\cr \code{"archimedean"} = archimedean
+families.\cr \code{"elliptical"} =  elliptical families.\cr \code{"bbs"} = BB
+families.\cr \code{"oneparametric"} =  one parameter families.\cr
+\code{"twoparametric"} =  two parameter families.\cr \code{"itau"} =  one parameter
+families and Student t copula.\cr Partial matching is activated. For example,
+\code{"gauss"} is equivalent to \code{"gaussian"}, or you can write  \code{"nonpar"} instead
+of \code{"nonparametric"}.
+
+\strong{Discrete variables} When at least one variable is discrete, two types of
+"observations" are required: the first \eqn{n \times 2} block (\code{data}
+argument) contains realizations of \eqn{F_{X_1}(X_1), F_{X_2}(X_2)}. The
+second \eqn{n \times 2} block (argument \code{data_sub}) contains realizations of
+\eqn{F_{X_1}(X_1^-), F_{X_1}(X_1^-)}. The minus indicates a left-sided limit
+of the cdf. For, e.g., an integer-valued variable, it holds
+\eqn{F_{X_1}(X_1^-) = F_{X_1}(X_1 - 1)}. For continuous variables the left
+limit and the cdf itself coincide. Respective columns can be omitted in the
+second block.
 }
 \examples{
 ## bicop_dist objects

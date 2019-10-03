@@ -152,6 +152,7 @@ inline Bicop bicop_wrap(const Rcpp::List& bicop_r)
              pars
     );
   }
+  bicop_cpp.set_var_types(bicop_r["var_types"]);
 
   return bicop_cpp;
 }
@@ -165,6 +166,7 @@ inline Rcpp::List bicop_wrap(Bicop bicop_cpp, bool is_fitted)
     Rcpp::Named("family")     = to_r_family(bicop_cpp.get_family()),
     Rcpp::Named("rotation")   = bicop_cpp.get_rotation(),
     Rcpp::Named("parameters") = bicop_cpp.get_parameters(),
+    Rcpp::Named("var_types")  = bicop_cpp.get_var_types(),
     Rcpp::Named("npars")      = bicop_cpp.get_npars(),
     Rcpp::Named("loglik")     = loglik
   );

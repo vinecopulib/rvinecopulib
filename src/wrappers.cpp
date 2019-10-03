@@ -26,7 +26,8 @@ Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
                             const Eigen::VectorXd& weights,
                             double psi0,
                             bool presel,
-                            size_t num_threads)
+                            size_t num_threads,
+                            std::vector<std::string> var_types)
 {
     std::vector<BicopFamily> fam_set(family_set.size());
     for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
@@ -43,7 +44,9 @@ Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
             presel,
             num_threads
     );
-    Bicop bicop_cpp(data, controls);
+    Bicop bicop_cpp;
+    bicop_cpp.set_var_types(var_types);
+    bicop_cpp.select(data, controls);
 
     return bicop_wrap(bicop_cpp, TRUE);
 }
