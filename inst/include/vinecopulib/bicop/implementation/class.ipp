@@ -155,19 +155,28 @@ inline Eigen::VectorXd
 Bicop::hfunc1(const Eigen::MatrixXd& u) const
 {
   check_data(u);
+  Eigen::VectorXd h(u.rows());
   switch (rotation_) {
     default:
-      return bicop_->hfunc1(prep_for_abstract(u));
+      h = bicop_->hfunc1(prep_for_abstract(u));
+      break;
 
     case 90:
-      return bicop_->hfunc2(prep_for_abstract(u));
+      h = bicop_->hfunc2(prep_for_abstract(u));
+      break;
 
     case 180:
-      return 1.0 - bicop_->hfunc1(prep_for_abstract(u)).array();
+      h = 1.0 - bicop_->hfunc1(prep_for_abstract(u)).array();
+      break;
 
     case 270:
-      return 1.0 - bicop_->hfunc2(prep_for_abstract(u)).array();
+      h = 1.0 - bicop_->hfunc2(prep_for_abstract(u)).array();
+      break;
   }
+  auto trim = [] (const double& x) {
+    return std::min(1.0, std::max(x, 0.0));
+  };
+  return tools_eigen::unaryExpr_or_nan(h, trim);
 }
 
 //! @brief calculates the second h-function.
@@ -180,19 +189,26 @@ inline Eigen::VectorXd
 Bicop::hfunc2(const Eigen::MatrixXd& u) const
 {
   check_data(u);
+  Eigen::VectorXd h(u.rows());
   switch (rotation_) {
     default:
-      return bicop_->hfunc2(prep_for_abstract(u));
+      h = bicop_->hfunc2(prep_for_abstract(u));
+      break;
 
     case 90:
-      return 1.0 - bicop_->hfunc1(prep_for_abstract(u)).array();
+      h = 1.0 - bicop_->hfunc1(prep_for_abstract(u)).array();
+      break;
 
     case 180:
-      return 1.0 - bicop_->hfunc2(prep_for_abstract(u)).array();
+      h = 1.0 - bicop_->hfunc2(prep_for_abstract(u)).array();
+      break;
 
     case 270:
-      return bicop_->hfunc1(prep_for_abstract(u));
+      h = bicop_->hfunc1(prep_for_abstract(u)).array();
+      break;
   }
+  auto trim = [](const double& x) { return std::min(1.0, std::max(x, 0.0)); };
+  return tools_eigen::unaryExpr_or_nan(h, trim);
 }
 
 //! @brief calculates the inverse of \f$ h_1 \f$ (see hfunc1()) w.r.t. the
@@ -203,19 +219,26 @@ inline Eigen::VectorXd
 Bicop::hinv1(const Eigen::MatrixXd& u) const
 {
   check_data(u);
+  Eigen::VectorXd hi(u.rows());
   switch (rotation_) {
     default:
-      return bicop_->hinv1(prep_for_abstract(u));
+      hi = bicop_->hinv1(prep_for_abstract(u));
+      break;
 
     case 90:
-      return bicop_->hinv2(prep_for_abstract(u));
+      hi = bicop_->hinv2(prep_for_abstract(u));
+      break;
 
     case 180:
-      return 1.0 - bicop_->hinv1(prep_for_abstract(u)).array();
+      hi = 1.0 - bicop_->hinv1(prep_for_abstract(u)).array();
+      break;
 
     case 270:
-      return 1.0 - bicop_->hinv2(prep_for_abstract(u)).array();
+      hi = 1.0 - bicop_->hinv2(prep_for_abstract(u)).array();
+      break;
   }
+  auto trim = [](const double& x) { return std::min(1.0, std::max(x, 0.0)); };
+  return tools_eigen::unaryExpr_or_nan(hi, trim);
 }
 
 //! @brief calculates the inverse of \f$ h_2 \f$ (see hfunc2()) w.r.t. the first
@@ -226,19 +249,26 @@ inline Eigen::VectorXd
 Bicop::hinv2(const Eigen::MatrixXd& u) const
 {
   check_data(u);
+  Eigen::VectorXd hi(u.rows());
   switch (rotation_) {
     default:
-      return bicop_->hinv2(prep_for_abstract(u));
+      hi = bicop_->hinv2(prep_for_abstract(u));
+      break;
 
     case 90:
-      return 1.0 - bicop_->hinv1(prep_for_abstract(u)).array();
+      hi = 1.0 - bicop_->hinv1(prep_for_abstract(u)).array();
+      break;
 
     case 180:
-      return 1.0 - bicop_->hinv2(prep_for_abstract(u)).array();
+      hi = 1.0 - bicop_->hinv2(prep_for_abstract(u)).array();
+      break;
 
     case 270:
-      return bicop_->hinv1(prep_for_abstract(u));
+      hi = bicop_->hinv1(prep_for_abstract(u));
+      break;
   }
+  auto trim = [](const double& x) { return std::min(1.0, std::max(x, 0.0)); };
+  return tools_eigen::unaryExpr_or_nan(hi, trim);
 }
 //! @}
 

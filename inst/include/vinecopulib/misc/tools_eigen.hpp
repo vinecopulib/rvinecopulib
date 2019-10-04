@@ -58,6 +58,9 @@ Eigen::MatrixXd
 swap_cols(Eigen::MatrixXd u);
 
 Eigen::VectorXd
+unique(const Eigen::VectorXd& x);
+
+Eigen::VectorXd
 invert_f(const Eigen::VectorXd& x,
          std::function<Eigen::VectorXd(const Eigen::VectorXd&)> f,
          const double lb = 1e-20,

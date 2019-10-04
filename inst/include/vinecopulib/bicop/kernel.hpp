@@ -34,11 +34,17 @@ public:
 protected:
   Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u);
 
+  Eigen::VectorXd pdf(const Eigen::MatrixXd& u) override;
+
   Eigen::VectorXd cdf(const Eigen::MatrixXd& u);
 
   Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u);
 
   Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u);
+
+  Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u) override;
+
+  Eigen::VectorXd hfunc2(const Eigen::MatrixXd& u) override;
 
   Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u);
 

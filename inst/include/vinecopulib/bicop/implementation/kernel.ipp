@@ -34,6 +34,16 @@ KernelBicop::pdf_raw(const Eigen::MatrixXd& u)
 }
 
 inline Eigen::VectorXd
+KernelBicop::pdf(const Eigen::MatrixXd& u)
+{
+  if (u.cols() == 4) {
+    // evaluate jittered density at mid rank for stability
+    return pdf_raw((u.leftCols(2) + u.rightCols(2)).array() / 2.0);
+  }
+  return pdf_raw(u);
+}
+
+inline Eigen::VectorXd
 KernelBicop::cdf(const Eigen::MatrixXd& u)
 {
   return interp_grid_->integrate_2d(u);
@@ -52,6 +62,28 @@ KernelBicop::hfunc2_raw(const Eigen::MatrixXd& u)
 }
 
 inline Eigen::VectorXd
+KernelBicop::hfunc1(const Eigen::MatrixXd& u)
+{
+  if (u.cols() == 4) {
+    auto u_avg = u;
+    u_avg.col(0) = (u.col(0) + u.col(2)).array() / 2.0;
+    return hfunc1_raw(u_avg.leftCols(2));
+  }
+  return hfunc1_raw(u);
+}
+
+inline Eigen::VectorXd
+KernelBicop::hfunc2(const Eigen::MatrixXd& u)
+{
+  if (u.cols() == 4) {
+    auto u_avg = u;
+    u_avg.col(1) = (u.col(1) + u.col(3)).array() / 2.0;
+    return hfunc1_raw(u_avg.leftCols(2));
+  }
+  return hfunc1_raw(u);
+}
+
+inline Eigen::VectorXd
 KernelBicop::hinv1_raw(const Eigen::MatrixXd& u)
 {
   return hinv2_num(u);
@@ -67,13 +99,18 @@ inline double
 KernelBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
 {
   auto oldpars = this->get_parameters();
+  auto old_types = var_types_;
   this->set_parameters(parameters);
+  var_types_ = { "c", "c" };
+
   std::vector<int> seeds = {
     204967043, 733593603, 184618802, 399707801, 290266245
   };
   auto u = tools_stats::ghalton(1000, 2, seeds);
-  u.col(1) = hinv1(u);
+  u.col(1) = hinv1_raw(u);
+
   this->set_parameters(oldpars);
+  var_types_ = old_types;
   return wdm::wdm(u, "tau")(0, 1);
 }
 

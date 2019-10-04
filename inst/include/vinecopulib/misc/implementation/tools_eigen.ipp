@@ -82,6 +82,16 @@ swap_cols(Eigen::MatrixXd u)
   return u;
 }
 
+inline Eigen::VectorXd
+unique(const Eigen::VectorXd& x)
+{
+  std::vector<double> v(x.data(), x.data() + x.size());
+  std::sort(v.begin(), v.end()); // 1 1 2 2 3 3 3 4 4 5 5 6 7
+  auto last = std::unique(v.begin(), v.end());
+  v.erase(last, v.end());
+  return Eigen::Map<Eigen::VectorXd>(&v[0], v.size());
+}
+
 //! computes the inverse \f$ f^{-1} \f$ of a function \f$ f \f$ by the
 //! bisection method.
 //!

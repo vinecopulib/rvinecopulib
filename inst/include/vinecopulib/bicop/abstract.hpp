@@ -61,13 +61,14 @@ protected:
 
   virtual void flip() = 0;
 
-  Eigen::VectorXd pdf(const Eigen::MatrixXd& u);
+  // following are virtual so they can be overriden by KernelBicop
+  virtual Eigen::VectorXd pdf(const Eigen::MatrixXd& u);
 
   virtual Eigen::VectorXd cdf(const Eigen::MatrixXd& u) = 0;
 
-  Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u);
+  virtual Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u);
 
-  Eigen::VectorXd hfunc2(const Eigen::MatrixXd& u);
+  virtual Eigen::VectorXd hfunc2(const Eigen::MatrixXd& u);
 
   Eigen::VectorXd hinv1(const Eigen::MatrixXd& u);
 
