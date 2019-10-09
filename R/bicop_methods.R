@@ -32,9 +32,9 @@
 #' other variable, that is `v` when `cond_var = 1` and `u` when `cond_var = 2`.
 #'
 #' **Discrete variables** When at least one variable is discrete, two types of
-#' evaluation points are required: the first \eqn{n \times 2} block (`data`
+#' evaluation points are required: the first \eqn{n \times 2} block (`u`
 #' argument) contains realizations of \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The
-#' second \eqn{n \times 2} block (argument `data_sub`) contains realizations of
+#' second \eqn{n \times 2} block (argument `u_sub`) contains realizations of
 #' \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a left-sided limit
 #' of the cdf. For, e.g., an integer-valued variable, it holds
 #' \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
@@ -178,34 +178,33 @@ ktau_to_par <- function(family, tau) {
 
 #' Predictions and fitted values for a bivariate copula model
 #'
-#' Predictions of the density, distribution function,
-#' h-functions (with their inverses) for a bivariate copula model.
+#' Predictions of the density, distribution function, h-functions (with their
+#' inverses) for a bivariate copula model.
 #'
 #' @name bicop_predict_and_fitted
 #' @aliases predict.bicop fitted.bicop
 #' @param object a `bicop` object.
 #' @param newdata points where the fit shall be evaluated.
 #' @param what what to predict, one of `"pdf"`, `"cdf"`, `"hfunc1"`, `"hfunc2"`,
-#'    `"hinv1"`, `"hinv2"`.
+#'   `"hinv1"`, `"hinv2"`.
 #' @param newdata_sub (optional) an \eqn{n \times 2} or \eqn{n \times k}
 #'   matrix/data frame for discrete variables (see *Details*).
 #' @param ... unused.
-#' @return
-#' `fitted()` and `logLik()` have return values similar to [dbicop()],
+#' @return `fitted()` and `logLik()` have return values similar to [dbicop()],
 #' [pbicop()], and [hbicop()].
 #'
 #' @details `fitted()` can only be called if the model was fit with the
-#'    `keep_data = TRUE` option.
+#'   `keep_data = TRUE` option.
 #'
-#' **Discrete variables** When at least one variable is discrete, two types of
-#' "observations" are required: the first \eqn{n \times 2} block (`data`
-#' argument) contains realizations of \eqn{F_{X_1}(X_1), F_{X_2}(X_2)}. The
-#' second \eqn{n \times 2} block (argument `data_sub`) contains realizations of
-#' \eqn{F_{X_1}(X_1^-), F_{X_1}(X_1^-)}. The minus indicates a left-sided limit
-#' of the cdf. For, e.g., an integer-valued variable, it holds
-#' \eqn{F_{X_1}(X_1^-) = F_{X_1}(X_1 - 1)}. For continuous variables the left
-#' limit and the cdf itself coincide. Respective columns can be omitted in the
-#' second block.
+#'   **Discrete variables** When at least one variable is discrete, two types of
+#'   "observations" are required: the first \eqn{n \times 2} block (`newdata`
+#'   argument) contains realizations of \eqn{F_{X_1}(X_1), F_{X_2}(X_2)}. The
+#'   second \eqn{n \times 2} block (argument `newdata_sub`) contains
+#'   realizations of \eqn{F_{X_1}(X_1^-), F_{X_1}(X_1^-)}. The minus indicates a
+#'   left-sided limit of the cdf. For, e.g., an integer-valued variable, it
+#'   holds \eqn{F_{X_1}(X_1^-) = F_{X_1}(X_1 - 1)}. For continuous variables the
+#'   left limit and the cdf itself coincide. Respective columns can be omitted
+#'   in the second block.
 #'
 #'
 #' @examples
@@ -217,7 +216,7 @@ ktau_to_par <- function(family, tau) {
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
 #' @rdname predict_bicop
 #' @export
-predict.bicop <- function(object, newdata, what = "pdf", newdata_sub = NULL, ...) {
+predict.bicop_dist <- function(object, newdata, what = "pdf", newdata_sub = NULL, ...) {
   assert_that(in_set(what, what_allowed))
   newdata <- cbind(if_vec_to_matrix(newdata), if_vec_to_matrix(newdata_sub))
   switch(

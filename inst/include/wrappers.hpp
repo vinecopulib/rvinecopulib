@@ -340,12 +340,11 @@ inline Vinecop vinecop_wrap(const Rcpp::List& vinecop_r, bool check = false)
 {
   // omit R-vine matrix check, already done in R
   auto structure = rvine_structure_wrap(vinecop_r["structure"], check);
-
-  // extract pair-copulas
   auto pair_copulas = pair_copulas_wrap(vinecop_r["pair_copulas"],
                                         structure.get_dim());
-
-  return Vinecop(pair_copulas, structure);
+  Vinecop vc(pair_copulas, structure);
+  vc.set_var_types(vinecop_r["var_types"]);
+  return vc;
 }
 
 inline Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp,
@@ -365,6 +364,7 @@ inline Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp,
   return Rcpp::List::create(
     Rcpp::Named("pair_copulas")      = pair_copulas,
     Rcpp::Named("structure")         = vine_structure,
+    Rcpp::Named("var_types")         = vinecop_cpp.get_var_types(),
     Rcpp::Named("npars")             = npars,
     Rcpp::Named("loglik")            = loglik,
     Rcpp::Named("threshold")         = threshold

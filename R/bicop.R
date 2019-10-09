@@ -2,7 +2,7 @@
 #'
 #' @aliases bicop_dist
 #'
-#' @param data an $n \times 2$ matrix or data.frame (copula data should have
+#' @param data an $n \; x \; 2$ matrix or data.frame (copula data should have
 #'   approximately uniform margins).
 #' @param family_set a character vector of families; see *Details* for
 #'   additional options.
@@ -27,12 +27,11 @@
 #'   [fitted()]).
 #' @param cores number of cores to use; if more than 1, estimation for multiple
 #'   families is done in parallel.
-#' @param data_sub (optional) an \eqn{n \times 2} or \eqn{n \times k}
-#'   matrix/data frame for discrete variables (see *Details*).
 #' @param var_types variable types, a length 2 vector; e.g., `c("c", "c")` for
 #'  both continuous (default), or `c("c", "d")` for first variable continuous
 #'  and second discrete.
-#'
+#' @param data_sub (optional) an \eqn{n \; x \; 2} or \eqn{n \; x \; k}
+#'   matrix/data frame for discrete variables (see *Details*).
 #'
 #' @details
 #'
@@ -58,9 +57,9 @@
 #' of `"nonparametric"`.
 #'
 #' **Discrete variables** When at least one variable is discrete, two types of
-#' "observations" are required: the first \eqn{n \times 2} block (`data`
+#' "observations" are required: the first \eqn{n \; x \; 2} block (`data`
 #' argument) contains realizations of \eqn{F_{X_1}(X_1), F_{X_2}(X_2)}. The
-#' second \eqn{n \times 2} block (argument `data_sub`) contains realizations of
+#' second \eqn{n \; x \; 2} block (argument `data_sub`) contains realizations of
 #' \eqn{F_{X_1}(X_1^-), F_{X_1}(X_1^-)}. The minus indicates a left-sided limit
 #' of the cdf. For, e.g., an integer-valued variable, it holds
 #' \eqn{F_{X_1}(X_1^-) = F_{X_1}(X_1 - 1)}. For continuous variables the left
@@ -98,8 +97,8 @@
 bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic",
                   weights = numeric(), psi0 = 0.9, presel = TRUE,
-                  keep_data = FALSE, cores = 1, data_sub = NULL,
-                  var_types = c("c", "c")) {
+                  keep_data = FALSE, cores = 1, var_types = c("c", "c"),
+                  data_sub = NULL) {
   assert_that(
     ncol(data) == 2,
     is.character(family_set),

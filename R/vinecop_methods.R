@@ -10,10 +10,22 @@
 #' @param vinecop an object of class `"vinecop_dist"`.
 #' @param cores number of cores to use; if larger than one, computations are
 #'   done in parallel on `cores` batches .
+#' @param u_sub (optional) an \eqn{n \times 2d} or \eqn{n \times k}
+#'   matrix/data frame for discrete variables (see *Details*).
 #' @details
 #' See [vinecop] for the estimation and construction of vine copula models.
 #' Here, the density, distribution function and random generation
 #' for the vine copulas are standard.
+#'
+#' **Discrete variables** When at least one variable is discrete, two types of
+#' "observations" are required: the first \eqn{n \; x \; d} block (`u`
+#' argument) contains realizations of \eqn{F_{X_j}(X_j)}. The
+#' second \eqn{n \; x \; d} block (argument `u_sub`) contains realizations of
+#' \eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit
+#' of the cdf. For, e.g., an integer-valued variable, it holds
+#' \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
+#' limit and the cdf itself coincide. Respective columns can be omitted in the
+#' second block.
 #'
 #' @return
 #' `dvinecop()` gives the density, `pvinecop()` gives the distribution function,
@@ -47,21 +59,23 @@
 #' pvinecop(u[1, ], vc)
 #' @rdname vinecop_methods
 #' @export
-dvinecop <- function(u, vinecop, cores = 1) {
+dvinecop <- function(u, vinecop, cores = 1, u_sub = NULL) {
   assert_that(inherits(vinecop, "vinecop_dist"))
-  vinecop_pdf_cpp(if_vec_to_matrix(u), vinecop, cores)
+  u <- cbind(if_vec_to_matrix(u), if_vec_to_matrix(u_sub))
+  vinecop_pdf_cpp(u, vinecop, cores)
 }
 
 #' @rdname vinecop_methods
 #' @param n_mc number of samples used for quasi Monte Carlo integration.
 #' @importFrom assertthat is.count
 #' @export
-pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
+pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1, u_sub = NULL) {
   assert_that(
     inherits(vinecop, "vinecop_dist"),
     is.number(n_mc), is.count(cores)
   )
-  vinecop_cdf_cpp(if_vec_to_matrix(u), vinecop, n_mc, cores, get_seeds())
+  u <- cbind(if_vec_to_matrix(u), if_vec_to_matrix(u_sub))
+  vinecop_cdf_cpp(u, vinecop, n_mc, cores, get_seeds())
 }
 
 #' @rdname vinecop_methods
@@ -100,10 +114,10 @@ summary.vinecop_dist <- function(object, ...) {
   d <- dim(object)[1]
   n_trees <- dim(object)[2]
   n_pcs <- length(unlist(object$pair_copulas, recursive = FALSE))
-  mdf <- as.data.frame(matrix(NA, n_pcs, 9))
+  mdf <- as.data.frame(matrix(NA, n_pcs, 10))
   names(mdf) <- c(
     "tree", "edge",
-    "conditioned", "conditioning",
+    "conditioned", "conditioning", "var_types",
     "family", "rotation", "parameters", "df", "tau"
   )
   k <- 1
@@ -114,6 +128,7 @@ summary.vinecop_dist <- function(object, ...) {
       mdf$conditioned[k] <- list(c(mat[d - e + 1, e], mat[t, e]))
       mdf$conditioning[k] <- list(mat[rev(seq_len(t - 1)), e])
       pc <- object$pair_copulas[[t]][[e]]
+      mdf$var_types[k] <- paste(pc$var_types, collapse = ",")
       mdf$family[k] <- pc$family
       mdf$rotation[k] <- pc$rotation
       mdf$parameters[k] <- list(pc$parameters)
@@ -147,6 +162,16 @@ summary.vinecop_dist <- function(object, ...) {
 #' @details `fitted()` can only be called if the model was fit with the
 #'    `keep_data = TRUE` option.
 #'
+#' **Discrete variables** When at least one variable is discrete, two types of
+#' "observations" are required: the first \eqn{n \; x \; d} block (`newdata`
+#' argument) contains realizations of \eqn{F_{X_j}(X_j)}. The
+#' second \eqn{n \; x \; d} block (argument `newdata_sub`) contains realizations of
+#' \eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit
+#' of the cdf. For, e.g., an integer-valued variable, it holds
+#' \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
+#' limit and the cdf itself coincide. Respective columns can be omitted in the
+#' second block.
+#'
 #' @return
 #' `fitted()` and `predict()` have return values similar to [dvinecop()]
 #' and [pvinecop()].
@@ -157,13 +182,13 @@ summary.vinecop_dist <- function(object, ...) {
 #' fit <- vinecop(u, "par", keep_data = TRUE)
 #' all.equal(predict(fit, u), fitted(fit))
 predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4,
-                            cores = 1, ...) {
+                            cores = 1, newdata_sub = NULL, ...) {
   assert_that(
     in_set(what, c("pdf", "cdf")),
     is.number(n_mc),
     is.number(cores), cores > 0
   )
-  newdata <- if_vec_to_matrix(newdata)
+  newdata <- cbind(if_vec_to_matrix(newdata), if_vec_to_matrix(newdata_sub))
   switch(
     what,
     "pdf" = vinecop_pdf_cpp(newdata, object, cores),
@@ -182,10 +207,11 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
     is.number(n_mc),
     is.number(cores), cores > 0
   )
+  data <- cbind(if_vec_to_matrix(object$data), if_vec_to_matrix(object$data_sub))
   switch(
     what,
-    "pdf" = vinecop_pdf_cpp(object$data, object, cores),
-    "cdf" = vinecop_cdf_cpp(object$data, object, n_mc, cores, get_seeds())
+    "pdf" = vinecop_pdf_cpp(data, object, cores),
+    "cdf" = vinecop_cdf_cpp(data, object, n_mc, cores, get_seeds())
   )
 }
 
@@ -200,26 +226,25 @@ logLik.vinecop <- function(object, ...) {
 #'
 #' The modified vine copula Bayesian information criterion (mBICv) is defined as
 #'
-#' \deqn{BIC = -2 loglik +  \nu log(n) - 2
-#' \sum_{t=1}^{d - 1} (q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t))
-#' }
+#' \deqn{BIC = -2 loglik +  \nu log(n) - 2 \sum_{t=1}^{d - 1} (q_t log(\psi_0^t)
+#' - (d - t - q_t) log(1 - \psi_0^t)) }
 #'
 #' where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
 #' (effective) number of parameters of the model, \eqn{t} is the tree level
 #' \eqn{\psi_0} is the prior probability of having a non-independence copula and
-#' \eqn{q_t} is the number of non-independence copulas in tree \eqn{t}.
-#' The mBICv is a consistent model selection criterion for parametric sparse
-#' vine copula models.
+#' \eqn{q_t} is the number of non-independence copulas in tree \eqn{t}. The
+#' mBICv is a consistent model selection criterion for parametric sparse vine
+#' copula models.
 #'
 #' @param object a fitted `vinecop` object.
 #' @param psi0 baseline prior probability of a non-independence copula.
 #' @param newdata optional; a new data set.
+#' @param newdata optional; for discrete data, see `predict.vinecop()`.
 #'
-#' @references Nagler, T., Bumann, C., Czado, C. (2019).
-#' Model selection for sparse high-dimensional vine copulas with application
-#' to portfolio risk.
-#' *Journal of Multivariate Analysis, in press*
-#' (\url{https://arxiv.org/pdf/1801.09739.pdf})
+#' @references Nagler, T., Bumann, C., Czado, C. (2019). Model selection for
+#'   sparse high-dimensional vine copulas with application to portfolio risk.
+#'   *Journal of Multivariate Analysis, in press*
+#'   (\url{https://arxiv.org/pdf/1801.09739.pdf})
 #'
 #' @export mBICV
 #' @examples
@@ -227,11 +252,11 @@ logLik.vinecop <- function(object, ...) {
 #' fit <- vinecop(u, "par", keep_data = TRUE)
 #' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 #' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
-mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
+mBICV <- function(object, psi0 = 0.9, newdata = NULL, newdata_sub = NULL) {
   assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
   ll <- ifelse(is.null(newdata),
     object$loglik,
-    sum(log(dvinecop(newdata, object)))
+    sum(log(dvinecop(cbind(newdata, newdata_sub), object)))
   )
   -2 * ll + compute_mBICV_penalty(object, psi0)
 }

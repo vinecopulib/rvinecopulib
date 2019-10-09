@@ -25,6 +25,11 @@
 #'    printed.
 #' @param cores number of cores to use; if more than 1, estimation of pair
 #'    copulas within a tree is done in parallel.
+#' @param var_types variable types, a length d vector; e.g., `c("c", "c")` for
+#'  two continuous variables, or `c("c", "d")` for first variable continuous
+#'  and second discrete.
+#' @param data_sub (optional) an \eqn{n \; x \; 2} or \eqn{n \; x \; k}
+#'   matrix/data frame for discrete variables (see *Details*).
 #'
 #' @details
 #' [vinecop_dist()] creates a vine copula by specifying a nested list of
@@ -39,6 +44,16 @@
 #' `threshold` allows to threshold the `tree_crit` and `trunc_lvl` to truncate
 #' the vine copula, with `threshold_sel` and `trunc_lvl_sel` to automatically
 #' select both parameters.
+#'
+#' **Discrete variables** When at least one variable is discrete, two types of
+#' "observations" are required: the first \eqn{n \; x \; d} block (`data`
+#' argument) contains realizations of \eqn{F_{X_j}(X_j)}. The
+#' second \eqn{n \; x \; d} block (argument `data_sub`) contains realizations of
+#' \eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit
+#' of the cdf. For, e.g., an integer-valued variable, it holds
+#' \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
+#' limit and the cdf itself coincide. Respective columns can be omitted in the
+#' second block.
 #'
 #' @return Objects inheriting from `vinecop_dist` for [vinecop_dist()], and
 #' `vinecop` and `vinecop_dist` for [vinecop()].
@@ -94,7 +109,8 @@ vinecop <- function(data, family_set = "all", structure = NA,
                     selcrit = "bic", weights = numeric(), psi0 = 0.9,
                     presel = TRUE, trunc_lvl = Inf, tree_crit = "tau",
                     threshold = 0, keep_data = FALSE, show_trace = FALSE,
-                    cores = 1) {
+                    cores = 1, var_types = rep("c", ncol(data)),
+                    data_sub = NULL) {
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||
@@ -111,14 +127,14 @@ vinecop <- function(data, family_set = "all", structure = NA,
     is.string(tree_crit),
     is.scalar(threshold),
     is.flag(keep_data),
-    is.number(cores), cores > 0
+    is.number(cores), cores > 0,
+    correct_var_types(var_types), ncol(data) == length(var_types)
   )
 
   # check if families known (w/ partial matching) and expand convenience defs
   family_set <- process_family_set(family_set, par_method)
 
   ## pre-process input
-  data <- if_vec_to_matrix(data)
   is_structure_provided <- !(is.scalar(structure) && is.na(structure))
   if (is_structure_provided) {
     structure <- as_rvine_structure(structure)
@@ -126,7 +142,7 @@ vinecop <- function(data, family_set = "all", structure = NA,
 
   ## fit and select copula model
   vinecop <- vinecop_select_cpp(
-    data = data,
+    data = cbind(data, data_sub),
     is_structure_provided = is_structure_provided,
     structure = structure,
     family_set = family_set,
@@ -147,7 +163,8 @@ vinecop <- function(data, family_set = "all", structure = NA,
     select_truncation_level = is.na(trunc_lvl),
     select_threshold = is.na(threshold),
     show_trace = show_trace,
-    num_threads = cores
+    num_threads = cores,
+    var_types = var_types
   )
 
   ## make all pair-copulas bicop objects
@@ -163,6 +180,7 @@ vinecop <- function(data, family_set = "all", structure = NA,
   vinecop$names <- colnames(data)
   if (keep_data) {
     vinecop$data <- data
+    vinecop$data_sub <- data_sub
   }
   vinecop$controls <- list(
     family_set = family_set,
@@ -186,7 +204,8 @@ vinecop <- function(data, family_set = "all", structure = NA,
 #'    tree `t`.
 #' @rdname vinecop
 #' @export
-vinecop_dist <- function(pair_copulas, structure) {
+vinecop_dist <- function(pair_copulas, structure,
+                         var_types = rep("c", length(pair_copulas[[1]]) + 1)) {
   # create object
   vinecop <- structure(
     list(
@@ -197,7 +216,7 @@ vinecop_dist <- function(pair_copulas, structure) {
   )
 
   # sanity checks
-  assert_that(is.list(pair_copulas))
+  assert_that(is.list(pair_copulas), correct_var_types(var_types))
   if (length(pair_copulas) > length(pair_copulas[[1]])) {
     stop("'pair_copulas' has more trees than variables.")
   }
@@ -211,6 +230,7 @@ vinecop_dist <- function(pair_copulas, structure) {
     vinecop$structure,
     length(vinecop$pair_copulas)
   )
+  vinecop$var_types <- var_types
   vinecop_check_cpp(vinecop)
   vinecop$npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
   vinecop$loglik <- NA

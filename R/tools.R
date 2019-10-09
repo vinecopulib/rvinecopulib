@@ -232,16 +232,14 @@ on_failure(in_set) <- function(call, env) {
   )
 }
 
-correct_var_types <- function(var_types) {
-  (length(var_types) == 2) &&
-    is.character(var_types) &&
-    in_set(var_types, c("c", "d"))
+correct_var_types <- function(var_types, data) {
+    is.character(var_types) && in_set(var_types, c("c", "d"))
 }
 
 on_failure(correct_var_types) <- function(call, env) {
   paste0(
     deparse(call$el),
-    " must be a length to vector with elements 'c' or 'd'."
+    " must be vector with elements 'c' or 'd'."
   )
 }
 #' Pseudo-Observations

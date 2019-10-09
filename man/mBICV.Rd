@@ -4,7 +4,7 @@
 \alias{mBICV}
 \title{Modified vine copula Bayesian information criterion (mBICv)}
 \usage{
-mBICV(object, psi0 = 0.9, newdata = NULL)
+mBICV(object, psi0 = 0.9, newdata = NULL, newdata_sub = NULL)
 }
 \arguments{
 \item{object}{a fitted \code{vinecop} object.}
@@ -12,6 +12,8 @@ mBICV(object, psi0 = 0.9, newdata = NULL)
 \item{psi0}{baseline prior probability of a non-independence copula.}
 
 \item{newdata}{optional; a new data set.}
+
+\item{newdata}{optional; for discrete data, see \code{predict.vinecop()}.}
 }
 \description{
 Calculates the modified vine copula Bayesian information criterion.

@@ -9,12 +9,14 @@ vinecop(data, family_set = "all", structure = NA, par_method = "mle",
   nonpar_method = "constant", mult = 1, selcrit = "bic",
   weights = numeric(), psi0 = 0.9, presel = TRUE, trunc_lvl = Inf,
   tree_crit = "tau", threshold = 0, keep_data = FALSE,
-  show_trace = FALSE, cores = 1)
+  show_trace = FALSE, cores = 1, var_types = rep("c", ncol(data)),
+  data_sub = NULL)
 
-vinecop_dist(pair_copulas, structure)
+vinecop_dist(pair_copulas, structure, var_types = rep("c",
+  length(pair_copulas[[1]]) + 1))
 }
 \arguments{
-\item{data}{an $n \times 2$ matrix or data.frame (copula data should have
+\item{data}{an $n ; x ; 2$ matrix or data.frame (copula data should have
 approximately uniform margins).}
 
 \item{family_set}{a character vector of families; see \code{\link[=bicop]{bicop()}} for
@@ -71,6 +73,13 @@ printed.}
 \item{cores}{number of cores to use; if more than 1, estimation of pair
 copulas within a tree is done in parallel.}
 
+\item{var_types}{variable types, a length d vector; e.g., \code{c("c", "c")} for
+two continuous variables, or \code{c("c", "d")} for first variable continuous
+and second discrete.}
+
+\item{data_sub}{(optional) an \eqn{n \; x \; 2} or \eqn{n \; x \; k}
+matrix/data frame for discrete variables (see \emph{Details}).}
+
 \item{pair_copulas}{A nested list of 'bicop_dist' objects, where
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
 tree \code{t}.}
@@ -117,6 +126,16 @@ Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
 \code{threshold} allows to threshold the \code{tree_crit} and \code{trunc_lvl} to truncate
 the vine copula, with \code{threshold_sel} and \code{trunc_lvl_sel} to automatically
 select both parameters.
+
+\strong{Discrete variables} When at least one variable is discrete, two types of
+"observations" are required: the first \eqn{n \; x \; d} block (\code{data}
+argument) contains realizations of \eqn{F_{X_j}(X_j)}. The
+second \eqn{n \; x \; d} block (argument \code{data_sub}) contains realizations of
+\eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit
+of the cdf. For, e.g., an integer-valued variable, it holds
+\eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
+limit and the cdf itself coincide. Respective columns can be omitted in the
+second block.
 }
 \examples{
 # specify pair-copulas

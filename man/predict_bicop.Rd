@@ -2,11 +2,12 @@
 % Please edit documentation in R/bicop_methods.R
 \name{bicop_predict_and_fitted}
 \alias{bicop_predict_and_fitted}
+\alias{predict.bicop_dist}
 \alias{predict.bicop}
 \alias{fitted.bicop}
 \title{Predictions and fitted values for a bivariate copula model}
 \usage{
-\method{predict}{bicop}(object, newdata, what = "pdf",
+\method{predict}{bicop_dist}(object, newdata, what = "pdf",
   newdata_sub = NULL, ...)
 
 \method{fitted}{bicop}(object, what = "pdf", ...)
@@ -29,22 +30,22 @@ matrix/data frame for discrete variables (see \emph{Details}).}
 \code{\link[=pbicop]{pbicop()}}, and \code{\link[=hbicop]{hbicop()}}.
 }
 \description{
-Predictions of the density, distribution function,
-h-functions (with their inverses) for a bivariate copula model.
+Predictions of the density, distribution function, h-functions (with their
+inverses) for a bivariate copula model.
 }
 \details{
 \code{fitted()} can only be called if the model was fit with the
 \code{keep_data = TRUE} option.
 
 \strong{Discrete variables} When at least one variable is discrete, two types of
-"observations" are required: the first \eqn{n \times 2} block (\code{data}
+"observations" are required: the first \eqn{n \times 2} block (\code{newdata}
 argument) contains realizations of \eqn{F_{X_1}(X_1), F_{X_2}(X_2)}. The
-second \eqn{n \times 2} block (argument \code{data_sub}) contains realizations of
-\eqn{F_{X_1}(X_1^-), F_{X_1}(X_1^-)}. The minus indicates a left-sided limit
-of the cdf. For, e.g., an integer-valued variable, it holds
-\eqn{F_{X_1}(X_1^-) = F_{X_1}(X_1 - 1)}. For continuous variables the left
-limit and the cdf itself coincide. Respective columns can be omitted in the
-second block.
+second \eqn{n \times 2} block (argument \code{newdata_sub}) contains
+realizations of \eqn{F_{X_1}(X_1^-), F_{X_1}(X_1^-)}. The minus indicates a
+left-sided limit of the cdf. For, e.g., an integer-valued variable, it
+holds \eqn{F_{X_1}(X_1^-) = F_{X_1}(X_1 - 1)}. For continuous variables the
+left limit and the cdf itself coincide. Respective columns can be omitted
+in the second block.
 }
 \examples{
 # Simulate and fit a bivariate copula model

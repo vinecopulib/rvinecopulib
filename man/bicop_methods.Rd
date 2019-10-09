@@ -78,9 +78,9 @@ When inverting H-functions, the inverse is then taken with respect to the
 other variable, that is \code{v} when \code{cond_var = 1} and \code{u} when \code{cond_var = 2}.
 
 \strong{Discrete variables} When at least one variable is discrete, two types of
-evaluation points are required: the first \eqn{n \times 2} block (\code{data}
+evaluation points are required: the first \eqn{n \times 2} block (\code{u}
 argument) contains realizations of \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The
-second \eqn{n \times 2} block (argument \code{data_sub}) contains realizations of
+second \eqn{n \times 2} block (argument \code{u_sub}) contains realizations of
 \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a left-sided limit
 of the cdf. For, e.g., an integer-valued variable, it holds
 \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left

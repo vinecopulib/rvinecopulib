@@ -10,17 +10,20 @@ test_that("returns proper 'vinecop' object", {
   expect_s3_class(fit, "vinecop_dist")
   expect_identical(
     names(fit),
-    c("pair_copulas", "structure", "npars", "loglik", "threshold", "controls", "nobs")
+    c("pair_copulas", "structure", "var_types",
+      "npars", "loglik", "threshold", "controls", "nobs")
   )
   expect_identical(
     names(fit_with_data),
-    c("pair_copulas", "structure", "npars", "loglik", "threshold", "data", "controls", "nobs")
+    c("pair_copulas", "structure", "var_types",
+      "npars", "loglik", "threshold", "data", "controls", "nobs")
   )
 
   colnames(u) <- paste(seq_len(ncol(u)))
   expect_identical(
     names(vinecop(u, "indep")),
-    c("pair_copulas", "structure", "npars", "loglik", "threshold", "names", "controls", "nobs")
+    c("pair_copulas", "structure", "var_types",
+      "npars", "loglik", "threshold", "names", "controls", "nobs")
   )
 })
 

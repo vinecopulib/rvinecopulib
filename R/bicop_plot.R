@@ -22,10 +22,10 @@
 #' @seealso \code{\link{bicop_dist}}, \code{\link{contour}}, \code{\link{wireframe}}
 #' @keywords plot
 #' @examples
-#' 
+#'
 #' ## construct bicop_dist object for a student t copula
 #' obj <- bicop_dist(family = "t", rotation = 0, parameters = c(0.7, 4))
-#' 
+#'
 #' ## plots
 #' plot(obj) # surface plot of copula density
 #' contour(obj) # contour plot with standard normal margins
@@ -124,7 +124,10 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
   }
 
   ## evaluate on grid
+  vt <- x$var_types
+  x$var_types <- c("c", "c")
   vals <- dbicop(g, x)
+  x$var_types <- vt
   cop <- matrix(vals, size, size)
 
   ## adjust for margins
