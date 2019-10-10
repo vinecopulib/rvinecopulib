@@ -156,7 +156,9 @@ summary.vinecop_dist <- function(object, ...) {
 #' @param n_mc number of samples used for quasi Monte Carlo integration when
 #'    `what = "cdf"`.
 #' @param cores number of cores to use; if larger than one, computations are
-#'   done in parallel on `cores` batches .
+#'   done in parallel on `cores` batches.
+#' @param newdata_sub (optional) an \eqn{n \times 2} or \eqn{n \times k}
+#'   matrix/data frame for discrete variables (see *Details*).
 #' @param ... unused.
 #'
 #' @details `fitted()` can only be called if the model was fit with the
@@ -239,7 +241,7 @@ logLik.vinecop <- function(object, ...) {
 #' @param object a fitted `vinecop` object.
 #' @param psi0 baseline prior probability of a non-independence copula.
 #' @param newdata optional; a new data set.
-#' @param newdata optional; for discrete data, see `predict.vinecop()`.
+#' @param newdata_sub optional; for discrete data, see `predict.vinecop()`.
 #'
 #' @references Nagler, T., Bumann, C., Czado, C. (2019). Model selection for
 #'   sparse high-dimensional vine copulas with application to portfolio risk.

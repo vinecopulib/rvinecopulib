@@ -165,9 +165,6 @@ as.bicop <- function(object) {
 #' *Details* for all possible families).
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
 #' @param parameters a vector or matrix of copula parameters.
-#' @param var_types variable types, a length 2 vector; e.g., `c("c", "c")` for
-#'  both continuous (default), or `c("c", "d")` for first variable continuous
-#'  and second discrete.
 #' @rdname bicop
 #' @export
 bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0),

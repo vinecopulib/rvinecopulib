@@ -110,7 +110,7 @@ pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
   if (!is.null(vine$copula)) {
     vals <- pvinecop(psobs$u, vine$copula, n_mc, cores, u_sub = psobs$u_sub)
   } else {
-    vals <- apply(u, 1, prod)
+    vals <- apply(psobs$u, 1, prod)
   }
 
   vals

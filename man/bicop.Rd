@@ -64,10 +64,6 @@ matrix/data frame for discrete variables (see \emph{Details}).}
 \item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
 
 \item{parameters}{a vector or matrix of copula parameters.}
-
-\item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
-both continuous (default), or \code{c("c", "d")} for first variable continuous
-and second discrete.}
 }
 \value{
 Objects inheriting from \code{bicop_dist} for \code{bicop_dist()}, and \code{bicop}

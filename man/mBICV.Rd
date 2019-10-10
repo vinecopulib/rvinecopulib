@@ -13,7 +13,7 @@ mBICV(object, psi0 = 0.9, newdata = NULL, newdata_sub = NULL)
 
 \item{newdata}{optional; a new data set.}
 
-\item{newdata}{optional; for discrete data, see \code{predict.vinecop()}.}
+\item{newdata_sub}{optional; for discrete data, see \code{predict.vinecop()}.}
 }
 \description{
 Calculates the modified vine copula Bayesian information criterion.
@@ -21,16 +21,15 @@ Calculates the modified vine copula Bayesian information criterion.
 \details{
 The modified vine copula Bayesian information criterion (mBICv) is defined as
 
-\deqn{BIC = -2 loglik +  \nu log(n) - 2
-\sum_{t=1}^{d - 1} (q_t log(\psi_0^t) - (d - t - q_t) log(1 - \psi_0^t))
-}
+\deqn{BIC = -2 loglik +  \nu log(n) - 2 \sum_{t=1}^{d - 1} (q_t log(\psi_0^t)
+- (d - t - q_t) log(1 - \psi_0^t)) }
 
 where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
 (effective) number of parameters of the model, \eqn{t} is the tree level
 \eqn{\psi_0} is the prior probability of having a non-independence copula and
-\eqn{q_t} is the number of non-independence copulas in tree \eqn{t}.
-The mBICv is a consistent model selection criterion for parametric sparse
-vine copula models.
+\eqn{q_t} is the number of non-independence copulas in tree \eqn{t}. The
+mBICv is a consistent model selection criterion for parametric sparse vine
+copula models.
 }
 \examples{
 u <- sapply(1:5, function(i) runif(50))
@@ -39,9 +38,8 @@ mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 }
 \references{
-Nagler, T., Bumann, C., Czado, C. (2019).
-Model selection for sparse high-dimensional vine copulas with application
-to portfolio risk.
+Nagler, T., Bumann, C., Czado, C. (2019). Model selection for
+sparse high-dimensional vine copulas with application to portfolio risk.
 \emph{Journal of Multivariate Analysis, in press}
 (\url{https://arxiv.org/pdf/1801.09739.pdf})
 }

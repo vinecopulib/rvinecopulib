@@ -172,6 +172,8 @@ compute_pseudo_obs <- function(data, vine) {
   list(u = u, u_sub = u_sub)
 }
 
+#' @importFrom stats model.matrix
+#' @noRd
 expand_factors <- function(data) {
   if (is.data.frame(data)) {
     data <- lapply(data, function(x) {
