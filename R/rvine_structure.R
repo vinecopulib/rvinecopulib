@@ -170,7 +170,7 @@ rvine_matrix_nocheck <- function(matrix) {
   class(matrix) <- c("rvine_matrix", class(matrix))
   attr(matrix, "d") <- d
   attr(matrix, "trunc_lvl") <- ifelse(any(matrix[, 1] == 0),
-    min(which(matrix[, 1] == 0)),
+    min(which(matrix[, 1] == 0)) - 1,
     d - 1
   )
   matrix
