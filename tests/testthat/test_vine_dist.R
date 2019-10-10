@@ -14,8 +14,7 @@ test_that("constructor creates proper `vine_dist` object", {
 
 test_that("d/p/r- functions work", {
   u <- rvine(50, vc)
-  expect_false(any(rvine(50, vc, qrng = FALSE) ==
-    rvine(50, vc, qrng = FALSE)))
+  expect_false(any(rvine(50, vc, qrng = FALSE) == rvine(50, vc, qrng = FALSE)))
   set.seed(1)
   u <- rvine(50, vc, qrng = TRUE)
   set.seed(1)

@@ -74,3 +74,25 @@ test_that("vinecop works", {
   summary(cop)
   expect_identical(cop$var_types, var_types)
 })
+
+
+# -----------------------------------------------------------------
+
+test_that("vine works", {
+  n <- 1e2
+  x1 <- rnorm(n)
+  x2 <- ordered(sample(5, n, TRUE), 1:5)
+  x3 <- x1 + as.numeric(x2) + rnorm(n, sd = 0.5)
+  x <- data.frame(x1, x2, x3)
+
+  fit <- vine(x)
+  sim <- rvine(n * 10, fit)
+  expect_equal(sort(unique(sim[, 2])), 1:5)
+
+  summary(fit)
+  expect_identical(fit$copula$var_types, c("c", "d", "c"))
+  # only check for errors
+  dvine(x, fit)
+  pvine(x, fit)
+  rvine(10, fit)
+})
