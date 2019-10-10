@@ -21,16 +21,6 @@
 #include <vinecopulib/bicop/tll.hpp>
 #include <vinecopulib/misc/tools_eigen.hpp>
 
-
-
-
-
-#include <iostream>
-
-
-
-
-
 namespace vinecopulib {
 
 //! virtual destructor
@@ -154,11 +144,7 @@ AbstractBicop::pdf(const Eigen::MatrixXd& u)
   } else {
     pdf = pdf_c_d(u);
   }
-
-  auto trim = [](const double& x) {
-    return std::min(DBL_MAX, std::max(x, DBL_MIN));
-  };
-  return tools_eigen::unaryExpr_or_nan(pdf, trim);
+  return tools_eigen::trim(pdf, DBL_MIN, DBL_MAX);
 }
 
 inline Eigen::VectorXd

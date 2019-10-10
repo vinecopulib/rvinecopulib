@@ -59,6 +59,19 @@ remove_nans(Eigen::MatrixXd& x, Eigen::VectorXd& weights)
     weights.conservativeResize(last + 1);
 }
 
+//! trims all elements in the matrix to the interval `[lower, upper]`.
+//! @param x data matrix.
+//! @param lower lower bound of the interval.
+//! @param upper upper bound of the interval.
+inline Eigen::MatrixXd
+trim(const Eigen::MatrixXd& x, const double& lower, const double& upper)
+{
+  auto trim_one = [&lower, &upper](const double& x) {
+    return std::min(std::max(x, lower), upper);
+  };
+  return tools_eigen::unaryExpr_or_nan(x, trim_one);
+}
+
 //! check if all elements are contained in the unit cube.
 //! @param u copula data.
 //! @return `true` if all data lie in the unit cube; throws an error otherwise.

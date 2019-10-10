@@ -6,7 +6,6 @@
 
 #include <vinecopulib/misc/tools_interpolation.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
-#include <vinecopulib/misc/tools_interpolation.hpp>
 #include <wdm/eigen.hpp>
 
 namespace vinecopulib {
@@ -17,20 +16,24 @@ inline KernelBicop::KernelBicop()
   Eigen::VectorXd grid_points(m);
   for (size_t i = 0; i < m; ++i)
     grid_points(i) = -3.25 + i * (6.5 / static_cast<double>(m - 1));
-  interp_grid_ = std::make_shared<tools_interpolation::InterpolationGrid>(
-    tools_stats::pnorm(grid_points),
-    Eigen::MatrixXd::Constant(m, m, 1.0) // independence
-  );
+  grid_points = tools_stats::pnorm(grid_points);
+  
+  // move boundary points to 0/1, so we don't have to extrapolate
+  grid_points(0) = 0.0;
+  grid_points(m - 1) = 1.0;
+
+  interp_grid_ =
+    std::make_shared<tools_interpolation::InterpolationGrid>(
+      grid_points,
+      Eigen::MatrixXd::Constant(m, m, 1.0) // independence
+    );
 }
 
 inline Eigen::VectorXd
 KernelBicop::pdf_raw(const Eigen::MatrixXd& u)
 {
   auto pdf = interp_grid_->interpolate(u);
-  auto trunc = [] (const double& p) {
-      return std::fmax(p, 1e-20);
-  };
-  return tools_eigen::unaryExpr_or_nan(pdf, trunc);
+  return tools_eigen::trim(pdf, 1e-20, DBL_MAX);
 }
 
 inline Eigen::VectorXd
@@ -78,15 +81,15 @@ KernelBicop::hfunc2(const Eigen::MatrixXd& u)
   if (u.cols() == 4) {
     auto u_avg = u;
     u_avg.col(1) = (u.col(1) + u.col(3)).array() / 2.0;
-    return hfunc1_raw(u_avg.leftCols(2));
+    return hfunc2_raw(u_avg.leftCols(2));
   }
-  return hfunc1_raw(u);
+  return hfunc2_raw(u);
 }
 
 inline Eigen::VectorXd
 KernelBicop::hinv1_raw(const Eigen::MatrixXd& u)
 {
-  return hinv2_num(u);
+  return hinv1_num(u);
 }
 
 inline Eigen::VectorXd

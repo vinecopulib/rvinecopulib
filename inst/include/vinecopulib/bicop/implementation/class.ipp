@@ -55,10 +55,10 @@ inline Bicop::Bicop(const boost::property_tree::ptree input)
           tools_serialization::ptree_to_matrix<double>(
             input.get_child("parameters")))
 {
-  var_types_ = tools_serialization::ptree_to_vector<std::string>(
-    input.get_child("var_types"));
   // try block for backwards compatibility
   try {
+    var_types_ = tools_serialization::ptree_to_vector<std::string>(
+      input.get_child("var_types"));
     nobs_ = input.get<size_t>("nobs_");
     bicop_->set_loglik(input.get<double>("loglik"));
   } catch (...) {}
@@ -173,10 +173,7 @@ Bicop::hfunc1(const Eigen::MatrixXd& u) const
       h = 1.0 - bicop_->hfunc2(prep_for_abstract(u)).array();
       break;
   }
-  auto trim = [] (const double& x) {
-    return std::min(1.0, std::max(x, 0.0));
-  };
-  return tools_eigen::unaryExpr_or_nan(h, trim);
+  return tools_eigen::trim(h, 0.0, 1.0);
 }
 
 //! @brief calculates the second h-function.
@@ -207,8 +204,7 @@ Bicop::hfunc2(const Eigen::MatrixXd& u) const
       h = bicop_->hfunc1(prep_for_abstract(u)).array();
       break;
   }
-  auto trim = [](const double& x) { return std::min(1.0, std::max(x, 0.0)); };
-  return tools_eigen::unaryExpr_or_nan(h, trim);
+  return tools_eigen::trim(h, 0.0, 1.0);
 }
 
 //! @brief calculates the inverse of \f$ h_1 \f$ (see hfunc1()) w.r.t. the
@@ -237,8 +233,7 @@ Bicop::hinv1(const Eigen::MatrixXd& u) const
       hi = 1.0 - bicop_->hinv2(prep_for_abstract(u)).array();
       break;
   }
-  auto trim = [](const double& x) { return std::min(1.0, std::max(x, 0.0)); };
-  return tools_eigen::unaryExpr_or_nan(hi, trim);
+  return tools_eigen::trim(hi, 0.0, 1.0);
 }
 
 //! @brief calculates the inverse of \f$ h_2 \f$ (see hfunc2()) w.r.t. the first
@@ -267,8 +262,7 @@ Bicop::hinv2(const Eigen::MatrixXd& u) const
       hi = bicop_->hinv1(prep_for_abstract(u));
       break;
   }
-  auto trim = [](const double& x) { return std::min(1.0, std::max(x, 0.0)); };
-  return tools_eigen::unaryExpr_or_nan(hi, trim);
+  return tools_eigen::trim(hi, 0.0, 1.0);
 }
 //! @}
 
@@ -529,18 +523,20 @@ inline void
 Bicop::check_data_dim(const Eigen::MatrixXd& u) const
 {
   size_t n_cols = u.cols();
-  size_t n_cols_exp = 2 + get_n_discrete();
+  auto n_disc = get_n_discrete();
+  unsigned short n_cols_exp = 2 + n_disc;
   if ((n_cols != n_cols_exp) & (n_cols != 4)) {
     std::stringstream msg;
     msg << "data has wrong number of columns; "
         << "expected: " << n_cols_exp << " or 4, actual: " << n_cols 
         << " (model contains ";
-    if (n_cols_exp == 2) {
-      msg << "no ";
+    if (n_disc == 0) {
+      msg << "no discrete variables)." << std::endl;
+    } else if (n_disc == 1) {
+      msg << "1 discrete variable)." << std::endl;
     } else {
-      msg << get_n_discrete() << " ";
+      msg << get_n_discrete() << "discrete variables)." << std::endl;
     }
-    msg << "discrete variables)." << std::endl;
     throw std::runtime_error(msg.str());
   }
 }
@@ -744,7 +740,7 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
   rotation_ = 0;
   bicop_->set_loglik(0.0);
   if (data_no_nan.rows() >= 10) {
-    data_no_nan = clip_data(data_no_nan);
+    data_no_nan = tools_eigen::trim(data_no_nan);
     std::vector<Bicop> bicops = create_candidate_bicops(data_no_nan, controls);
     for (auto& bc : bicops) {
       bc.set_var_types(var_types_);
@@ -810,10 +806,10 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
 inline Eigen::MatrixXd
 Bicop::format_data(const Eigen::MatrixXd& u) const
 {
-  int n_disc = get_n_discrete();
+  auto n_disc = get_n_discrete();
   if (n_disc == 0) {
     return u.leftCols(2);
-  } else if ((get_n_discrete() != 1) | (u.cols() == 4)) {
+  } else if ((n_disc != 1) | (u.cols() == 4)) {
     return u;
   }
   Eigen::MatrixXd u_new(u.rows(), 4);
@@ -825,15 +821,6 @@ Bicop::format_data(const Eigen::MatrixXd& u) const
   return u_new;
 }
 
-//! clisp the data to the interval [1e-10, 1 - 1e-10] for numerical stability.
-inline Eigen::MatrixXd
-Bicop::clip_data(const Eigen::MatrixXd& u) const
-{
-  auto clip = [] (const double& x) {
-    return std::min(std::max(x, 1e-10), 1 - 1e-10);
-  };
-  return tools_eigen::unaryExpr_or_nan(u, clip);
-}
 
 //! rotates the data corresponding to the models rotation.
 //! @param u an `n x 2` matrix.
@@ -866,13 +853,13 @@ Bicop::rotate_data(const Eigen::MatrixXd& u) const
 
 //! prepares data for use with the `AbstractBicop` class:
 //! - add an additional column if there's only one discrete variable.
-//! - clip the data to the interval [1e-10, 1 - 1e-10] for numerical stability.
+//! - trim the data to the interval [1e-10, 1 - 1e-10] for numerical stability.
 //! - rotate the data appropriately (`AbstractBicop` is always 0deg-rotation).
 inline Eigen::MatrixXd
 Bicop::prep_for_abstract(const Eigen::MatrixXd& u) const
 {
   auto u_new = format_data(u);
-  u_new = clip_data(u_new);
+  u_new = tools_eigen::trim(u_new);
   u_new.leftCols(2) = rotate_data(u_new.leftCols(2));
   if (u_new.cols() == 4) {
     u_new.rightCols(2) = rotate_data(u_new.rightCols(2));
@@ -918,7 +905,7 @@ Bicop::check_fitted() const
 }
 
 //! returns the number of discrete variables.
-inline int
+inline unsigned short
 Bicop::get_n_discrete() const
 {
   int n_discrete = 0;

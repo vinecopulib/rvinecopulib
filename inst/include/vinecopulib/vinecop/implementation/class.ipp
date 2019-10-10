@@ -64,10 +64,10 @@ inline Vinecop::Vinecop(const std::vector<size_t>& order,
 //! @brief creates an arbitrary vine copula model.
 //! @param pair_copulas Bicop objects specifying the pair-copulas, see
 //!     make_pair_copula_store().
-//! @param vine_struct an RVineStructure object specifying the vine structure.
+//! @param structure an RVineStructure object specifying the vine structure.
 inline Vinecop::Vinecop(const std::vector<std::vector<Bicop>>& pair_copulas,
-                        const RVineStructure& vine_struct)
-  : Vinecop(vine_struct)
+                        const RVineStructure& structure)
+  : Vinecop(structure)
 {
   check_pair_copulas_rvine_structure(pair_copulas);
   pair_copulas_ = pair_copulas;
@@ -132,11 +132,11 @@ inline Vinecop::Vinecop(const boost::property_tree::ptree input,
       pair_copulas_[tree][edge] = Bicop(pc_node);
     }
   }
-  var_types_ = tools_serialization::ptree_to_vector<std::string>(
-    input.get_child("var_types"));
 
   // try block for backwards compatibility
   try {
+    var_types_ = tools_serialization::ptree_to_vector<std::string>(
+      input.get_child("var_types"));
     nobs_ = input.get<size_t>("nobs_");
     threshold_ = input.get<double>("threshold");
     loglik_ = input.get<double>("loglik");
@@ -160,13 +160,13 @@ inline Vinecop::Vinecop(const std::string filename, const bool check)
 //! @param structure an RVineStructure object specifying the vine structure.
 //! @param controls see FitControlsVinecop.
 inline Vinecop::Vinecop(const Eigen::MatrixXd& data,
-                        const RVineStructure& vine_struct,
+                        const RVineStructure& structure,
                         FitControlsVinecop controls)
-  : Vinecop(vine_struct)
+  : Vinecop(structure)
 {
   nobs_ = data.rows();
   check_enough_data(data);
-  if (static_cast<size_t>(data.cols()) != vine_struct_.get_dim()) {
+  if (static_cast<size_t>(data.cols()) != d_) {
     throw std::runtime_error("data and structure have "
                              "incompatible dimensions.");
   }
@@ -646,38 +646,53 @@ Vinecop::get_threshold() const
 }
 
 //! @brief sets variable types.
-//! @param var_types a vector of size two specifying the types of the variables,
+//! @param var_types a vector specifying the types of the variables,
 //!   e.g., `{"c", "d"}` means first varible continuous, second discrete.
 inline void
 Vinecop::set_var_types(const std::vector<std::string>& var_types)
+{
+  check_var_types(var_types);
+  set_var_types_internal(var_types);
+}
+
+inline void
+Vinecop::check_var_types(const std::vector<std::string>& var_types) const
 {
   std::stringstream msg;
   if (var_types.size() > d_) {
     msg << "more var_types (" << var_types.size() << ")"
         << "than variables (" << d_ << ")-" << std::endl;
+    throw std::runtime_error(msg.str());
   }
   for (auto t : var_types) {
     if (!tools_stl::is_member(t, { "c", "d" })) {
-      msg << "variable type must be 'c' or 'd'." << std::endl;
+      msg << "variable type must be 'c' or 'd' (not '" << t << "')."
+          << std::endl;
+      throw std::runtime_error(msg.str());
     }
   }
-  if (!msg.str().empty()) {
-    throw std::runtime_error(msg.str());
-  }
+}
+
+//! @brief sets variable types.
+//! @param var_types a vector specifying the types of the variables,
+//!   e.g., `{"c", "d"}` means first varible continuous, second discrete.
+inline void
+Vinecop::set_var_types_internal(const std::vector<std::string>& var_types) const
+{
   var_types_ = var_types;
   if (pair_copulas_.size() == 0) {
     return;
   }
 
   // set new var_types for all pair-copulas
-  std::vector<std::string> no_types(d_), pair_types(2);
+  std::vector<std::string> natural_types(d_), pair_types(2);
   for (size_t j = 0; j < d_; ++j) {
-    no_types[j] = var_types[vine_struct_.get_order()[j] - 1];
+    natural_types[j] = var_types[vine_struct_.get_order()[j] - 1];
   }
   // we set the first tree explicitly and deduce later trees
   for (size_t e = 0; e < d_ - 1; ++e) {
-    pair_types[0] = no_types[e];
-    pair_types[1] = no_types[vine_struct_.struct_array(0, e, true) - 1];
+    pair_types[0] = natural_types[e];
+    pair_types[1] = natural_types[vine_struct_.struct_array(0, e, true) - 1];
     pair_copulas_[0][e].set_var_types(pair_types);
   }
 
@@ -724,10 +739,11 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
   // info about the vine structure (reverse rows (!) for more natural indexing)
   size_t trunc_lvl = vine_struct_.get_trunc_lvl();
   std::vector<size_t> order;
-  TriangularArray<size_t> no_array, min_array, needed_hfunc1, needed_hfunc2;
+  TriangularArray<size_t> natural_array, min_array, needed_hfunc1,
+    needed_hfunc2;
   if (trunc_lvl > 0) {
     order = vine_struct_.get_order();
-    no_array = vine_struct_.get_struct_array(true);
+    natural_array = vine_struct_.get_struct_array(true);
     min_array = vine_struct_.get_min_array();
     needed_hfunc1 = vine_struct_.get_needed_hfunc1();
     needed_hfunc2 = vine_struct_.get_needed_hfunc2();
@@ -769,7 +785,7 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
         u_e.col(0) = hfunc2.col(edge);
         u_e.col(2) = hfunc2_sub.col(edge);
         size_t m = min_array(tree, edge);
-        if (m == no_array(tree, edge)) {
+        if (m == natural_array(tree, edge)) {
           u_e.col(1) = hfunc2.col(m - 1);
           u_e.col(3) = hfunc2_sub.col(m - 1);
         } else {
@@ -878,7 +894,7 @@ Vinecop::simulate(const size_t n,
   auto actual_types = var_types_;
   set_continuous_var_types();
   u = inverse_rosenblatt(u, num_threads); 
-  var_types_ = actual_types;
+  set_var_types_internal(actual_types);
   return u;
 }
 
@@ -1015,11 +1031,11 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
   // info about the vine structure (reverse rows (!) for more natural indexing)
   size_t trunc_lvl = vine_struct_.get_trunc_lvl();
   std::vector<size_t> order, inverse_order;
-  TriangularArray<size_t> no_array, min_array, needed_hfunc1, needed_hfunc2;
+  TriangularArray<size_t> natural_array, min_array, needed_hfunc1, needed_hfunc2;
   if (trunc_lvl > 0) {
     order = vine_struct_.get_order();
     inverse_order = tools_stl::invert_permutation(order);
-    no_array = vine_struct_.get_struct_array(true);
+    natural_array = vine_struct_.get_struct_array(true);
     min_array = vine_struct_.get_min_array();
     needed_hfunc1 = vine_struct_.get_needed_hfunc1();
     needed_hfunc2 = vine_struct_.get_needed_hfunc2();
@@ -1042,7 +1058,7 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
         // computed in previous tree level)
         size_t m = min_array(tree, edge);
         u_e.col(0) = hfunc2.block(b.begin, edge, b.size, 1);
-        if (m == no_array(tree, edge)) {
+        if (m == natural_array(tree, edge)) {
           u_e.col(1) = hfunc2.block(b.begin, m - 1, b.size, 1);
         } else {
           u_e.col(1) = hfunc1.block(b.begin, m - 1, b.size, 1);
@@ -1124,11 +1140,11 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
   // info about the vine structure (in upper triangular matrix notation)
   size_t trunc_lvl = vine_struct_.get_trunc_lvl();
   std::vector<size_t> order, inverse_order;
-  TriangularArray<size_t> no_array, min_array, needed_hfunc1, needed_hfunc2;
+  TriangularArray<size_t> natural_array, min_array, needed_hfunc1, needed_hfunc2;
   if (trunc_lvl > 0) {
     order = vine_struct_.get_order();
     inverse_order = tools_stl::invert_permutation(order);
-    no_array = vine_struct_.get_struct_array(true);
+    natural_array = vine_struct_.get_struct_array(true);
     min_array = vine_struct_.get_min_array();
     needed_hfunc1 = vine_struct_.get_needed_hfunc1();
     needed_hfunc2 = vine_struct_.get_needed_hfunc2();
@@ -1158,7 +1174,7 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
         Eigen::MatrixXd U_e(b.size, 2);
         size_t m = min_array(tree, var);
         U_e.col(0) = hinv2(tree + 1, var);
-        if (m == no_array(tree, var)) {
+        if (m == natural_array(tree, var)) {
           U_e.col(1) = hinv2(tree, m - 1);
         } else {
           U_e.col(1) = hfunc1(tree, m - 1);
@@ -1196,18 +1212,20 @@ inline void
 Vinecop::check_data_dim(const Eigen::MatrixXd& data) const
 {
   size_t d_data = data.cols();
-  size_t d_exp = d_ + get_n_discrete();
+  auto n_disc = get_n_discrete();
+  size_t d_exp = d_ + n_disc;
   if ((d_data != d_exp) & (d_data != 2 * d_)) {
     std::stringstream msg;
     msg << "data has wrong number of columns; "
         << "expected: " << d_exp << " or " << 2 * d_ << ", actual: " << d_data
         << " (model contains ";
-    if (d_exp == d_) {
-      msg << "no ";
+    if (n_disc == 0) {
+      msg << "no discrete variables)." << std::endl;
+    } else if (n_disc == 1) {
+      msg << "1 discrete variable)." << std::endl;
     } else {
-      msg << get_n_discrete() << " ";
+      msg << get_n_discrete() << "discrete variables)." << std::endl;
     }
-    msg << "discrete variables)." << std::endl;
     throw std::runtime_error(msg.str());
   }
 }
@@ -1303,6 +1321,7 @@ Vinecop::set_continuous_var_types() const
   var_types_ = std::vector<std::string>(d_);
   for (auto& t : var_types_)
     t = "c";
+  set_var_types_internal(var_types_);
 }
 
 //! returns the number of discrete variables.

@@ -264,9 +264,9 @@ TllBicop::fit(const Eigen::MatrixXd& data,
       // (this is closer to "observations" than jittered or "upper" pseudo data)
       psobs = 0.5 * (data.leftCols(2) + data.rightCols(2)).array();
       npars_ = tools_eigen::unique(infl_grid.interpolate(psobs)).sum();
-      npars_ = std::fmax(npars_, 1.0);
+      npars_ = std::max(npars_, 1.0);
   } else {
-    npars_ = std::fmax(infl_grid.interpolate(data).sum(), 1.0);
+    npars_ = std::max(infl_grid.interpolate(data).sum(), 1.0);
   }
   set_loglik(pdf(data).array().log().sum());
 }

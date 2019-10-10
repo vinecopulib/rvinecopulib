@@ -182,7 +182,7 @@ public:
 protected:
   size_t d_;
   RVineStructure vine_struct_;
-  std::vector<std::vector<Bicop>> pair_copulas_;
+  mutable std::vector<std::vector<Bicop>> pair_copulas_;
   double threshold_{0.0};
   double loglik_{NAN};
   size_t nobs_{0};
@@ -198,7 +198,9 @@ protected:
                           const Eigen::MatrixXd& data) const;
   void check_enough_data(const Eigen::MatrixXd& data) const;
   void check_fitted() const;
+  void check_var_types(const std::vector<std::string>& var_types) const;
   void set_continuous_var_types() const;
+  void set_var_types_internal(const std::vector<std::string>& var_types) const;
   int get_n_discrete() const;
   Eigen::MatrixXd collapse_data(const Eigen::MatrixXd& u) const;
 };

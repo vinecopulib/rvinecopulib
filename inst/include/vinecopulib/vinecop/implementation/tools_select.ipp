@@ -575,43 +575,19 @@ VinecopSelector::add_pc_info(const EdgeIterator& e, VineTree& tree)
   size_t n = tree[v0].hfunc1.size();
   tree[e].pc_data = Eigen::MatrixXd(n, 4);
 
+  // find positions of common vertex in pair indices
   size_t ei_common = find_common_neighbor(v0, v1, tree);
+  ptrdiff_t pos0 = find_position(ei_common, tree[v0].prev_edge_indices);
+  ptrdiff_t pos1 = find_position(ei_common, tree[v1].prev_edge_indices);
 
-  if (find_position(ei_common, tree[v0].prev_edge_indices) == 0) {
-    tree[e].pc_data.col(0) = tree[v0].hfunc1;
-    if (tree[v0].hfunc1_sub.size()) {
-      tree[e].pc_data.col(2) = tree[v0].hfunc1_sub;
-      tree[e].var_types[0] = "d";
-    } else {
-      tree[e].pc_data.col(2) = tree[v0].hfunc1;
-    }
-    tree[e].var_types[0] = tree[v0].var_types[1];
-  } else {
-    tree[e].pc_data.col(0) = tree[v0].hfunc2;
-    if (tree[v0].hfunc2_sub.size()) {
-      tree[e].pc_data.col(2) = tree[v0].hfunc2_sub;
-      tree[e].var_types[0] = "d";
-    } else {
-      tree[e].pc_data.col(2) = tree[v0].hfunc2;
-    }
-  }
-  if (find_position(ei_common, tree[v1].prev_edge_indices) == 0) {
-    tree[e].pc_data.col(1) = tree[v1].hfunc1;
-    if (tree[v1].hfunc1_sub.size()) {
-      tree[e].pc_data.col(3) = tree[v1].hfunc1_sub;
-      tree[e].var_types[1] = "d";
-    } else {
-      tree[e].pc_data.col(3) = tree[v1].hfunc1;
-    }
-  } else {
-    tree[e].pc_data.col(1) = tree[v1].hfunc2;
-    if (tree[v1].hfunc2_sub.size()) {
-      tree[e].pc_data.col(3) = tree[v1].hfunc2_sub;
-      tree[e].var_types[1] = "d";
-    } else {
-      tree[e].pc_data.col(3) = tree[v1].hfunc2;
-    }
-  }
+  // collect pseudo observations for next tree
+  tree[e].pc_data.col(0) = get_hfunc(tree[v0], pos0);
+  tree[e].pc_data.col(1) = get_hfunc(tree[v1], pos1);
+  tree[e].pc_data.col(2) = get_hfunc_sub(tree[v0], pos0);
+  tree[e].pc_data.col(3) = get_hfunc_sub(tree[v1], pos1);
+
+  tree[e].var_types[0] = tree[v0].var_types[std::abs(1 - pos0)];
+  tree[e].var_types[1] = tree[v1].var_types[std::abs(1 - pos1)];
 
   tree[e].conditioned =
     set_sym_diff(tree[v0].all_indices, tree[v1].all_indices);
@@ -619,22 +595,46 @@ VinecopSelector::add_pc_info(const EdgeIterator& e, VineTree& tree)
   tree[e].all_indices = cat(tree[e].conditioned, tree[e].conditioning);
 }
 
-inline Eigen::MatrixXd VinecopSelector::get_pc_data(size_t v0, size_t v1,
-    const VineTree &tree)
+inline Eigen::VectorXd
+VinecopSelector::get_hfunc(const VertexProperties& vertex_data,
+                           unsigned short pos)
 {
-    Eigen::MatrixXd pc_data(tree[v0].hfunc1.size(), 2);
-    size_t ei_common = find_common_neighbor(v0, v1, tree);
-    if (find_position(ei_common, tree[v0].prev_edge_indices) == 0) {
-        pc_data.col(0) = tree[v0].hfunc1;
-    } else {
-        pc_data.col(0) = tree[v0].hfunc2;
-    }
-    if (find_position(ei_common, tree[v1].prev_edge_indices) == 0) {
-        pc_data.col(1) = tree[v1].hfunc1;
-    } else {
-        pc_data.col(1) = tree[v1].hfunc2;
-    }
+  if (pos == 0) {
+    return vertex_data.hfunc1;
+  } else {
+    return vertex_data.hfunc2;
+  }
+}
 
+inline Eigen::VectorXd
+VinecopSelector::get_hfunc_sub(const VertexProperties& vertex_data,
+                               unsigned short pos)
+{
+  if (pos == 0) {
+    if (vertex_data.hfunc1_sub.size()) {
+      return vertex_data.hfunc1_sub;
+    } else {
+      return vertex_data.hfunc1;
+    }
+  } else {
+    if (vertex_data.hfunc2_sub.size()) {
+      return vertex_data.hfunc2_sub;
+    } else {
+      return vertex_data.hfunc2;
+    }
+  }
+}
+
+inline Eigen::MatrixXd
+VinecopSelector::get_pc_data(size_t v0, size_t v1, const VineTree& tree)
+{
+  size_t ei_common = find_common_neighbor(v0, v1, tree);
+  auto pos0 = find_position(ei_common, tree[v0].prev_edge_indices);
+  auto pos1 = find_position(ei_common, tree[v1].prev_edge_indices);
+
+  Eigen::MatrixXd pc_data(tree[v0].hfunc1.size(), 2);
+  pc_data.col(0) = get_hfunc(tree[v0], pos0);
+  pc_data.col(1) = get_hfunc(tree[v1], pos1);
   return pc_data;
 }
 
