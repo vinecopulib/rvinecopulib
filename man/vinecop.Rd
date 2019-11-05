@@ -23,10 +23,11 @@ approximately uniform margins).}
 additional options.}
 
 \item{structure}{an \code{rvine_structure} object, namely a compressed
-representation of the vine structure, or an object that can be coerced
-into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
-The dimension must be \code{length(pair_copulas[[1]]) + 1}; for \code{\link[=vinecop]{vinecop()}},
-\code{structure = NA} performs automatic structure selection.}
+representation of the vine structure, or an object that can be coerced into
+one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}). The dimension
+must be \code{length(pair_copulas[[1]]) + 1}; \code{structure = NA} performs
+automatic selection based on Dissman's algorithm. See \emph{Details} for partial
+selection of the structure.}
 
 \item{par_method}{the estimation method for parametric models, either \code{"mle"}
 for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
@@ -90,52 +91,55 @@ Objects inheriting from \code{vinecop_dist} for \code{\link[=vinecop_dist]{vinec
 
 Object from the \code{vinecop_dist} class are lists containing:
 \itemize{
-\item \code{pair_copulas}, a list of lists. Each element of \code{pair_copulas} corresponds
-to a tree, which is itself a list of \code{bicop_dist} objects, see \code{\link[=bicop_dist]{bicop_dist()}}.
-\item \code{structure}, an \code{rvine_structure} object, namely a compressed
-representation of the vine structure, or an object that can be coerced
-into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}).
-\item \code{npars}, a \code{numeric} with the number of (effective) parameters.
+\item \code{pair_copulas}, a list of lists. Each element of \code{pair_copulas}
+corresponds to a tree, which is itself a list of \code{bicop_dist} objects, see
+\code{\link[=bicop_dist]{bicop_dist()}}. * \code{structure}, an \code{rvine_structure} object, namely a
+compressed representation of the vine structure, or an object that can be
+coerced into one (see \code{\link[=rvine_structure]{rvine_structure()}} and \code{\link[=as_rvine_structure]{as_rvine_structure()}}). *
+\code{npars}, a \code{numeric} with the number of (effective) parameters.
 }
 
 For objects from the \code{vinecop} class, elements of the sublists in
 \code{pair_copulas} are also \code{bicop} objects, see \code{\link[=bicop]{bicop()}}. Additionally,
 objects from the \code{vinecop} class contain:
 \itemize{
-\item \code{threshold}, the (set or estimated) threshold used for thresholding the vine.
-\item \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset that was
-passed to \code{\link[=vinecop]{vinecop()}}.
-\item \code{controls}, a \code{list} with the set of fit controls that was passed to \code{\link[=vinecop]{vinecop()}}.
-\item \code{nobs}, an \code{integer} with the number of observations that was used
-to fit the model.
+\item \code{threshold}, the (set or estimated) threshold used for thresholding the
+vine. * \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset
+that was passed to \code{\link[=vinecop]{vinecop()}}. * \code{controls}, a \code{list} with the set of fit
+controls that was passed to \code{\link[=vinecop]{vinecop()}}. * \code{nobs}, an \code{integer} with the
+number of observations that was used to fit the model.
 }
 }
 \description{
 Automated fitting or creation of custom vine copula models
 }
 \details{
-\code{\link[=vinecop_dist]{vinecop_dist()}} creates a vine copula by specifying a nested list of
-\code{\link[=bicop_dist]{bicop_dist()}} objects and a quadratic structure matrix.
+\code{\link[=vinecop_dist]{vinecop_dist()}} creates a vine copula by specifying a nested list
+of \code{\link[=bicop_dist]{bicop_dist()}} objects and a quadratic structure matrix.
 
-\code{\link[=vinecop]{vinecop()}} provides automated fitting for vine copula models.
-The function inherits the parameters of \code{\link[=bicop]{bicop()}}.
-Optionally, an \code{\link[=rvine_structure]{rvine_structure()}} or \code{\link[=rvine_matrix]{rvine_matrix()}} can be used as
-input to specify the vine structure. \code{tree_crit} describes the
-criterion for tree selection, one of \code{"tau"}, \code{"rho"}, \code{"hoeffd"} for
-Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
-\code{threshold} allows to threshold the \code{tree_crit} and \code{trunc_lvl} to truncate
-the vine copula, with \code{threshold_sel} and \code{trunc_lvl_sel} to automatically
-select both parameters.
+\code{\link[=vinecop]{vinecop()}} provides automated fitting for vine copula models. The function
+inherits the parameters of \code{\link[=bicop]{bicop()}}. Optionally, an \code{\link[=rvine_structure]{rvine_structure()}} or
+\code{\link[=rvine_matrix]{rvine_matrix()}} can be used as input to specify the vine structure.
+\code{tree_crit} describes the criterion for tree selection, one of \code{"tau"},
+\code{"rho"}, \code{"hoeffd"} for Kendall's tau, Spearman's rho, and Hoeffding's D,
+respectively. Additionally, \code{threshold} allows to threshold the \code{tree_crit}
+and \code{trunc_lvl} to truncate the vine copula, with \code{threshold_sel} and
+\code{trunc_lvl_sel} to automatically select both parameters.
 
 \strong{Discrete variables} When at least one variable is discrete, two types of
 "observations" are required: the first \eqn{n \; x \; d} block (\code{data}
-argument) contains realizations of \eqn{F_{X_j}(X_j)}. The
-second \eqn{n \; x \; d} block (argument \code{data_sub}) contains realizations of
-\eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit
-of the cdf. For, e.g., an integer-valued variable, it holds
-\eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
-limit and the cdf itself coincide. Respective columns can be omitted in the
-second block.
+argument) contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n \;
+  x \; d} block (argument \code{data_sub}) contains realizations of
+\eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit of the cdf.
+For, e.g., an integer-valued variable, it holds \eqn{F_{X_j}(X_j^-) =
+  F_{X_j}(X_j - 1)}. For continuous variables the left limit and the cdf
+itself coincide. Respective columns can be omitted in the second block.
+
+\strong{Partial structure selection} It is possible to fix the vine structure
+only in the first trees and select the remaining ones automatically. To
+specify only the first \code{k} trees, supply a \code{k}-truncated
+\code{rvine_structure()} or \code{rvine_matrix()}. All trees up to \code{trunc_lvl} will
+then be selected automatically.
 }
 \examples{
 # specify pair-copulas

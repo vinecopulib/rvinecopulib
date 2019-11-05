@@ -5,78 +5,82 @@
 #' @aliases vinecop_dist
 #' @inheritParams bicop
 #' @param family_set a character vector of families; see [bicop()] for
-#' additional options.
+#'   additional options.
 #' @param structure an `rvine_structure` object, namely a compressed
-#' representation of the vine structure, or an object that can be coerced
-#' into one (see [rvine_structure()] and [as_rvine_structure()]).
-#' The dimension must be `length(pair_copulas[[1]]) + 1`; for [vinecop()],
-#' `structure = NA` performs automatic structure selection.
+#'   representation of the vine structure, or an object that can be coerced into
+#'   one (see [rvine_structure()] and [as_rvine_structure()]). The dimension
+#'   must be `length(pair_copulas[[1]]) + 1`; `structure = NA` performs
+#'   automatic selection based on Dissman's algorithm. See *Details* for partial
+#'   selection of the structure.
 #' @param psi0 prior probability of a non-independence copula (only used for
-#'     `selcrit = "mbic"` and `selcrit = "mbicv"`).
+#'   `selcrit = "mbic"` and `selcrit = "mbicv"`).
 #' @param trunc_lvl the truncation level of the vine copula; `Inf` means no
 #'   truncation, `NA` indicates that the truncation level should be selected
 #'   automatically by [mBICV()].
 #' @param tree_crit the criterion for tree selection, one of `"tau"`, `"rho"`,
-#'    `"hoeffd"`, or `"mcor"` for Kendall's \eqn{\tau}, Spearman's \eqn{\rho},
-#'    Hoeffding's \eqn{D}, and maximum correlation, respectively.
+#'   `"hoeffd"`, or `"mcor"` for Kendall's \eqn{\tau}, Spearman's \eqn{\rho},
+#'   Hoeffding's \eqn{D}, and maximum correlation, respectively.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the
 #'   threshold should be selected automatically by [mBICV()].
 #' @param show_trace logical; whether a trace of the fitting progress should be
-#'    printed.
+#'   printed.
 #' @param cores number of cores to use; if more than 1, estimation of pair
-#'    copulas within a tree is done in parallel.
+#'   copulas within a tree is done in parallel.
 #' @param var_types variable types, a length d vector; e.g., `c("c", "c")` for
-#'  two continuous variables, or `c("c", "d")` for first variable continuous
-#'  and second discrete.
+#'   two continuous variables, or `c("c", "d")` for first variable continuous
+#'   and second discrete.
 #' @param data_sub (optional) an \eqn{n \; x \; 2} or \eqn{n \; x \; k}
 #'   matrix/data frame for discrete variables (see *Details*).
 #'
-#' @details
-#' [vinecop_dist()] creates a vine copula by specifying a nested list of
-#' [bicop_dist()] objects and a quadratic structure matrix.
+#' @details [vinecop_dist()] creates a vine copula by specifying a nested list
+#'   of [bicop_dist()] objects and a quadratic structure matrix.
 #'
-#' [vinecop()] provides automated fitting for vine copula models.
-#' The function inherits the parameters of [bicop()].
-#' Optionally, an [rvine_structure()] or [rvine_matrix()] can be used as
-#' input to specify the vine structure. `tree_crit` describes the
-#' criterion for tree selection, one of `"tau"`, `"rho"`, `"hoeffd"` for
-#' Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
-#' `threshold` allows to threshold the `tree_crit` and `trunc_lvl` to truncate
-#' the vine copula, with `threshold_sel` and `trunc_lvl_sel` to automatically
-#' select both parameters.
+#'   [vinecop()] provides automated fitting for vine copula models. The function
+#'   inherits the parameters of [bicop()]. Optionally, an [rvine_structure()] or
+#'   [rvine_matrix()] can be used as input to specify the vine structure.
+#'   `tree_crit` describes the criterion for tree selection, one of `"tau"`,
+#'   `"rho"`, `"hoeffd"` for Kendall's tau, Spearman's rho, and Hoeffding's D,
+#'   respectively. Additionally, `threshold` allows to threshold the `tree_crit`
+#'   and `trunc_lvl` to truncate the vine copula, with `threshold_sel` and
+#'   `trunc_lvl_sel` to automatically select both parameters.
 #'
-#' **Discrete variables** When at least one variable is discrete, two types of
-#' "observations" are required: the first \eqn{n \; x \; d} block (`data`
-#' argument) contains realizations of \eqn{F_{X_j}(X_j)}. The
-#' second \eqn{n \; x \; d} block (argument `data_sub`) contains realizations of
-#' \eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit
-#' of the cdf. For, e.g., an integer-valued variable, it holds
-#' \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
-#' limit and the cdf itself coincide. Respective columns can be omitted in the
-#' second block.
+#'   **Discrete variables** When at least one variable is discrete, two types of
+#'   "observations" are required: the first \eqn{n \; x \; d} block (`data`
+#'   argument) contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n \;
+#'   x \; d} block (argument `data_sub`) contains realizations of
+#'   \eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit of the cdf.
+#'   For, e.g., an integer-valued variable, it holds \eqn{F_{X_j}(X_j^-) =
+#'   F_{X_j}(X_j - 1)}. For continuous variables the left limit and the cdf
+#'   itself coincide. Respective columns can be omitted in the second block.
+#'
+#'   **Partial structure selection** It is possible to fix the vine structure
+#'   only in the first trees and select the remaining ones automatically. To
+#'   specify only the first `k` trees, supply a `k`-truncated
+#'   `rvine_structure()` or `rvine_matrix()`. All trees up to `trunc_lvl` will
+#'   then be selected automatically.
+#'
 #'
 #' @return Objects inheriting from `vinecop_dist` for [vinecop_dist()], and
-#' `vinecop` and `vinecop_dist` for [vinecop()].
+#'   `vinecop` and `vinecop_dist` for [vinecop()].
 #'
-#' Object from the `vinecop_dist` class are lists containing:
+#'   Object from the `vinecop_dist` class are lists containing:
 #'
-#' * `pair_copulas`, a list of lists. Each element of `pair_copulas` corresponds
-#' to a tree, which is itself a list of `bicop_dist` objects, see [bicop_dist()].
-#' * `structure`, an `rvine_structure` object, namely a compressed
-#' representation of the vine structure, or an object that can be coerced
-#' into one (see [rvine_structure()] and [as_rvine_structure()]).
-#' * `npars`, a `numeric` with the number of (effective) parameters.
+#'   * `pair_copulas`, a list of lists. Each element of `pair_copulas`
+#'   corresponds to a tree, which is itself a list of `bicop_dist` objects, see
+#'   [bicop_dist()]. * `structure`, an `rvine_structure` object, namely a
+#'   compressed representation of the vine structure, or an object that can be
+#'   coerced into one (see [rvine_structure()] and [as_rvine_structure()]). *
+#'   `npars`, a `numeric` with the number of (effective) parameters.
 #'
-#' For objects from the `vinecop` class, elements of the sublists in
-#' `pair_copulas` are also `bicop` objects, see [bicop()]. Additionally,
-#' objects from the `vinecop` class contain:
+#'   For objects from the `vinecop` class, elements of the sublists in
+#'   `pair_copulas` are also `bicop` objects, see [bicop()]. Additionally,
+#'   objects from the `vinecop` class contain:
 #'
-#' * `threshold`, the (set or estimated) threshold used for thresholding the vine.
-#' * `data` (optionally, if `keep_data = TRUE` was used), the dataset that was
-#' passed to [vinecop()].
-#' * `controls`, a `list` with the set of fit controls that was passed to [vinecop()].
-#' * `nobs`, an `integer` with the number of observations that was used
-#' to fit the model.
+#'   * `threshold`, the (set or estimated) threshold used for thresholding the
+#'   vine. * `data` (optionally, if `keep_data = TRUE` was used), the dataset
+#'   that was passed to [vinecop()]. * `controls`, a `list` with the set of fit
+#'   controls that was passed to [vinecop()]. * `nobs`, an `integer` with the
+#'   number of observations that was used to fit the model.
 #'
 #' @examples
 #' # specify pair-copulas

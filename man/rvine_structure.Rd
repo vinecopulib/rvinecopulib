@@ -7,7 +7,7 @@
 \alias{is.rvine_matrix}
 \title{R-vine structure}
 \usage{
-rvine_structure(order, struct_array, is_natural_order = FALSE)
+rvine_structure(order, struct_array = list(), is_natural_order = FALSE)
 
 rvine_matrix(matrix)
 }
@@ -16,7 +16,7 @@ rvine_matrix(matrix)
 
 \item{struct_array}{a list of vectors of positive integers. The vectors
 represent rows of the r-rvine structure and the number of elements have to
-be compatible with the \code{order} vector.}
+be compatible with the \code{order} vector. If empty, the model is 0-truncated.}
 
 \item{is_natural_order}{whether \code{struct_array} is assumed to be provided
 in natural order already (a structure is in natural order if the anti-
