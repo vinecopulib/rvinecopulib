@@ -6,7 +6,7 @@ test_that("bicop_dist works", {
   cop <- bicop_dist("gum", 90, 4, c("d", "c"))
   expect_identical(cop$var_types, c("d", "c"))
 
-  u <- rbicop(1000, "gum", 90, 4)
+  u <- rbicop(10, "gum", 90, 4)
   u_sub <- u
   u[, 1] <- ceiling(u[, 1] * 3) / 3
   u_sub[, 1] <- floor(u_sub[, 1] * 3) / 3
@@ -36,7 +36,7 @@ test_that("bicop works", {
   expect_equal(cop$rotation, 90)
   expect_equal(cop$parameters[1], 4, tol = 0.5)
   expect_identical(cop$var_types, c("d", "c"))
-  expect_identical(cop$data_sub, u_sub)#
+  expect_identical(cop$data_sub, u_sub)
 })
 
 # -----------------------------------------------------------------
@@ -64,7 +64,7 @@ test_that("vinecop_dist works", {
 })
 
 test_that("vinecop works", {
-  u <- replicate(3, runif(200))
+  u <- replicate(3, runif(20))
   u_sub <- u
   u[, 1] <- ceiling(u[, 1] * 3) / 3
   u_sub[, 1] <- floor(u_sub[, 1] * 3) / 3
@@ -79,7 +79,7 @@ test_that("vinecop works", {
 # -----------------------------------------------------------------
 
 test_that("vine works", {
-  n <- 1e2
+  n <- 20
   x1 <- rnorm(n)
   x2 <- ordered(sample(5, n, TRUE), 1:5)
   x3 <- x1 + as.numeric(x2) + rnorm(n, sd = 0.5)
