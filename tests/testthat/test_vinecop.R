@@ -64,3 +64,16 @@ test_that("truncation works", {
   expect_silent(dvinecop(u, fit_truncated))
   expect_silent(rvinecop(50, fit_truncated))
 })
+
+test_that("partial selection works", {
+  fit_partial <- vinecop(u[, sample(1:5)],
+                         structure = truncate_model(fit$structure, 1),
+                         trunc_lvl = 3)
+  expect_equal(unname(dim(fit_partial)[2]), 3)
+
+  m_old <- as_rvine_matrix(fit$structure)
+  m_new <- as_rvine_matrix(fit_partial$structure)
+  tree1_old_edges <- c(paste(diag(m_old[5:2, ]), m_old[1, -5]),
+                       paste(m_old[1, -5], diag(m_old[5:2, ])))
+  expect_true(all(paste(diag(m_new[5:2, ]), m_new[1, -5]) %in% tree1_old_edges))
+})
