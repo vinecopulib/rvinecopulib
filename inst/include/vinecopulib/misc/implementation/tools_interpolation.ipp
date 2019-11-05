@@ -79,10 +79,12 @@ InterpolationGrid::normalize_margins(int times)
   size_t m = grid_points_.size();
   for (int k = 0; k < times; ++k) {
     for (size_t i = 0; i < m; ++i) {
-      values_.row(i) /= int_on_grid(1.0, values_.row(i), grid_points_);
+      values_.row(i) /= // prevent 0/0
+        std::max(int_on_grid(1.0, values_.row(i), grid_points_), 1e-20);
     }
     for (size_t j = 0; j < m; ++j) {
-      values_.col(j) /= int_on_grid(1.0, values_.col(j), grid_points_);
+      values_.col(j) /= // prevent 0/0
+        std::max(int_on_grid(1.0, values_.col(j), grid_points_), 1e-20);
     }
   }
 }
@@ -166,7 +168,8 @@ InterpolationGrid::interpolate(const Eigen::MatrixXd& x)
                                   this->grid_points_(indices(0) + 1),
                                   this->grid_points_(indices(1)),
                                   this->grid_points_(indices(1) + 1),
-                                  x0, x1);
+                                  x0,
+                                  x1);
   };
 
   return tools_eigen::binaryExpr_or_nan(x, f);
