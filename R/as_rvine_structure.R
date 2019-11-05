@@ -115,7 +115,7 @@ as_rvine_matrix.rvine_structure <- function(x, ..., validate = FALSE) {
 
   # fill output
   diag(matrix[d:1, ]) <- order
-  for (i in 1:min(trunc_lvl, d - 1)) {
+  for (i in seq_len(min(trunc_lvl, d - 1))) {
     newrow <- order[x[["struct_array"]][[i]]]
     matrix[i, 1:length(newrow)] <- newrow
   }

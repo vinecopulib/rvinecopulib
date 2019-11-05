@@ -135,15 +135,15 @@ vinecop <- function(data, family_set = "all", structure = NA,
   family_set <- process_family_set(family_set, par_method)
 
   ## pre-process input
-  is_structure_provided <- !(is.scalar(structure) && is.na(structure))
-  if (is_structure_provided) {
+  if (is.scalar(structure) && is.na(structure)) {
+    structure <- rvine_structure(seq_len(ncol(data)))
+  } else {
     structure <- as_rvine_structure(structure)
   }
 
   ## fit and select copula model
   vinecop <- vinecop_select_cpp(
     data = cbind(data, data_sub),
-    is_structure_provided = is_structure_provided,
     structure = structure,
     family_set = family_set,
     par_method = par_method,

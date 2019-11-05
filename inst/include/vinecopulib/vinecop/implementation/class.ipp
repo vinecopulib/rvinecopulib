@@ -295,7 +295,7 @@ Vinecop::make_pair_copula_store(const size_t d, const size_t trunc_lvl)
 //!   - If `controls.trunc_lvl <= trunc_lvl`, the families and parameters for
 //!     all pairs in trees smaller or equal to `controls.trunc_lvl`
 //!     are selected, using the current structure.
-//!   - If `controls.trunc_lvl > trunc_lvl`, `select()` behaves as above for
+//!   - If `controls.trunc_lvl >   trunc_lvl`, `select()` behaves as above for
 //!     all trees that are smaller or equal to `trunc_lvl`, and then it selects
 //!     the structure for higher trees along with the families and parameters.
 //!     This includes the case where `trunc_lvl = 0`, namely where the

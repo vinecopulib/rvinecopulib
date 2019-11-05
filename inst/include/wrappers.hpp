@@ -189,17 +189,11 @@ void rvine_matrix_check_cpp(Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic
 inline TriangularArray<size_t> struct_array_wrap(const Rcpp::List& struct_array_r,
                                                  size_t trunc_lvl)
 {
-  std::vector<size_t> newrow = struct_array_r[0];
-  size_t d = newrow.size() + 1;
-  auto struct_array = TriangularArray<size_t>(d, trunc_lvl);
+  std::vector<std::vector<size_t>> rows(trunc_lvl);
   for (size_t i = 0; i < trunc_lvl; i++) {
-    newrow = Rcpp::as<std::vector<size_t>>(struct_array_r[i]);
-    for (size_t j = 0; j < d - 1 - i; j++) {
-      struct_array(i, j) = newrow[j];
-    }
+    rows.at(i) = Rcpp::as<std::vector<size_t>>(struct_array_r[i]);
   }
-
-  return struct_array;
+  return TriangularArray<size_t>(rows);
 }
 
 inline Rcpp::List struct_array_wrap(const TriangularArray<size_t>& struct_array)

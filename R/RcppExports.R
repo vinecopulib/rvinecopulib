@@ -97,7 +97,7 @@ vinecop_mbicv_cpp <- function(u, vinecop_r, psi0, cores) {
     .Call(`_rvinecopulib_vinecop_mbicv_cpp`, u, vinecop_r, psi0, cores)
 }
 
-vinecop_select_cpp <- function(data, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types) {
-    .Call(`_rvinecopulib_vinecop_select_cpp`, data, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types)
+vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types) {
+    .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types)
 }
 

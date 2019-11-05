@@ -84,7 +84,7 @@
 #' @param order a vector of positive integers.
 #' @param struct_array a list of vectors of positive integers. The vectors
 #' represent rows of the r-rvine structure and the number of elements have to
-#' be compatible with the `order` vector.
+#' be compatible with the `order` vector. If empty, the model is 0-truncated.
 #' @param is_natural_order whether `struct_array` is assumed to be provided
 #' in natural order already (a structure is in natural order if the anti-
 #' diagonal is 1, .., d from bottom left to top right).
@@ -123,7 +123,7 @@
 #' try(rvine_matrix(mat))
 #' @name rvine_structure
 #' @aliases rvine_matrix is.rvine_structure is.rvine_matrix
-rvine_structure <- function(order, struct_array, is_natural_order = FALSE) {
+rvine_structure <- function(order, struct_array = list(), is_natural_order = FALSE) {
 
   # sanity checks and extract dimension/trunc_lvl
   assert_that(is.vector(order) && all(sapply(order, is.count)),
