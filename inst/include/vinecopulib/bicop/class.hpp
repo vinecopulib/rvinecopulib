@@ -120,7 +120,7 @@ public:
 private:
   Eigen::MatrixXd format_data(const Eigen::MatrixXd& u) const;
 
-  Eigen::MatrixXd rotate_data(const Eigen::MatrixXd& u) const;
+  void rotate_data(Eigen::MatrixXd& u) const;
 
   Eigen::MatrixXd prep_for_abstract(const Eigen::MatrixXd& u) const;
 

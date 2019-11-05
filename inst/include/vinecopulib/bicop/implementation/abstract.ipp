@@ -144,18 +144,17 @@ AbstractBicop::pdf(const Eigen::MatrixXd& u)
   } else {
     pdf = pdf_c_d(u);
   }
-  return tools_eigen::trim(pdf, DBL_MIN, DBL_MAX);
+  tools_eigen::trim(pdf, DBL_MIN, DBL_MAX);
+  return pdf;
 }
 
 inline Eigen::VectorXd
 AbstractBicop::pdf_c_d(const Eigen::MatrixXd& u)
 {
-  auto umax = u.leftCols(2);
-  auto umin = u.rightCols(2);
   if (var_types_[0] != "c") {
-    return (hfunc2_raw(umax) - hfunc2_raw(umin)).array().abs();
+    return (hfunc2_raw(u.leftCols(2)) - hfunc2_raw(u.rightCols(2))).cwiseAbs();
   } else {
-    return (hfunc1_raw(umax) - hfunc1_raw(umin)).array().abs();
+    return (hfunc1_raw(u.leftCols(2)) - hfunc1_raw(u.rightCols(2))).cwiseAbs();
   }
 }
 

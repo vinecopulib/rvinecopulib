@@ -63,13 +63,32 @@ remove_nans(Eigen::MatrixXd& x, Eigen::VectorXd& weights)
 //! @param x data matrix.
 //! @param lower lower bound of the interval.
 //! @param upper upper bound of the interval.
-inline Eigen::MatrixXd
-trim(const Eigen::MatrixXd& x, const double& lower, const double& upper)
+inline void
+trim(Eigen::MatrixXd& x, const double& lower, const double& upper)
 {
-  auto trim_one = [&lower, &upper](const double& x) {
-    return std::min(std::max(x, lower), upper);
-  };
-  return tools_eigen::unaryExpr_or_nan(x, trim_one);
+  // code of std::for_each (save some compile time by not including <algorithm>)
+  auto it = x.data();
+  auto last = x.data() + x.size();
+  for (; it != last; ++it) {
+    if (!std::isnan(*it))
+      *it = std::min(std::max(*it, lower), upper);
+  }
+}
+
+//! trims all elements in the matrix to the interval `[lower, upper]`.
+//! @param x data matrix.
+//! @param lower lower bound of the interval.
+//! @param upper upper bound of the interval.
+inline void
+trim(Eigen::VectorXd& x, const double& lower, const double& upper)
+{
+  // code of std::for_each (save some compile time by not including <algorithm>)
+  auto it = x.data();
+  auto last = x.data() + x.size();
+  for (; it != last; ++it) {
+    if (!std::isnan(*it))
+      *it = std::min(std::max(*it, lower), upper);
+  }
 }
 
 //! check if all elements are contained in the unit cube.

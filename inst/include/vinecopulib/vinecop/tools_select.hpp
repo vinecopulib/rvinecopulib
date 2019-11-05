@@ -94,6 +94,11 @@ public:
                   const FitControlsVinecop& controls,
                   std::vector<std::string> var_types);
 
+  VinecopSelector(const Eigen::MatrixXd& data,
+                  const RVineStructure& vine_struct,
+                  const FitControlsVinecop& controls,
+                  std::vector<std::string> var_types);
+
   std::vector<std::vector<Bicop>> get_pair_copulas() const;
 
   RVineStructure get_rvine_structure() const;
@@ -118,7 +123,7 @@ public:
 protected:
   virtual void select_tree(size_t t);
 
-  virtual void finalize(size_t trunc_lvl) = 0;
+  void finalize(size_t trunc_lvl);
 
   double get_mbicv_of_tree(size_t t, double loglik);
 
@@ -136,7 +141,9 @@ protected:
 
   void set_current_fit_as_opt(const double& loglik);
 
-  virtual void add_allowed_edges(VineTree& tree) = 0;
+  void add_allowed_edges(VineTree& vine_tree);
+
+  void select_edges(VineTree& vine_tree);
 
   Eigen::MatrixXd get_pc_data(size_t v0, size_t v1, const VineTree& tree);
 
@@ -152,6 +159,7 @@ protected:
 
   size_t n_;
   size_t d_;
+  bool structure_known_{ true };
   std::vector<std::string> var_types_;
   FitControlsVinecop controls_;
   tools_thread::ThreadPool pool_;
@@ -193,37 +201,6 @@ protected:
   size_t get_num_non_indeps_of_tree(size_t t);
 
   std::string get_pc_index(const EdgeIterator& e, const VineTree& tree);
-};
-
-class StructureSelector : public VinecopSelector
-{
-public:
-  StructureSelector(const Eigen::MatrixXd& data,
-                    const FitControlsVinecop& controls,
-                    std::vector<std::string> var_types);
-
-  ~StructureSelector() {}
-
-protected:
-  void add_allowed_edges(VineTree& tree);
-
-  void finalize(size_t trunc_lvl);
-};
-
-class FamilySelector : public VinecopSelector
-{
-public:
-  FamilySelector(const Eigen::MatrixXd& data,
-                 const RVineStructure& vine_struct,
-                 const FitControlsVinecop& controls,
-                 std::vector<std::string> var_types);
-
-  ~FamilySelector() {}
-
-protected:
-  void add_allowed_edges(VineTree& tree);
-
-  void finalize(size_t trunc_lvl);
 };
 }
 }

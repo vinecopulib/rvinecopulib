@@ -70,24 +70,13 @@ inline RVineStructure::RVineStructure(const std::vector<size_t>& order,
 inline RVineStructure::RVineStructure(const std::vector<size_t>& order,
                                       const size_t& trunc_lvl,
                                       bool check)
-  : order_(order)
-  , d_(order.size())
-  , trunc_lvl_(std::min(trunc_lvl, d_ - 1))
+  : RVineStructure(order,
+                   make_dvine_struct_array(order.size(), trunc_lvl),
+                   true,
+                   false)
 {
   if (check)
     check_antidiagonal();
-
-  if (trunc_lvl > 0) {
-    struct_array_ = compute_dvine_struct_array();
-    min_array_ = compute_min_array();
-    needed_hfunc1_ = compute_needed_hfunc1();
-    needed_hfunc2_ = compute_needed_hfunc2();
-  } else {
-    struct_array_ = TriangularArray<size_t>(d_, trunc_lvl);
-    min_array_ = TriangularArray<size_t>(d_, trunc_lvl);
-    needed_hfunc1_ = TriangularArray<size_t>(d_, trunc_lvl);
-    needed_hfunc2_ = TriangularArray<size_t>(d_, trunc_lvl);
-  }
 }
 
 //! @brief instantiates an RVineStructure object from the variable order
@@ -107,24 +96,22 @@ inline RVineStructure::RVineStructure(
   const TriangularArray<size_t>& struct_array,
   bool natural_order,
   bool check)
+  : order_(order)
+  , d_(order.size())
+  , trunc_lvl_(struct_array.get_trunc_lvl())
+  , struct_array_(struct_array)
 {
-  d_ = order.size();
-  if (check & (struct_array.get_dim() != d_)) {
-    throw std::runtime_error("order and struct_array have "
-                             "incompatible dimensions");
+  if (check) {
+    if ((trunc_lvl_ > 0) & (struct_array.get_dim() != d_)) {
+      throw std::runtime_error("order and struct_array have "
+                               "incompatible dimensions");
+    }
+    check_antidiagonal();
   }
 
-  order_ = order;
-
-  if (check)
-    check_antidiagonal();
-
-  trunc_lvl_ = struct_array.get_trunc_lvl();
   if (trunc_lvl_ > 0) {
-    struct_array_ = struct_array;
     if (check)
       check_upper_tri();
-
     if (!natural_order)
       struct_array_ = to_natural_order();
     if (check)
@@ -139,8 +126,8 @@ inline RVineStructure::RVineStructure(
   } else {
     struct_array_ = TriangularArray<size_t>(d_, trunc_lvl_);
     min_array_ = TriangularArray<size_t>(d_, trunc_lvl_);
-    needed_hfunc1_ = TriangularArray<size_t>(d_, trunc_lvl_);
-    needed_hfunc2_ = TriangularArray<size_t>(d_, trunc_lvl_);
+    needed_hfunc1_ = TriangularArray<short unsigned>(d_, trunc_lvl_);
+    needed_hfunc2_ = TriangularArray<short unsigned>(d_, trunc_lvl_);
   }
 }
 
@@ -234,7 +221,7 @@ RVineStructure::get_struct_array(bool natural_order) const
   auto new_array = struct_array_;
   for (size_t tree = 0; tree < trunc_lvl_; tree++) {
     for (size_t edge = 0; edge < d_ - 1 - tree; edge++) {
-        new_array(tree, edge) = this->struct_array(tree, edge, false);
+      new_array(tree, edge) = this->struct_array(tree, edge, false);
     }
   }
   return new_array;
@@ -244,9 +231,9 @@ RVineStructure::get_struct_array(bool natural_order) const
 //!
 //! The minimum array is derived from an R-vine array by
 //! iteratively computing the (elementwise) minimum of two subsequent rows
-//! (starting from the top). It is used in estimation and evaluation algorithms
-//! to find the two edges in the previous tree that are joined by the current
-//! edge.
+//! (starting from the top). It is used in estimation and evaluation
+//! algorithms to find the two edges in the previous tree that are joined by
+//! the current edge.
 inline TriangularArray<size_t>
 RVineStructure::get_min_array() const
 {
@@ -258,7 +245,7 @@ RVineStructure::get_min_array() const
 //!
 //! (it is usually not necessary to compute both h-functions for each
 //! pair-copula).
-inline TriangularArray<size_t>
+inline TriangularArray<short unsigned>
 RVineStructure::get_needed_hfunc1() const
 {
   return needed_hfunc1_;
@@ -269,7 +256,7 @@ RVineStructure::get_needed_hfunc1() const
 //!
 //! (it is usually not necessary to compute both h-functions for each
 //! pair-copula).
-inline TriangularArray<size_t>
+inline TriangularArray<short unsigned>
 RVineStructure::get_needed_hfunc2() const
 {
   return needed_hfunc2_;
@@ -280,9 +267,7 @@ RVineStructure::get_needed_hfunc2() const
 //! @param edge edge index.
 //! @param natural_order whether indices correspond to natural order.
 inline size_t
-RVineStructure::struct_array(size_t tree,
-                             size_t edge,
-                             bool natural_order) const
+RVineStructure::struct_array(size_t tree, size_t edge, bool natural_order) const
 {
   if (natural_order) {
     return struct_array_(tree, edge);
@@ -298,6 +283,22 @@ inline size_t
 RVineStructure::min_array(size_t tree, size_t edge) const
 {
   return min_array_(tree, edge);
+}
+
+//! @brief access elements of the needed_hfunc1 array.
+//! @param tree tree index.
+//! @param edge edge index.
+bool
+RVineStructure::needed_hfunc1(size_t tree, size_t edge) const
+{
+  return needed_hfunc1_(tree, edge);
+}
+
+//! @brief access elements of the needed_hfunc2 array.
+bool
+RVineStructure::needed_hfunc2(size_t tree, size_t edge) const
+{
+  return needed_hfunc2_(tree, edge);
 }
 
 //! @brief truncates the R-vine structure.
@@ -509,11 +510,11 @@ RVineStructure::to_natural_order() const
 
 //! creates a structure array corresponding to a D-vine (in natural order).
 inline TriangularArray<size_t>
-RVineStructure::compute_dvine_struct_array() const
+RVineStructure::make_dvine_struct_array(size_t d, size_t trunc_lvl)
 {
-  TriangularArray<size_t> struct_array(d_, trunc_lvl_);
-  for (size_t j = 0; j < d_ - 1; j++) {
-    for (size_t i = 0; i < std::min(d_ - 1 - j, trunc_lvl_); i++) {
+  TriangularArray<size_t> struct_array(d, trunc_lvl);
+  for (size_t j = 0; j < d - 1; j++) {
+    for (size_t i = 0; i < std::min(d - 1 - j, trunc_lvl); i++) {
       struct_array(i, j) = i + j + 2;
     }
   }
@@ -534,10 +535,10 @@ RVineStructure::compute_min_array() const
   return min_array;
 }
 
-inline TriangularArray<size_t>
+inline TriangularArray<short unsigned>
 RVineStructure::compute_needed_hfunc1() const
 {
-  TriangularArray<size_t> needed_hfunc1(d_, trunc_lvl_);
+  TriangularArray<short unsigned> needed_hfunc1(d_, trunc_lvl_);
 
   for (size_t i = 0; i < std::min(d_ - 2, trunc_lvl_ - 1); i++) {
     for (size_t j = 0; j < d_ - 2 - i; j++) {
@@ -549,10 +550,10 @@ RVineStructure::compute_needed_hfunc1() const
   return needed_hfunc1;
 }
 
-inline TriangularArray<size_t>
+inline TriangularArray<short unsigned>
 RVineStructure::compute_needed_hfunc2() const
 {
-  TriangularArray<size_t> needed_hfunc2(d_, trunc_lvl_);
+  TriangularArray<short unsigned> needed_hfunc2(d_, trunc_lvl_);
 
   for (size_t i = 0; i < std::min(d_ - 2, trunc_lvl_ - 1); i++) {
     for (size_t j = 0; j < d_ - 2 - i; j++) {

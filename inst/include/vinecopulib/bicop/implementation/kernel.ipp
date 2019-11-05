@@ -33,7 +33,8 @@ inline Eigen::VectorXd
 KernelBicop::pdf_raw(const Eigen::MatrixXd& u)
 {
   auto pdf = interp_grid_->interpolate(u);
-  return tools_eigen::trim(pdf, 1e-20, DBL_MAX);
+  tools_eigen::trim(pdf, 1e-20, DBL_MAX);
+  return pdf;
 }
 
 inline Eigen::VectorXd

@@ -51,8 +51,13 @@ remove_nans(Eigen::MatrixXd& x);
 void
 remove_nans(Eigen::MatrixXd& x, Eigen::VectorXd& weights);
 
-Eigen::MatrixXd
-trim(const Eigen::MatrixXd& x,
+void
+trim(Eigen::MatrixXd& x,
+     const double& lower = 1e-10,
+     const double& upper = 1 - 1e-10);
+
+void
+trim(Eigen::VectorXd& x,
      const double& lower = 1e-10,
      const double& upper = 1 - 1e-10);
 

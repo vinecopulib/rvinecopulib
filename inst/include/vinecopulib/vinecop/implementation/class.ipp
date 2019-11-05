@@ -140,7 +140,8 @@ inline Vinecop::Vinecop(const boost::property_tree::ptree input,
     nobs_ = input.get<size_t>("nobs_");
     threshold_ = input.get<double>("threshold");
     loglik_ = input.get<double>("loglik");
-  } catch (...) {}
+  } catch (...) {
+  }
 }
 
 //! @brief creates from a JSON file.
@@ -154,7 +155,7 @@ inline Vinecop::Vinecop(const std::string filename, const bool check)
 {}
 
 //! @brief constructs a vine copula model from data by creating a model and
-//! calling select_family().
+//! calling select().
 //!
 //! @param data an \f$ n \times d \f$ matrix of observations.
 //! @param structure an RVineStructure object specifying the vine structure.
@@ -171,15 +172,15 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd& data,
                              "incompatible dimensions.");
   }
   check_weights_size(controls.get_weights(), data);
-  select_families(data, controls);
+  select(data, controls);
 }
 
 //! @brief constructs a vine copula model from data by creating a model and
-//! calling select_family().
+//! calling select().
 //!
 //! @param data an \f$ n \times d \f$ matrix of observations.
 //! @param matrix either an empty matrix (default) or an R-vine structure
-//!     matrix, see select_families().
+//!     matrix, see select().
 //! @param controls see FitControlsVinecop.
 //! @param check whether to check if `matrix` is a valid R-vine
 //!     matrix.
@@ -192,7 +193,7 @@ inline Vinecop::Vinecop(
 {}
 
 //! @brief constructs a vine copula model from data by creating a model and
-//! calling select_family().
+//! calling select().
 //!
 //! @param data an \f$ n \times d \f$ matrix of observations.
 //! @param order the order of the variables in the vine structure, see
@@ -211,7 +212,7 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd& data,
 {}
 
 //! @brief constructs a vine copula model from data by creating a model and
-//! calling select_all().
+//! calling select().
 //!
 //! @param data an \f$ n \times d \f$ matrix of observations.
 //! @param controls see FitControlsVinecop.
@@ -222,7 +223,7 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd& data,
   nobs_ = data.rows();
   check_enough_data(data);
   check_weights_size(controls.get_weights(), data);
-  select_all(data, controls);
+  select(data, controls);
 }
 
 //! @brief converts the copula into a boost::property_tree::ptree object.
@@ -286,6 +287,56 @@ Vinecop::make_pair_copula_store(const size_t d, const size_t trunc_lvl)
 
 //! @brief automatically fits and selects a vine copula model.
 //!
+//! @details `select()` behaves differently depending on its current truncation
+//! level and the truncation level specified in the controls, respectively
+//! called `trunc_lvl` and `controls.trunc_lvl` in what follows.
+//! Essentially, `controls.trunc_lvl` defines the object's truncation level
+//! after calling `select()`:
+//!   - If `controls.trunc_lvl <= trunc_lvl`, the families and parameters for
+//!     all pairs in trees smaller or equal to `controls.trunc_lvl`
+//!     are selected, using the current structure.
+//!   - If `controls.trunc_lvl > trunc_lvl`, `select()` behaves as above for
+//!     all trees that are smaller or equal to `trunc_lvl`, and then it selects
+//!     the structure for higher trees along with the families and parameters.
+//!     This includes the case where `trunc_lvl = 0`, namely where the
+//!     structure is fully unspecified.
+//!
+//! Selection of the structure is performed using the algorithm of
+//! Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka (2013).
+//! *Selecting and estimating regular vine copulae and application to
+//! financial returns.* Computational Statistics & Data Analysis, 59 (1),
+//! 52-69.
+//!
+//! When at least one variable is discrete, two types of "observations"
+//! are required: the first \f$ n \times d \f$ block contains realizations of
+//! \f$ F_Y(Y), F_X(X) \f$; the second \f$ n \times d \f$ block contains
+//! realizations of \f$ F_Y(Y^-), F_X(X^-), ... \f$. The minus indicates a
+//! left-sided limit of the cdf. For continuous variables the left limit and the
+//! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
+//! F_Y(Y^-) = F_Y(Y - 1) \f$. Continuous variables in the second block can
+//! be omitted.
+//!
+//! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//!   observations, where \f$ k \f$ is the number of discrete variables.
+//! @param controls the controls to the algorithm (see FitControlsVinecop).
+inline void
+Vinecop::select(Eigen::MatrixXd data, const FitControlsVinecop& controls)
+{
+  check_data(data);
+  data = collapse_data(data);
+
+  tools_select::VinecopSelector selector(
+    data, vine_struct_, controls, var_types_);
+  if (controls.needs_sparse_select()) {
+    selector.sparse_select_all_trees(data);
+  } else {
+    selector.select_all_trees(data);
+  }
+  finalize_fit(selector);
+}
+
+//! @brief automatically fits and selects a vine copula model.
+//!
 //! Selection of the structure is performed using the algorithm of
 //! Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka (2013).
 //! *Selecting and estimating regular vine copulae and application to
@@ -305,19 +356,11 @@ Vinecop::make_pair_copula_store(const size_t d, const size_t trunc_lvl)
 //!   observations, where \f$ k \f$ is the number of discrete variables.
 //! @param controls the controls to the algorithm (see FitControlsVinecop).
 inline void
-Vinecop::select_all(Eigen::MatrixXd data,
-                    const FitControlsVinecop& controls)
+Vinecop::select_all(Eigen::MatrixXd data, const FitControlsVinecop& controls)
 {
-  check_data(data);
-  data = collapse_data(data);
-
-  tools_select::StructureSelector selector(data, controls, var_types_);
-  if (controls.needs_sparse_select()) {
-    selector.sparse_select_all_trees(data);
-  } else {
-    selector.select_all_trees(data);
-  }
-  finalize_fit(selector);
+  vine_struct_ =
+    RVineStructure(tools_stl::seq_int(1, d_), static_cast<size_t>(0));
+  select(data, controls);
 }
 
 //! @brief automatically selects all pair-copula families and fits all
@@ -340,20 +383,9 @@ inline void
 Vinecop::select_families(Eigen::MatrixXd data,
                          const FitControlsVinecop& controls)
 {
-  check_data(data);
-  data = collapse_data(data);
-
-  if (vine_struct_.get_trunc_lvl() > 0) {
-    tools_select::FamilySelector selector(
-      data, vine_struct_, controls, var_types_);
-    if (controls.needs_sparse_select()) {
-      selector.sparse_select_all_trees(data);
-      vine_struct_ = selector.get_rvine_structure(); // can be truncated
-    } else {
-      selector.select_all_trees(data);
-    }
-    finalize_fit(selector);
-  }
+  auto controls_trunc_lvl = controls;
+  controls_trunc_lvl.set_trunc_lvl(vine_struct_.get_trunc_lvl());
+  select(data, controls);
 }
 
 //! @name Getters
@@ -723,7 +755,7 @@ Vinecop::get_var_types() const
 //!
 //! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
-//!   (see `Vinecop::select_all()`).
+//!   (see `Vinecop::select()`).
 //! @param num_threads the number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
@@ -733,21 +765,9 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
   check_data(u);
   u = collapse_data(u);
 
-  size_t d = d_;
-  size_t n = u.rows();
-
   // info about the vine structure (reverse rows (!) for more natural indexing)
   size_t trunc_lvl = vine_struct_.get_trunc_lvl();
-  std::vector<size_t> order;
-  TriangularArray<size_t> natural_array, min_array, needed_hfunc1,
-    needed_hfunc2;
-  if (trunc_lvl > 0) {
-    order = vine_struct_.get_order();
-    natural_array = vine_struct_.get_struct_array(true);
-    min_array = vine_struct_.get_min_array();
-    needed_hfunc1 = vine_struct_.get_needed_hfunc1();
-    needed_hfunc2 = vine_struct_.get_needed_hfunc2();
-  }
+  auto order = vine_struct_.get_order();
   auto disc_cols = tools_select::get_disc_cols(var_types_);
 
   // initial value must be 1.0 for multiplication
@@ -755,64 +775,71 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
 
   auto do_batch = [&](const tools_batch::Batch& b) {
     // temporary storage objects (all data must be in (0, 1))
-    Eigen::MatrixXd hfunc1(b.size, d);
-    hfunc1.setZero();
-    Eigen::MatrixXd hfunc2 = hfunc1;
-    Eigen::MatrixXd hfunc1_sub = hfunc1;
-    Eigen::MatrixXd hfunc2_sub = hfunc1;
-    Eigen::MatrixXd u_e(b.size, 4);
-    Eigen::MatrixXd u_sub(b.size, 4);
+    Eigen::MatrixXd hfunc1, hfunc2, u_e,
+                    hfunc1_sub, hfunc2_sub, u_e_sub;
+    hfunc1 = Eigen::MatrixXd::Zero(b.size, d_);
+    hfunc2 = Eigen::MatrixXd::Zero(b.size, d_);
+    if (get_n_discrete() > 0) {
+      hfunc1_sub = hfunc1;
+      hfunc2_sub = hfunc2;
+    }
 
     // fill first row of hfunc2 matrix with evaluation points;
     // points have to be reordered to correspond to natural order
-
-    for (size_t j = 0; j < d; ++j) {
+    for (size_t j = 0; j < d_; ++j) {
       hfunc2.col(j) = u.block(b.begin, order[j] - 1, b.size, 1);
       if (var_types_[order[j] - 1] == "d") {
         hfunc2_sub.col(j) =
           u.block(b.begin, d_ + disc_cols[order[j] - 1], b.size, 1);
-      } else {
-        hfunc2_sub.col(j) = u.block(b.begin, order[j] - 1, b.size, 1);
       }
     }
 
     for (size_t tree = 0; tree < trunc_lvl; ++tree) {
-      tools_interface::check_user_interrupt(n * d > 1e5);
-      for (size_t edge = 0; edge < d - tree - 1; ++edge) {
+      tools_interface::check_user_interrupt(u.rows() * d_ > 1e5);
+      for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
         tools_interface::check_user_interrupt(edge % 100 == 0);
         // extract evaluation point from hfunction matrices (have been
         // computed in previous tree level)
+        Bicop edge_copula = get_pair_copula(tree, edge);
+        auto var_types = edge_copula.get_var_types();
+        size_t m = vine_struct_.min_array(tree, edge);
+
+        u_e = Eigen::MatrixXd(b.size, 2);
         u_e.col(0) = hfunc2.col(edge);
-        u_e.col(2) = hfunc2_sub.col(edge);
-        size_t m = min_array(tree, edge);
-        if (m == natural_array(tree, edge)) {
+        if (m == vine_struct_.struct_array(tree, edge, true)) {
           u_e.col(1) = hfunc2.col(m - 1);
-          u_e.col(3) = hfunc2_sub.col(m - 1);
         } else {
           u_e.col(1) = hfunc1.col(m - 1);
-          u_e.col(3) = hfunc1_sub.col(m - 1);
         }
 
-        Bicop edge_copula = get_pair_copula(tree, edge);
+        if ((var_types[0] == "d") | (var_types[1] == "d")) {
+          u_e.conservativeResize(b.size, 4);
+          u_e.col(2) = hfunc2_sub.col(edge);
+          if (m == vine_struct_.struct_array(tree, edge, true)) {
+            u_e.col(3) = hfunc2_sub.col(m - 1);
+          } else {
+            u_e.col(3) = hfunc1_sub.col(m - 1);
+          }
+        }
+
         pdf.segment(b.begin, b.size) =
           pdf.segment(b.begin, b.size).cwiseProduct(edge_copula.pdf(u_e));
 
         // h-functions are only evaluated if needed in next step
-        auto var_types = edge_copula.get_var_types();
-        if (needed_hfunc1(tree, edge)) {
+        if (vine_struct_.needed_hfunc1(tree, edge)) {
           hfunc1.col(edge) = edge_copula.hfunc1(u_e);
           if (var_types[1] == "d") {
-            u_sub = u_e;
-            u_sub.col(1) = u_sub.col(3);
-            hfunc1_sub.col(edge) = edge_copula.hfunc1(u_sub);
+            u_e_sub = u_e;
+            u_e_sub.col(1) = u_e.col(3);
+            hfunc1_sub.col(edge) = edge_copula.hfunc1(u_e_sub);
           }
         }
-        if (needed_hfunc2(tree, edge)) {
+        if (vine_struct_.needed_hfunc2(tree, edge)) {
           hfunc2.col(edge) = edge_copula.hfunc2(u_e);
           if (var_types[0] == "d") {
-            u_sub = u_e;
-            u_sub.col(0) = u_sub.col(2);
-            hfunc2_sub.col(edge) = edge_copula.hfunc2(u_sub);
+            u_e_sub = u_e;
+            u_e_sub.col(0) = u_e.col(2);
+            hfunc2_sub.col(edge) = edge_copula.hfunc2(u_e_sub);
           }
         }
       }
@@ -821,7 +848,7 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
 
   if (trunc_lvl > 0) {
     tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
-    pool.map(do_batch, tools_batch::create_batches(n, num_threads));
+    pool.map(do_batch, tools_batch::create_batches(u.rows(), num_threads));
     pool.join();
   }
 
@@ -832,7 +859,7 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
 //!
 //! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
-//!   (see `Vinecop::select_all()`).
+//!   (see `Vinecop::select()`).
 //! @param N integer for the number of quasi-random numbers to draw
 //! to evaluate the distribution (default: 1e4).
 //! @param num_threads the number of threads to use for computations; if greater
@@ -893,7 +920,7 @@ Vinecop::simulate(const size_t n,
   // inverse_rosenblatt() only works for continous models
   auto actual_types = var_types_;
   set_continuous_var_types();
-  u = inverse_rosenblatt(u, num_threads); 
+  u = inverse_rosenblatt(u, num_threads);
   set_var_types_internal(actual_types);
   return u;
 }
@@ -906,7 +933,7 @@ Vinecop::simulate(const size_t n,
 //!
 //! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
-//!   (see `Vinecop::select_all()`).
+//!   (see `Vinecop::select()`).
 //! @param num_threads the number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
@@ -931,7 +958,7 @@ Vinecop::loglik(const Eigen::MatrixXd& u, const size_t num_threads) const
 //!
 //! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
-//!   (see `Vinecop::select_all()`).
+//!   (see `Vinecop::select()`).
 //! @param num_threads the number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
@@ -952,7 +979,7 @@ Vinecop::aic(const Eigen::MatrixXd& u, const size_t num_threads) const
 //!
 //! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
-//!   (see `Vinecop::select_all()`).
+//!   (see `Vinecop::select()`).
 //! @param num_threads the number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
@@ -978,7 +1005,7 @@ Vinecop::bic(const Eigen::MatrixXd& u, const size_t num_threads) const
 //!
 //! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
-//!   (see `Vinecop::select_all()`).
+//!   (see `Vinecop::select()`).
 //! @param psi0 baseline prior probability of a non-independence copula.
 //! @param num_threads the number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
@@ -1028,18 +1055,10 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
   size_t d = u.cols();
   size_t n = u.rows();
 
-  // info about the vine structure (reverse rows (!) for more natural indexing)
+  // info about the vine structure
   size_t trunc_lvl = vine_struct_.get_trunc_lvl();
-  std::vector<size_t> order, inverse_order;
-  TriangularArray<size_t> natural_array, min_array, needed_hfunc1, needed_hfunc2;
-  if (trunc_lvl > 0) {
-    order = vine_struct_.get_order();
-    inverse_order = tools_stl::invert_permutation(order);
-    natural_array = vine_struct_.get_struct_array(true);
-    min_array = vine_struct_.get_min_array();
-    needed_hfunc1 = vine_struct_.get_needed_hfunc1();
-    needed_hfunc2 = vine_struct_.get_needed_hfunc2();
-  }
+  auto order = vine_struct_.get_order();
+  auto inverse_order = tools_stl::invert_permutation(order);
 
   // fill first row of hfunc2 matrix with evaluation points;
   // points have to be reordered to correspond to natural order
@@ -1056,9 +1075,9 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
         tools_interface::check_user_interrupt(edge % 100 == 0);
         // extract evaluation point from hfunction matrices (have been
         // computed in previous tree level)
-        size_t m = min_array(tree, edge);
+        size_t m = vine_struct_.min_array(tree, edge);
         u_e.col(0) = hfunc2.block(b.begin, edge, b.size, 1);
-        if (m == natural_array(tree, edge)) {
+        if (m == vine_struct_.struct_array(tree, edge, true)) {
           u_e.col(1) = hfunc2.block(b.begin, m - 1, b.size, 1);
         } else {
           u_e.col(1) = hfunc1.block(b.begin, m - 1, b.size, 1);
@@ -1066,7 +1085,7 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
 
         // h-functions are only evaluated if needed in next step
         Bicop edge_copula = get_pair_copula(tree, edge).as_continuous();
-        if (needed_hfunc1(tree, edge)) {
+        if (vine_struct_.needed_hfunc1(tree, edge)) {
           hfunc1.block(b.begin, edge, b.size, 1) = edge_copula.hfunc1(u_e);
         }
         hfunc2.block(b.begin, edge, b.size, 1) = edge_copula.hfunc2(u_e);
@@ -1100,7 +1119,7 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
 //! "Too large" means that the required memory will exceed 1 GB. An
 //! examplary configuration requiring less than 1 GB is \f$ n = 1000 \f$,
 //! \f$d = 200\f$.
-//! 
+//!
 //! Only works for continous models.
 //!
 //! @param u \f$ n \times d \f$ matrix of evaluation points.
@@ -1139,16 +1158,8 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
 
   // info about the vine structure (in upper triangular matrix notation)
   size_t trunc_lvl = vine_struct_.get_trunc_lvl();
-  std::vector<size_t> order, inverse_order;
-  TriangularArray<size_t> natural_array, min_array, needed_hfunc1, needed_hfunc2;
-  if (trunc_lvl > 0) {
-    order = vine_struct_.get_order();
-    inverse_order = tools_stl::invert_permutation(order);
-    natural_array = vine_struct_.get_struct_array(true);
-    min_array = vine_struct_.get_min_array();
-    needed_hfunc1 = vine_struct_.get_needed_hfunc1();
-    needed_hfunc2 = vine_struct_.get_needed_hfunc2();
-  }
+  auto order = vine_struct_.get_order();
+  auto inverse_order = tools_stl::invert_permutation(order);
 
   auto do_batch = [&](const tools_batch::Batch& b) {
     // temporary storage objects for (inverse) h-functions
@@ -1172,9 +1183,9 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
 
         // extract data for conditional pair
         Eigen::MatrixXd U_e(b.size, 2);
-        size_t m = min_array(tree, var);
+        size_t m = vine_struct_.min_array(tree, var);
         U_e.col(0) = hinv2(tree + 1, var);
-        if (m == natural_array(tree, var)) {
+        if (m == vine_struct_.struct_array(tree, var, true)) {
           U_e.col(1) = hinv2(tree, m - 1);
         } else {
           U_e.col(1) = hfunc1(tree, m - 1);
@@ -1185,7 +1196,7 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
 
         // if required at later stage, also calculate hfunc2
         if (var < static_cast<ptrdiff_t>(d_) - 1) {
-          if (needed_hfunc1(tree, var)) {
+          if (vine_struct_.needed_hfunc1(tree, var)) {
             U_e.col(0) = hinv2(tree, var);
             hfunc1(tree + 1, var) = edge_copula.hfunc1(U_e);
           }

@@ -81,10 +81,14 @@ public:
   void to_json(const std::string filename) const;
 
   // Methods modifying structure and/or families and parameters
-  void select_all(Eigen::MatrixXd data,
-                  const FitControlsVinecop& controls = FitControlsVinecop());
+  void select(Eigen::MatrixXd data,
+              const FitControlsVinecop& controls = FitControlsVinecop());
 
-  void select_families(
+  DEPRECATED void select_all(
+    Eigen::MatrixXd data,
+    const FitControlsVinecop& controls = FitControlsVinecop());
+
+  DEPRECATED void select_families(
     Eigen::MatrixXd data,
     const FitControlsVinecop& controls = FitControlsVinecop());
 
@@ -132,8 +136,7 @@ public:
   double get_mbicv(const double psi0 = 0.9) const;
 
   // Stats methods
-  Eigen::VectorXd pdf(Eigen::MatrixXd u,
-                      const size_t num_threads = 1) const;
+  Eigen::VectorXd pdf(Eigen::MatrixXd u, const size_t num_threads = 1) const;
 
   Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
                       const size_t N = 1e4,
@@ -183,9 +186,9 @@ protected:
   size_t d_;
   RVineStructure vine_struct_;
   mutable std::vector<std::vector<Bicop>> pair_copulas_;
-  double threshold_{0.0};
-  double loglik_{NAN};
-  size_t nobs_{0};
+  double threshold_{ 0.0 };
+  double loglik_{ NAN };
+  size_t nobs_{ 0 };
   mutable std::vector<std::string> var_types_;
 
   void check_data_dim(const Eigen::MatrixXd& data) const;
@@ -204,7 +207,6 @@ protected:
   int get_n_discrete() const;
   Eigen::MatrixXd collapse_data(const Eigen::MatrixXd& u) const;
 };
-
 }
 
 #include <vinecopulib/vinecop/implementation/class.ipp>

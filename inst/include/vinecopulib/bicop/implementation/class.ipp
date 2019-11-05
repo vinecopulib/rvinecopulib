@@ -173,7 +173,8 @@ Bicop::hfunc1(const Eigen::MatrixXd& u) const
       h = 1.0 - bicop_->hfunc2(prep_for_abstract(u)).array();
       break;
   }
-  return tools_eigen::trim(h, 0.0, 1.0);
+  tools_eigen::trim(h, 0.0, 1.0);
+  return h;
 }
 
 //! @brief calculates the second h-function.
@@ -204,7 +205,8 @@ Bicop::hfunc2(const Eigen::MatrixXd& u) const
       h = bicop_->hfunc1(prep_for_abstract(u)).array();
       break;
   }
-  return tools_eigen::trim(h, 0.0, 1.0);
+  tools_eigen::trim(h, 0.0, 1.0);
+  return h;
 }
 
 //! @brief calculates the inverse of \f$ h_1 \f$ (see hfunc1()) w.r.t. the
@@ -233,7 +235,8 @@ Bicop::hinv1(const Eigen::MatrixXd& u) const
       hi = 1.0 - bicop_->hinv2(prep_for_abstract(u)).array();
       break;
   }
-  return tools_eigen::trim(hi, 0.0, 1.0);
+  tools_eigen::trim(hi, 0.0, 1.0);
+  return hi;
 }
 
 //! @brief calculates the inverse of \f$ h_2 \f$ (see hfunc2()) w.r.t. the first
@@ -262,7 +265,8 @@ Bicop::hinv2(const Eigen::MatrixXd& u) const
       hi = bicop_->hinv1(prep_for_abstract(u));
       break;
   }
-  return tools_eigen::trim(hi, 0.0, 1.0);
+  tools_eigen::trim(hi, 0.0, 1.0);
+  return hi;
 }
 //! @}
 
@@ -740,7 +744,7 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
   rotation_ = 0;
   bicop_->set_loglik(0.0);
   if (data_no_nan.rows() >= 10) {
-    data_no_nan = tools_eigen::trim(data_no_nan);
+    tools_eigen::trim(data_no_nan);
     std::vector<Bicop> bicops = create_candidate_bicops(data_no_nan, controls);
     for (auto& bc : bicops) {
       bc.set_var_types(var_types_);
@@ -824,31 +828,36 @@ Bicop::format_data(const Eigen::MatrixXd& u) const
 
 //! rotates the data corresponding to the models rotation.
 //! @param u an `n x 2` matrix.
-inline Eigen::MatrixXd
-Bicop::rotate_data(const Eigen::MatrixXd& u) const
+inline void
+Bicop::rotate_data(Eigen::MatrixXd& u) const
 {
-  auto u_new = u;
   // counter-clockwise rotations
   switch (rotation_) {
     case 0:
       break;
 
     case 90:
-      u_new.col(0) = u.col(1);
-      u_new.col(1) = 1.0 - u.col(0).array();
+      u.col(0).swap(u.col(1));
+      u.col(1) = 1 - u.col(1).array();
+      if (u.cols() == 4) {
+        u.col(2).swap(u.col(3));
+        u.col(3) = 1 - u.col(3).array();
+      }
       break;
 
     case 180:
-      u_new.col(0) = 1.0 - u.col(0).array();
-      u_new.col(1) = 1.0 - u.col(1).array();
+      u = 1 - u.array();
       break;
 
     case 270:
-      u_new.col(0) = 1.0 - u.col(1).array();
-      u_new.col(1) = u.col(0);
+      u.col(0).swap(u.col(1));
+      u.col(0) = 1 - u.col(0).array();
+      if (u.cols() == 4) {
+        u.col(2).swap(u.col(3));
+        u.col(2) = 1 - u.col(2).array();
+      }
       break;
   }
-  return u_new;
 }
 
 //! prepares data for use with the `AbstractBicop` class:
@@ -859,11 +868,8 @@ inline Eigen::MatrixXd
 Bicop::prep_for_abstract(const Eigen::MatrixXd& u) const
 {
   auto u_new = format_data(u);
-  u_new = tools_eigen::trim(u_new);
-  u_new.leftCols(2) = rotate_data(u_new.leftCols(2));
-  if (u_new.cols() == 4) {
-    u_new.rightCols(2) = rotate_data(u_new.rightCols(2));
-  }
+  tools_eigen::trim(u_new);
+  rotate_data(u_new);
   return u_new;
 }
 

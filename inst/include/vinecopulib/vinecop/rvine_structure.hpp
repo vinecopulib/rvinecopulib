@@ -91,14 +91,16 @@ public:
   std::vector<size_t> get_order() const;
   TriangularArray<size_t> get_struct_array(bool natural_order = false) const;
   TriangularArray<size_t> get_min_array() const;
-  TriangularArray<size_t> get_needed_hfunc1() const;
-  TriangularArray<size_t> get_needed_hfunc2() const;
+  TriangularArray<short unsigned> get_needed_hfunc1() const;
+  TriangularArray<short unsigned> get_needed_hfunc2() const;
   Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
 
   size_t struct_array(size_t tree,
                       size_t edge,
                       bool natural_order = false) const;
   size_t min_array(size_t tree, size_t edge) const;
+  bool needed_hfunc1(size_t tree, size_t edge) const;
+  bool needed_hfunc2(size_t tree, size_t edge) const;
 
   void truncate(size_t trunc_lvl);
   std::string str() const;
@@ -116,10 +118,11 @@ protected:
     const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& mat) const;
 
   TriangularArray<size_t> to_natural_order() const;
-  TriangularArray<size_t> compute_dvine_struct_array() const;
+  static TriangularArray<size_t> make_dvine_struct_array(size_t d,
+                                                         size_t trunc_lvl);
   TriangularArray<size_t> compute_min_array() const;
-  TriangularArray<size_t> compute_needed_hfunc1() const;
-  TriangularArray<size_t> compute_needed_hfunc2() const;
+  TriangularArray<short unsigned> compute_needed_hfunc1() const;
+  TriangularArray<short unsigned> compute_needed_hfunc2() const;
 
   void check_if_quadratic(
     const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& mat) const;
@@ -135,8 +138,9 @@ protected:
   size_t trunc_lvl_;
   TriangularArray<size_t> struct_array_;
   TriangularArray<size_t> min_array_;
-  TriangularArray<size_t> needed_hfunc1_;
-  TriangularArray<size_t> needed_hfunc2_;
+  // can't use bool b/c the comittee messed up std::vector<bool>
+  TriangularArray<short unsigned> needed_hfunc1_;
+  TriangularArray<short unsigned> needed_hfunc2_;
 };
 
 std::ostream&
