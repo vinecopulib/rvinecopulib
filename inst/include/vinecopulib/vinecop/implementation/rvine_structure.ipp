@@ -67,6 +67,12 @@ inline RVineStructure::RVineStructure(const std::vector<size_t>& order,
   : RVineStructure(order, order.size() - 1, check)
 {}
 
+//! @brief instantiates an RVineStructure object to a D-vine with given ordering
+//! of variables.
+//! @param order the order of variables in the D-vine (diagonal entries in the
+//!    R-vine array); must be a permutation of 1, ..., d.
+//! @param trunc_lvl the truncation level.
+//! @param check whether `order shall be checked for validity.
 inline RVineStructure::RVineStructure(const std::vector<size_t>& order,
                                       const size_t& trunc_lvl,
                                       bool check)
@@ -522,6 +528,20 @@ RVineStructure::make_dvine_struct_array(size_t d, size_t trunc_lvl)
   return struct_array;
 }
 
+//! creates a structure array corresponding to a D-vine (in natural order).
+inline TriangularArray<size_t>
+RVineStructure::make_cvine_struct_array(size_t d, size_t trunc_lvl)
+{
+  TriangularArray<size_t> struct_array(d, trunc_lvl);
+  for (size_t i = 0; i < std::min(d - 1, trunc_lvl); i++) {
+    for (size_t j = 0; j < d - 1 - i; j++) {
+      struct_array(i, j) = d - i;
+    }
+  }
+
+  return struct_array;
+}
+
 inline TriangularArray<size_t>
 RVineStructure::compute_min_array() const
 {
@@ -686,4 +706,44 @@ operator<<(std::ostream& os, const RVineStructure& rvs)
   os << rvs.str();
   return os;
 }
+
+//! @param order the order of variables in the D-vine (diagonal entries in the
+//!    R-vine array); must be a permutation of 1, ..., d.
+DVineStructure::DVineStructure(const std::vector<size_t>& order)
+  : RVineStructure(order,
+                   make_dvine_struct_array(order.size(), order.size() - 1),
+                   true,
+                   false)
+{}
+
+//! @param order the order of variables in the D-vine (diagonal entries in the
+//!    R-vine array); must be a permutation of 1, ..., d.
+//! @param trunc_lvl the truncation level.
+DVineStructure::DVineStructure(const std::vector<size_t>& order,
+                               size_t trunc_lvl)
+  : RVineStructure(order,
+                   make_dvine_struct_array(order.size(), trunc_lvl),
+                   true,
+                   false)
+{}
+
+//! @param order the order of variables in the C-vine (diagonal entries in the
+//!    R-vine array); must be a permutation of 1, ..., d.
+CVineStructure::CVineStructure(const std::vector<size_t>& order)
+  : RVineStructure(order,
+                   make_cvine_struct_array(order.size(), order.size() - 1),
+                   true,
+                   false)
+{}
+
+//! @param order the order of variables in the C-vine (diagonal entries in the
+//!    R-vine array); must be a permutation of 1, ..., d.
+//! @param trunc_lvl the truncation level.
+CVineStructure::CVineStructure(const std::vector<size_t>& order,
+                               size_t trunc_lvl)
+  : RVineStructure(order,
+                   make_cvine_struct_array(order.size(), trunc_lvl),
+                   true,
+                   false)
+{}
 }

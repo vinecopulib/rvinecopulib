@@ -5,9 +5,15 @@
 \alias{rvine_matrix}
 \alias{is.rvine_structure}
 \alias{is.rvine_matrix}
+\alias{dvine_structure}
+\alias{cvine_structure}
 \title{R-vine structure}
 \usage{
 rvine_structure(order, struct_array = list(), is_natural_order = FALSE)
+
+cvine_structure(order, trunc_lvl = Inf)
+
+dvine_structure(order, trunc_lvl = Inf)
 
 rvine_matrix(matrix)
 }
@@ -18,9 +24,11 @@ rvine_matrix(matrix)
 represent rows of the r-rvine structure and the number of elements have to
 be compatible with the \code{order} vector. If empty, the model is 0-truncated.}
 
-\item{is_natural_order}{whether \code{struct_array} is assumed to be provided
-in natural order already (a structure is in natural order if the anti-
+\item{is_natural_order}{whether \code{struct_array} is assumed to be provided in
+natural order already (a structure is in natural order if the anti-
 diagonal is 1, .., d from bottom left to top right).}
+
+\item{trunc_lvl}{the truncation level}
 
 \item{matrix}{an R-vine matrix, see \emph{Details}.}
 }
@@ -28,86 +36,80 @@ diagonal is 1, .., d from bottom left to top right).}
 Either an \code{rvine_structure} or an \code{rvine_matrix}.
 }
 \description{
-R-vine structures are compressed representations encoding the tree
-structure of the vine, i.e. the conditioned/conditioning
-variables of each edge.
+R-vine structures are compressed representations encoding the tree structure
+of the vine, i.e. the conditioned/conditioning variables of each edge. The
+functions \code{cvine_structure()} or \code{dvine_structure()} give a simpler way to
+construct C-vines (every tree is a star) and D-vines (every tree is a path),
+respectively.
 }
 \details{
-The R-vine structure is essentially a lower-triangular matrix/triangular array,
-with a notation that differs from the one in the VineCopula package.
-An example array is\preformatted{4 4 4 4
-3 3 3
-2 2
-1
-}
+The R-vine structure is essentially a lower-triangular matrix/triangular
+array, with a notation that differs from the one in the VineCopula package.
+An example array is \code{4 4 4 4 3 3 3 2 2 1} which encodes the following
+pair-copulas:
 
-which encodes the following pair-copulas:
-
-\tabular{lll}{
-tree \tab  edge \tab pair-copulas   \cr
-0    \tab  0    \tab \code{(1, 4)}       \cr
-\tab  1    \tab \code{(2, 4)}       \cr
-\tab  2    \tab \code{(3, 4)}       \cr
-1    \tab  0    \tab \code{(1, 3; 2)}    \cr
-\tab  1    \tab \code{(2, 3; 4)}    \cr
-2    \tab  0    \tab \code{(1, 2; 3, 4)}
-}
+\tabular{lll}{ tree \tab  edge \tab pair-copulas   \cr 0    \tab  0    \tab
+\code{(1, 4)}       \cr \tab  1    \tab \code{(2, 4)}       \cr \tab  2    \tab \code{(3, 4)}       \cr 1    \tab  0    \tab \code{(1, 3; 2)}    \cr \tab  1    \tab \code{(2, 3; 4)}    \cr 2    \tab  0    \tab \code{(1, 2; 3, 4)} }
 
 An R-vine structure can be converted to an R-vine matrix using
-\code{\link[=as_rvine_matrix]{as_rvine_matrix()}}, which encodes the same model with a square matrix
-filled with zeros. For instance, the matrix corresponding to the structure
-above is:\preformatted{4 4 4 4
-3 3 3 0
-2 2 0 0
-1 0 0 0
-}
-
-Similarly, an R-vine matrix can be converted to an R-vine structure using
-\code{\link[=as_rvine_structure]{as_rvine_structure()}}.
+\code{\link[=as_rvine_matrix]{as_rvine_matrix()}}, which encodes the same model with a square matrix filled
+with zeros. For instance, the matrix corresponding to the structure above is:
+\code{4 4 4 4 3 3 3 0 2 2 0 0 1 0 0 0} Similarly, an R-vine matrix can be
+converted to an R-vine structure using \code{\link[=as_rvine_structure]{as_rvine_structure()}}.
 
 Denoting by \code{M[i, j]} the array entry in row \code{i} and column \code{j} (the
-pair-copula index for edge \code{e} in tree \code{t} of a \code{d} dimensional vine is
-\code{(M[d + 1 - e, e], M[t, e]; M[t - 1, e], ..., M[1, e])}. Less formally,
+pair-copula index for edge \code{e} in tree \code{t} of a \code{d} dimensional vine is `(M[d
+\itemize{
+\item 1 - e, e], M[t, e]; M[t - 1, e], ..., M[1, e])\code{. Less formally, 1. Start with the counter-diagonal element of column }e` (first conditioned variable).
+}
 \enumerate{
-\item Start with the counter-diagonal element of column \code{e} (first conditioned
-variable).
-\item Jump up to the element in row \code{t} (second conditioned variable).
-\item Gather all entries further up in column \code{e} (conditioning set).
+\item Jump up to the element in row \code{t} (second conditioned variable). 3. Gather
+all entries further up in column \code{e} (conditioning set).
 }
 
 Internally, the diagonal is stored separately from the off-diagonal elements,
-which are stored as a triangular array. For instance, the off-diagonal elements
-off the structure above are stored as\preformatted{4 4 4
-3 3
-2
-}
+which are stored as a triangular array. For instance, the off-diagonal
+elements off the structure above are stored as \code{4 4 4 3 3 2} for the
+structure above. The reason is that it allows for parsimonious
+representations of truncated models. For instance, the 2-truncated model is
+represented by the same diagonal and the following truncated triangular
+array: \code{4 4 4 3 3}
 
-for the structure above. The reason is that it allows for parsimonious
-representations of truncated models. For instance, the 2-truncated model
-is represented by the same diagonal and the following truncated triangular
-array:\preformatted{4 4 4
-3 3
-}
+A valid R-vine structure or matrix must satisfy several conditions which are
+checked when [rvine_structure()], [rvine_matrix()], or some coercion methods
+(see \code{\link[=as_rvine_structure]{as_rvine_structure()}} and \code{as_rvine_matrix(}) are called: 1. It can
+only contain numbers between 1 and d (and additionally zeros for R-vine
+matrices). 3. The anti-diagonal must contain the numbers 1, ..., d. 4. The
+anti-diagonal entry of a column must not be contained in any column further
+to the right. 5. The entries of a column must be contained in all columns to
+the left. 6. The proximity condition must hold: For all t = 1, ..., d - 2 and
+e = 1, ..., d - t there must exist an index j > d, such that \code{(M[t, e], {M[1, e], ..., M[t - 1, e]})} equals either \code{(M[d + 1 - j, j], {M[1, j], ..., M[t - 1, j]})} or \code{(M[t - 1, j], {M[d + 1 - j, j], M[1, j], ..., M[t - 2, j]})}.
 
-A valid R-vine structure or matrix must satisfy several conditions which
-are checked when \code{\link[=rvine_structure]{rvine_structure()}}, \code{\link[=rvine_matrix]{rvine_matrix()}}, or some coercion
-methods (see \code{\link[=as_rvine_structure]{as_rvine_structure()}} and \code{as_rvine_matrix(}) are called:
-\enumerate{
-\item It can only contain numbers between 1 and d (and additionally zeros for
-R-vine matrices).
-\item The anti-diagonal must contain the numbers 1, ..., d.
-\item The anti-diagonal entry of a column must not be contained in any
-column further to the right.
-\item The entries of a column must be contained in all columns to the left.
-\item The proximity condition must hold: For all t = 1, ..., d - 2 and
-e = 1, ..., d - t there must exist an index j > d, such that
-\code{(M[t, e], {M[1, e], ..., M[t - 1, e]})} equals either
-\code{(M[d + 1 - j, j], {M[1, j], ..., M[t - 1, j]})} or
-\code{(M[t - 1, j], {M[d + 1 - j, j], M[1, j], ..., M[t - 2, j]})}.
-}
+Condition 6 already implies conditions 2-5, but is more difficult to check by
+hand.
 
-Condition 6 already implies conditions 2-5, but is more difficult to
-check by hand.
+[d
+\itemize{
+\item 1 - e, e]: R:d%0A+%201%20-%20e,%20e
+[t, e]: R:t,%20e
+[t - 1, e]: R:t%20-%201,%20e
+[1, e]: R:1,%20e
+[rvine_structure()]: R:rvine_structure()
+[rvine_matrix()]: R:rvine_matrix()
+\code{\link[=as_rvine_structure]{as_rvine_structure()}}: R:as_rvine_structure()
+[t, e]: R:t,%20e
+[1,
+e]: R:1,%0Ae
+[t - 1, e]: R:t%20-%201,%20e
+[d + 1 - j, j]: R:d%20+%201%20-%20j,%20j
+[1, j]: R:1,%20j
+[t -
+1, j]: R:t%20-%0A1,%20j
+[t - 1, j]: R:t%20-%201,%20j
+[d + 1 - j, j]: R:d%20+%201%20-%20j,%20j
+[1, j]: R:1,%20j
+[t - 2, j]: R:t%20-%202,%20j
+}
 }
 \examples{
 

@@ -1,93 +1,64 @@
 #' R-vine structure
 #'
-#' R-vine structures are compressed representations encoding the tree
-#' structure of the vine, i.e. the conditioned/conditioning
-#' variables of each edge.
+#' R-vine structures are compressed representations encoding the tree structure
+#' of the vine, i.e. the conditioned/conditioning variables of each edge. The
+#' functions `cvine_structure()` or `dvine_structure()` give a simpler way to
+#' construct C-vines (every tree is a star) and D-vines (every tree is a path),
+#' respectively.
 #'
-#' The R-vine structure is essentially a lower-triangular matrix/triangular array,
-#' with a notation that differs from the one in the VineCopula package.
-#' An example array is
-#' ```
-#' 4 4 4 4
-#' 3 3 3
-#' 2 2
-#' 1
-#' ```
-#' which encodes the following pair-copulas:
+#' The R-vine structure is essentially a lower-triangular matrix/triangular
+#' array, with a notation that differs from the one in the VineCopula package.
+#' An example array is ``` 4 4 4 4 3 3 3 2 2 1 ``` which encodes the following
+#' pair-copulas:
 #'
-#' \tabular{lll}{
-#' tree \tab  edge \tab pair-copulas   \cr
-#' 0    \tab  0    \tab `(1, 4)`       \cr
-#'      \tab  1    \tab `(2, 4)`       \cr
-#'      \tab  2    \tab `(3, 4)`       \cr
-#' 1    \tab  0    \tab `(1, 3; 2)`    \cr
-#'      \tab  1    \tab `(2, 3; 4)`    \cr
-#' 2    \tab  0    \tab `(1, 2; 3, 4)`
-#' }
+#' \tabular{lll}{ tree \tab  edge \tab pair-copulas   \cr 0    \tab  0    \tab
+#' `(1, 4)`       \cr \tab  1    \tab `(2, 4)`       \cr \tab  2    \tab `(3,
+#' 4)`       \cr 1    \tab  0    \tab `(1, 3; 2)`    \cr \tab  1    \tab `(2, 3;
+#' 4)`    \cr 2    \tab  0    \tab `(1, 2; 3, 4)` }
 #'
 #' An R-vine structure can be converted to an R-vine matrix using
-#' [as_rvine_matrix()], which encodes the same model with a square matrix
-#' filled with zeros. For instance, the matrix corresponding to the structure
-#' above is:
-#' ```
-#' 4 4 4 4
-#' 3 3 3 0
-#' 2 2 0 0
-#' 1 0 0 0
-#' ```
-#' Similarly, an R-vine matrix can be converted to an R-vine structure using
-#' [as_rvine_structure()].
+#' [as_rvine_matrix()], which encodes the same model with a square matrix filled
+#' with zeros. For instance, the matrix corresponding to the structure above is:
+#' ``` 4 4 4 4 3 3 3 0 2 2 0 0 1 0 0 0 ``` Similarly, an R-vine matrix can be
+#' converted to an R-vine structure using [as_rvine_structure()].
 #'
 #' Denoting by `M[i, j]` the array entry in row `i` and column `j` (the
-#' pair-copula index for edge `e` in tree `t` of a `d` dimensional vine is
-#' `(M[d + 1 - e, e], M[t, e]; M[t - 1, e], ..., M[1, e])`. Less formally,
-#' 1. Start with the counter-diagonal element of column `e` (first conditioned
-#'                                                           variable).
-#' 2. Jump up to the element in row `t` (second conditioned variable).
-#' 3. Gather all entries further up in column `e` (conditioning set).
+#' pair-copula index for edge `e` in tree `t` of a `d` dimensional vine is `(M[d
+#' + 1 - e, e], M[t, e]; M[t - 1, e], ..., M[1, e])`. Less formally, 1. Start
+#' with the counter-diagonal element of column `e` (first conditioned variable).
+#' 2. Jump up to the element in row `t` (second conditioned variable). 3. Gather
+#' all entries further up in column `e` (conditioning set).
 #'
 #' Internally, the diagonal is stored separately from the off-diagonal elements,
-#' which are stored as a triangular array. For instance, the off-diagonal elements
-#' off the structure above are stored as
-#' ```
-#' 4 4 4
-#' 3 3
-#' 2
-#' ```
-#' for the structure above. The reason is that it allows for parsimonious
-#' representations of truncated models. For instance, the 2-truncated model
-#' is represented by the same diagonal and the following truncated triangular
-#' array:
-#' ```
-#' 4 4 4
-#' 3 3
-#' ```
+#' which are stored as a triangular array. For instance, the off-diagonal
+#' elements off the structure above are stored as ``` 4 4 4 3 3 2 ``` for the
+#' structure above. The reason is that it allows for parsimonious
+#' representations of truncated models. For instance, the 2-truncated model is
+#' represented by the same diagonal and the following truncated triangular
+#' array: ``` 4 4 4 3 3 ```
 #'
-#' A valid R-vine structure or matrix must satisfy several conditions which
-#' are checked when [rvine_structure()], [rvine_matrix()], or some coercion
-#' methods (see [as_rvine_structure()] and `as_rvine_matrix(`) are called:
-#' 1. It can only contain numbers between 1 and d (and additionally zeros for
-#' R-vine matrices).
-#' 3. The anti-diagonal must contain the numbers 1, ..., d.
-#' 4. The anti-diagonal entry of a column must not be contained in any
-#' column further to the right.
-#' 5. The entries of a column must be contained in all columns to the left.
-#' 6. The proximity condition must hold: For all t = 1, ..., d - 2 and
-#' e = 1, ..., d - t there must exist an index j > d, such that
-#' `(M[t, e], {M[1, e], ..., M[t - 1, e]})` equals either
-#' `(M[d + 1 - j, j], {M[1, j], ..., M[t - 1, j]})` or
-#' `(M[t - 1, j], {M[d + 1 - j, j], M[1, j], ..., M[t - 2, j]})`.
+#' A valid R-vine structure or matrix must satisfy several conditions which are
+#' checked when [rvine_structure()], [rvine_matrix()], or some coercion methods
+#' (see [as_rvine_structure()] and `as_rvine_matrix(`) are called: 1. It can
+#' only contain numbers between 1 and d (and additionally zeros for R-vine
+#' matrices). 3. The anti-diagonal must contain the numbers 1, ..., d. 4. The
+#' anti-diagonal entry of a column must not be contained in any column further
+#' to the right. 5. The entries of a column must be contained in all columns to
+#' the left. 6. The proximity condition must hold: For all t = 1, ..., d - 2 and
+#' e = 1, ..., d - t there must exist an index j > d, such that `(M[t, e], {M[1,
+#' e], ..., M[t - 1, e]})` equals either `(M[d + 1 - j, j], {M[1, j], ..., M[t -
+#' 1, j]})` or `(M[t - 1, j], {M[d + 1 - j, j], M[1, j], ..., M[t - 2, j]})`.
 #'
-#' Condition 6 already implies conditions 2-5, but is more difficult to
-#' check by hand.
+#' Condition 6 already implies conditions 2-5, but is more difficult to check by
+#' hand.
 #'
 #' @param order a vector of positive integers.
 #' @param struct_array a list of vectors of positive integers. The vectors
-#' represent rows of the r-rvine structure and the number of elements have to
-#' be compatible with the `order` vector. If empty, the model is 0-truncated.
-#' @param is_natural_order whether `struct_array` is assumed to be provided
-#' in natural order already (a structure is in natural order if the anti-
-#' diagonal is 1, .., d from bottom left to top right).
+#'   represent rows of the r-rvine structure and the number of elements have to
+#'   be compatible with the `order` vector. If empty, the model is 0-truncated.
+#' @param is_natural_order whether `struct_array` is assumed to be provided in
+#'   natural order already (a structure is in natural order if the anti-
+#'   diagonal is 1, .., d from bottom left to top right).
 #'
 #' @return Either an `rvine_structure` or an `rvine_matrix`.
 #' @export
@@ -122,7 +93,8 @@
 #' mat[3, 1] <- 5
 #' try(rvine_matrix(mat))
 #' @name rvine_structure
-#' @aliases rvine_matrix is.rvine_structure is.rvine_matrix
+#' @aliases rvine_matrix is.rvine_structure is.rvine_matrix dvine_structure
+#'   cvine_structure
 rvine_structure <- function(order, struct_array = list(), is_natural_order = FALSE) {
 
   # sanity checks and extract dimension/trunc_lvl
@@ -155,6 +127,55 @@ rvine_structure <- function(order, struct_array = list(), is_natural_order = FAL
 
   # return output
   output
+}
+
+#' @rdname rvine_structure
+#' @param trunc_lvl the truncation level
+#' @export
+cvine_structure <- function(order, trunc_lvl = Inf) {
+  assert_that(is.vector(order) && all(sapply(order, is.count)),
+              msg = "Order should be a vector of positive integers.")
+  assert_that(is.scalar(trunc_lvl) & is.number(trunc_lvl))
+
+  d <- length(order)
+  trunc_lvl <- min(trunc_lvl, d - 1)
+  vars <- rev(seq_len(d))
+  struct_array <- lapply(seq(1, trunc_lvl), function(i) rep(vars[i], d - i))
+
+  output <- rvine_structure_cpp(
+    list(
+      order = order,
+      struct_array = struct_array,
+      d = d,
+      trunc_lvl = trunc_lvl
+    ),
+    FALSE, TRUE
+  )
+  structure(output, class = c("rvine_structure", "list"))
+}
+
+#' @rdname rvine_structure
+#' @export
+dvine_structure <- function(order, trunc_lvl = Inf) {
+  assert_that(is.vector(order) && all(sapply(order, is.count)),
+              msg = "Order should be a vector of positive integers.")
+  assert_that(is.scalar(trunc_lvl) & is.number(trunc_lvl))
+
+  d <- length(order)
+  trunc_lvl <- min(trunc_lvl, d - 1)
+  vars <- rev(seq_len(d))
+  struct_array <- lapply(seq(1, trunc_lvl), function(i) seq(i + 1, d))
+
+  output <- rvine_structure_cpp(
+    list(
+      order = order,
+      struct_array = struct_array,
+      d = d,
+      trunc_lvl = trunc_lvl
+    ),
+    FALSE, TRUE
+  )
+  structure(output, class = c("rvine_structure", "list"))
 }
 
 #' @param matrix an R-vine matrix, see *Details*.

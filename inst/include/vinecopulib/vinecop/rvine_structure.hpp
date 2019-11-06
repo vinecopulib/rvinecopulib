@@ -120,6 +120,8 @@ protected:
   TriangularArray<size_t> to_natural_order() const;
   static TriangularArray<size_t> make_dvine_struct_array(size_t d,
                                                          size_t trunc_lvl);
+  static TriangularArray<size_t> make_cvine_struct_array(size_t d,
+                                                         size_t trunc_lvl);
   TriangularArray<size_t> compute_min_array() const;
   TriangularArray<short unsigned> compute_needed_hfunc1() const;
   TriangularArray<short unsigned> compute_needed_hfunc2() const;
@@ -145,6 +147,33 @@ protected:
 
 std::ostream&
 operator<<(std::ostream& os, const RVineStructure& rvs);
+
+//! @brief D-vine structures
+//!
+//! D-vines are a special class of R-vines where each tree is a path. A D-vine
+//! structure is determined entirely by the order of variables. For example, if
+//! the order is `{1, 2, 3, 4}`, the first tree in the vine is 1-2-3-4 and all
+//! further trees are unique due to the proximity condition.
+class DVineStructure : public RVineStructure
+{
+public:
+  DVineStructure(const std::vector<size_t>& order);
+  DVineStructure(const std::vector<size_t>& order, size_t trunc_lvl);
+};
+
+//! @brief C-vine structures
+//!
+//! C-vines are a special class of R-vines where each tree is a star. A C-vine
+//! structure is determined entirely by the order of variables. For example, if
+//! the order is `{1, 2, 3, 4}`, the first tree in the vine connects variable
+//! 1 with all others, the second tree connects variable to with all others,
+//! etc.
+class CVineStructure : public RVineStructure
+{
+public:
+  CVineStructure(const std::vector<size_t>& order);
+  CVineStructure(const std::vector<size_t>& order, size_t trunc_lvl);
+};
 }
 
 #include <vinecopulib/vinecop/implementation/rvine_structure.ipp>
