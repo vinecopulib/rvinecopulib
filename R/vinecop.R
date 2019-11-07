@@ -177,9 +177,6 @@ vinecop <- function(data, family_set = "all", structure = NA,
     function(tree) lapply(tree, as.bicop)
   )
 
-  ## make the structure a rvine-structure object
-  class(vinecop$structure) <- c("rvine_structure", class(vinecop$structure))
-
   ## add information about the fit
   vinecop$names <- colnames(data)
   if (keep_data) {
@@ -199,8 +196,7 @@ vinecop <- function(data, family_set = "all", structure = NA,
     threshold = threshold
   )
   vinecop$nobs <- nrow(data)
-
-  structure(vinecop, class = c("vinecop", "vinecop_dist"))
+  vinecop
 }
 
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where

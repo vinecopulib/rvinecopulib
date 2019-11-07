@@ -162,7 +162,7 @@ inline Rcpp::List bicop_wrap(Bicop bicop_cpp, bool is_fitted)
   double loglik = NAN;
   if (is_fitted)
     loglik = bicop_cpp.get_loglik();
-  return Rcpp::List::create(
+  auto bc = Rcpp::List::create(
     Rcpp::Named("family")     = to_r_family(bicop_cpp.get_family()),
     Rcpp::Named("rotation")   = bicop_cpp.get_rotation(),
     Rcpp::Named("parameters") = bicop_cpp.get_parameters(),
@@ -170,6 +170,8 @@ inline Rcpp::List bicop_wrap(Bicop bicop_cpp, bool is_fitted)
     Rcpp::Named("npars")      = bicop_cpp.get_npars(),
     Rcpp::Named("loglik")     = loglik
   );
+  bc.attr("class") = "bicop_dist";
+  return bc;
 }
 
 
@@ -227,12 +229,14 @@ inline RVineStructure rvine_structure_wrap(const Rcpp::List& rvine_structure_r,
 inline Rcpp::List rvine_structure_wrap(const RVineStructure& rvine_struct)
 {
   auto struct_array = struct_array_wrap(rvine_struct.get_struct_array(true));
-  return Rcpp::List::create(
+  auto rvs = Rcpp::List::create(
     Rcpp::Named("order")        = rvine_struct.get_order(),
     Rcpp::Named("struct_array") = struct_array,
     Rcpp::Named("d")            = rvine_struct.get_dim(),
     Rcpp::Named("trunc_lvl")    = rvine_struct.get_trunc_lvl()
   );
+  rvs.attr("class") = Rcpp::CharacterVector{"rvine_structure", "list"};
+  return rvs;
 }
 
 
@@ -355,7 +359,7 @@ inline Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp,
   double loglik = NAN;
   if (is_fitted)
     loglik = vinecop_cpp.get_loglik();
-  return Rcpp::List::create(
+  auto vc = Rcpp::List::create(
     Rcpp::Named("pair_copulas")      = pair_copulas,
     Rcpp::Named("structure")         = vine_structure,
     Rcpp::Named("var_types")         = vinecop_cpp.get_var_types(),
@@ -363,4 +367,6 @@ inline Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp,
     Rcpp::Named("loglik")            = loglik,
     Rcpp::Named("threshold")         = threshold
   );
+  vc.attr("class") = Rcpp::CharacterVector{"vinecop", "vinecop_dist"};
+  return vc;
 }

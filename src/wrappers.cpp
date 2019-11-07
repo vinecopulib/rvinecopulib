@@ -132,7 +132,7 @@ Rcpp::List rvine_structure_cpp(const Rcpp::List& rvine_structure_r,
 {
   auto rvine_structure = rvine_structure_wrap(rvine_structure_r, check,
                                               is_natural_order);
-  return(rvine_structure_wrap(rvine_structure));
+  return rvine_structure_wrap(rvine_structure);
 }
 
 // [[Rcpp::export()]]
@@ -144,7 +144,8 @@ void rvine_structure_check_cpp(const Rcpp::List& rvine_struct,
 }
 
 // [[Rcpp::export()]]
-void rvine_matrix_check_cpp(Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix) {
+void rvine_matrix_check_cpp(
+    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix) {
   auto rvine_structure = RVineStructure(matrix);
 }
 
