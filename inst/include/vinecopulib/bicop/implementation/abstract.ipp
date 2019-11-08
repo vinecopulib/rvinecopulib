@@ -152,9 +152,13 @@ inline Eigen::VectorXd
 AbstractBicop::pdf_c_d(const Eigen::MatrixXd& u)
 {
   if (var_types_[0] != "c") {
-    return (hfunc2_raw(u.leftCols(2)) - hfunc2_raw(u.rightCols(2))).cwiseAbs();
+    return (hfunc2_raw(u.leftCols(2)) - hfunc2_raw(u.rightCols(2)))
+      .cwiseQuotient(u.col(0) - u.col(2))
+      .cwiseAbs();
   } else {
-    return (hfunc1_raw(u.leftCols(2)) - hfunc1_raw(u.rightCols(2))).cwiseAbs();
+    return (hfunc1_raw(u.leftCols(2)) - hfunc1_raw(u.rightCols(2)))
+      .cwiseQuotient(u.col(1) - u.col(3))
+      .cwiseAbs();
   }
 }
 
