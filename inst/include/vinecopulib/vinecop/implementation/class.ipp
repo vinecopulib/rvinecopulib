@@ -743,7 +743,7 @@ Vinecop::set_var_types_internal(const std::vector<std::string>& var_types) const
 }
 
 //! @brief extracts the variable types.
-std::vector<std::string>
+inline std::vector<std::string>
 Vinecop::get_var_types() const
 {
   return var_types_;

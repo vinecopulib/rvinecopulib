@@ -294,14 +294,14 @@ RVineStructure::min_array(size_t tree, size_t edge) const
 //! @brief access elements of the needed_hfunc1 array.
 //! @param tree tree index.
 //! @param edge edge index.
-bool
+inline bool
 RVineStructure::needed_hfunc1(size_t tree, size_t edge) const
 {
   return needed_hfunc1_(tree, edge);
 }
 
 //! @brief access elements of the needed_hfunc2 array.
-bool
+inline bool
 RVineStructure::needed_hfunc2(size_t tree, size_t edge) const
 {
   return needed_hfunc2_(tree, edge);
