@@ -2,8 +2,10 @@
 #'
 #' @aliases bicop_dist
 #'
-#' @param data an $n \; x \; 2$ matrix or data.frame (copula data should have
-#'   approximately uniform margins).
+#' @param data a matrix or data.frame with at least two columns, containing the
+#'   (pseudo-)observations for the two variables (copula data should have
+#'   approximately uniform margins). More columns are required for discrete
+#'   models, see *Details*.
 #' @param family_set a character vector of families; see *Details* for
 #'   additional options.
 #' @param par_method the estimation method for parametric models, either `"mle"`
@@ -28,10 +30,8 @@
 #' @param cores number of cores to use; if more than 1, estimation for multiple
 #'   families is done in parallel.
 #' @param var_types variable types, a length 2 vector; e.g., `c("c", "c")` for
-#'  both continuous (default), or `c("c", "d")` for first variable continuous
-#'  and second discrete.
-#' @param data_sub (optional) an \eqn{n \; x \; 2} or \eqn{n \; x \; k}
-#'   matrix/data frame for discrete variables (see *Details*).
+#'   both continuous (default), or `c("c", "d")` for first variable continuous
+#'   and second discrete.
 #'
 #' @details
 #'
@@ -56,13 +56,13 @@
 #' `"gauss"` is equivalent to `"gaussian"`, or you can write  `"nonpar"` instead
 #' of `"nonparametric"`.
 #'
-#' **Discrete variables** When at least one variable is discrete, two types of
-#' "observations" are required: the first \eqn{n \; x \; 2} block (`data`
-#' argument) contains realizations of \eqn{F_{X_1}(X_1), F_{X_2}(X_2)}. The
-#' second \eqn{n \; x \; 2} block (argument `data_sub`) contains realizations of
-#' \eqn{F_{X_1}(X_1^-), F_{X_1}(X_1^-)}. The minus indicates a left-sided limit
-#' of the cdf. For, e.g., an integer-valued variable, it holds
-#' \eqn{F_{X_1}(X_1^-) = F_{X_1}(X_1 - 1)}. For continuous variables the left
+#' ## Discrete variables
+#' When at least one variable is discrete, mote than two columns are required
+#' for `data`: the first \eqn{n \times 2} block contains realizations of
+#' \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
+#' realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+#' left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+#' \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
 #' limit and the cdf itself coincide. Respective columns can be omitted in the
 #' second block.
 #'
@@ -78,7 +78,7 @@
 #'
 #'   Additionally, objects from the `bicop` class contain:
 #'
-#'   * `data`/`data_sub` (optionally, if `keep_data = TRUE` was used), the
+#'   * `data` (optionally, if `keep_data = TRUE` was used), the
 #'   dataset that was passed to [bicop()]. * `controls`, a `list` with the set
 #'   of fit controls that was passed to [bicop()]. * `nobs`, an `integer` with
 #'   the number of observations that was used to fit the model.
@@ -97,10 +97,8 @@
 bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic",
                   weights = numeric(), psi0 = 0.9, presel = TRUE,
-                  keep_data = FALSE, cores = 1, var_types = c("c", "c"),
-                  data_sub = NULL) {
+                  keep_data = FALSE, cores = 1, var_types = c("c", "c")) {
   assert_that(
-    ncol(data) == 2,
     is.character(family_set),
     is.string(par_method),
     is.string(nonpar_method),
@@ -120,7 +118,7 @@ bicop <- function(data, family_set = "all", par_method = "mle",
   ## fit and select copula model
   data <- if_vec_to_matrix(data)
   bicop <- bicop_select_cpp(
-    data = cbind(data, data_sub),
+    data = data,
     family_set = family_set,
     par_method = par_method,
     nonpar_method = nonpar_method,
@@ -137,7 +135,6 @@ bicop <- function(data, family_set = "all", par_method = "mle",
   bicop$names <- colnames(data)
   if (keep_data) {
     bicop$data <- data
-    bicop$data_sub <- data_sub
   }
   bicop$controls <- list(
     family_set = family_set,

@@ -74,8 +74,8 @@ dvine <- function(x, vine, cores = 1) {
   margvals <- dpq_marg(x, vine, "d")
 
   if (!is.null(vine$copula)) {
-    psobs <- compute_pseudo_obs(x, vine)
-    vinevals <- dvinecop(psobs$u, vine$copula, cores, u_sub = psobs$u_sub)
+    u <- compute_pseudo_obs(x, vine)
+    vinevals <- dvinecop(u, vine$copula, cores)
   } else {
     vinevals <- rep(1, nrow(x))
   }
@@ -104,13 +104,13 @@ pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
   }
 
   # PIT to copula data
-  psobs <- compute_pseudo_obs(x, vine)
+  u <- compute_pseudo_obs(x, vine)
 
   # Evaluate copula if needed
   if (!is.null(vine$copula)) {
-    vals <- pvinecop(psobs$u, vine$copula, n_mc, cores, u_sub = psobs$u_sub)
+    vals <- pvinecop(u, vine$copula, n_mc, cores)
   } else {
-    vals <- apply(psobs$u, 1, prod)
+    vals <- apply(u, 1, prod)
   }
 
   vals

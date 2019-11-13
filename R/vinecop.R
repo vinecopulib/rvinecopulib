@@ -29,35 +29,37 @@
 #' @param var_types variable types, a length d vector; e.g., `c("c", "c")` for
 #'   two continuous variables, or `c("c", "d")` for first variable continuous
 #'   and second discrete.
-#' @param data_sub (optional) an \eqn{n \; x \; 2} or \eqn{n \; x \; k}
-#'   matrix/data frame for discrete variables (see *Details*).
 #'
-#' @details [vinecop_dist()] creates a vine copula by specifying a nested list
-#'   of [bicop_dist()] objects and a quadratic structure matrix.
+#' @details
+#' [vinecop_dist()] creates a vine copula by specifying a nested list of
+#' [bicop_dist()] objects and a quadratic structure matrix.
 #'
-#'   [vinecop()] provides automated fitting for vine copula models. The function
-#'   inherits the parameters of [bicop()]. Optionally, an [rvine_structure()] or
-#'   [rvine_matrix()] can be used as input to specify the vine structure.
-#'   `tree_crit` describes the criterion for tree selection, one of `"tau"`,
-#'   `"rho"`, `"hoeffd"` for Kendall's tau, Spearman's rho, and Hoeffding's D,
-#'   respectively. Additionally, `threshold` allows to threshold the `tree_crit`
-#'   and `trunc_lvl` to truncate the vine copula, with `threshold_sel` and
-#'   `trunc_lvl_sel` to automatically select both parameters.
+#' [vinecop()] provides automated fitting for vine copula models. The function
+#' inherits the parameters of [bicop()]. Optionally, an [rvine_structure()] or
+#' [rvine_matrix()] can be used as input to specify the vine structure.
+#' `tree_crit` describes the criterion for tree selection, one of `"tau"`,
+#' `"rho"`, `"hoeffd"` for Kendall's tau, Spearman's rho, and Hoeffding's D,
+#' respectively. Additionally, `threshold` allows to threshold the `tree_crit`
+#' and `trunc_lvl` to truncate the vine copula, with `threshold_sel` and
+#' `trunc_lvl_sel` to automatically select both parameters.
 #'
-#'   **Discrete variables** When at least one variable is discrete, two types of
-#'   "observations" are required: the first \eqn{n \; x \; d} block (`data`
-#'   argument) contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n \;
-#'   x \; d} block (argument `data_sub`) contains realizations of
-#'   \eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit of the cdf.
-#'   For, e.g., an integer-valued variable, it holds \eqn{F_{X_j}(X_j^-) =
-#'   F_{X_j}(X_j - 1)}. For continuous variables the left limit and the cdf
-#'   itself coincide. Respective columns can be omitted in the second block.
+#' ## Discrete variables
 #'
-#'   **Partial structure selection** It is possible to fix the vine structure
-#'   only in the first trees and select the remaining ones automatically. To
-#'   specify only the first `k` trees, supply a `k`-truncated
-#'   `rvine_structure()` or `rvine_matrix()`. All trees up to `trunc_lvl` will
-#'   then be selected automatically.
+#' When at least one variable is discrete, two types of
+#' "observations" are required in `data`: the first \eqn{n \; x \; d} block
+#' contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n \; x \; d}
+#' block contains realizations of \eqn{F_{X_j}(X_j^-)}. The minus indicates a
+#' left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+#' \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
+#' limit and the cdf itself coincide. Respective columns can be omitted in the
+#' second block.
+#'
+#' ## Partial structure selection
+#'
+#' It is possible to fix the vine structure only in the first trees and select
+#' the remaining ones automatically. To specify only the first `k` trees, supply
+#' a `k`-truncated `rvine_structure()` or `rvine_matrix()`. All trees up to
+#' `trunc_lvl` will then be selected automatically.
 #'
 #'
 #' @return Objects inheriting from `vinecop_dist` for [vinecop_dist()], and
@@ -113,8 +115,7 @@ vinecop <- function(data, family_set = "all", structure = NA,
                     selcrit = "bic", weights = numeric(), psi0 = 0.9,
                     presel = TRUE, trunc_lvl = Inf, tree_crit = "tau",
                     threshold = 0, keep_data = FALSE, show_trace = FALSE,
-                    cores = 1, var_types = rep("c", ncol(data)),
-                    data_sub = NULL) {
+                    cores = 1, var_types = rep("c", ncol(data))) {
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||
@@ -132,7 +133,7 @@ vinecop <- function(data, family_set = "all", structure = NA,
     is.scalar(threshold),
     is.flag(keep_data),
     is.number(cores), cores > 0,
-    correct_var_types(var_types), ncol(data) == length(var_types)
+    correct_var_types(var_types)
   )
 
   # check if families known (w/ partial matching) and expand convenience defs
@@ -140,14 +141,14 @@ vinecop <- function(data, family_set = "all", structure = NA,
 
   ## pre-process input
   if (is.scalar(structure) && is.na(structure)) {
-    structure <- rvine_structure(seq_len(ncol(data)))
+    structure <- rvine_structure(seq_along(var_types))
   } else {
     structure <- as_rvine_structure(structure)
   }
 
   ## fit and select copula model
   vinecop <- vinecop_select_cpp(
-    data = cbind(data, data_sub),
+    data = data,
     structure = structure,
     family_set = family_set,
     par_method = par_method,
@@ -181,7 +182,6 @@ vinecop <- function(data, family_set = "all", structure = NA,
   vinecop$names <- colnames(data)
   if (keep_data) {
     vinecop$data <- data
-    vinecop$data_sub <- data_sub
   }
   vinecop$controls <- list(
     family_set = family_set,

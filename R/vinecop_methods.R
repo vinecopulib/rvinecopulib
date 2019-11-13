@@ -1,28 +1,27 @@
 #' Vine copula distributions
 #'
-#' Density, distribution function and random generation
-#' for the vine copula distribution.
+#' Density, distribution function and random generation for the vine copula
+#' distribution.
 #'
 #' @name vinecop_distributions
 #' @aliases dvinecop pvinecop rvinecop dvinecop_dist pvinecop_dist rvinecop_dist
-#' @param u evaluation points, either a length d vector or a d-column matrix,
-#'   where d is the number of variables in the vine.
+#' @param u matrix of evaluation points; must contain at least d columns, where
+#'   d is the number of variables in the vine. More columns are required for
+#'   discrete models, see *Details*.
 #' @param vinecop an object of class `"vinecop_dist"`.
 #' @param cores number of cores to use; if larger than one, computations are
 #'   done in parallel on `cores` batches .
-#' @param u_sub (optional) an \eqn{n \times 2d} or \eqn{n \times k}
-#'   matrix/data frame for discrete variables (see *Details*).
-#' @details
-#' See [vinecop] for the estimation and construction of vine copula models.
-#' Here, the density, distribution function and random generation
-#' for the vine copulas are standard.
+#' @details See [vinecop] for the estimation and construction of vine copula
+#' models. Here, the density, distribution function and random generation for
+#' the vine copulas are standard.
 #'
-#' **Discrete variables** When at least one variable is discrete, two types of
-#' "observations" are required: the first \eqn{n \; x \; d} block (`u`
-#' argument) contains realizations of \eqn{F_{X_j}(X_j)}. The
-#' second \eqn{n \; x \; d} block (argument `u_sub`) contains realizations of
-#' \eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit
-#' of the cdf. For, e.g., an integer-valued variable, it holds
+#' ## Discrete variables
+#'
+#' When at least one variable is discrete, two types of
+#' "observations" are required in `u`: the first \eqn{n \; x \; d} block
+#' contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n \; x \; d}
+#' block contains realizations of \eqn{F_{X_j}(X_j^-)}. The minus indicates a
+#' left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 #' \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
 #' limit and the cdf itself coincide. Respective columns can be omitted in the
 #' second block.
@@ -59,23 +58,21 @@
 #' pvinecop(u[1, ], vc)
 #' @rdname vinecop_methods
 #' @export
-dvinecop <- function(u, vinecop, cores = 1, u_sub = NULL) {
+dvinecop <- function(u, vinecop, cores = 1) {
   assert_that(inherits(vinecop, "vinecop_dist"))
-  u <- cbind(if_vec_to_matrix(u), if_vec_to_matrix(u_sub))
-  vinecop_pdf_cpp(u, vinecop, cores)
+  vinecop_pdf_cpp(if_vec_to_matrix(u), vinecop, cores)
 }
 
 #' @rdname vinecop_methods
 #' @param n_mc number of samples used for quasi Monte Carlo integration.
 #' @importFrom assertthat is.count
 #' @export
-pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1, u_sub = NULL) {
+pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
   assert_that(
     inherits(vinecop, "vinecop_dist"),
     is.number(n_mc), is.count(cores)
   )
-  u <- cbind(if_vec_to_matrix(u), if_vec_to_matrix(u_sub))
-  vinecop_cdf_cpp(u, vinecop, n_mc, cores, get_seeds())
+  vinecop_cdf_cpp(if_vec_to_matrix(u), vinecop, n_mc, cores, get_seeds())
 }
 
 #' @rdname vinecop_methods
@@ -157,19 +154,18 @@ summary.vinecop_dist <- function(object, ...) {
 #'    `what = "cdf"`.
 #' @param cores number of cores to use; if larger than one, computations are
 #'   done in parallel on `cores` batches.
-#' @param newdata_sub (optional) an \eqn{n \times 2} or \eqn{n \times k}
-#'   matrix/data frame for discrete variables (see *Details*).
 #' @param ... unused.
 #'
 #' @details `fitted()` can only be called if the model was fit with the
 #'    `keep_data = TRUE` option.
 #'
-#' **Discrete variables** When at least one variable is discrete, two types of
-#' "observations" are required: the first \eqn{n \; x \; d} block (`newdata`
-#' argument) contains realizations of \eqn{F_{X_j}(X_j)}. The
-#' second \eqn{n \; x \; d} block (argument `newdata_sub`) contains realizations of
-#' \eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit
-#' of the cdf. For, e.g., an integer-valued variable, it holds
+#' ## Discrete variables
+#'
+#' When at least one variable is discrete, two types of
+#' "observations" are required in `newdata`: the first \eqn{n \; x \; d} block
+#' contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n \; x \; d}
+#' block contains realizations of \eqn{F_{X_j}(X_j^-)}. The minus indicates a
+#' left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 #' \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
 #' limit and the cdf itself coincide. Respective columns can be omitted in the
 #' second block.
@@ -184,13 +180,13 @@ summary.vinecop_dist <- function(object, ...) {
 #' fit <- vinecop(u, "par", keep_data = TRUE)
 #' all.equal(predict(fit, u), fitted(fit))
 predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4,
-                            cores = 1, newdata_sub = NULL, ...) {
+                            cores = 1, ...) {
   assert_that(
     in_set(what, c("pdf", "cdf")),
     is.number(n_mc),
     is.number(cores), cores > 0
   )
-  newdata <- cbind(if_vec_to_matrix(newdata), if_vec_to_matrix(newdata_sub))
+  newdata <- if_vec_to_matrix(newdata)
   switch(
     what,
     "pdf" = vinecop_pdf_cpp(newdata, object, cores),
@@ -209,11 +205,10 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
     is.number(n_mc),
     is.number(cores), cores > 0
   )
-  data <- cbind(if_vec_to_matrix(object$data), if_vec_to_matrix(object$data_sub))
   switch(
     what,
-    "pdf" = vinecop_pdf_cpp(data, object, cores),
-    "cdf" = vinecop_cdf_cpp(data, object, n_mc, cores, get_seeds())
+    "pdf" = vinecop_pdf_cpp(object$data, object, cores),
+    "cdf" = vinecop_cdf_cpp(object$data, object, n_mc, cores, get_seeds())
   )
 }
 
@@ -241,7 +236,6 @@ logLik.vinecop <- function(object, ...) {
 #' @param object a fitted `vinecop` object.
 #' @param psi0 baseline prior probability of a non-independence copula.
 #' @param newdata optional; a new data set.
-#' @param newdata_sub optional; for discrete data, see `predict.vinecop()`.
 #'
 #' @references Nagler, T., Bumann, C., Czado, C. (2019). Model selection for
 #'   sparse high-dimensional vine copulas with application to portfolio risk.
@@ -254,11 +248,11 @@ logLik.vinecop <- function(object, ...) {
 #' fit <- vinecop(u, "par", keep_data = TRUE)
 #' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 #' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
-mBICV <- function(object, psi0 = 0.9, newdata = NULL, newdata_sub = NULL) {
+mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
   assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
   ll <- ifelse(is.null(newdata),
     object$loglik,
-    sum(log(dvinecop(cbind(newdata, newdata_sub), object)))
+    sum(log(dvinecop(newdata, object)))
   )
   -2 * ll + compute_mBICV_penalty(object, psi0)
 }

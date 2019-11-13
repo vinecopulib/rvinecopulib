@@ -16,7 +16,7 @@ models.}
 \item{model}{a model object; classes currently supported are
 \code{bicop_dist()}, \code{vinecop_dist()}, and \code{vine_dist()}.}
 
-\item{cores}{if \code{>1}, computation is parallelized over \code{cores} batches (rows
+\item{cores}{if \verb{>1}, computation is parallelized over \code{cores} batches (rows
 of \code{u}).}
 
 \item{u}{matrix of evaluation points; must be in \eqn{(0, 1)^d}.}

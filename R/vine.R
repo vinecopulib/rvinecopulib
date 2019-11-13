@@ -139,12 +139,7 @@ vine <- function(data,
   vine$margins_controls <- margins_controls
 
   ## estimation of the R-vine copula --------------
-  # transform to copula data
-  psobs <- compute_pseudo_obs(data, vine)
-  copula_controls$data <- psobs$u
-  copula_controls$data_sub <- psobs$u_sub
-
-  # estimate the copula
+  copula_controls$data <- compute_pseudo_obs(data, vine)
   copula_controls$var_types <- var_types
   copula_controls$weights <- weights
   vine$copula <- do.call(vinecop, copula_controls)
@@ -169,7 +164,7 @@ compute_pseudo_obs <- function(data, vine) {
   } else {
     u_sub <- NULL
   }
-  list(u = u, u_sub = u_sub)
+  cbind(u, u_sub)
 }
 
 #' @importFrom stats model.matrix

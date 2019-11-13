@@ -10,23 +10,21 @@
 \alias{rvinecop_dist}
 \title{Vine copula distributions}
 \usage{
-dvinecop(u, vinecop, cores = 1, u_sub = NULL)
+dvinecop(u, vinecop, cores = 1)
 
-pvinecop(u, vinecop, n_mc = 10^4, cores = 1, u_sub = NULL)
+pvinecop(u, vinecop, n_mc = 10^4, cores = 1)
 
 rvinecop(n, vinecop, qrng = FALSE, cores = 1)
 }
 \arguments{
-\item{u}{evaluation points, either a length d vector or a d-column matrix,
-where d is the number of variables in the vine.}
+\item{u}{matrix of evaluation points; must contain at least d columns, where
+d is the number of variables in the vine. More columns are required for
+discrete models, see \emph{Details}.}
 
 \item{vinecop}{an object of class \code{"vinecop_dist"}.}
 
 \item{cores}{number of cores to use; if larger than one, computations are
 done in parallel on \code{cores} batches .}
-
-\item{u_sub}{(optional) an \eqn{n \times 2d} or \eqn{n \times k}
-matrix/data frame for discrete variables (see \emph{Details}).}
 
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 
@@ -47,23 +45,24 @@ The \code{vinecop} object is recycled to the length of the
 result.
 }
 \description{
-Density, distribution function and random generation
-for the vine copula distribution.
+Density, distribution function and random generation for the vine copula
+distribution.
 }
 \details{
-See \link{vinecop} for the estimation and construction of vine copula models.
-Here, the density, distribution function and random generation
-for the vine copulas are standard.
+See \link{vinecop} for the estimation and construction of vine copula
+models. Here, the density, distribution function and random generation for
+the vine copulas are standard.
+\subsection{Discrete variables}{
 
-\strong{Discrete variables} When at least one variable is discrete, two types of
-"observations" are required: the first \eqn{n \; x \; d} block (\code{u}
-argument) contains realizations of \eqn{F_{X_j}(X_j)}. The
-second \eqn{n \; x \; d} block (argument \code{u_sub}) contains realizations of
-\eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit
-of the cdf. For, e.g., an integer-valued variable, it holds
+When at least one variable is discrete, two types of
+"observations" are required in \code{u}: the first \eqn{n \; x \; d} block
+contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n \; x \; d}
+block contains realizations of \eqn{F_{X_j}(X_j^-)}. The minus indicates a
+left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
 limit and the cdf itself coincide. Respective columns can be omitted in the
 second block.
+}
 }
 \examples{
 # specify pair-copulas

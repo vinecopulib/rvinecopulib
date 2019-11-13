@@ -1,24 +1,24 @@
 #' Bivariate copula distributions
 #'
-#' Density, distribution function, random generation and h-functions (with
-#' their inverses) for the bivariate copula distribution.
+#' Density, distribution function, random generation and h-functions (with their
+#' inverses) for the bivariate copula distribution.
 #'
 #' @name bicop_distributions
-#' @aliases dbicop pbicop rbicop hbicop dbicop_dist pbicop_dist rbicop_dist hbicop_dist
+#' @aliases dbicop pbicop rbicop hbicop dbicop_dist pbicop_dist rbicop_dist
+#'   hbicop_dist
 #'
-#' @param u evaluation points, either a length 2 vector or a two-column matrix.
+#' @param u evaluation points, a matrix with at least two columns, see
+#'   *Details*.
 #' @param family the copula family, a string containing the family name (see
 #'   \code{\link{bicop}} for all possible families).
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
 #' @param parameters a vector or matrix of copula parameters.
 #' @param var_types variable types, a length 2 vector; e.g., `c("c", "c")` for
-#'  both continuous (default), or `c("c", "d")` for first variable continuous
-#'  and second discrete.
-#' @param u_sub (optional) an \eqn{n \times 2} or \eqn{n \times k}
-#'   matrix/data frame for discrete variables (see *Details*).
+#'   both continuous (default), or `c("c", "d")` for first variable continuous
+#'   and second discrete.
 #'
-#' @note The functions can optionally be used with a [bicop_dist]
-#' object, e.g., `dbicop(c(0.1, 0.5), bicop_dist("indep"))`.
+#' @note The functions can optionally be used with a [bicop_dist] object, e.g.,
+#'   `dbicop(c(0.1, 0.5), bicop_dist("indep"))`.
 #'
 #' @details
 #' See [bicop] for the various implemented copula families.
@@ -31,16 +31,15 @@
 #' When inverting H-functions, the inverse is then taken with respect to the
 #' other variable, that is `v` when `cond_var = 1` and `u` when `cond_var = 2`.
 #'
-#' **Discrete variables** When at least one variable is discrete, two types of
-#' evaluation points are required: the first \eqn{n \times 2} block (`u`
-#' argument) contains realizations of \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The
-#' second \eqn{n \times 2} block (argument `u_sub`) contains realizations of
-#' \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a left-sided limit
-#' of the cdf. For, e.g., an integer-valued variable, it holds
+#' ## Discrete variables
+#' When at least one variable is discrete, mote than two columns are required
+#' for `u`: the first \eqn{n \times 2} block contains realizations of
+#' \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
+#' realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+#' left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 #' \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
 #' limit and the cdf itself coincide. Respective columns can be omitted in the
 #' second block.
-#'
 #'
 #' @return
 #' `dbicop()` gives the density, `pbicop()` gives the distribution function,
@@ -76,19 +75,15 @@
 #' hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
 #' @rdname bicop_methods
 #' @export
-dbicop <- function(u, family, rotation, parameters, var_types = c("c", "c"),
-                   u_sub = NULL) {
+dbicop <- function(u, family, rotation, parameters, var_types = c("c", "c")) {
   bicop <- args2bicop(family, rotation, parameters, var_types)
-  u <- cbind(if_vec_to_matrix(u), if_vec_to_matrix(u_sub))
-  bicop_pdf_cpp(u, bicop)
+  bicop_pdf_cpp(if_vec_to_matrix(u), bicop)
 }
 #' @rdname bicop_methods
 #' @export
-pbicop <- function(u, family, rotation, parameters, var_types = c("c", "c"),
-                   u_sub = NULL) {
+pbicop <- function(u, family, rotation, parameters, var_types = c("c", "c")) {
   bicop <- args2bicop(family, rotation, parameters, var_types)
-  u <- cbind(if_vec_to_matrix(u), if_vec_to_matrix(u_sub))
-  bicop_cdf_cpp(u, bicop)
+  bicop_cdf_cpp(if_vec_to_matrix(u), bicop)
 }
 
 #' @param n number of observations. If `length(n) > 1``, the length is taken to
@@ -122,10 +117,10 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
 #' @param inverse whether to compute the h-function or its inverse.
 #' @export
 hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE,
-                   var_types = c("c", "c"), u_sub = NULL) {
+                   var_types = c("c", "c")) {
   assert_that(in_set(cond_var, 1:2), is.flag(inverse))
   bicop <- args2bicop(family, rotation, parameters, var_types)
-  u <- cbind(if_vec_to_matrix(u), if_vec_to_matrix(u_sub))
+  u <- if_vec_to_matrix(u)
 
   if (!inverse) {
     if (cond_var == 1) {
@@ -187,8 +182,6 @@ ktau_to_par <- function(family, tau) {
 #' @param newdata points where the fit shall be evaluated.
 #' @param what what to predict, one of `"pdf"`, `"cdf"`, `"hfunc1"`, `"hfunc2"`,
 #'   `"hinv1"`, `"hinv2"`.
-#' @param newdata_sub (optional) an \eqn{n \times 2} or \eqn{n \times k}
-#'   matrix/data frame for discrete variables (see *Details*).
 #' @param ... unused.
 #' @return `fitted()` and `logLik()` have return values similar to [dbicop()],
 #' [pbicop()], and [hbicop()].
@@ -196,15 +189,16 @@ ktau_to_par <- function(family, tau) {
 #' @details `fitted()` can only be called if the model was fit with the
 #'   `keep_data = TRUE` option.
 #'
-#'   **Discrete variables** When at least one variable is discrete, two types of
-#'   "observations" are required: the first \eqn{n \times 2} block (`newdata`
-#'   argument) contains realizations of \eqn{F_{X_1}(X_1), F_{X_2}(X_2)}. The
-#'   second \eqn{n \times 2} block (argument `newdata_sub`) contains
-#'   realizations of \eqn{F_{X_1}(X_1^-), F_{X_1}(X_1^-)}. The minus indicates a
-#'   left-sided limit of the cdf. For, e.g., an integer-valued variable, it
-#'   holds \eqn{F_{X_1}(X_1^-) = F_{X_1}(X_1 - 1)}. For continuous variables the
-#'   left limit and the cdf itself coincide. Respective columns can be omitted
-#'   in the second block.
+#'
+#' ## Discrete variables
+#' When at least one variable is discrete, mote than two columns are required
+#' for `newdata`: the first \eqn{n \times 2} block contains realizations of
+#' \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
+#' realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+#' left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+#' \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
+#' limit and the cdf itself coincide. Respective columns can be omitted in the
+#' second block.
 #'
 #'
 #' @examples
@@ -216,9 +210,9 @@ ktau_to_par <- function(family, tau) {
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
 #' @rdname predict_bicop
 #' @export
-predict.bicop_dist <- function(object, newdata, what = "pdf", newdata_sub = NULL, ...) {
+predict.bicop_dist <- function(object, newdata, what = "pdf", ...) {
   assert_that(in_set(what, what_allowed))
-  newdata <- cbind(if_vec_to_matrix(newdata), if_vec_to_matrix(newdata_sub))
+  newdata <- if_vec_to_matrix(newdata)
   switch(
     what,
     "pdf" = bicop_pdf_cpp(newdata, object),
@@ -239,15 +233,14 @@ fitted.bicop <- function(object, what = "pdf", ...) {
     stop("data have not been stored, use keep_data = TRUE when fitting.")
   }
   assert_that(in_set(what, what_allowed))
-  u <- cbind(object$data, object$data_sub)
   switch(
     what,
-    "pdf" = bicop_pdf_cpp(u, object),
-    "cdf" = bicop_cdf_cpp(u, object),
-    "hfunc1" = bicop_hfunc1_cpp(u, object),
-    "hfunc2" = bicop_hfunc2_cpp(u, object),
-    "hinv1" = bicop_hinv1_cpp(u, object),
-    "hinv2" = bicop_hinv2_cpp(u, object)
+    "pdf" = bicop_pdf_cpp(object$data, object),
+    "cdf" = bicop_cdf_cpp(object$data, object),
+    "hfunc1" = bicop_hfunc1_cpp(object$data, object),
+    "hfunc2" = bicop_hfunc2_cpp(object$data, object),
+    "hinv1" = bicop_hinv1_cpp(object$data, object),
+    "hinv2" = bicop_hinv2_cpp(object$data, object)
   )
 }
 

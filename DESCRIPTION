@@ -45,4 +45,4 @@ LinkingTo:
 BugReports: https://github.com/vinecopulib/rvinecopulib/issues
 Roxygen: list(markdown = TRUE)
 SystemRequirements: C++11
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.0

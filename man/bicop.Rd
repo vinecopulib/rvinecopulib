@@ -5,18 +5,33 @@
 \alias{bicop_dist}
 \title{Bivariate copula models}
 \usage{
-bicop(data, family_set = "all", par_method = "mle",
-  nonpar_method = "quadratic", mult = 1, selcrit = "bic",
-  weights = numeric(), psi0 = 0.9, presel = TRUE,
-  keep_data = FALSE, cores = 1, var_types = c("c", "c"),
-  data_sub = NULL)
+bicop(
+  data,
+  family_set = "all",
+  par_method = "mle",
+  nonpar_method = "quadratic",
+  mult = 1,
+  selcrit = "bic",
+  weights = numeric(),
+  psi0 = 0.9,
+  presel = TRUE,
+  keep_data = FALSE,
+  cores = 1,
+  var_types = c("c", "c")
+)
 
-bicop_dist(family = "indep", rotation = 0, parameters = numeric(0),
-  var_types = c("c", "c"))
+bicop_dist(
+  family = "indep",
+  rotation = 0,
+  parameters = numeric(0),
+  var_types = c("c", "c")
+)
 }
 \arguments{
-\item{data}{an $n ; x ; 2$ matrix or data.frame (copula data should have
-approximately uniform margins).}
+\item{data}{a matrix or data.frame with at least two columns, containing the
+(pseudo-)observations for the two variables (copula data should have
+approximately uniform margins). More columns are required for discrete
+models, see \emph{Details}.}
 
 \item{family_set}{a character vector of families; see \emph{Details} for
 additional options.}
@@ -55,9 +70,6 @@ families is done in parallel.}
 both continuous (default), or \code{c("c", "d")} for first variable continuous
 and second discrete.}
 
-\item{data_sub}{(optional) an \eqn{n \; x \; 2} or \eqn{n \; x \; k}
-matrix/data frame for discrete variables (see \emph{Details}).}
-
 \item{family}{the copula family, a string containing the family name (see
 \emph{Details} for all possible families).}
 
@@ -79,7 +91,7 @@ Object from the \code{bicop_dist} class are lists containing:
 
 Additionally, objects from the \code{bicop} class contain:
 \itemize{
-\item \code{data}/\code{data_sub} (optionally, if \code{keep_data = TRUE} was used), the
+\item \code{data} (optionally, if \code{keep_data = TRUE} was used), the
 dataset that was passed to \code{\link[=bicop]{bicop()}}. * \code{controls}, a \code{list} with the set
 of fit controls that was passed to \code{\link[=bicop]{bicop()}}. * \code{nobs}, an \code{integer} with
 the number of observations that was used to fit the model.
@@ -109,16 +121,17 @@ families.\cr \code{"oneparametric"} =  one parameter families.\cr
 families and Student t copula.\cr Partial matching is activated. For example,
 \code{"gauss"} is equivalent to \code{"gaussian"}, or you can write  \code{"nonpar"} instead
 of \code{"nonparametric"}.
+\subsection{Discrete variables}{
 
-\strong{Discrete variables} When at least one variable is discrete, two types of
-"observations" are required: the first \eqn{n \; x \; 2} block (\code{data}
-argument) contains realizations of \eqn{F_{X_1}(X_1), F_{X_2}(X_2)}. The
-second \eqn{n \; x \; 2} block (argument \code{data_sub}) contains realizations of
-\eqn{F_{X_1}(X_1^-), F_{X_1}(X_1^-)}. The minus indicates a left-sided limit
-of the cdf. For, e.g., an integer-valued variable, it holds
-\eqn{F_{X_1}(X_1^-) = F_{X_1}(X_1 - 1)}. For continuous variables the left
+When at least one variable is discrete, mote than two columns are required
+for \code{data}: the first \eqn{n \times 2} block contains realizations of
+\eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
+realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+\eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
 limit and the cdf itself coincide. Respective columns can be omitted in the
 second block.
+}
 }
 \examples{
 ## bicop_dist objects

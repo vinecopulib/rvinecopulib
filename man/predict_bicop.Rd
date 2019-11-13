@@ -7,8 +7,7 @@
 \alias{fitted.bicop}
 \title{Predictions and fitted values for a bivariate copula model}
 \usage{
-\method{predict}{bicop_dist}(object, newdata, what = "pdf",
-  newdata_sub = NULL, ...)
+\method{predict}{bicop_dist}(object, newdata, what = "pdf", ...)
 
 \method{fitted}{bicop}(object, what = "pdf", ...)
 }
@@ -19,9 +18,6 @@
 
 \item{what}{what to predict, one of \code{"pdf"}, \code{"cdf"}, \code{"hfunc1"}, \code{"hfunc2"},
 \code{"hinv1"}, \code{"hinv2"}.}
-
-\item{newdata_sub}{(optional) an \eqn{n \times 2} or \eqn{n \times k}
-matrix/data frame for discrete variables (see \emph{Details}).}
 
 \item{...}{unused.}
 }
@@ -36,16 +32,17 @@ inverses) for a bivariate copula model.
 \details{
 \code{fitted()} can only be called if the model was fit with the
 \code{keep_data = TRUE} option.
+\subsection{Discrete variables}{
 
-\strong{Discrete variables} When at least one variable is discrete, two types of
-"observations" are required: the first \eqn{n \times 2} block (\code{newdata}
-argument) contains realizations of \eqn{F_{X_1}(X_1), F_{X_2}(X_2)}. The
-second \eqn{n \times 2} block (argument \code{newdata_sub}) contains
-realizations of \eqn{F_{X_1}(X_1^-), F_{X_1}(X_1^-)}. The minus indicates a
-left-sided limit of the cdf. For, e.g., an integer-valued variable, it
-holds \eqn{F_{X_1}(X_1^-) = F_{X_1}(X_1 - 1)}. For continuous variables the
-left limit and the cdf itself coincide. Respective columns can be omitted
-in the second block.
+When at least one variable is discrete, mote than two columns are required
+for \code{newdata}: the first \eqn{n \times 2} block contains realizations of
+\eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
+realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+\eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
+limit and the cdf itself coincide. Respective columns can be omitted in the
+second block.
+}
 }
 \examples{
 # Simulate and fit a bivariate copula model

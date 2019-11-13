@@ -7,11 +7,9 @@
 \alias{contour.vinecop}
 \title{Plotting \code{vinecop_dist} and \code{vinecop} objects.}
 \usage{
-\method{plot}{vinecop_dist}(x, tree = 1, var_names = "ignore",
-  edge_labels = NULL, ...)
+\method{plot}{vinecop_dist}(x, tree = 1, var_names = "ignore", edge_labels = NULL, ...)
 
-\method{plot}{vinecop}(x, tree = 1, var_names = "ignore",
-  edge_labels = NULL, ...)
+\method{plot}{vinecop}(x, tree = 1, var_names = "ignore", edge_labels = NULL, ...)
 
 \method{contour}{vinecop_dist}(x, tree = "ALL", cex.nums = 1, ...)
 

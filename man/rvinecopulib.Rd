@@ -3,7 +3,6 @@
 \docType{package}
 \name{rvinecopulib}
 \alias{rvinecopulib}
-\alias{rvinecopulib-package}
 \title{High Performance Algorithms for Vine Copula Modeling}
 \description{
 Provides an interface to 'vinecopulib', a C++ library for vine

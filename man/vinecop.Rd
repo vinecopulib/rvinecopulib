@@ -5,19 +5,37 @@
 \alias{vinecop_dist}
 \title{Vine copula models}
 \usage{
-vinecop(data, family_set = "all", structure = NA, par_method = "mle",
-  nonpar_method = "constant", mult = 1, selcrit = "bic",
-  weights = numeric(), psi0 = 0.9, presel = TRUE, trunc_lvl = Inf,
-  tree_crit = "tau", threshold = 0, keep_data = FALSE,
-  show_trace = FALSE, cores = 1, var_types = rep("c", ncol(data)),
-  data_sub = NULL)
+vinecop(
+  data,
+  family_set = "all",
+  structure = NA,
+  par_method = "mle",
+  nonpar_method = "constant",
+  mult = 1,
+  selcrit = "bic",
+  weights = numeric(),
+  psi0 = 0.9,
+  presel = TRUE,
+  trunc_lvl = Inf,
+  tree_crit = "tau",
+  threshold = 0,
+  keep_data = FALSE,
+  show_trace = FALSE,
+  cores = 1,
+  var_types = rep("c", ncol(data))
+)
 
-vinecop_dist(pair_copulas, structure, var_types = rep("c",
-  length(pair_copulas[[1]]) + 1))
+vinecop_dist(
+  pair_copulas,
+  structure,
+  var_types = rep("c", length(pair_copulas[[1]]) + 1)
+)
 }
 \arguments{
-\item{data}{an $n ; x ; 2$ matrix or data.frame (copula data should have
-approximately uniform margins).}
+\item{data}{a matrix or data.frame with at least two columns, containing the
+(pseudo-)observations for the two variables (copula data should have
+approximately uniform margins). More columns are required for discrete
+models, see \emph{Details}.}
 
 \item{family_set}{a character vector of families; see \code{\link[=bicop]{bicop()}} for
 additional options.}
@@ -78,9 +96,6 @@ copulas within a tree is done in parallel.}
 two continuous variables, or \code{c("c", "d")} for first variable continuous
 and second discrete.}
 
-\item{data_sub}{(optional) an \eqn{n \; x \; 2} or \eqn{n \; x \; k}
-matrix/data frame for discrete variables (see \emph{Details}).}
-
 \item{pair_copulas}{A nested list of 'bicop_dist' objects, where
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
 tree \code{t}.}
@@ -114,8 +129,8 @@ number of observations that was used to fit the model.
 Automated fitting or creation of custom vine copula models
 }
 \details{
-\code{\link[=vinecop_dist]{vinecop_dist()}} creates a vine copula by specifying a nested list
-of \code{\link[=bicop_dist]{bicop_dist()}} objects and a quadratic structure matrix.
+\code{\link[=vinecop_dist]{vinecop_dist()}} creates a vine copula by specifying a nested list of
+\code{\link[=bicop_dist]{bicop_dist()}} objects and a quadratic structure matrix.
 
 \code{\link[=vinecop]{vinecop()}} provides automated fitting for vine copula models. The function
 inherits the parameters of \code{\link[=bicop]{bicop()}}. Optionally, an \code{\link[=rvine_structure]{rvine_structure()}} or
@@ -125,21 +140,25 @@ inherits the parameters of \code{\link[=bicop]{bicop()}}. Optionally, an \code{\
 respectively. Additionally, \code{threshold} allows to threshold the \code{tree_crit}
 and \code{trunc_lvl} to truncate the vine copula, with \code{threshold_sel} and
 \code{trunc_lvl_sel} to automatically select both parameters.
+\subsection{Discrete variables}{
 
-\strong{Discrete variables} When at least one variable is discrete, two types of
-"observations" are required: the first \eqn{n \; x \; d} block (\code{data}
-argument) contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n \;
-  x \; d} block (argument \code{data_sub}) contains realizations of
-\eqn{F_{X_j}(X_j^-)}. The minus indicates a left-sided limit of the cdf.
-For, e.g., an integer-valued variable, it holds \eqn{F_{X_j}(X_j^-) =
-  F_{X_j}(X_j - 1)}. For continuous variables the left limit and the cdf
-itself coincide. Respective columns can be omitted in the second block.
+When at least one variable is discrete, two types of
+"observations" are required in \code{data}: the first \eqn{n \; x \; d} block
+contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n \; x \; d}
+block contains realizations of \eqn{F_{X_j}(X_j^-)}. The minus indicates a
+left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+\eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
+limit and the cdf itself coincide. Respective columns can be omitted in the
+second block.
+}
 
-\strong{Partial structure selection} It is possible to fix the vine structure
-only in the first trees and select the remaining ones automatically. To
-specify only the first \code{k} trees, supply a \code{k}-truncated
-\code{rvine_structure()} or \code{rvine_matrix()}. All trees up to \code{trunc_lvl} will
-then be selected automatically.
+\subsection{Partial structure selection}{
+
+It is possible to fix the vine structure only in the first trees and select
+the remaining ones automatically. To specify only the first \code{k} trees, supply
+a \code{k}-truncated \code{rvine_structure()} or \code{rvine_matrix()}. All trees up to
+\code{trunc_lvl} will then be selected automatically.
+}
 }
 \examples{
 # specify pair-copulas
