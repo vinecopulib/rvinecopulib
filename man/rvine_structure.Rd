@@ -76,10 +76,13 @@ Similarly, an R-vine matrix can be converted to an R-vine structure using
 
 Denoting by \code{M[i, j]} the array entry in row \code{i} and column \code{j} (the
 pair-copula index for edge \code{e} in tree \code{t} of a \code{d} dimensional vine is
-\verb{(M[d + 1 - e, e], M[t, e]; M[t - 1, e], ..., M[1, e])}. Less formally, 1.
-Start with the counter-diagonal element of column \code{e} (first conditioned
-variable). 2. Jump up to the element in row \code{t} (second conditioned
-variable). 3. Gather all entries further up in column \code{e} (conditioning set).
+\verb{(M[d + 1 - e, e], M[t, e]; M[t - 1, e], ..., M[1, e])}. Less formally,
+\enumerate{
+\item Start with the counter-diagonal element of column \code{e} (first conditioned
+variable).
+\item Jump up to the element in row \code{t} (second conditioned variable).
+\item Gather all entries further up in column \code{e} (conditioning set).
+}
 
 Internally, the diagonal is stored separately from the off-diagonal elements,
 which are stored as a triangular array. For instance, the off-diagonal
@@ -97,18 +100,22 @@ array:\preformatted{4 4 4
 
 A valid R-vine structure or matrix must satisfy several conditions which are
 checked when \code{\link[=rvine_structure]{rvine_structure()}}, \code{\link[=rvine_matrix]{rvine_matrix()}}, or some coercion methods
-(see \code{\link[=as_rvine_structure]{as_rvine_structure()}} and \verb{as_rvine_matrix(}) are called: 1. It can
-only contain numbers between 1 and d (and additionally zeros for R-vine
-matrices). 3. The anti-diagonal must contain the numbers 1, ..., d. 4. The
-anti-diagonal entry of a column must not be contained in any column further
-to the right. 5. The entries of a column must be contained in all columns to
-the left. 6. The proximity condition must hold: For all t = 1, ..., d - 2 and
-e = 1, ..., d - t there must exist an index j > d, such that
+(see \code{\link[=as_rvine_structure]{as_rvine_structure()}} and \verb{as_rvine_matrix(}) are called:
+\enumerate{
+\item It can only contain numbers between 1 and d (and additionally zeros for
+R-vine matrices).
+\item The anti-diagonal must contain the numbers 1, ..., d.
+\item The anti-diagonal entry of a column must not be contained in any column
+further to the right.
+\item The entries of a column must be contained in all columns to the left.
+\item The proximity condition must hold: For all t = 1, ..., d - 2 and e = 1,
+..., d - t there must exist an index j > d, such that
 \verb{(M[t, e], \{M[1, e], ..., M[t - 1, e]\})} equals either
 \verb{(M[d + 1 - j, j], \{M[1, j], ..., M[t - 1, j]\})} or
 \verb{(M[t - 1, j], \{M[d + 1 - j, j], M[1, j], ..., M[t - 2, j]\})}.
+}
 
-Condition 6 already implies conditions 2-5, but is more difficult to check by
+Condition 5 already implies conditions 2-4, but is more difficult to check by
 hand.
 }
 \examples{

@@ -41,10 +41,14 @@
 #'
 #' Denoting by `M[i, j]` the array entry in row `i` and column `j` (the
 #' pair-copula index for edge `e` in tree `t` of a `d` dimensional vine is
-#' `(M[d + 1 - e, e], M[t, e]; M[t - 1, e], ..., M[1, e])`. Less formally, 1.
-#' Start with the counter-diagonal element of column `e` (first conditioned
-#' variable). 2. Jump up to the element in row `t` (second conditioned
-#' variable). 3. Gather all entries further up in column `e` (conditioning set).
+#' `(M[d + 1 - e, e], M[t, e]; M[t - 1, e], ..., M[1, e])`. Less formally,
+#'
+#' 1. Start with the counter-diagonal element of column `e` (first conditioned
+#' variable).
+#'
+#' 2. Jump up to the element in row `t` (second conditioned variable).
+#'
+#' 3. Gather all entries further up in column `e` (conditioning set).
 #'
 #' Internally, the diagonal is stored separately from the off-diagonal elements,
 #' which are stored as a triangular array. For instance, the off-diagonal
@@ -65,18 +69,26 @@
 #'
 #' A valid R-vine structure or matrix must satisfy several conditions which are
 #' checked when [rvine_structure()], [rvine_matrix()], or some coercion methods
-#' (see [as_rvine_structure()] and `as_rvine_matrix(`) are called: 1. It can
-#' only contain numbers between 1 and d (and additionally zeros for R-vine
-#' matrices). 3. The anti-diagonal must contain the numbers 1, ..., d. 4. The
-#' anti-diagonal entry of a column must not be contained in any column further
-#' to the right. 5. The entries of a column must be contained in all columns to
-#' the left. 6. The proximity condition must hold: For all t = 1, ..., d - 2 and
-#' e = 1, ..., d - t there must exist an index j > d, such that
+#' (see [as_rvine_structure()] and `as_rvine_matrix(`) are called:
+#'
+#' 1. It can only contain numbers between 1 and d (and additionally zeros for
+#' R-vine matrices).
+#'
+#' 2. The anti-diagonal must contain the numbers 1, ..., d.
+#'
+#' 3. The anti-diagonal entry of a column must not be contained in any column
+#' further to the right.
+#'
+#' 4. The entries of a column must be contained in all columns to the left.
+#'
+#' 5. The proximity condition must hold: For all t = 1, ..., d - 2 and e = 1,
+#' ..., d - t there must exist an index j > d, such that
 #' `(M[t, e], {M[1, e], ..., M[t - 1, e]})` equals either
 #' `(M[d + 1 - j, j], {M[1, j], ..., M[t - 1, j]})` or
 #' `(M[t - 1, j], {M[d + 1 - j, j], M[1, j], ..., M[t - 2, j]})`.
 #'
-#' Condition 6 already implies conditions 2-5, but is more difficult to check by
+#'
+#' Condition 5 already implies conditions 2-4, but is more difficult to check by
 #' hand.
 #'
 #' @param order a vector of positive integers.
