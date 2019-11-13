@@ -87,7 +87,7 @@
 #' contour(fit)
 #'
 #' ## Partial structure selection with only first tree, specified
-#' structure <- rvine_structure(order = 1:5, list(rep(3, 4)))
+#' structure <- rvine_structure(order = 1:5, list(rep(5, 4)))
 #' structure
 #' fit <- vinecop(u, structure = structure, family = "gauss")
 #' plot(fit)
@@ -221,7 +221,7 @@ vinecop <- function(data, family_set = "all", structure = NA,
 #'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
 #'    tree `t`.
 #' @seealso [rvine_structure()], [rvine_matrix()], [vinecop()],
-#'   [plot.vinecop_dist()], [contour.vinecop_dist()], [summary.vinecop_dist()],
+#'   [plot.vinecop_dist()], [contour.vinecop_dist()],
 #'   [dvinecop()], [pvinecop()], [rvinecop()]
 #' @export
 #' @examples

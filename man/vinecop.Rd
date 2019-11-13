@@ -147,7 +147,7 @@ plot(fit)
 contour(fit)
 
 ## Partial structure selection with only first tree, specified
-structure <- rvine_structure(order = 1:5, list(rep(3, 4)))
+structure <- rvine_structure(order = 1:5, list(rep(5, 4)))
 structure
 fit <- vinecop(u, structure = structure, family = "gauss")
 plot(fit)

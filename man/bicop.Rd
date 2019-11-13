@@ -120,6 +120,7 @@ available (\code{"indep"},\code{"gaussian"}, \code{"student"},\code{"clayton"}, 
 }
 \examples{
 
+
 ## fitting a continuous model from simulated data
 u <- rbicop(100, "clayton", 90, 3)
 fit <- bicop(u, "par")
@@ -127,7 +128,7 @@ summary(fit)
 
 ## compare fit with true model
 contour(fit)
-contour(cop, col = 2, add = TRUE)
+contour(bicop_dist("clayton", 90, 3), col = 2, add = TRUE)
 
 ## fit a model from discrete data
 x_disc <- qpois(u, 1)  # transform to Poisson margins
