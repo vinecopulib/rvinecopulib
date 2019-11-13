@@ -84,15 +84,34 @@
 #'   the number of observations that was used to fit the model.
 #'
 #' @examples
-#' ## bicop_dist objects
-#' bicop_dist("gaussian", 0, 0.5)
-#' str(bicop_dist("gauss", 0, 0.5))
-#' bicop <- bicop_dist("clayton", 90, 3)
+#' ## set up a 90° rotated Clayton copula with parameter 3
+#' cop <- bicop_dist("clayton", 90, 3)
+#' cop
+#' str(cop)
 #'
-#' ## bicop objects
-#' u <- rbicop(500, "gauss", 0, 0.5)
-#' fit1 <- bicop(u, "par")
-#' fit1
+#' ## fitting a model from simulated data
+#' u <- rbicop(100, cop)
+#' fit <- bicop(u, "par")
+#' summary(fit)
+#'
+#' ## compare fit with true model
+#' contour(fit)
+#' contour(cop, col = 2, add = TRUE)
+#'
+#' ## Gaussian copula model for discrete data
+#' cop_disc <- bicop_dist("gauss", 0, 0.5, var_types = c("d", "d"))
+#' cop_disc
+#'
+#' ## simulate dependent data with Poisson margins
+#' u <- rbicop(100, cop_disc)
+#' plot(u)  # this always has uniform margins
+#' x_disc <- qpois(u, 1)  # transform to Poisson margins
+#' plot(x_disc)
+#'
+#' ## fit a model from discrete data
+#' udisc <- cbind(ppois(x_disc, 1), ppois(x_disc - 1, 1))
+#' fit_disc <- bicop(udisc, var_types = c("d", "d"))
+#' summary(fit_disc)
 #' @export
 bicop <- function(data, family_set = "all", par_method = "mle",
                   nonpar_method = "quadratic", mult = 1, selcrit = "bic",

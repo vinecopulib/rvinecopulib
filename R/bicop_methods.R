@@ -67,12 +67,14 @@
 #' joe_cop <- bicop_dist("joe", 0, 3)
 #' # h_1(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5))
-#' # h_2(0.1, 0.2)
-#' hbicop(c(0.1, 0.2), 2, joe_cop)
-#' # h_1^{-1}(0.1, 0.2)
-#' hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5), inverse = TRUE)
 #' # h_2^{-1}(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
+#'
+#' ## mixed discrete and continuous data
+#' x <- cbind(rpois(10, 1), rnorm(10, 1))
+#' u <- cbind(ppois(x[, 1], 1), pnorm(x[, 2]), ppois(x[, 1] - 1, 1))
+#' pbicop(u, "clay", 90, 3, var_types = c("d", "c"))
+#'
 #' @rdname bicop_methods
 #' @export
 dbicop <- function(u, family, rotation, parameters, var_types = c("c", "c")) {
