@@ -119,3 +119,6 @@ u <- cbind(ppois(x[, 1], 1), pnorm(x[, 2]), ppois(x[, 1] - 1, 1))
 pbicop(u, "clay", 90, 3, var_types = c("d", "c"))
 
 }
+\seealso{
+\code{\link[=bicop_dist]{bicop_dist()}}, \code{\link[=bicop]{bicop()}}
+}

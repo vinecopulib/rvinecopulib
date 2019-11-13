@@ -51,6 +51,8 @@
 #'
 #' The numerical arguments other than `n` are recycled to the length of the
 #' result.
+#'
+#' @seealso [bicop_dist()], [bicop()]
 #
 #' @examples
 #' ## evaluate the copula density
