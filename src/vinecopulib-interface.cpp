@@ -1,4 +1,6 @@
-#include "wrappers.hpp"
+#include "vinecopulib-wrappers.hpp"
+
+using namespace vinecopulib;
 
 // tools exports -------------------------------------------
 
@@ -267,3 +269,4 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
 
   return vinecop_wrap(vinecop_cpp, TRUE);
 }
+

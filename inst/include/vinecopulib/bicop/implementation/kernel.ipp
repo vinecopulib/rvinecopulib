@@ -17,7 +17,7 @@ inline KernelBicop::KernelBicop()
   for (size_t i = 0; i < m; ++i)
     grid_points(i) = -3.25 + i * (6.5 / static_cast<double>(m - 1));
   grid_points = tools_stats::pnorm(grid_points);
-  
+
   // move boundary points to 0/1, so we don't have to extrapolate
   grid_points(0) = 0.0;
   grid_points(m - 1) = 1.0;
@@ -56,13 +56,13 @@ KernelBicop::cdf(const Eigen::MatrixXd& u)
 inline Eigen::VectorXd
 KernelBicop::hfunc1_raw(const Eigen::MatrixXd& u)
 {
-  return interp_grid_->integrate_1d(u, 1);
+  return interp_grid_->integrate_1d(u, 1).cwiseMin(1 - 1e-20).cwiseMax(1e-20);
 }
 
 inline Eigen::VectorXd
 KernelBicop::hfunc2_raw(const Eigen::MatrixXd& u)
 {
-  return interp_grid_->integrate_1d(u, 2);
+  return interp_grid_->integrate_1d(u, 2).cwiseMin(1 - 1e-20).cwiseMax(1e-20);
 }
 
 inline Eigen::VectorXd
