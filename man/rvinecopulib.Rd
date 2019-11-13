@@ -25,7 +25,7 @@ bicop <- bicop_dist("clayton", 90, 3)
 
 ## bicop objects
 u <- rbicop(500, "gauss", 0, 0.5)
-fit1 <- bicop(u, "par")
+fit1 <- bicop(u, family = "par")
 fit1
 
 ## vinecop_dist objects
@@ -43,7 +43,7 @@ summary(vc)
 
 ## vinecop objects
 u <- sapply(1:3, function(i) runif(50))
-vc <- vinecop(u, "par")
+vc <- vinecop(u, family = "par")
 summary(vc)
 
 ## vine_dist objects

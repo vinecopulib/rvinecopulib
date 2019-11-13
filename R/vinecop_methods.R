@@ -186,7 +186,7 @@ summary.vinecop_dist <- function(object, ...) {
 #' @rdname predict_vinecop
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, "par", keep_data = TRUE)
+#' fit <- vinecop(u, family = "par", keep_data = TRUE)
 #' all.equal(predict(fit, u), fitted(fit))
 predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4,
                             cores = 1, ...) {
@@ -254,7 +254,7 @@ logLik.vinecop <- function(object, ...) {
 #' @export mBICV
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, "par", keep_data = TRUE)
+#' fit <- vinecop(u, family = "par", keep_data = TRUE)
 #' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 #' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 mBICV <- function(object, psi0 = 0.9, newdata = NULL) {

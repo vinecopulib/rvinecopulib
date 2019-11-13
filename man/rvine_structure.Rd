@@ -163,5 +163,5 @@ cvine
 plot(cvine)
 }
 \seealso{
-[as_rvine_structure()}, \code{\link[=plot.rvine_structure]{plot.rvine_structure()}}
+\code{\link[=as_rvine_structure]{as_rvine_structure()}}, \code{\link[=plot.rvine_structure]{plot.rvine_structure()}}
 }

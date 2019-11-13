@@ -50,6 +50,6 @@ second block.
 }
 \examples{
 u <- sapply(1:5, function(i) runif(50))
-fit <- vinecop(u, "par", keep_data = TRUE)
+fit <- vinecop(u, family = "par", keep_data = TRUE)
 all.equal(predict(fit, u), fitted(fit))
 }

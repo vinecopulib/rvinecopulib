@@ -208,7 +208,7 @@ ktau_to_par <- function(family, tau) {
 #' @examples
 #' # Simulate and fit a bivariate copula model
 #' u <- rbicop(500, "gauss", 0, 0.5)
-#' fit <- bicop(u, "par", keep_data = TRUE)
+#' fit <- bicop(u, family = "par", keep_data = TRUE)
 #'
 #' # Predictions
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))

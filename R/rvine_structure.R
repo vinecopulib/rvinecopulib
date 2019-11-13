@@ -101,7 +101,7 @@
 #'
 #' @return Either an `rvine_structure` or an `rvine_matrix`.
 #' @export
-#' @seealso [as_rvine_structure()}, [plot.rvine_structure()]
+#' @seealso [as_rvine_structure()], [plot.rvine_structure()]
 #' @examples
 #'
 #' # R-vine structures can be constructed from the order vector and struct_array
@@ -191,11 +191,13 @@ rvine_structure <- function(order, struct_array = list(), is_natural_order = FAL
 #' Plot one or all trees of an R-vine structure.
 #'
 #' @param x an `rvine_structure` or `rvine_matrixc` object.
-#' @param tree \code{"ALL"} or integer vector; specifies which trees are
+#' @param tree `"ALL"` or integer vector; specifies which trees are
 #' plotted.
-#' @param edge_labels either `TRUE` or `FALSE`; if `true` the edge index is
+#' @param edge_labels either `TRUE` or `FALSE`; if `TRUE` the edge index is
 #'   added to the plot.
+#' @param ... unused.
 #' @aliases plot.rvine_matrix
+#' @export
 #' @examples
 #' plot(cvine_structure(1:5))
 plot.rvine_structure <- function(x, tree = 1, edge_labels = FALSE, ...) {

@@ -58,7 +58,7 @@ be \code{1.25/length(tree)*(d - min(tree))} times the plot width.
 d <- 20
 n <- 2e2
 u <- matrix(runif(n * d), n, d)
-vc <- vinecop(u, "indep")
+vc <- vinecop(u, family = "indep")
 
 # plot
 plot(vc, tree = c(1, 2))

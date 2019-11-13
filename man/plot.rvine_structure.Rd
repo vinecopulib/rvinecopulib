@@ -15,8 +15,10 @@
 \item{tree}{\code{"ALL"} or integer vector; specifies which trees are
 plotted.}
 
-\item{edge_labels}{either \code{TRUE} or \code{FALSE}; if \code{true} the edge index is
+\item{edge_labels}{either \code{TRUE} or \code{FALSE}; if \code{TRUE} the edge index is
 added to the plot.}
+
+\item{...}{unused.}
 }
 \description{
 Plot one or all trees of an R-vine structure.
