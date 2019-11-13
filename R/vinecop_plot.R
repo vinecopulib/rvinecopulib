@@ -87,7 +87,7 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
       ))
       tree <- c(1, 2)
     } else {
-      tree <- 1:trunc_lvl
+      tree <- seq_len(trunc_lvl)
     }
   }
   assert_that(in_set(var_names, c("ignore", "use", "legend")))
@@ -260,7 +260,7 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
   )
 
   if (any(tree == "ALL")) {
-    tree <- 1:trunc_lvl
+    tree <- seq_len(trunc_lvl)
   }
 
   n_tree <- length(tree)

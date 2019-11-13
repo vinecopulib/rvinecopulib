@@ -38,9 +38,9 @@ Either an \code{rvine_structure} or an \code{rvine_matrix}.
 \description{
 R-vine structures are compressed representations encoding the tree structure
 of the vine, i.e. the conditioned/conditioning variables of each edge. The
-functions \code{cvine_structure()} or \code{dvine_structure()} give a simpler way to
-construct C-vines (every tree is a star) and D-vines (every tree is a path),
-respectively.
+functions \verb{[cvine_structure()]} or \verb{[dvine_structure()]} give a simpler way
+to construct C-vines (every tree is a star) and D-vines (every tree is a
+path), respectively (see \emph{Examples}).
 }
 \details{
 The R-vine structure is essentially a lower-triangular matrix/triangular
@@ -147,7 +147,21 @@ rvine_structure(order = 1:4, struct_array = list(
 # throws an error
 mat[3, 1] <- 5
 try(rvine_matrix(mat))
+
+# C-vine structure
+cvine <- cvine_structure(1:5)
+cvine
+plot(cvine)
+
+# D-vine structure
+dvine <- dvine_structure(c(1, 4, 2, 3, 5))
+dvine
+plot(dvine)
+
+cvine <- cvine_structure(1:5)
+cvine
+plot(cvine)
 }
 \seealso{
-as_rvine_structure
+[as_rvine_structure()}, \code{\link[=plot.rvine_structure]{plot.rvine_structure()}}
 }

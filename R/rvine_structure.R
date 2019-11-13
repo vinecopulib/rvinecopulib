@@ -2,9 +2,9 @@
 #'
 #' R-vine structures are compressed representations encoding the tree structure
 #' of the vine, i.e. the conditioned/conditioning variables of each edge. The
-#' functions `cvine_structure()` or `dvine_structure()` give a simpler way to
-#' construct C-vines (every tree is a star) and D-vines (every tree is a path),
-#' respectively.
+#' functions `[cvine_structure()]` or `[dvine_structure()]` give a simpler way
+#' to construct C-vines (every tree is a star) and D-vines (every tree is a
+#' path), respectively (see *Examples*).
 #'
 #' The R-vine structure is essentially a lower-triangular matrix/triangular
 #' array, with a notation that differs from the one in the VineCopula package.
@@ -101,7 +101,7 @@
 #'
 #' @return Either an `rvine_structure` or an `rvine_matrix`.
 #' @export
-#' @seealso as_rvine_structure
+#' @seealso [as_rvine_structure()}, [plot.rvine_structure()]
 #' @examples
 #'
 #' # R-vine structures can be constructed from the order vector and struct_array
@@ -131,6 +131,17 @@
 #' # throws an error
 #' mat[3, 1] <- 5
 #' try(rvine_matrix(mat))
+#'
+#' # C-vine structure
+#' cvine <- cvine_structure(1:5)
+#' cvine
+#' plot(cvine)
+#'
+#' # D-vine structure
+#' dvine <- dvine_structure(c(1, 4, 2, 3, 5))
+#' dvine
+#' plot(dvine)
+#'
 #' @name rvine_structure
 #' @aliases rvine_matrix is.rvine_structure is.rvine_matrix dvine_structure
 #'   cvine_structure
@@ -175,9 +186,44 @@ rvine_structure <- function(order, struct_array = list(), is_natural_order = FAL
   output
 }
 
+#' Plotting R-vine structures
+#'
+#' Plot one or all trees of an R-vine structure.
+#'
+#' @param x an `rvine_structure` or `rvine_matrixc` object.
+#' @param tree \code{"ALL"} or integer vector; specifies which trees are
+#' plotted.
+#' @param edge_labels either `TRUE` or `FALSE`; if `true` the edge index is
+#'   added to the plot.
+#' @aliases plot.rvine_matrix
+#' @examples
+#' plot(cvine_structure(1:5))
+plot.rvine_structure <- function(x, tree = 1, edge_labels = FALSE, ...) {
+  assert_that(is.flag(edge_labels))
+  d <- dim(x)[1]
+  trunc_lvl <- dim(x)[2]
+  pcs <- lapply(seq_len(min(d - 1, trunc_lvl)),
+                function(i) lapply(seq_len(d - i), function(j) bicop_dist()))
+  plot(vinecop_dist(pcs, x),
+       tree = tree,
+       edge_labels = if (edge_labels) "pair" else NULL)
+}
+
+#' @rdname plot.rvine_structure
+#' @examples
+#' mat <- rbind(c(1, 1, 1), c(2, 2, 0), c(3, 0, 0))
+#' plot(rvine_matrix(mat))
+plot.rvine_matrix <- function(x, tree = 1, edge_labels = FALSE, ...) {
+  plot(as_rvine_structure(x), tree = tree, edge_labels = edge_labels)
+}
+
 #' @rdname rvine_structure
 #' @param trunc_lvl the truncation level
 #' @export
+#' @examples
+#' cvine <- cvine_structure(1:5)
+#' cvine
+#' plot(cvine)
 cvine_structure <- function(order, trunc_lvl = Inf) {
   assert_that(is.vector(order) && all(sapply(order, is.count)),
               msg = "Order should be a vector of positive integers.")
