@@ -49,9 +49,8 @@ Density, distribution function and random generation for the vine copula
 distribution.
 }
 \details{
-See \link{vinecop} for the estimation and construction of vine copula
-models. Here, the density, distribution function and random generation for
-the vine copulas are standard.
+See \code{\link[=vinecop]{vinecop()}} for the estimation and construction of vine copula
+models.
 \subsection{Discrete variables}{
 
 When at least one variable is discrete, two types of
@@ -65,24 +64,34 @@ second block.
 }
 }
 \examples{
-# specify pair-copulas
-bicop <- bicop_dist("bb1", 90, c(3, 2))
-pcs <- list(
-  list(bicop, bicop), # pair-copulas in first tree
-  list(bicop) # pair-copulas in second tree
-)
+## simulate dummy data
+x <- rnorm(30) * matrix(1, 30, 5) + 0.5 * matrix(rnorm(30 * 5), 30, 5)
+u <- pseudo_obs(x)
 
-# specify R-vine matrix
-mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-
-# set up vine copula model
-vc <- vinecop_dist(pcs, mat)
+## fit a model
+vc <- vinecop(u, family = "clayton")
 
 # simulate from the model
-u <- rvinecop(200, vc)
+u <- rvinecop(100, vc)
 pairs(u)
 
 # evaluate the density and cdf
 dvinecop(u[1, ], vc)
 pvinecop(u[1, ], vc)
+
+## Discrete models
+vc$var_types <- rep("d", 5)  # convert model to discrete
+
+# with discrete data we need two types of observations (see Details)
+x <- qpois(u, 1)  # transform to Poisson margins
+u_disc <- cbind(ppois(x, 1), ppois(x - 1, 1))
+
+dvinecop(u_disc[1:5, ], vc)
+pvinecop(u_disc[1:5, ], vc)
+
+# simulated data always has uniform margins
+pairs(rvinecop(200, vc))
+}
+\seealso{
+\code{\link[=vinecop_dist]{vinecop_dist()}}, \code{\link[=vinecop]{vinecop()}}, \code{\link[=plot.vinecop]{plot.vinecop()}}, \code{\link[=contour.vinecop]{contour.vinecop()}}
 }

@@ -2,8 +2,7 @@
 % Please edit documentation in R/bicop.R
 \name{bicop}
 \alias{bicop}
-\alias{bicop_dist}
-\title{Bivariate copula models}
+\title{Fit and select bivariate copula models}
 \usage{
 bicop(
   data,
@@ -17,13 +16,6 @@ bicop(
   presel = TRUE,
   keep_data = FALSE,
   cores = 1,
-  var_types = c("c", "c")
-)
-
-bicop_dist(
-  family = "indep",
-  rotation = 0,
-  parameters = numeric(0),
   var_types = c("c", "c")
 )
 }
@@ -69,58 +61,26 @@ families is done in parallel.}
 \item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
 both continuous (default), or \code{c("c", "d")} for first variable continuous
 and second discrete.}
-
-\item{family}{the copula family, a string containing the family name (see
-\emph{Details} for all possible families).}
-
-\item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
-
-\item{parameters}{a vector or matrix of copula parameters.}
 }
 \value{
-Objects inheriting from \code{bicop_dist} for \code{bicop_dist()}, and \code{bicop}
-and \code{bicop_dist} for \code{bicop()}.
-
-Object from the \code{bicop_dist} class are lists containing:
+An object inheriting from classes \code{bicop} and  \code{bicop_dist} . In addition to
+the entries contained in \code{bicop_dist()}, objects from the \code{bicop} class
+contain:
 \itemize{
-\item \code{family}, a \code{character} indicating the copula family. * \code{rotation}, an
-\code{integer} indicating the rotation (i.e., either 0, 90, 180, or 270). *
-\code{parameters}, a \code{numeric} vector or matrix of parameters. * \code{npars}, a
-\code{numeric} with the (effective) number of parameters.
-}
-
-Additionally, objects from the \code{bicop} class contain:
-\itemize{
-\item \code{data} (optionally, if \code{keep_data = TRUE} was used), the
-dataset that was passed to \code{\link[=bicop]{bicop()}}. * \code{controls}, a \code{list} with the set
-of fit controls that was passed to \code{\link[=bicop]{bicop()}}. * \code{nobs}, an \code{integer} with
-the number of observations that was used to fit the model.
+\item \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset that was
+passed to \code{\link[=bicop]{bicop()}}.
+\item \code{controls}, a \code{list} with the set of fit controls that was passed to
+\code{\link[=bicop]{bicop()}}.
+\item \code{loglik} the log-likelihood.
+\item \code{nobs}, an \code{integer} with the number of observations that was used to fit
+the model.
 }
 }
 \description{
-Bivariate copula models
+Fit a bivariate copula model for continuous or discrete data. The family
+can be selected automatically from a vector of options.
 }
 \details{
-The implemented families are:\cr
-
-\code{"indep"} = Independence copula.\cr \code{"gaussian"} = Gaussian copula.\cr \code{"t"}
-= Student t copula.\cr \code{"clayton"} = Clayton copula.\cr \code{"gumbel"} = Gumbel
-copula.\cr \code{"frank"} = Frank copula.\cr \code{"joe"} = Joe copula.\cr \code{"bb1"} =
-BB1 copula.\cr \code{"bb6"} = BB6 copula.\cr \code{"bb7"} = BB7 copula.\cr \code{"bb8"} =
-BB8 copula.\cr \code{"tll"} = transformation kernel local likelihood, only for
-\code{bicop()}.\cr
-
-In addition, the following convenience definitions can be used (and combined)
-with \code{bicop}:\cr
-
-\code{"all"} =  all families.\cr \code{"parametric"} =  parametric families.\cr
-\code{"nonparametric"} =  nonparametric families.\cr \code{"archimedean"} = archimedean
-families.\cr \code{"elliptical"} =  elliptical families.\cr \code{"bbs"} = BB
-families.\cr \code{"oneparametric"} =  one parameter families.\cr
-\code{"twoparametric"} =  two parameter families.\cr \code{"itau"} =  one parameter
-families and Student t copula.\cr Partial matching is activated. For example,
-\code{"gauss"} is equivalent to \code{"gaussian"}, or you can write  \code{"nonpar"} instead
-of \code{"nonparametric"}.
 \subsection{Discrete variables}{
 
 When at least one variable is discrete, mote than two columns are required
@@ -132,15 +92,50 @@ left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 limit and the cdf itself coincide. Respective columns can be omitted in the
 second block.
 }
+
+\subsection{Family collections}{
+
+The \code{family_set} argument accepts all families in \code{bicop_dist()} plus the
+following convenience definitions:
+\itemize{
+\item \code{"all"} contains all the families,
+\item \code{"parametric"} contains the parametric families (all except \code{"tll"}),
+\item \code{"nonparametric"} contains the nonparametric families (\code{"indep"} and
+\code{"tll"})
+\item \code{"onepar"} contains the parametric families with a single parameter,
+}
+
+(\code{"gaussian"}, \code{"clayton"}, \code{"gumbel"}, \code{"frank"}, and \code{"joe"}),
+\itemize{
+\item \code{"twopar"} contains the parametric families with two parameters
+(\code{"student"}, \code{"bb1"}, \code{"bb6"}, \code{"bb7"}, and \code{"bb8"}),
+\item \code{"elliptical"} contains the elliptical families,
+\item \code{"archimedean"} contains the archimedean families,
+\item \code{"BB"} contains the BB families,
+\item \code{"itau"} families for which estimation by Kendall's tau inversion is
+available (\code{"indep"},\code{"gaussian"}, \code{"student"},\code{"clayton"}, \code{"gumbel"},
+\code{"frank"}, \code{"joe"}).
+}
+}
 }
 \examples{
-## bicop_dist objects
-bicop_dist("gaussian", 0, 0.5)
-str(bicop_dist("gauss", 0, 0.5))
-bicop <- bicop_dist("clayton", 90, 3)
+## fitting a continuous model from simulated data
+u <- rbicop(100, "clayton", 90, 3)
+fit <- bicop(u, "par")
+summary(fit)
 
-## bicop objects
-u <- rbicop(500, "gauss", 0, 0.5)
-fit1 <- bicop(u, "par")
-fit1
+## compare fit with true model
+contour(fit)
+contour(bicop_dist("clayton", 90, 3), col = 2, add = TRUE)
+
+## fit a model from discrete data
+x_disc <- qpois(u, 1)  # transform to Poisson margins
+plot(x_disc)
+udisc <- cbind(ppois(x_disc, 1), ppois(x_disc - 1, 1))
+fit_disc <- bicop(udisc, var_types = c("d", "d"))
+summary(fit_disc)
+}
+\seealso{
+\code{\link[=bicop_dist]{bicop_dist()}}, \code{\link[=plot.bicop]{plot.bicop()}}, \code{\link[=contour.bicop]{contour.bicop()}}, \code{\link[=dbicop]{dbicop()}},
+\code{\link[=pbicop]{pbicop()}}, \code{\link[=hbicop]{hbicop()}}, \code{\link[=rbicop]{rbicop()}}
 }

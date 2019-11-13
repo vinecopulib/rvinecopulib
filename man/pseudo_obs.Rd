@@ -13,8 +13,9 @@ pseudo-observations.}
 \item{ties_method}{similar to \code{ties.method} of \code{\link[=rank]{rank()}} (only \code{"average"},
 \code{"first"} and \code{"random"} currently available).}
 
-\item{lower_tail}{\code{logical} which, if `FALSE``, returns the pseudo-observations
-when applying the empirical marginal survival functions.}
+\item{lower_tail}{\code{logical} which, if `FALSE``, returns the
+pseudo-observations when applying the empirical marginal survival
+functions.}
 }
 \value{
 a vector of matrix of the same dimension as the input containing the
@@ -27,18 +28,21 @@ Compute the pseudo-observations for the given data matrix.
 Given \code{n} realizations \eqn{x_i=(x_{i1}, \ldots,x_{id})},
 \eqn{i \in \left\lbrace 1, \ldots,n \right\rbrace }
 of a random vector \code{X}, the pseudo-observations are defined via
-\eqn{u_{ij}=r_{ij}/(n+1)} for \eqn{i \in \left\lbrace 1, \ldots,n \right\rbrace }
-and \eqn{j \in \left\lbrace 1, \ldots,d \right\rbrace }, where
+\eqn{u_{ij}=r_{ij}/(n+1)} for
+\eqn{i \in \left\lbrace 1, \ldots,n \right\rbrace}
+and
+\eqn{j \in \left\lbrace 1, \ldots,d \right\rbrace }, where
 \eqn{r_{ij}} denotes the rank of \eqn{x_{ij}} among all \eqn{x_{kj}},
 \eqn{k \in \left\lbrace 1, \ldots,n \right\rbrace }.
 
 The pseudo-observations can thus also be computed by component-wise applying
 the empirical distribution functions to the data and scaling the result by
-\eqn{n/(n+1)}. This asymptotically negligible scaling factor is used to force the
-variates to fall inside the open unit hypercube, for example, to avoid
+\eqn{n/(n+1)}. This asymptotically negligible scaling factor is used to force
+the variates to fall inside the open unit hypercube, for example, to avoid
 problems with density evaluation at the boundaries.
 
-When \code{lower_tail = FALSE}, then \code{pseudo_obs()} simply returns \code{1 - pseudo_obs()}.
+When \code{lower_tail = FALSE}, then \code{pseudo_obs()} simply returns
+\code{1 - pseudo_obs()}.
 }
 \examples{
 # pseudo-observations for a vector

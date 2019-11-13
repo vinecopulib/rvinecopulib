@@ -50,10 +50,9 @@
 #'
 #' Concerning `margins`:
 #'
-#' * For objects created with [vine_dist()], it simply corresponds to the `margins`
-#' argument.
-#' * For objects created with [vine()], it is a list of objects of class `kde1d`,
-#' see [kde1d::kde1d()].
+#' * For objects created with [vine_dist()], it simply corresponds to the
+#' `margins` argument. * For objects created with [vine()], it is a list of
+#' objects of class `kde1d`, see [kde1d::kde1d()].
 #'
 #' @examples
 #' # specify pair-copulas
@@ -186,12 +185,17 @@ expand_factors <- function(data) {
 #' marginal [stats::Distributions]. Each marginal specification
 #' should be a list with containing at least the distribution family (`"distr"`)
 #' and optionally the parameters, e.g.
-#' `list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))`.
+#' ```
+#' list(list(distr = "norm"),
+#'      list(distr = "norm", mu = 1),
+#'      list(distr = "beta", shape1 = 1, shape2 = 1))
+#' ```
 #' Note that parameters that have no default values have to be provided.
-#' Furthermore, if `margins` has length one, it will be recycled for every component.
+#' Furthermore, if `margins` has length one, it will be recycled for every
+#' component.
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where
-#'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
-#'    tree `t`.
+#'   \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
+#'   tree `t`.
 #' @param structure an `rvine_structure` object, namely a compressed
 #' representation of the vine structure, or an object that can be coerced
 #' into one (see [rvine_structure()] and [as_rvine_structure()]).
