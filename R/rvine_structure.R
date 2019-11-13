@@ -145,11 +145,18 @@ rvine_structure <- function(order, struct_array = list(), is_natural_order = FAL
     msg = "All elements of struct_array should be positive integers."
   )
   d <- length(order)
-  trunc_lvl <- length(struct_array)
+  assert_that(length(struct_array) < length(order),
+    msg = paste("The length of struct array is incompatible with order,",
+                "it should be in {1, ..., length(order) - 1}")
+  )
 
+  trunc_lvl <- length(struct_array)
   lens <- sapply(seq_len(trunc_lvl), function(j) length(struct_array[[j]]))
   assert_that(all(lens == seq(d - 1, d - trunc_lvl)),
-    msg = "The number of elements in struct_array is incompatible with order."
+    msg = paste(
+      "The number of elements in struct_array is incompatible with order.",
+      "The first entry of struct_array should be a vectors of size" ,
+      "length(order) - 1, the second of size length(order) - 2), etc.")
   )
 
   # create and check output
