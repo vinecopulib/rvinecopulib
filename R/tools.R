@@ -233,15 +233,13 @@ on_failure(in_set) <- function(call, env) {
 }
 
 correct_var_types <- function(var_types, data) {
-    is.character(var_types) && in_set(var_types, c("c", "d"))
+  is.character(var_types) && in_set(var_types, c("c", "d"))
 }
 
 on_failure(correct_var_types) <- function(call, env) {
-  paste0(
-    deparse(call$el),
-    " must be vector with elements 'c' or 'd'."
-  )
+  paste0("var_types must be vector with elements 'c' or 'd'.")
 }
+
 #' Pseudo-Observations
 #'
 #' Compute the pseudo-observations for the given data matrix.

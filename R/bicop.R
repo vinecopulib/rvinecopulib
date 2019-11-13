@@ -98,7 +98,7 @@
 #' @examples
 #' ## fitting a continuous model from simulated data
 #' u <- rbicop(100, "clayton", 90, 3)
-#' fit <- bicop(u, "par")
+#' fit <- bicop(u, family_set = "par")
 #' summary(fit)
 #'
 #' ## compare fit with true model
@@ -112,10 +112,10 @@
 #' fit_disc <- bicop(udisc, var_types = c("d", "d"))
 #' summary(fit_disc)
 #' @export
-bicop <- function(data, family_set = "all", par_method = "mle",
-                  nonpar_method = "quadratic", mult = 1, selcrit = "bic",
-                  weights = numeric(), psi0 = 0.9, presel = TRUE,
-                  keep_data = FALSE, cores = 1, var_types = c("c", "c")) {
+bicop <- function(data, var_types = c("c", "c"), family_set = "all",
+                  par_method = "mle", nonpar_method = "quadratic", mult = 1,
+                  selcrit = "bic", weights = numeric(), psi0 = 0.9,
+                  presel = TRUE, keep_data = FALSE, cores = 1) {
   assert_that(
     is.character(family_set),
     is.string(par_method),

@@ -6,6 +6,7 @@
 \usage{
 bicop(
   data,
+  var_types = c("c", "c"),
   family_set = "all",
   par_method = "mle",
   nonpar_method = "quadratic",
@@ -15,8 +16,7 @@ bicop(
   psi0 = 0.9,
   presel = TRUE,
   keep_data = FALSE,
-  cores = 1,
-  var_types = c("c", "c")
+  cores = 1
 )
 }
 \arguments{
@@ -24,6 +24,10 @@ bicop(
 (pseudo-)observations for the two variables (copula data should have
 approximately uniform margins). More columns are required for discrete
 models, see \emph{Details}.}
+
+\item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
+both continuous (default), or \code{c("c", "d")} for first variable continuous
+and second discrete.}
 
 \item{family_set}{a character vector of families; see \emph{Details} for
 additional options.}
@@ -57,10 +61,6 @@ symmetry characteristics of the data.}
 
 \item{cores}{number of cores to use; if more than 1, estimation for multiple
 families is done in parallel.}
-
-\item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
-both continuous (default), or \code{c("c", "d")} for first variable continuous
-and second discrete.}
 }
 \value{
 An object inheriting from classes \code{bicop} and  \code{bicop_dist} . In addition to
@@ -121,7 +121,7 @@ available (\code{"indep"},\code{"gaussian"}, \code{"student"},\code{"clayton"}, 
 \examples{
 ## fitting a continuous model from simulated data
 u <- rbicop(100, "clayton", 90, 3)
-fit <- bicop(u, "par")
+fit <- bicop(u, family_set = "par")
 summary(fit)
 
 ## compare fit with true model

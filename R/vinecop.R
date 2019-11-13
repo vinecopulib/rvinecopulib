@@ -109,12 +109,12 @@
 #' # we require two types of observations (see Details)
 #' u_disc <- cbind(ppois(x, 1), u[, 2:5], ppois(x - 1, 1))
 #' fit <- vinecop(u_disc, var_types = c("d", rep("c", 4)))
-vinecop <- function(data, family_set = "all", structure = NA,
-                    par_method = "mle", nonpar_method = "constant", mult = 1,
-                    selcrit = "bic", weights = numeric(), psi0 = 0.9,
-                    presel = TRUE, trunc_lvl = Inf, tree_crit = "tau",
-                    threshold = 0, keep_data = FALSE, show_trace = FALSE,
-                    cores = 1, var_types = rep("c", ncol(data))) {
+vinecop <- function(data, var_types = rep("c", ncol(data)), family_set = "all",
+                    structure = NA, par_method = "mle",
+                    nonpar_method = "constant", mult = 1, selcrit = "bic",
+                    weights = numeric(), psi0 = 0.9, presel = TRUE,
+                    trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
+                    keep_data = FALSE, show_trace = FALSE, cores = 1) {
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||

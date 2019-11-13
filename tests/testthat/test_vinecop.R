@@ -2,8 +2,8 @@ context("Fitting 'vinecop' models")
 
 set.seed(5)
 u <- sapply(1:5, function(i) runif(30))
-fit <- vinecop(u, "nonpar")
-fit_with_data <- vinecop(u, "nonpar", keep_data = TRUE)
+fit <- vinecop(u, family = "nonpar")
+fit_with_data <- vinecop(u, family = "nonpar", keep_data = TRUE)
 
 test_that("returns proper 'vinecop' object", {
   expect_s3_class(fit, "vinecop")
@@ -21,7 +21,7 @@ test_that("returns proper 'vinecop' object", {
 
   colnames(u) <- paste(seq_len(ncol(u)))
   expect_identical(
-    names(vinecop(u, "indep")),
+    names(vinecop(u, family = "indep")),
     c("pair_copulas", "structure", "var_types",
       "npars", "loglik", "threshold", "names", "controls", "nobs")
   )
@@ -60,7 +60,7 @@ test_that("truncation works", {
   expect_silent(dvinecop(u, fit_truncated))
   expect_silent(rvinecop(50, fit_truncated))
 
-  fit_truncated <- vinecop(u, "par", trunc_lvl = 1)
+  fit_truncated <- vinecop(u, family = "par", trunc_lvl = 1)
   expect_silent(dvinecop(u, fit_truncated))
   expect_silent(rvinecop(50, fit_truncated))
 })

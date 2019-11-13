@@ -6,6 +6,7 @@
 \usage{
 vinecop(
   data,
+  var_types = rep("c", ncol(data)),
   family_set = "all",
   structure = NA,
   par_method = "mle",
@@ -20,8 +21,7 @@ vinecop(
   threshold = 0,
   keep_data = FALSE,
   show_trace = FALSE,
-  cores = 1,
-  var_types = rep("c", ncol(data))
+  cores = 1
 )
 }
 \arguments{
@@ -29,6 +29,10 @@ vinecop(
 (pseudo-)observations for the two variables (copula data should have
 approximately uniform margins). More columns are required for discrete
 models, see \emph{Details}.}
+
+\item{var_types}{variable types, a length d vector; e.g., \code{c("c", "c")} for
+two continuous variables, or \code{c("c", "d")} for first variable continuous
+and second discrete.}
 
 \item{family_set}{a character vector of families; see \code{\link[=bicop]{bicop()}} for
 additional options.}
@@ -84,10 +88,6 @@ printed.}
 
 \item{cores}{number of cores to use; if more than 1, estimation of pair
 copulas within a tree is done in parallel.}
-
-\item{var_types}{variable types, a length d vector; e.g., \code{c("c", "c")} for
-two continuous variables, or \code{c("c", "d")} for first variable continuous
-and second discrete.}
 }
 \value{
 Objects inheriting from \code{vinecop} and \code{vinecop_dist} for \code{\link[=vinecop]{vinecop()}}. In
