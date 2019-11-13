@@ -119,8 +119,6 @@ available (\code{"indep"},\code{"gaussian"}, \code{"student"},\code{"clayton"}, 
 }
 }
 \examples{
-
-
 ## fitting a continuous model from simulated data
 u <- rbicop(100, "clayton", 90, 3)
 fit <- bicop(u, "par")
@@ -136,4 +134,8 @@ plot(x_disc)
 udisc <- cbind(ppois(x_disc, 1), ppois(x_disc - 1, 1))
 fit_disc <- bicop(udisc, var_types = c("d", "d"))
 summary(fit_disc)
+}
+\seealso{
+\code{\link[=bicop_dist]{bicop_dist()}}, \code{\link[=plot.bicop]{plot.bicop()}}, \code{\link[=contour.bicop]{contour.bicop()}}, \code{\link[=dbicop]{dbicop()}},
+\code{\link[=pbicop]{pbicop()}}, \code{\link[=hbicop]{hbicop()}}, \code{\link[=rbicop]{rbicop()}}
 }

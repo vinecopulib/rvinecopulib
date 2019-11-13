@@ -76,7 +76,6 @@
 #' available (`"indep"`,`"gaussian"`, `"student"`,`"clayton"`, `"gumbel"`,
 #' `"frank"`, `"joe"`).
 #'
-#'
 #' @return
 #' An object inheriting from classes `bicop` and  `bicop_dist` . In addition to
 #' the entries contained in `bicop_dist()`, objects from the `bicop` class
@@ -93,9 +92,10 @@
 #' * `nobs`, an `integer` with the number of observations that was used to fit
 #' the model.
 #'
+#' @seealso [bicop_dist()], [plot.bicop()], [contour.bicop()], [dbicop()],
+#'   [pbicop()], [hbicop()], [rbicop()]
+#'
 #' @examples
-#'
-#'
 #' ## fitting a continuous model from simulated data
 #' u <- rbicop(100, "clayton", 90, 3)
 #' fit <- bicop(u, "par")
@@ -221,6 +221,8 @@ as.bicop <- function(object) {
 #'   both continuous (default), or `c("c", "d")` for first variable continuous
 #'   and second discrete.
 #'
+#' @seealso [bicop_dist()], [plot.bicop()], [contour.bicop()], [dbicop()],
+#'   [pbicop()], [hbicop()], [rbicop()]
 #' @export
 #' @examples
 #' ## Clayton 90° copula with parameter 3

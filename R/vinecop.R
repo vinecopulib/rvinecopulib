@@ -65,6 +65,8 @@
 #'
 #' * `nobs`, the number of observations that were used to fit the model.
 #'
+#' @seealso [vinecop()], [dvinecop()], [pvinecop()], [rvinecop()],
+#'   [plot.vinecop()], [contour.vinecop()]
 #' @export
 #' @examples
 #' ## simulate dummy data

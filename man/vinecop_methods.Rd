@@ -92,3 +92,6 @@ pvinecop(u_disc[1:5, ], vc)
 # simulated data always has uniform margins
 pairs(rvinecop(200, vc))
 }
+\seealso{
+\code{\link[=vinecop_dist]{vinecop_dist()}}, \code{\link[=vinecop]{vinecop()}}, \code{\link[=plot.vinecop]{plot.vinecop()}}, \code{\link[=contour.vinecop]{contour.vinecop()}}
+}

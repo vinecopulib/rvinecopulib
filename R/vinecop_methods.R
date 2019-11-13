@@ -34,6 +34,9 @@
 #'
 #' The `vinecop` object is recycled to the length of the
 #' result.
+#'
+#' @seealso [vinecop_dist()], [vinecop()], [plot.vinecop()], [contour.vinecop()]
+#'
 #' @examples
 #' ## simulate dummy data
 #' x <- rnorm(30) * matrix(1, 30, 5) + 0.5 * matrix(rnorm(30 * 5), 30, 5)

@@ -73,3 +73,7 @@ cop_disc <- bicop_dist("bb8", 0, c(2, 0.5), var_types = c("d", "d"))
 cop_disc
 
 }
+\seealso{
+\code{\link[=bicop_dist]{bicop_dist()}}, \code{\link[=plot.bicop]{plot.bicop()}}, \code{\link[=contour.bicop]{contour.bicop()}}, \code{\link[=dbicop]{dbicop()}},
+\code{\link[=pbicop]{pbicop()}}, \code{\link[=hbicop]{hbicop()}}, \code{\link[=rbicop]{rbicop()}}
+}

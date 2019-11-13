@@ -168,3 +168,7 @@ x <- qpois(u[, 1], 1)  # transform first variable to Poisson margin
 u_disc <- cbind(ppois(x, 1), u[, 2:5], ppois(x - 1, 1))
 fit <- vinecop(u_disc, var_types = c("d", rep("c", 4)))
 }
+\seealso{
+\code{\link[=vinecop]{vinecop()}}, \code{\link[=dvinecop]{dvinecop()}}, \code{\link[=pvinecop]{pvinecop()}}, \code{\link[=rvinecop]{rvinecop()}},
+\code{\link[=plot.vinecop]{plot.vinecop()}}, \code{\link[=contour.vinecop]{contour.vinecop()}}
+}
