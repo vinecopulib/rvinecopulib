@@ -220,11 +220,11 @@ vinecop <- function(data, family_set = "all", structure = NA,
 #'
 #' @inheritParams vinecop
 #' @param pair_copulas A nested list of '[bicop_dist()]' objects, where
-#'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
-#'    tree `t`.
+#'   \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
+#'   tree `t`.
 #' @seealso [rvine_structure()], [rvine_matrix()], [vinecop()],
-#'   [plot.vinecop_dist()], [contour.vinecop_dist()],
-#'   [dvinecop()], [pvinecop()], [rvinecop()]
+#'   [plot.vinecop_dist()], [contour.vinecop_dist()], [dvinecop()],
+#'   [pvinecop()], [rvinecop()]
 #' @export
 #' @examples
 #' # specify pair-copulas

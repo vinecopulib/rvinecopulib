@@ -76,7 +76,7 @@ checks.
 coerced into an R-vine structure (see \code{\link[=rvine_structure]{rvine_structure()}} for more details).
 }
 
-#' For \code{as_rvine_matrix}:
+For \code{as_rvine_matrix}:
 \itemize{
 \item \code{rvine_structure} : allow to coerce an \code{rvine_structure} into an
 R-vine matrix (useful e.g. for printing).

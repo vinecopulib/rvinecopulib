@@ -19,7 +19,7 @@
 #'  * `list` : must contain named elements `order` and `struct_array` to be
 #'  coerced into an R-vine structure (see [rvine_structure()] for more details).
 #'
-#' #' For `as_rvine_matrix`:
+#' For `as_rvine_matrix`:
 #'
 #'  * `rvine_structure` : allow to coerce an `rvine_structure` into an
 #'  R-vine matrix (useful e.g. for printing).

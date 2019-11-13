@@ -16,15 +16,16 @@
 #' @param x \code{vinecop_dist} object.
 #' @param tree \code{"ALL"} or integer vector; specifies which trees are
 #' plotted.
-#' @param var_names integer; specifies how to make use of variable names: \cr
-#' \code{"ignore"} = variable names are ignored,
-#' \cr \code{"use"} = variable names are used to annotate vertices,
-#' \cr \code{"legend"} = uses numbers in plot and adds a legend for variable names.
+#' @param var_names integer; specifies how to make use of variable names:
+#' * `"ignore"`` = variable names are ignored,
+#' * `"use"`` = variable names are used to annotate vertices,
+#' * `"legend"`` = uses numbers in plot and adds a legend for variable names.
 #' @param edge_labels character; either a vector of edge labels or one of the
-#' following: \cr \code{"family"} = pair-copula family (see
-#' \code{\link[rvinecopulib:bicop_dist]{bicop_dist}}), \cr \code{"tau"} =
-#' pair-copula Kendall's tau\cr \code{"family_tau"} = pair-copula family and
-#' Kendall's tau, \cr \code{"pair"} = for the name of the involved variables.
+#' following:
+#' * `"family"` = pair-copula family (see `[bicop_dist()]`),
+#' * `"tau"`` = pair-copula Kendall's tau
+#' * `"family_tau"`` = pair-copula family and Kendall's tau,
+#' * `"pair"`` = the name of the involved variables.
 #' @param cex.nums numeric; expansion factor for font of the numbers.
 #' @param \dots Unused for \code{plot} and passed to
 #' \code{\link[rvinecopulib:contour.bicop]{contour.bicop}} for \code{contour}.

@@ -65,6 +65,6 @@ pairs(rvinecop(200, vc))
 }
 \seealso{
 \code{\link[=rvine_structure]{rvine_structure()}}, \code{\link[=rvine_matrix]{rvine_matrix()}}, \code{\link[=vinecop]{vinecop()}},
-\code{\link[=plot.vinecop_dist]{plot.vinecop_dist()}}, \code{\link[=contour.vinecop_dist]{contour.vinecop_dist()}},
-\code{\link[=dvinecop]{dvinecop()}}, \code{\link[=pvinecop]{pvinecop()}}, \code{\link[=rvinecop]{rvinecop()}}
+\code{\link[=plot.vinecop_dist]{plot.vinecop_dist()}}, \code{\link[=contour.vinecop_dist]{contour.vinecop_dist()}}, \code{\link[=dvinecop]{dvinecop()}},
+\code{\link[=pvinecop]{pvinecop()}}, \code{\link[=rvinecop]{rvinecop()}}
 }
