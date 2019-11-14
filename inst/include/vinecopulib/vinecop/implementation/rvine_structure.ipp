@@ -415,7 +415,7 @@ RVineStructure::simulate(size_t d, bool natural_order, std::vector<int> seeds)
     }
   }
 
-  return RVineStructure(order, rvm.get_struct_array(), true, false);
+  return RVineStructure(order, rvm.get_struct_array(true), true, false);
 }
 
 //! extract the R-vine matrix representation.
