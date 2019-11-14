@@ -18,8 +18,9 @@
 #'   truncation, `NA` indicates that the truncation level should be selected
 #'   automatically by [mBICV()].
 #' @param tree_crit the criterion for tree selection, one of `"tau"`, `"rho"`,
-#'   `"hoeffd"`, or `"mcor"` for Kendall's \eqn{\tau}, Spearman's \eqn{\rho},
-#'   Hoeffding's \eqn{D}, and maximum correlation, respectively.
+#'   `"hoeffd"`, `"mcor"`, or `"joe"` for Kendall's \eqn{\tau}, Spearman's
+#'   \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation, or logarithm of
+#'   the partial correlation, respectively.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the
 #'   threshold should be selected automatically by [mBICV()].
 #' @param show_trace logical; whether a trace of the fitting progress should be
@@ -88,14 +89,14 @@
 #' plot(fit)
 #' contour(fit)
 #'
-#' ## Partial structure selection with only first tree, specified
+#' ## Partial structure selection with only first tree specified
 #' structure <- rvine_structure(order = 1:5, list(rep(5, 4)))
 #' structure
 #' fit <- vinecop(u, structure = structure, family = "gauss")
 #' plot(fit)
 #'
-#' ## 1-truncated model
-#' fit <- vinecop(u, trunc_lvl = 1)
+#' ## 1-truncated model with random structure
+#' fit <- vinecop(u, structure = rvine_structure_sim(5), trunc_lvl = 1)
 #' contour(fit)
 #'
 #' ## Model for discrete data

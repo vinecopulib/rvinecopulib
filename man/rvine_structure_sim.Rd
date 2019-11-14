@@ -13,15 +13,12 @@ rvine_matrix_sim(d, natural_order = FALSE)
 \item{d}{the number of variables}
 
 \item{natural_order}{boolean; whether the structures should be in natural
-order (counter-diagonal is `1:d``).}
-}
-\value{
-
+order (counter-diagonal is \code{1:d}).}
 }
 \description{
 Simulates from a uniform distribution over all R-vine structures on d
-variables. \code{rvine_structure_sim()} returns an \code{rvine_structure} object,
-\code{rvine_matrix_sim()} and \code{rvine_matrix}.
+variables. \code{rvine_structure_sim()} returns an \code{\link[=rvine_structure]{rvine_structure()}} object,
+\code{rvine_matrix_sim()} an \code{\link[=rvine_matrix]{rvine_matrix()}}.
 }
 \examples{
 rvine_structure_sim(10)
@@ -29,4 +26,8 @@ rvine_structure_sim(10)
 rvine_structure_sim(10, natural_order = TRUE)  # counter-diagonal is 1:d
 
 rvine_matrix_sim(10)
+}
+\seealso{
+\code{\link[=rvine_structure]{rvine_structure()}}, \code{\link[=rvine_matrix]{rvine_matrix()}},
+\code{\link[=plot.rvine_structure]{plot.rvine_structure()}}, \code{\link[=plot.rvine_matrix]{plot.rvine_matrix()}}
 }
