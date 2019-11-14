@@ -48,33 +48,38 @@ or families.
 }
 \description{
 Extracts either the structure matrix  (for \code{vinecop_dist} only), or
-pair-copulas, their parameters, Kendall's taus, or families
-(for \code{bicop_dist} and \code{vinecop_dist}).
+pair-copulas, their parameters, Kendall's taus, or families (for \code{bicop_dist}
+and \code{vinecop_dist}).
 }
 \details{
-#' The \link{get_structure} method (for \code{vinecop_dist} or \code{vine_dist} objects only)
-extracts the structure (see \link{rvine_structure} for more details).
+#' The \link{get_structure} method (for \code{vinecop_dist} or \code{vine_dist}
+objects only) extracts the structure (see \link{rvine_structure} for more
+details).
 
 The \link{get_matrix} method (for \code{vinecop_dist} or \code{vine_dist} objects only)
 extracts the structure matrix (see \link{rvine_structure} for more details).
 
 The other \code{get_xyz} methods for \code{vinecop_dist} or \code{vine_dist} objects return
-the entries corresponding to the pair-copula indexed by its \code{tree} and \code{edge}.
-When \code{object} is of class \code{bicop_dist}, \code{tree} and \code{edge} are not required. \cr
-
-\link{get_pair_copula} = the pair-copula itself (see \link{bicop}).\cr
-\link{get_parameters} = the parameters of the pair-copula (i.e., a \code{numeric}
-scalar, vector, or matrix).\cr
-\link{get_family} = a character for the family (see \link{bicop} for implemented families).\cr
-\link{get_ktau} = a \code{numeric} scalar with the pair-copula Kendall's tau.\cr
+the entries corresponding to the pair-copula indexed by its \code{tree} and
+\code{edge}. When \code{object} is of class \code{bicop_dist}, \code{tree} and \code{edge} are not
+required. \cr
+\itemize{
+\item \code{\link[=get_pair_copula]{get_pair_copula()}} = the pair-copula itself (see \link{bicop}).
+\item \code{\link[=get_parameters]{get_parameters()}} = the parameters of the pair-copula (i.e., a \code{numeric}
+scalar, vector, or matrix).
+\item \code{\link[=get_family]{get_family()}} = a character for the family (see \link{bicop} for
+implemented families).
+\item \code{\link[=get_ktau]{get_ktau()}} = a \code{numeric} scalar with the pair-copula Kendall's tau.
+}
 
 The \code{get_all_xyz} methods (for \code{vinecop_dist} or \code{vine_dist} objects only)
 return lists of lists, with each element corresponding to a tree in \code{trees},
-and then elements of the sublists correspond to edges.
-The returned lists have two additional attributes: \cr
-
-\code{"d"} = the dimension of the model.\cr
-\code{"trees"} = the extracted trees.\cr
+and then elements of the sublists correspond to edges. The returned lists
+have two additional attributes:
+\itemize{
+\item \code{"d"} = the dimension of the model.
+\item \code{"trees"} = the extracted trees.
+}
 }
 \examples{
 # specify pair-copulas

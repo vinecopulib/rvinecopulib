@@ -50,10 +50,9 @@
 #'
 #' Concerning `margins`:
 #'
-#' * For objects created with [vine_dist()], it simply corresponds to the `margins`
-#' argument.
-#' * For objects created with [vine()], it is a list of objects of class `kde1d`,
-#' see [kde1d::kde1d()].
+#' * For objects created with [vine_dist()], it simply corresponds to the
+#' `margins` argument. * For objects created with [vine()], it is a list of
+#' objects of class `kde1d`, see [kde1d::kde1d()].
 #'
 #' @examples
 #' # specify pair-copulas
@@ -107,13 +106,14 @@ vine <- function(data,
                  ),
                  weights = numeric(),
                  keep_data = FALSE) {
-
-  ## continuous convolution
-  data_cc <- cont_conv(data)
-
   ## basic sanity checks (copula_controls are checked by vinecop)
-  assert_that(NCOL(data_cc) > 1, msg = "data must be multivariate.")
-  d <- ncol(data_cc)
+  assert_that(NCOL(data) > 1, msg = "data must be multivariate.")
+  data <- expand_factors(data)
+
+  d <- ncol(data)
+  var_types <- rep("c", d)
+  var_types[sapply(data, is.ordered)] <- "d"
+
   assert_that(is.list(margins_controls))
   allowed_margins_controls <- c("mult", "xmin", "xmax", "bw", "deg")
   assert_that(in_set(names(margins_controls), allowed_margins_controls))
@@ -127,42 +127,75 @@ vine <- function(data,
 
   ## estimation of the marginals
   vine <- list()
-  vine$margins <- lapply(1:d, function(k) kde1d(data_cc[, k],
-      mult = margins_controls$mult[k],
-      xmin = margins_controls$xmin[k],
-      xmax = margins_controls$xmax[k],
-      bw = margins_controls$bw[k],
-      deg = margins_controls$deg[k],
-      weights = weights
-    ))
+  vine$margins <- lapply(1:d, function(k) kde1d(data[, k],
+                                                mult = margins_controls$mult[k],
+                                                xmin = margins_controls$xmin[k],
+                                                xmax = margins_controls$xmax[k],
+                                                bw = margins_controls$bw[k],
+                                                deg = margins_controls$deg[k],
+                                                weights = weights
+  ))
   vine$margins_controls <- margins_controls
 
-  ## estimation of the R-vine copula (only if d > 1)
-  if (d > 1) {
-    ## transform to copula data
-    copula_controls$data <- sapply(1:d, function(k) pkde1d(
-        data_cc[, k],
-        vine$margins[[k]]
-      ))
-    ## estimate the copula
-    copula_controls$weights <- weights
-    vine$copula <- do.call(vinecop, copula_controls)
-  }
+  ## estimation of the R-vine copula --------------
+  copula_controls$data <- compute_pseudo_obs(data, vine)
+  copula_controls$var_types <- var_types
+  copula_controls$weights <- weights
+  vine$copula <- do.call(vinecop, copula_controls)
   vine$copula_controls <- copula_controls[-which(names(copula_controls) == "data")]
 
-  finalize_vine(vine, data_cc, weights, keep_data)
+  finalize_vine(vine, data, weights, keep_data)
+}
+
+compute_pseudo_obs <- function(data, vine) {
+  d <- ncol(data)
+  u <- dpq_marg(data, vine)
+  if (any(sapply(data, is.factor))) {
+    u_sub <- u
+    for (k in seq_len(d)) {
+      if (is.factor(data[, k])) {
+        lv <- as.numeric(data[, k]) - 1
+        lv[lv == 0] <- NA
+        u_sub[, k] <- eval_one_dpq(levels(data[, k])[lv], vine$margins[[k]])
+        u_sub[is.na(u_sub[, k]) & !is.na(data[, k]), k] <- 0
+      }
+    }
+  } else {
+    u_sub <- NULL
+  }
+  cbind(u, u_sub)
+}
+
+#' @importFrom stats model.matrix
+#' @noRd
+expand_factors <- function(data) {
+  if (is.data.frame(data)) {
+    data <- lapply(data, function(x) {
+      if (is.numeric(x) | is.ordered(x))
+        return(x)
+      x <- model.matrix(~ x)[, -1, drop = FALSE]
+      x <- as.data.frame(x)
+      x <- lapply(x, function(y) ordered(y, levels = 0:1))
+    })
+  }
+  as.data.frame(data)
 }
 
 #' @param margins A list with with each element containing the specification of a
 #' marginal [stats::Distributions]. Each marginal specification
 #' should be a list with containing at least the distribution family (`"distr"`)
 #' and optionally the parameters, e.g.
-#' `list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))`.
+#' ```
+#' list(list(distr = "norm"),
+#'      list(distr = "norm", mu = 1),
+#'      list(distr = "beta", shape1 = 1, shape2 = 1))
+#' ```
 #' Note that parameters that have no default values have to be provided.
-#' Furthermore, if `margins` has length one, it will be recycled for every component.
+#' Furthermore, if `margins` has length one, it will be recycled for every
+#' component.
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where
-#'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
-#'    tree `t`.
+#'   \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
+#'   tree `t`.
 #' @param structure an `rvine_structure` object, namely a compressed
 #' representation of the vine structure, or an object that can be coerced
 #' into one (see [rvine_structure()] and [as_rvine_structure()]).
@@ -188,8 +221,8 @@ vine_dist <- function(margins, pair_copulas, structure) {
   if (!all(is_ok)) {
     msg <- "Some objects in marg aren't properly defined.\n"
     msg <- c(msg, paste0("margin ", seq_along(check_marg)[!is_ok], " : ",
-      unlist(check_marg[!is_ok]), ".",
-      sep = "\n"
+                         unlist(check_marg[!is_ok]), ".",
+                         sep = "\n"
     ))
     stop(msg)
   }
@@ -218,15 +251,11 @@ expand_margin_controls <- function(controls, d, data) {
 }
 
 finalize_vine <- function(vine, data, weights, keep_data) {
-  ## compute npars/loglik and adjust margins for discrete data and
+  ## compute npars/loglik
   npars <- loglik <- 0
   for (k in seq_len(ncol(data))) {
     npars <- npars + vine$margins[[k]]$edf
     loglik <- loglik + vine$margins[[k]]$loglik
-    if (k %in% attr(data, "i_disc")) {
-      vine$margins[[k]]$jitter_info$i_disc[1] <- 1
-      vine$margins[[k]]$jitter_info$levels$x <- attr(data, "levels")[[k]]
-    }
   }
 
   ## add the npars/loglik of the copulas
@@ -240,13 +269,14 @@ finalize_vine <- function(vine, data, weights, keep_data) {
   } else {
     vine$data <- matrix(NA, ncol = ncol(data))
     colnames(vine$data) <- colnames(data)
-    attr(vine$data, "i_disc") <- attr(data, "i_disc")
-    attr(vine$data, "levels") <- attr(data, "levels")
   }
 
   ## add number of observations
   vine$nobs <- nrow(data)
   vine$names <- vine$copula$names <- colnames(data)
+
+  ## store levels for discrete variables
+  vine$var_levels <- lapply(data, levels)
 
   ## create and return object
   structure(vine, class = c("vine", "vine_dist"))

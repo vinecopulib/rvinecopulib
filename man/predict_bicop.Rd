@@ -2,11 +2,12 @@
 % Please edit documentation in R/bicop_methods.R
 \name{bicop_predict_and_fitted}
 \alias{bicop_predict_and_fitted}
+\alias{predict.bicop_dist}
 \alias{predict.bicop}
 \alias{fitted.bicop}
 \title{Predictions and fitted values for a bivariate copula model}
 \usage{
-\method{predict}{bicop}(object, newdata, what = "pdf", ...)
+\method{predict}{bicop_dist}(object, newdata, what = "pdf", ...)
 
 \method{fitted}{bicop}(object, what = "pdf", ...)
 }
@@ -25,17 +26,28 @@
 \code{\link[=pbicop]{pbicop()}}, and \code{\link[=hbicop]{hbicop()}}.
 }
 \description{
-Predictions of the density, distribution function,
-h-functions (with their inverses) for a bivariate copula model.
+Predictions of the density, distribution function, h-functions (with their
+inverses) for a bivariate copula model.
 }
 \details{
 \code{fitted()} can only be called if the model was fit with the
 \code{keep_data = TRUE} option.
+\subsection{Discrete variables}{
+
+When at least one variable is discrete, mote than two columns are required
+for \code{newdata}: the first \eqn{n \times 2} block contains realizations of
+\eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
+realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+\eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
+limit and the cdf itself coincide. Respective columns can be omitted in the
+second block.
+}
 }
 \examples{
 # Simulate and fit a bivariate copula model
 u <- rbicop(500, "gauss", 0, 0.5)
-fit <- bicop(u, "par", keep_data = TRUE)
+fit <- bicop(u, family = "par", keep_data = TRUE)
 
 # Predictions
 all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))

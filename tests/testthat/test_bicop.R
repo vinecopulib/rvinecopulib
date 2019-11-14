@@ -10,28 +10,31 @@ test_that("returns proper 'bicop' object", {
   expect_s3_class(fit, "bicop_dist")
   expect_identical(
     names(fit),
-    c("family", "rotation", "parameters", "npars", "loglik", "data", "controls", "nobs")
+    c("family", "rotation", "parameters", "var_types",
+      "npars", "loglik", "data", "controls", "nobs")
   )
 
-  fit <- bicop(u, "tll", keep_data = FALSE)
+  fit <- bicop(u, family = "tll", keep_data = FALSE)
   expect_s3_class(fit, "bicop")
   expect_s3_class(fit, "bicop_dist")
   expect_identical(
     names(fit),
-    c("family", "rotation", "parameters", "npars", "loglik", "controls", "nobs")
+    c("family", "rotation", "parameters", "var_types",
+      "npars", "loglik", "controls", "nobs")
   )
 
   colnames(u) <- paste(1:2)
   expect_identical(
-    names(bicop(u, "indep")),
-    c("family", "rotation", "parameters", "npars", "loglik", "names", "controls", "nobs")
+    names(bicop(u, family = "indep")),
+    c("family", "rotation", "parameters", "var_types",
+      "npars", "loglik", "names", "controls", "nobs")
   )
 })
 
 test_that("partial matching for family set names", {
-  bicop(u, "arch")
-  bicop(u, "nonp")
-  expect_error(bicop(u, "asdf"))
+  bicop(u, family = "arch")
+  bicop(u, family = "nonp")
+  expect_error(bicop(u, family = "asdf"))
 })
 
 test_that("S3 generics work", {
@@ -45,5 +48,5 @@ test_that("S3 generics work", {
   expect_equivalent(logLik(fit), sum(log(predict(fit, u, what = "pdf"))))
   expect_output(print(fit))
   expect_output(summary(fit))
-  expect_output(print(bicop(u, "nonp")))
+  expect_output(print(bicop(u, family = "nonp")))
 })

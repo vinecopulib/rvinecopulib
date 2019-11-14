@@ -19,7 +19,7 @@
 #'  * `list` : must contain named elements `order` and `struct_array` to be
 #'  coerced into an R-vine structure (see [rvine_structure()] for more details).
 #'
-#' #' For `as_rvine_matrix`:
+#' For `as_rvine_matrix`:
 #'
 #'  * `rvine_structure` : allow to coerce an `rvine_structure` into an
 #'  R-vine matrix (useful e.g. for printing).
@@ -44,22 +44,22 @@
 #'   c(3, 3),
 #'   2
 #' ))
-#' 
+#'
 #' # ... or a similar list can be coerced into an R-vine structure
 #' as_rvine_structure(list(order = 1:4, struct_array = list(
 #'   c(4, 4, 4),
 #'   c(3, 3),
 #'   2
 #' )))
-#' 
+#'
 #' # similarly, standard matrices can be coerced into R-vine structures
 #' mat <- matrix(c(4, 3, 2, 1, 4, 3, 2, 0, 4, 3, 0, 0, 4, 0, 0, 0), 4, 4)
 #' as_rvine_structure(mat)
-#' 
+#'
 #' # or truncate and construct the structure
 #' mat[3, 1] <- 0
 #' as_rvine_structure(mat)
-#' 
+#'
 #' # throws an error
 #' mat[3, 1] <- 5
 #' try(as_rvine_structure(mat))
@@ -108,15 +108,16 @@ as_rvine_matrix.rvine_structure <- function(x, ..., validate = FALSE) {
   # extract order and dimension
   order <- x$order
   d <- dim(x)[1]
+  trunc_lvl <- dim(x)[2]
 
   # set-up output
   matrix <- matrix(0, d, d)
 
   # fill output
   diag(matrix[d:1, ]) <- order
-  for (i in 1:(d - 1)) {
-    newcol <- order[x[["struct_array"]][[i]]]
-    matrix[1:length(newcol), i] <- newcol
+  for (i in seq_len(min(trunc_lvl, d - 1))) {
+    newrow <- order[x[["struct_array"]][[i]]]
+    matrix[i, 1:length(newrow)] <- newrow
   }
 
   class(matrix) <- c("rvine_matrix", class(matrix))
@@ -129,41 +130,35 @@ as_rvine_matrix.rvine_structure <- function(x, ..., validate = FALSE) {
 #' of `x` is assumed to be provided in natural order already (a structure is in
 #' natural order if the anti-diagonal is 1, .., d from bottom left to top
 #' right).
-#' @param byrow whether the element of the list named `struct_array`
-#' is assumed to be provided by column or by row.
 #' @export
 #' @rdname as_rvine_structure
-as_rvine_structure.list <- function(x, ..., is_natural_order = FALSE, byrow = TRUE) {
+as_rvine_structure.list <- function(x, ..., is_natural_order = FALSE) {
   assert_that(
     is.list(x),
     all(c("order", "struct_array") %in% names(x)),
-    is.flag(is_natural_order),
-    is.flag(byrow)
+    is.flag(is_natural_order)
   )
 
   rvine_structure(
     x[["order"]],
     x[["struct_array"]],
-    is_natural_order,
-    byrow
+    is_natural_order
   )
 }
 
 #' @export
 #' @rdname as_rvine_structure
-as_rvine_matrix.list <- function(x, ..., is_natural_order = FALSE, byrow = TRUE) {
+as_rvine_matrix.list <- function(x, ..., is_natural_order = FALSE) {
   assert_that(
     is.list(x),
     all(c("order", "struct_array") %in% names(x)),
-    is.flag(is_natural_order),
-    is.flag(byrow)
+    is.flag(is_natural_order)
   )
 
   rvine_struct <- rvine_structure(
     x[["order"]],
     x[["struct_array"]],
-    is_natural_order,
-    byrow
+    is_natural_order
   )
 
   as_rvine_matrix.rvine_structure(rvine_struct)
@@ -183,7 +178,7 @@ as_rvine_structure.rvine_matrix <- function(x, ..., validate = FALSE) {
   # compute structure array in natural order
   d <- dim(x)[1]
   order <- order(diag(x[d:1, ]))
-  struct_array <- lapply(1:(d - 1), function(i) order[x[1:(d - i), i]])
+  struct_array <- lapply(1:(d - 1), function(i) order[x[i, 1:(d - i)]])
 
   # create and return x
   structure(list(

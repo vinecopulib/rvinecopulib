@@ -12,16 +12,25 @@
 \alias{hbicop_dist}
 \title{Bivariate copula distributions}
 \usage{
-dbicop(u, family, rotation, parameters)
+dbicop(u, family, rotation, parameters, var_types = c("c", "c"))
 
-pbicop(u, family, rotation, parameters)
+pbicop(u, family, rotation, parameters, var_types = c("c", "c"))
 
 rbicop(n, family, rotation, parameters, qrng = FALSE)
 
-hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
+hbicop(
+  u,
+  cond_var,
+  family,
+  rotation,
+  parameters,
+  inverse = FALSE,
+  var_types = c("c", "c")
+)
 }
 \arguments{
-\item{u}{evaluation points, either a length 2 vector or a two-column matrix.}
+\item{u}{evaluation points, a matrix with at least two columns, see
+\emph{Details}.}
 
 \item{family}{the copula family, a string containing the family name (see
 \code{\link{bicop}} for all possible families).}
@@ -29,6 +38,10 @@ hbicop(u, cond_var, family, rotation, parameters, inverse = FALSE)
 \item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
 
 \item{parameters}{a vector or matrix of copula parameters.}
+
+\item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
+both continuous (default), or \code{c("c", "d")} for first variable continuous
+and second discrete.}
 
 \item{n}{number of observations. If `length(n) > 1``, the length is taken to
 be the number required.}
@@ -53,8 +66,8 @@ The numerical arguments other than \code{n} are recycled to the length of the
 result.
 }
 \description{
-Density, distribution function, random generation and h-functions (with
-their inverses) for the bivariate copula distribution.
+Density, distribution function, random generation and h-functions (with their
+inverses) for the bivariate copula distribution.
 }
 \details{
 See \link{bicop} for the various implemented copula families.
@@ -66,10 +79,21 @@ from a copula. If \eqn{C(u, v) = P(U \le u, V \le v)} is a copula, then
 In other words, the H-function number refers to the conditioning variable.
 When inverting H-functions, the inverse is then taken with respect to the
 other variable, that is \code{v} when \code{cond_var = 1} and \code{u} when \code{cond_var = 2}.
+\subsection{Discrete variables}{
+
+When at least one variable is discrete, mote than two columns are required
+for \code{u}: the first \eqn{n \times 2} block contains realizations of
+\eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
+realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+\eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
+limit and the cdf itself coincide. Respective columns can be omitted in the
+second block.
+}
 }
 \note{
-The functions can optionally be used with a \link{bicop_dist}
-object, e.g., \code{dbicop(c(0.1, 0.5), bicop_dist("indep"))}.
+The functions can optionally be used with a \link{bicop_dist} object, e.g.,
+\code{dbicop(c(0.1, 0.5), bicop_dist("indep"))}.
 }
 \examples{
 ## evaluate the copula density
@@ -86,10 +110,15 @@ plot(rbicop(500, "clay", 90, 3))
 joe_cop <- bicop_dist("joe", 0, 3)
 # h_1(0.1, 0.2)
 hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5))
-# h_2(0.1, 0.2)
-hbicop(c(0.1, 0.2), 2, joe_cop)
-# h_1^{-1}(0.1, 0.2)
-hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5), inverse = TRUE)
 # h_2^{-1}(0.1, 0.2)
 hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
+
+## mixed discrete and continuous data
+x <- cbind(rpois(10, 1), rnorm(10, 1))
+u <- cbind(ppois(x[, 1], 1), pnorm(x[, 2]), ppois(x[, 1] - 1, 1))
+pbicop(u, "clay", 90, 3, var_types = c("d", "c"))
+
+}
+\seealso{
+\code{\link[=bicop_dist]{bicop_dist()}}, \code{\link[=bicop]{bicop()}}
 }
