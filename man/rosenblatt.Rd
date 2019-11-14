@@ -62,5 +62,5 @@ pairs(inverse_rosenblatt(u, fit))
 
 # works similarly for vinecop modles
 vc <- fit$copula
-rosenblattt(pseudo_obs(x), vc)
+rosenblatt(pseudo_obs(x), vc)
 }

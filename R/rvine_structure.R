@@ -218,7 +218,7 @@ plot.rvine_structure <- function(x, tree = 1, edge_labels = FALSE, ...) {
 #' @examples
 #' mat <- rbind(c(1, 1, 1), c(2, 2, 0), c(3, 0, 0))
 #' plot(rvine_matrix(mat))
-#' plot(rvine_matrix_sim(1:5))
+#' plot(rvine_matrix_sim(5))
 plot.rvine_matrix <- function(x, tree = 1, edge_labels = FALSE, ...) {
   plot(as_rvine_structure(x), tree = tree, edge_labels = edge_labels)
 }

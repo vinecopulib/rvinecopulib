@@ -51,7 +51,7 @@
 #'
 #' # works similarly for vinecop modles
 #' vc <- fit$copula
-#' rosenblattt(pseudo_obs(x), vc)
+#' rosenblatt(pseudo_obs(x), vc)
 #' @export
 rosenblatt <- function(x, model, cores = 1) {
   assert_that(

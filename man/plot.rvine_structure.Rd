@@ -28,5 +28,5 @@ plot(cvine_structure(1:5))
 plot(rvine_structure_sim(5))
 mat <- rbind(c(1, 1, 1), c(2, 2, 0), c(3, 0, 0))
 plot(rvine_matrix(mat))
-plot(rvine_matrix_sim(1:5))
+plot(rvine_matrix_sim(5))
 }
