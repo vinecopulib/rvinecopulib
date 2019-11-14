@@ -348,3 +348,35 @@ is.rvine_structure <- function(structure) {
 is.rvine_matrix <- function(matrix) {
   inherits(matrix, "rvine_matrix")
 }
+
+
+#' Simulate R-vine structures
+#'
+#' Simulates from a uniform distribution over all R-vine structures on d
+#' variables. `rvine_structure_sim()` returns an `rvine_structure` object,
+#' `rvine_matrix_sim()` and `rvine_matrix`.
+#'
+#' @aliases rvine_matrix_sim
+#'
+#' @param d the number of variables
+#' @param natural_order boolean; whether the structures should be in natural
+#'   order (counter-diagonal is `1:d`).
+#'
+#' @return
+#' @export
+#' @examples
+#' rvine_structure_sim(10)
+#'
+#' rvine_structure_sim(10, natural_order = TRUE)  # counter-diagonal is 1:d
+#'
+#' rvine_matrix_sim(10)
+rvine_structure_sim <- function(d, natural_order = FALSE) {
+  assert_that(is.count(d), is.flag(natural_order))
+  rvine_structure_sim_cpp(d, natural_order, get_seeds())
+}
+
+#' @rdname rvine_structure_sim
+#' @export
+rvine_matrix_sim <- function(d, natural_order = FALSE) {
+  as_rvine_matrix(rvine_structure_sim(d, natural_order))
+}

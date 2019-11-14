@@ -61,6 +61,10 @@ rvine_structure_check_cpp <- function(rvine_struct, is_natural_order) {
     invisible(.Call(`_rvinecopulib_rvine_structure_check_cpp`, rvine_struct, is_natural_order))
 }
 
+rvine_structure_sim_cpp <- function(d, natural_order, seeds) {
+    .Call(`_rvinecopulib_rvine_structure_sim_cpp`, d, natural_order, seeds)
+}
+
 rvine_matrix_check_cpp <- function(matrix) {
     invisible(.Call(`_rvinecopulib_rvine_matrix_check_cpp`, matrix))
 }

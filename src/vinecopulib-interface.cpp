@@ -146,6 +146,16 @@ void rvine_structure_check_cpp(const Rcpp::List& rvine_struct,
 }
 
 // [[Rcpp::export()]]
+Rcpp::List rvine_structure_sim_cpp(size_t d,
+                                   bool natural_order,
+                                   const std::vector<int>& seeds) {
+
+  auto rvs = RVineStructure::simulate(d, natural_order, seeds);
+  return rvine_structure_wrap(rvs);
+}
+
+
+// [[Rcpp::export()]]
 void rvine_matrix_check_cpp(
     Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> matrix) {
   auto rvine_structure = RVineStructure(matrix);
