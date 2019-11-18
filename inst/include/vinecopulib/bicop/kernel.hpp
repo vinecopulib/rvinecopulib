@@ -32,39 +32,41 @@ public:
   KernelBicop();
 
 protected:
-  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u) override;
 
   Eigen::VectorXd pdf(const Eigen::MatrixXd& u) override;
 
-  Eigen::VectorXd cdf(const Eigen::MatrixXd& u);
+  Eigen::VectorXd cdf(const Eigen::MatrixXd& u) override;
 
-  Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u) override;
 
-  Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u) override;
 
   Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u) override;
 
   Eigen::VectorXd hfunc2(const Eigen::MatrixXd& u) override;
 
-  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u) override;
 
-  Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u) override;
 
-  double get_npars();
+  double get_npars() override;
 
-  Eigen::MatrixXd get_parameters() const;
+  Eigen::MatrixXd get_parameters() const override;
 
-  Eigen::MatrixXd get_parameters_lower_bounds() const;
+  Eigen::MatrixXd get_parameters_lower_bounds() const override;
 
-  Eigen::MatrixXd get_parameters_upper_bounds() const;
+  Eigen::MatrixXd get_parameters_upper_bounds() const override;
 
-  void set_parameters(const Eigen::MatrixXd& parameters);
+  void set_parameters(const Eigen::MatrixXd& parameters) override;
 
-  double parameters_to_tau(const Eigen::MatrixXd& parameters);
+  double parameters_to_tau(const Eigen::MatrixXd& parameters) override;
 
-  void flip();
+  void flip() override;
 
-  Eigen::MatrixXd tau_to_parameters(const double& tau);
+  Eigen::MatrixXd tau_to_parameters(const double& tau) override;
+
+  Eigen::VectorXd make_normal_grid(size_t m = 30);
 
   std::shared_ptr<tools_interpolation::InterpolationGrid> interp_grid_;
   double npars_;

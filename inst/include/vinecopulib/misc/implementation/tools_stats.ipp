@@ -109,7 +109,8 @@ to_pseudo_obs_1d(Eigen::VectorXd x, std::string ties_method)
         ++reps;
       // assign average rank of the tied values
       for (size_t k = 0; k < reps; ++k)
-        x[order[i + k]] = i + 1 + (reps - 1) / 2.0;
+        x[order[i + k]] = static_cast<double>(i) + 1.0 +
+                          (static_cast<double>(reps) - 1.0) / 2.0;
     }
   } else if (ties_method == "random") {
     // set up random number generator
@@ -133,7 +134,7 @@ to_pseudo_obs_1d(Eigen::VectorXd x, std::string ties_method)
     throw std::runtime_error(msg.str().c_str());
   }
 
-  return x / (x.size() + 1.0);
+  return x / (static_cast<double>(x.size()) + 1.0);
 }
 
 //! window smoother
@@ -184,8 +185,8 @@ cef(const Eigen::VectorXd& x,
 
 //! alternating conditional expectation algorithm
 inline Eigen::MatrixXd
-ace(const Eigen::MatrixXd& data, // data
-    const Eigen::VectorXd& weights = Eigen::VectorXd(),   // weights
+ace(const Eigen::MatrixXd& data,                        // data
+    const Eigen::VectorXd& weights = Eigen::VectorXd(), // weights
     size_t wl = 0,                // window length for the smoother
     size_t outer_iter_max = 100,  // max number of outer iterations
     size_t inner_iter_max = 10,   // max number of inner iterations
@@ -290,8 +291,7 @@ ace(const Eigen::MatrixXd& data, // data
 
 //! calculates the pairwise maximum correlation coefficient.
 inline double
-pairwise_mcor(const Eigen::MatrixXd& x,
-              const Eigen::VectorXd& weights)
+pairwise_mcor(const Eigen::MatrixXd& x, const Eigen::VectorXd& weights)
 {
   Eigen::MatrixXd phi = ace(x, weights);
   return wdm::wdm(phi, "cor", weights)(0, 1);
@@ -409,7 +409,7 @@ sobol(const size_t& n, const size_t& d, std::vector<int> seeds)
 
   // Evalulate X scaled by pow(2,32)
   Eigen::Matrix<size_t, Eigen::Dynamic, 1> X(n);
-  X(0) = scrambling(0) * std::pow(2.0, 32);
+  X(0) = static_cast<size_t>(scrambling(0) * std::pow(2.0, 32));
   for (size_t i = 1; i < n; i++) {
     X(i) = X(i - 1) ^ V(C(i - 1) - 1);
   }
@@ -438,7 +438,7 @@ sobol(const size_t& n, const size_t& d, std::vector<int> seeds)
     }
 
     // Evalulate X
-    X(0) = scrambling(j + 1) * std::pow(2.0, 32);
+    X(0) = static_cast<size_t>(scrambling(j + 1) * std::pow(2.0, 32));
     for (size_t i = 1; i < n; i++)
       X(i) = X(i - 1) ^ V(C(i - 1) - 1);
     output.block(0, j + 1, n, 1) = X.cast<double>();
@@ -514,18 +514,19 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
       btpdhk = sqrt(xnhk * (1 - xnhk)) * 2 / 3.14159265358979323844;
       size_t i1 = static_cast<size_t>(nu / 2);
       for (size_t j = 1; j <= i1; ++j) {
+        double jj = static_cast<double>(j << 1);
         bvt += gmph * (ks * btnckh + 1);
         bvt += gmpk * (hs * btnchk + 1);
         btnckh += btpdkh;
-        btpdkh = (j << 1) * btpdkh * (1 - xnkh) / ((j << 1) + 1);
+        btpdkh = jj * btpdkh * (1 - xnkh) / (jj + 1);
         btnchk += btpdhk;
-        btpdhk = (j << 1) * btpdhk * (1 - xnhk) / ((j << 1) + 1);
+        btpdhk = jj * btpdhk * (1 - xnhk) / (jj + 1);
         /* Computing 2nd power */
         d1 = h;
-        gmph = gmph * ((j << 1) - 1) / ((j << 1) * (d1 * d1 / nu + 1));
+        gmph = gmph * (jj - 1) / (jj * (d1 * d1 / nu + 1));
         /* Computing 2nd power */
         d1 = k;
-        gmpk = gmpk * ((j << 1) - 1) / ((j << 1) * (d1 * d1 / nu + 1));
+        gmpk = gmpk * (jj - 1) / (jj * (d1 * d1 / nu + 1));
       }
     } else {
       /* Computing 2nd power */
@@ -554,18 +555,19 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
       btpdhk = btnchk;
       size_t i1 = static_cast<size_t>((nu - 1) / 2);
       for (size_t j = 1; j <= i1; ++j) {
+        double jj = static_cast<double>(j << 1);
         bvt += gmph * (ks * btnckh + 1);
         bvt += gmpk * (hs * btnchk + 1);
-        btpdkh = ((j << 1) - 1) * btpdkh * (1 - xnkh) / (j << 1);
+        btpdkh = (jj - 1) * btpdkh * (1 - xnkh) / jj;
         btnckh += btpdkh;
-        btpdhk = ((j << 1) - 1) * btpdhk * (1 - xnhk) / (j << 1);
+        btpdhk = (jj - 1) * btpdhk * (1 - xnhk) / jj;
         btnchk += btpdhk;
         /* Computing 2nd power */
         d1 = h;
-        gmph = (j << 1) * gmph / (((j << 1) + 1) * (d1 * d1 / nu + 1));
+        gmph = jj * gmph / ((jj + 1) * (d1 * d1 / nu + 1));
         /* Computing 2nd power */
         d1 = k;
-        gmpk = (j << 1) * gmpk / (((j << 1) + 1) * (d1 * d1 / nu + 1));
+        gmpk = jj * gmpk / ((jj + 1) * (d1 * d1 / nu + 1));
       }
     }
     return bvt;
@@ -592,93 +594,55 @@ inline Eigen::VectorXd
 pbvnorm(const Eigen::MatrixXd& z, double rho)
 {
 
-  static struct
-  {
-    double e_1[3];
-    double fill_2[7];
-    double e_3[6];
-    double fill_4[4];
-    double e_5[10];
-  } equiv_112 = { { .1713244923791705, .3607615730481384, .4679139345726904 },
-                  { 0 },
-                  { .04717533638651177,
-                    .1069393259953183,
-                    .1600783285433464,
-                    .2031674267230659,
-                    .2334925365383547,
-                    .2491470458134029 },
-                  { 0 },
-                  { .01761400713915212,
-                    .04060142980038694,
-                    .06267204833410906,
-                    .08327674157670475,
-                    .1019301198172404,
-                    .1181945319615184,
-                    .1316886384491766,
-                    .1420961093183821,
-                    .1491729864726037,
-                    .1527533871307259 } };
-  auto w = reinterpret_cast<double*>(&equiv_112);
-
-  static struct
-  {
-    double e_1[3];
-    double fill_2[7];
-    double e_3[6];
-    double fill_4[4];
-    double e_5[10];
-  } equiv_113 = { { -.9324695142031522, -.6612093864662647, -.238619186083197 },
-                  { 0 },
-                  { -.9815606342467191,
-                    -.904117256370475,
-                    -.769902674194305,
-                    -.5873179542866171,
-                    -.3678314989981802,
-                    -.1252334085114692 },
-                  { 0 },
-                  { -.9931285991850949,
-                    -.9639719272779138,
-                    -.9122344282513259,
-                    -.8391169718222188,
-                    -.7463319064601508,
-                    -.636053680726515,
-                    -.5108670019508271,
-                    -.3737060887154196,
-                    -.2277858511416451,
-                    -.07652652113349733 } };
-  auto x = reinterpret_cast<double*>(&equiv_113);
-
+  // normal cdf
   boost::math::normal dist;
   auto phi = [&dist](double y) { return boost::math::cdf(dist, y); };
 
-  size_t lg, ng;
+  // set-up required constants
+  size_t lg;
   if (std::fabs(rho) < .3f) {
-    ng = 1;
     lg = 3;
   } else if (std::fabs(rho) < .75f) {
-    ng = 2;
     lg = 6;
   } else {
-    ng = 3;
     lg = 10;
   }
+  Eigen::VectorXd w(lg), x(lg);
+  if (std::fabs(rho) < .3f) {
+    w << 0.1713244923791705, 0.3607615730481384, 0.4679139345726904;
+    x << -.9324695142031522, -.6612093864662647, -.238619186083197;
+  } else if (std::fabs(rho) < .75f) {
+    w << 0.04717533638651177, 0.1069393259953183, 0.1600783285433464,
+      0.2031674267230659, 0.2334925365383547, 0.2491470458134029;
+    x << -.9815606342467191, -.904117256370475, -.769902674194305,
+      -.5873179542866171, -.3678314989981802, -.1252334085114692;
+  } else {
+    w << 0.01761400713915212, 0.04060142980038694, 0.06267204833410906,
+      0.08327674157670475, 0.1019301198172404, 0.1181945319615184,
+      0.1316886384491766, 0.1420961093183821, 0.1491729864726037,
+      0.1527533871307259;
+    x << -.9931285991850949, -.9639719272779138, -.9122344282513259,
+      -.8391169718222188, -.7463319064601508, -.636053680726515,
+      -.5108670019508271, -.3737060887154196, -.2277858511416451,
+      -.07652652113349733;
+  }
 
-  auto f = [ng, lg, rho, x, w, phi](double h, double k) {
+  auto f = [lg, rho, x, w, phi](double h, double k) {
     size_t i1;
     double a, b, c, d, d1, d2, as, bs, hk, hs, sn, rs, xs, bvn, asr;
     h = -h;
     k = -k;
     hk = h * k;
-    bvn = 0.;
+    bvn = 0.0;
     if (std::fabs(rho) < .925f) {
       hs = (h * h + k * k) / 2;
       asr = asin(rho);
       i1 = lg;
-      for (size_t i = 1; i <= i1; ++i) {
-        sn = sin(asr * (x[i + ng * 10 - 11] + 1) / 2);
-        bvn += w[i + ng * 10 - 11] * exp((sn * hk - hs) / (1 - sn * sn));
-        sn = sin(asr * (-x[i + ng * 10 - 11] + 1) / 2);
-        bvn += w[i + ng * 10 - 11] * exp((sn * hk - hs) / (1 - sn * sn));
+      for (size_t i = 0; i < i1; ++i) {
+        sn = std::sin(asr * (x(i) + 1) / 2);
+        bvn += w(i) * std::exp((sn * hk - hs) / (1 - sn * sn));
+        sn = std::sin(asr * (-x(i) + 1) / 2);
+        bvn += w(i) * std::exp((sn * hk - hs) / (1 - sn * sn));
       }
       d1 = -h;
       d2 = -k;
@@ -690,39 +654,39 @@ pbvnorm(const Eigen::MatrixXd& z, double rho)
       }
       if (std::fabs(rho) < 1.) {
         as = (1 - rho) * (rho + 1);
-        a = sqrt(as);
+        a = std::sqrt(as);
         /* Computing 2nd power */
         d1 = h - k;
         bs = d1 * d1;
         c = (4 - hk) / 8;
         d = (12 - hk) / 16;
-        bvn = a * exp(-(bs / as + hk) / 2) *
+        bvn = a * std::exp(-(bs / as + hk) / 2) *
               (1 - c * (bs - as) * (1 - d * bs / 5) / 3 + c * d * as * as / 5);
         if (hk > -160.) {
-          b = sqrt(bs);
+          b = std::sqrt(bs);
           d1 = -b / a;
-          bvn -= exp(-hk / 2) * sqrt(6.283185307179586) * phi(d1) * b *
-                 (1 - c * bs * (1 - d * bs / 5) / 3);
+          bvn -= std::exp(-hk / 2) * std::sqrt(6.283185307179586) * phi(d1) *
+                 b * (1 - c * bs * (1 - d * bs / 5) / 3);
         }
         a /= 2;
         i1 = lg;
-        for (size_t i = 1; i <= i1; ++i) {
+        for (size_t i = 0; i < i1; ++i) {
           /* Computing 2nd power */
-          d1 = a * (x[i + ng * 10 - 11] + 1);
+          d1 = a * (x(i) + 1);
           xs = d1 * d1;
-          rs = sqrt(1 - xs);
-          bvn += a * w[i + ng * 10 - 11] *
-                 (exp(-bs / (xs * 2) - hk / (rs + 1)) / rs -
-                  exp(-(bs / xs + hk) / 2) * (c * xs * (d * xs + 1) + 1));
+          rs = std::sqrt(1 - xs);
+          bvn += a * w(i) *
+                 (std::exp(-bs / (xs * 2) - hk / (rs + 1)) / rs -
+                  std::exp(-(bs / xs + hk) / 2) * (c * xs * (d * xs + 1) + 1));
           /* Computing 2nd power */
-          d1 = -x[i + ng * 10 - 11] + 1;
+          d1 = -x(i) + 1;
           xs = as * (d1 * d1) / 4;
-          rs = sqrt(1 - xs);
+          rs = std::sqrt(1 - xs);
           /* Computing 2nd power */
           d1 = rs + 1;
-          bvn +=
-            a * w[i + ng * 10 - 11] * exp(-(bs / xs + hk) / 2) *
-            (exp(-hk * xs / (d1 * d1 * 2)) / rs - (c * xs * (d * xs + 1) + 1));
+          bvn += a * w(i) * std::exp(-(bs / xs + hk) / 2) *
+                 (std::exp(-hk * xs / (d1 * d1 * 2)) / rs -
+                  (c * xs * (d * xs + 1) + 1));
         }
         bvn = -bvn / 6.283185307179586;
       }

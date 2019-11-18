@@ -30,47 +30,26 @@ public:
 
   Vinecop(size_t d);
 
-  // Constructors with structure only
-  Vinecop(const RVineStructure& structure);
+  // Constructors without data
+  Vinecop(const RVineStructure& structure,
+          const std::vector<std::vector<Bicop>>& pair_copulas = {},
+          const std::vector<std::string>& var_types = {});
 
   Vinecop(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
-          const bool check = true);
-
-  Vinecop(const std::vector<size_t>& order,
-          const TriangularArray<size_t>& struct_array,
-          const bool check = true);
-
-  // Constructors with pair_copulas + structure
-  Vinecop(const std::vector<std::vector<Bicop>>& pair_copulas,
-          const RVineStructure& structure);
-
-  Vinecop(const std::vector<std::vector<Bicop>>& pair_copulas,
-          const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
-          const bool check = true);
-
-  Vinecop(const std::vector<std::vector<Bicop>>& pair_copulas,
-          const std::vector<size_t>& order,
-          const TriangularArray<size_t>& struct_array,
-          const bool check = true);
+          const std::vector<std::vector<Bicop>>& pair_copulas = {},
+          const std::vector<std::string>& var_types = {});
 
   // Constructors from data
   Vinecop(const Eigen::MatrixXd& data,
+          const RVineStructure& structure = RVineStructure(),
+          const std::vector<std::string>& var_types = {},
           const FitControlsVinecop& controls = FitControlsVinecop());
 
   Vinecop(const Eigen::MatrixXd& data,
-          const RVineStructure& structure,
-          FitControlsVinecop controls = FitControlsVinecop());
-
-  Vinecop(const Eigen::MatrixXd& data,
-          const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
-          FitControlsVinecop controls = FitControlsVinecop(),
-          const bool check = true);
-
-  Vinecop(const Eigen::MatrixXd& data,
-          const std::vector<size_t>& order,
-          const TriangularArray<size_t>& struct_array,
-          FitControlsVinecop controls = FitControlsVinecop(),
-          const bool check = true);
+          const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix =
+            Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>(),
+          const std::vector<std::string>& var_types = {},
+          const FitControlsVinecop& controls = FitControlsVinecop());
 
   // Constructors from files/serialized objects
   Vinecop(const std::string filename, const bool check = true);
@@ -81,15 +60,15 @@ public:
   void to_json(const std::string filename) const;
 
   // Methods modifying structure and/or families and parameters
-  void select(Eigen::MatrixXd data,
+  void select(const Eigen::MatrixXd& data,
               const FitControlsVinecop& controls = FitControlsVinecop());
 
   DEPRECATED void select_all(
-    Eigen::MatrixXd data,
+    const Eigen::MatrixXd& data,
     const FitControlsVinecop& controls = FitControlsVinecop());
 
   DEPRECATED void select_families(
-    Eigen::MatrixXd data,
+    const Eigen::MatrixXd& data,
     const FitControlsVinecop& controls = FitControlsVinecop());
 
   // Getters for a single pair copula
@@ -154,6 +133,8 @@ public:
   Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd& u,
                                      const size_t num_threads = 1) const;
 
+  void set_all_pair_copulas(
+    const std::vector<std::vector<Bicop>>& pair_copulas);
   void set_var_types(const std::vector<std::string>& var_types);
 
   std::vector<std::string> get_var_types() const;
@@ -184,7 +165,7 @@ public:
 
 protected:
   size_t d_;
-  RVineStructure vine_struct_;
+  RVineStructure rvine_structure_;
   mutable std::vector<std::vector<Bicop>> pair_copulas_;
   double threshold_{ 0.0 };
   double loglik_{ NAN };

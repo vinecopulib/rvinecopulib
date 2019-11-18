@@ -21,9 +21,12 @@ namespace vinecopulib {
 //!     (for Independence, Gaussian, Student, Frank, and nonparametric
 //!     families, only 0 is allowed).
 //! @param parameters the copula parameters.
+//! @param var_types a vector of size two specifying the types of the variables,
+//!   e.g., `{"c", "d"}` means first varible continuous, second discrete.
 inline Bicop::Bicop(const BicopFamily family,
                     const int rotation,
-                    const Eigen::MatrixXd& parameters)
+                    const Eigen::MatrixXd& parameters,
+                    const std::vector<std::string>& var_types)
 {
   bicop_ = AbstractBicop::create(family, parameters);
   // family must be set before checking the rotation
@@ -33,6 +36,7 @@ inline Bicop::Bicop(const BicopFamily family,
   } else {
     bicop_->set_loglik(0.0);
   }
+  set_var_types(var_types);
 }
 
 //! @brief create a copula model from the data,
@@ -40,9 +44,13 @@ inline Bicop::Bicop(const BicopFamily family,
 //!
 //! @param data see select().
 //! @param controls see select().
+//! @param var_types a vector of size two specifying the types of the variables,
+//!   e.g., `{"c", "d"}` means first variable continuous, second discrete.
 inline Bicop::Bicop(const Eigen::MatrixXd& data,
-                    const FitControlsBicop& controls)
+                    const FitControlsBicop& controls,
+                    const std::vector<std::string>& var_types)
 {
+  set_var_types(var_types);
   select(data, controls);
 }
 
@@ -61,7 +69,8 @@ inline Bicop::Bicop(const boost::property_tree::ptree input)
       input.get_child("var_types"));
     nobs_ = input.get<size_t>("nobs_");
     bicop_->set_loglik(input.get<double>("loglik"));
-  } catch (...) {}
+  } catch (...) {
+  }
 }
 
 //! @brief creates from a JSON file
@@ -110,7 +119,7 @@ Bicop::to_json(const std::string filename) const
 
 //! @brief evaluates the copula density.
 //!
-//! @param data an \f$ n \times (2 + k) \f$ matrix of observations contained in
+//! @param u an \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1)^2 \f$, where \f$ k \f$ is the number of discrete variables.
 //! @return The copula density evaluated at \c u.
 inline Eigen::VectorXd
@@ -122,7 +131,7 @@ Bicop::pdf(const Eigen::MatrixXd& u) const
 
 //! @brief evaluates the copula distribution.
 //!
-//! @param data an \f$ n \times (2 + k) \f$ matrix of observations contained in
+//! @param u an \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1)^2 \f$, where \f$ k \f$ is the number of discrete variables.
 //! @return The copula distribution evaluated at \c u.
 inline Eigen::VectorXd
@@ -149,7 +158,7 @@ Bicop::cdf(const Eigen::MatrixXd& u) const
 //!
 //! The first h-function is
 //! \f$ h_1(u_1, u_2) = P(U_2 \le u_2 | U_1 = u_1) \f$.
-//! @param data an \f$ n \times (2 + k) \f$ matrix of observations contained in
+//! @param u an \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1)^2 \f$, where \f$ k \f$ is the number of discrete variables.
 inline Eigen::VectorXd
 Bicop::hfunc1(const Eigen::MatrixXd& u) const
@@ -181,7 +190,7 @@ Bicop::hfunc1(const Eigen::MatrixXd& u) const
 //!
 //! The second h-function is
 //! \f$ h_2(u_1, u_2) = P(U_1 \le u_1 | U_2 = u_2)  \f$.
-//! @param data an \f$ n \times (2 + k) \f$ matrix of observations contained in
+//! @param u an \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1)^2 \f$, where \f$ k \f$ is the number of discrete variables.
 inline Eigen::VectorXd
 Bicop::hfunc2(const Eigen::MatrixXd& u) const
@@ -211,7 +220,7 @@ Bicop::hfunc2(const Eigen::MatrixXd& u) const
 
 //! @brief calculates the inverse of \f$ h_1 \f$ (see hfunc1()) w.r.t. the
 //! second argument.
-//! @param data an \f$ n \times (2 + k) \f$ matrix of observations contained in
+//! @param u an \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1)^2 \f$, where \f$ k \f$ is the number of discrete variables.
 inline Eigen::VectorXd
 Bicop::hinv1(const Eigen::MatrixXd& u) const
@@ -241,7 +250,7 @@ Bicop::hinv1(const Eigen::MatrixXd& u) const
 
 //! @brief calculates the inverse of \f$ h_2 \f$ (see hfunc2()) w.r.t. the first
 //! argument.
-//! @param data an \f$ n \times (2 + k) \f$ matrix of observations contained in
+//! @param u an \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1)^2 \f$, where \f$ k \f$ is the number of discrete variables.
 inline Eigen::VectorXd
 Bicop::hinv2(const Eigen::MatrixXd& u) const
@@ -296,7 +305,7 @@ Bicop::simulate(const size_t& n,
 //! \f[ \mathrm{loglik} = \sum_{i = 1}^n \ln c(U_{1, i}, U_{2, i}), \f]
 //! where \f$ c \f$ is the copula density pdf().
 //!
-//! @param data an \f$ n \times (2 + k) \f$ matrix of observations contained in
+//! @param u an \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1)^2 \f$, where \f$ k \f$ is the number of discrete variables.
 inline double
 Bicop::loglik(const Eigen::MatrixXd& u) const
@@ -318,7 +327,7 @@ Bicop::loglik(const Eigen::MatrixXd& u) const
 //! get_npars(). The AIC is a consistent model selection criterion
 //! for nonparametric models.
 //!
-//! @param data an \f$ n \times (2 + k) \f$ matrix of observations contained in
+//! @param u an \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1)^2 \f$, where \f$ k \f$ is the number of discrete variables.
 inline double
 Bicop::aic(const Eigen::MatrixXd& u) const
@@ -335,13 +344,13 @@ Bicop::aic(const Eigen::MatrixXd& u) const
 //! get_npars(). The BIC is a consistent model selection criterion
 //! for parametric models.
 //!
-//! @param data an \f$ n \times (2 + k) \f$ matrix of observations contained in
+//! @param u an \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1)^2 \f$, where \f$ k \f$ is the number of discrete variables.
 inline double
 Bicop::bic(const Eigen::MatrixXd& u) const
 {
   Eigen::MatrixXd u_no_nan = u;
-  double n = nobs_;
+  double n = static_cast<double>(nobs_);
   if (u.rows() > 0) {
     tools_eigen::remove_nans(u_no_nan);
     n = static_cast<double>(u_no_nan.rows());
@@ -360,7 +369,7 @@ Bicop::bic(const Eigen::MatrixXd& u) const
 //! indicator for the family being non-independence; see loglik() and
 //! get_npars().
 //!
-//! @param data an \f$ n \times (2 + k) \f$ matrix of observations contained in
+//! @param u an \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1)^2 \f$, where \f$ k \f$ is the number of discrete variables.
 //! @param psi0 prior probability of a non-independence copula.
 inline double
@@ -371,7 +380,7 @@ Bicop::mbic(const Eigen::MatrixXd& u, const double psi0) const
   double npars = this->get_npars();
   double log_prior = static_cast<double>(!is_indep) * std::log(psi0) +
                      static_cast<double>(is_indep) * std::log(1.0 - psi0);
-  double n = nobs_;
+  double n = static_cast<double>(nobs_);
   if (u.rows() > 0) {
     n = static_cast<double>(u_no_nan.rows());
   }
@@ -527,19 +536,19 @@ inline void
 Bicop::check_data_dim(const Eigen::MatrixXd& u) const
 {
   size_t n_cols = u.cols();
-  auto n_disc = get_n_discrete();
-  unsigned short n_cols_exp = 2 + n_disc;
+  int n_disc = get_n_discrete();
+  unsigned short n_cols_exp = static_cast<unsigned short>(2 + n_disc);
   if ((n_cols != n_cols_exp) & (n_cols != 4)) {
     std::stringstream msg;
     msg << "data has wrong number of columns; "
-        << "expected: " << n_cols_exp << " or 4, actual: " << n_cols 
+        << "expected: " << n_cols_exp << " or 4, actual: " << n_cols
         << " (model contains ";
     if (n_disc == 0) {
       msg << "no discrete variables)." << std::endl;
     } else if (n_disc == 1) {
       msg << "1 discrete variable)." << std::endl;
     } else {
-      msg << get_n_discrete() << "discrete variables)." << std::endl;
+      msg << get_n_discrete() << " discrete variables)." << std::endl;
     }
     throw std::runtime_error(msg.str());
   }
@@ -560,22 +569,17 @@ Bicop::set_parameters(const Eigen::MatrixXd& parameters)
 
 //! @brief sets variable types.
 //! @param var_types a vector of size two specifying the types of the variables,
-//!   e.g., `{"c", "d"}` means first varible continuous, second discrete.
+//!   e.g., `{"c", "d"}` means first variable continuous, second discrete.
 inline void
 Bicop::set_var_types(const std::vector<std::string>& var_types)
 {
-  if (var_types.size() != 2) {
-    throw std::runtime_error("var_types must have size two.");
-  }
-  for (auto t : var_types) {
-    if (!tools_stl::is_member(t, { "c", "d" })) {
-      throw std::runtime_error("var type must be either 'c' or 'd'.");
-    }
-  }
+  check_var_types(var_types);
   var_types_ = var_types;
-  bicop_->set_var_types(var_types);
-  if (tools_stl::is_member(static_cast<size_t>(rotation_), { 90, 270 })) {
-    flip_var_types();
+  if (bicop_) {
+    bicop_->set_var_types(var_types);
+    if (tools_stl::is_member(static_cast<size_t>(rotation_), { 90, 270 })) {
+      flip_var_types();
+    }
   }
 }
 
@@ -805,7 +809,7 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
 }
 
 //! adds an additional column if there's only one discrete variable;
-//! removes superfluous columns for continuous variables. 
+//! removes superfluous columns for continuous variables.
 //! (continuous models only require two columns, discrete models always four)
 inline Eigen::MatrixXd
 Bicop::format_data(const Eigen::MatrixXd& u) const
@@ -824,7 +828,6 @@ Bicop::format_data(const Eigen::MatrixXd& u) const
   u_new.col(2 + cont_col) = u.col(cont_col);
   return u_new;
 }
-
 
 //! rotates the data corresponding to the models rotation.
 //! @param u an `n x 2` matrix.
@@ -910,6 +913,20 @@ Bicop::check_fitted() const
   }
 }
 
+//! checks whether var_types have the correct length and are either "c" or "d".
+inline void
+Bicop::check_var_types(const std::vector<std::string>& var_types) const
+{
+  if (var_types.size() != 2) {
+    throw std::runtime_error("var_types must have size two.");
+  }
+  for (auto t : var_types) {
+    if (!tools_stl::is_member(t, { "c", "d" })) {
+      throw std::runtime_error("var type must be either 'c' or 'd'.");
+    }
+  }
+}
+
 //! returns the number of discrete variables.
 inline unsigned short
 Bicop::get_n_discrete() const
@@ -918,7 +935,6 @@ Bicop::get_n_discrete() const
   for (auto t : var_types_) {
     n_discrete += (t == "d");
   }
-  return n_discrete;
+  return static_cast<unsigned short>(n_discrete);
 }
-
 }

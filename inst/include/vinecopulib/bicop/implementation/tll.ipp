@@ -217,10 +217,7 @@ TllBicop::fit(const Eigen::MatrixXd& data,
 
   // construct default grid (equally spaced on Gaussian scale)
   size_t m = 30;
-  Eigen::VectorXd grid_points(m);
-  for (size_t i = 0; i < m; ++i)
-    grid_points(i) = -3.25 + i * (6.5 / static_cast<double>(m - 1));
-  grid_points = tools_stats::pnorm(grid_points);
+  auto grid_points = this->make_normal_grid(m);
 
   // expand the interpolation grid; a matrix with two columns where each row
   // contains one combination of the grid points
@@ -260,11 +257,11 @@ TllBicop::fit(const Eigen::MatrixXd& data,
   // don't normalize margins of the EDF! (norm_times = 0)
   auto infl_grid = InterpolationGrid(grid_points, infl, 0);
   if ((var_types_[0] == "d") | (var_types_[1] == "d")) {
-      // for discrete, use mid ranks to compute EDF and log-likelihood
-      // (this is closer to "observations" than jittered or "upper" pseudo data)
-      psobs = 0.5 * (data.leftCols(2) + data.rightCols(2)).array();
-      npars_ = tools_eigen::unique(infl_grid.interpolate(psobs)).sum();
-      npars_ = std::max(npars_, 1.0);
+    // for discrete, use mid ranks to compute EDF and log-likelihood
+    // (this is closer to "observations" than jittered or "upper" pseudo data)
+    psobs = 0.5 * (data.leftCols(2) + data.rightCols(2)).array();
+    npars_ = tools_eigen::unique(infl_grid.interpolate(psobs)).sum();
+    npars_ = std::max(npars_, 1.0);
   } else {
     npars_ = std::max(infl_grid.interpolate(data).sum(), 1.0);
   }

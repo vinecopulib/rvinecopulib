@@ -30,7 +30,8 @@ calculate_criterion(const Eigen::MatrixXd& data,
   double w = 0.0;
   Eigen::MatrixXd data_no_nan = data;
   tools_eigen::remove_nans(data_no_nan, weights);
-  double freq = static_cast<double>(data_no_nan.rows()) / data.rows();
+  double freq =
+    static_cast<double>(data_no_nan.rows()) / static_cast<double>(data.rows());
   if (data_no_nan.rows() > 10) {
     if (tree_criterion == "mcor") {
       w = tools_stats::pairwise_mcor(data_no_nan, weights);
@@ -176,6 +177,7 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
 {
   // family set must be reset after each iteration of the threshold search
   auto family_set = controls_.get_family_set();
+  double d = static_cast<double>(d_);
 
   std::vector<double> thresholded_crits;
   if (controls_.get_select_threshold()) {
@@ -220,7 +222,7 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
     bool select_trunc_lvl = controls_.get_select_trunc_lvl();
     bool select_threshold = controls_.get_select_threshold();
     double num_changed = 0.0;
-    double num_total = d_ * (d_ - 1) / 2.0;
+    double num_total = d * (d - 1.0) / 2.0;
 
     for (size_t t = 0; t < d_ - 1; ++t) {
       if (controls_.get_trunc_lvl() < t) {
@@ -229,7 +231,7 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
 
       // select pair copulas (and possibly tree structure)
       select_tree(t);
-      num_changed += d_ - 1 - t;
+      num_changed += d - 1 - static_cast<double>(t);
 
       // update fit statistic
       double loglik_tree = get_loglik_of_tree(t);
@@ -577,12 +579,12 @@ VinecopSelector::add_pc_info(const EdgeIterator& e, VineTree& tree)
   tree[e].var_types[1] = tree[v1].var_types[std::abs(1 - pos1)];
 
   // collect pseudo observations for next tree
-  tree[e].pc_data.col(0) = get_hfunc(tree[v0], pos0);
-  tree[e].pc_data.col(1) = get_hfunc(tree[v1], pos1);
+  tree[e].pc_data.col(0) = get_hfunc(tree[v0], pos0 == 0);
+  tree[e].pc_data.col(1) = get_hfunc(tree[v1], pos1 == 0);
   if ((tree[e].var_types[0] == "d") | (tree[e].var_types[1] == "d")) {
-    tree[e].pc_data.conservativeResize(n, 4); 
-    tree[e].pc_data.col(2) = get_hfunc_sub(tree[v0], pos0);
-    tree[e].pc_data.col(3) = get_hfunc_sub(tree[v1], pos1);
+    tree[e].pc_data.conservativeResize(n, 4);
+    tree[e].pc_data.col(2) = get_hfunc_sub(tree[v0], pos0 == 0);
+    tree[e].pc_data.col(3) = get_hfunc_sub(tree[v1], pos1 == 0);
   }
 
   tree[e].conditioned =
@@ -592,10 +594,9 @@ VinecopSelector::add_pc_info(const EdgeIterator& e, VineTree& tree)
 }
 
 inline Eigen::VectorXd
-VinecopSelector::get_hfunc(const VertexProperties& vertex_data,
-                           unsigned short pos)
+VinecopSelector::get_hfunc(const VertexProperties& vertex_data, bool is_first)
 {
-  if (pos == 0) {
+  if (is_first) {
     return vertex_data.hfunc1;
   } else {
     return vertex_data.hfunc2;
@@ -604,9 +605,9 @@ VinecopSelector::get_hfunc(const VertexProperties& vertex_data,
 
 inline Eigen::VectorXd
 VinecopSelector::get_hfunc_sub(const VertexProperties& vertex_data,
-                               unsigned short pos)
+                               bool is_first)
 {
-  if (pos == 0) {
+  if (is_first) {
     if (vertex_data.hfunc1_sub.size()) {
       return vertex_data.hfunc1_sub;
     } else {
@@ -629,8 +630,8 @@ VinecopSelector::get_pc_data(size_t v0, size_t v1, const VineTree& tree)
   auto pos1 = find_position(ei_common, tree[v1].prev_edge_indices);
 
   Eigen::MatrixXd pc_data(tree[v0].hfunc1.size(), 2);
-  pc_data.col(0) = get_hfunc(tree[v0], pos0);
-  pc_data.col(1) = get_hfunc(tree[v1], pos1);
+  pc_data.col(0) = get_hfunc(tree[v0], pos0 == 0);
+  pc_data.col(1) = get_hfunc(tree[v1], pos1 == 0);
   return pc_data;
 }
 
