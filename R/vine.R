@@ -9,7 +9,7 @@
 #'   * `mult` numeric vector of length one or d; all bandwidths for marginal
 #'   kernel density estimation are multiplied with `mult`. Defaults to
 #'   `log(1 + d)` where `d` is the number of variables after applying
-#'   [cctools::expand_as_numeric()].
+#'   [rvinecopulib:::expand_factors()].
 #'   * `xmin` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `xmax` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
@@ -19,6 +19,7 @@
 #' @param keep_data whether the original data should be stored; if you want to
 #'   store the pseudo-observations used for fitting the copula, use the
 #'   `copula_controls` argument.
+#' @param cores the number of cores to use for parallel computations.
 #' @details
 #' `vine_dist()` creates a vine copula by specifying the margins, a nested list
 #' of `bicop_dist` objects and a quadratic structure matrix.
@@ -78,7 +79,7 @@
 #' # estimate a vine copula model
 #' fit <- vine(x, copula_controls = list(family_set = "par"))
 #' summary(fit)
-#' @importFrom kde1d kde1d dkde1d pkde1d qkde1d
+#' @importFrom kde1d dkde1d pkde1d qkde1d
 #' @export
 vine <- function(data,
                  margins_controls = list(

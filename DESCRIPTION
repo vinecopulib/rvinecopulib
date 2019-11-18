@@ -28,7 +28,8 @@ Imports:
     lattice,
     Rcpp (>= 0.12.12),
     stats,
-    utils
+    utils,
+    kde1d (>= 1.0.1)
 Suggests:
     igraph,
     ggplot2,
@@ -40,7 +41,7 @@ LinkingTo:
     RcppEigen,
     RcppThread,
     wdm,
-    kde1d (>= 1.0.1)
+    kde1d
 BugReports: https://github.com/vinecopulib/rvinecopulib/issues
 Roxygen: list(markdown = TRUE)
 SystemRequirements: C++11

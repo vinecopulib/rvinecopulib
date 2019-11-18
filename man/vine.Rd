@@ -28,7 +28,7 @@ vine_dist(margins, pair_copulas, structure)
 \item \code{mult} numeric vector of length one or d; all bandwidths for marginal
 kernel density estimation are multiplied with \code{mult}. Defaults to
 \code{log(1 + d)} where \code{d} is the number of variables after applying
-\code{\link[cctools:expand_as_numeric]{cctools::expand_as_numeric()}}.
+\code{\link[rvinecopulib:::expand_factors]{rvinecopulib::::expand_factors()}}.
 \item \code{xmin} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 \item \code{xmax} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 \item \code{bw} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
@@ -42,6 +42,8 @@ kernel density estimation are multiplied with \code{mult}. Defaults to
 \item{keep_data}{whether the original data should be stored; if you want to
 store the pseudo-observations used for fitting the copula, use the
 \code{copula_controls} argument.}
+
+\item{cores}{the number of cores to use for parallel computations.}
 
 \item{margins}{A list with with each element containing the specification of a
 marginal \link[stats:Distributions]{stats::Distributions}. Each marginal specification
