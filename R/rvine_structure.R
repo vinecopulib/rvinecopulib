@@ -101,7 +101,9 @@
 #'
 #' @return Either an `rvine_structure` or an `rvine_matrix`.
 #' @export
-#' @seealso [as_rvine_structure()], [plot.rvine_structure()]
+#' @seealso [as_rvine_structure()], [as_rvine_matrix()],
+#'   [plot.rvine_structure()], [plot.rvine_matrix()],
+#'   [rvine_structure_sim()], [rvine_matrix_sim()]
 #' @examples
 #'
 #' # R-vine structures can be constructed from the order vector and struct_array
@@ -200,6 +202,7 @@ rvine_structure <- function(order, struct_array = list(), is_natural_order = FAL
 #' @export
 #' @examples
 #' plot(cvine_structure(1:5))
+#' plot(rvine_structure_sim(5))
 plot.rvine_structure <- function(x, tree = 1, edge_labels = FALSE, ...) {
   assert_that(is.flag(edge_labels))
   d <- dim(x)[1]
@@ -215,6 +218,7 @@ plot.rvine_structure <- function(x, tree = 1, edge_labels = FALSE, ...) {
 #' @examples
 #' mat <- rbind(c(1, 1, 1), c(2, 2, 0), c(3, 0, 0))
 #' plot(rvine_matrix(mat))
+#' plot(rvine_matrix_sim(5))
 plot.rvine_matrix <- function(x, tree = 1, edge_labels = FALSE, ...) {
   plot(as_rvine_structure(x), tree = tree, edge_labels = edge_labels)
 }
@@ -347,4 +351,37 @@ is.rvine_structure <- function(structure) {
 #' @export
 is.rvine_matrix <- function(matrix) {
   inherits(matrix, "rvine_matrix")
+}
+
+
+#' Simulate R-vine structures
+#'
+#' Simulates from a uniform distribution over all R-vine structures on d
+#' variables. `rvine_structure_sim()` returns an [rvine_structure()] object,
+#' `rvine_matrix_sim()` an [rvine_matrix()].
+#'
+#' @aliases rvine_matrix_sim
+#'
+#' @param d the number of variables
+#' @param natural_order boolean; whether the structures should be in natural
+#'   order (counter-diagonal is `1:d`).
+#'
+#' @seealso [rvine_structure()], [rvine_matrix()],
+#'    [plot.rvine_structure()], [plot.rvine_matrix()]
+#' @export
+#' @examples
+#' rvine_structure_sim(10)
+#'
+#' rvine_structure_sim(10, natural_order = TRUE)  # counter-diagonal is 1:d
+#'
+#' rvine_matrix_sim(10)
+rvine_structure_sim <- function(d, natural_order = FALSE) {
+  assert_that(is.count(d), is.flag(natural_order))
+  rvine_structure_sim_cpp(d, natural_order, get_seeds())
+}
+
+#' @rdname rvine_structure_sim
+#' @export
+rvine_matrix_sim <- function(d, natural_order = FALSE) {
+  as_rvine_matrix(rvine_structure_sim(d, natural_order))
 }

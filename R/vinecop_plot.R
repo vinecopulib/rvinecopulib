@@ -51,7 +51,7 @@
 #' # set up another vine copula model
 #' pcs <- lapply(1:3, function(j) # pair-copulas in tree j
 #'   lapply(runif(4 - j), function(cor) bicop_dist("gaussian", 0, cor)))
-#' mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
+#' mat <- rvine_matrix_sim(4)
 #' vc <- vinecop_dist(pcs, mat)
 #'
 #' # contour plot

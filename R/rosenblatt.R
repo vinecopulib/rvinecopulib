@@ -48,6 +48,10 @@
 #'
 #' # inversion
 #' pairs(inverse_rosenblatt(u, fit))
+#'
+#' # works similarly for vinecop models
+#' vc <- fit$copula
+#' rosenblatt(pseudo_obs(x), vc)
 #' @export
 rosenblatt <- function(x, model, cores = 1) {
   assert_that(
