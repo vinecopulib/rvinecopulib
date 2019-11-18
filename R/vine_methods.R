@@ -49,7 +49,6 @@
 #' dvine(x[1, ], vc)
 #' pvine(x[1, ], vc)
 #' @rdname vine_methods
-#' @importFrom cctools expand_as_numeric
 #' @export
 dvine <- function(x, vine, cores = 1) {
   stopifnot(inherits(vine, "vine_dist"))

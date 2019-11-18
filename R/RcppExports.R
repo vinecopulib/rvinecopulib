@@ -105,3 +105,7 @@ vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_m
     .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types)
 }
 
+fit_margins_cpp <- function(data, nlevels, mult, xmin, xmax, bw, deg, weights, num_threads) {
+    .Call(`_rvinecopulib_fit_margins_cpp`, data, nlevels, mult, xmin, xmax, bw, deg, weights, num_threads)
+}
+
