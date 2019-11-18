@@ -23,14 +23,13 @@ LazyData: true
 NeedsCompilation: yes
 Imports:
     assertthat,
-    cctools,
     graphics,
     grDevices,
-    kde1d,
     lattice,
     Rcpp (>= 0.12.12),
     stats,
-    utils
+    utils,
+    kde1d (>= 1.0.1)
 Suggests:
     igraph,
     ggplot2,
@@ -41,7 +40,8 @@ LinkingTo:
     Rcpp,
     RcppEigen,
     RcppThread,
-    wdm
+    wdm,
+    kde1d
 BugReports: https://github.com/vinecopulib/rvinecopulib/issues
 Roxygen: list(markdown = TRUE)
 SystemRequirements: C++11

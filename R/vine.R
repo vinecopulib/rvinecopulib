@@ -9,7 +9,7 @@
 #'   * `mult` numeric vector of length one or d; all bandwidths for marginal
 #'   kernel density estimation are multiplied with `mult`. Defaults to
 #'   `log(1 + d)` where `d` is the number of variables after applying
-#'   [cctools::expand_as_numeric()].
+#'   [rvinecopulib:::expand_factors()].
 #'   * `xmin` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `xmax` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
@@ -19,6 +19,7 @@
 #' @param keep_data whether the original data should be stored; if you want to
 #'   store the pseudo-observations used for fitting the copula, use the
 #'   `copula_controls` argument.
+#' @param cores the number of cores to use for parallel computations.
 #' @details
 #' `vine_dist()` creates a vine copula by specifying the margins, a nested list
 #' of `bicop_dist` objects and a quadratic structure matrix.
@@ -50,9 +51,10 @@
 #'
 #' Concerning `margins`:
 #'
-#' * For objects created with [vine_dist()], it simply corresponds to the
-#' `margins` argument. * For objects created with [vine()], it is a list of
-#' objects of class `kde1d`, see [kde1d::kde1d()].
+#' * For objects created with [vine_dist()], it simply corresponds to the `margins`
+#' argument.
+#' * For objects created with [vine()], it is a list of objects of class `kde1d`,
+#' see [kde1d::kde1d()].
 #'
 #' @examples
 #' # specify pair-copulas
@@ -77,8 +79,7 @@
 #' # estimate a vine copula model
 #' fit <- vine(x, copula_controls = list(family_set = "par"))
 #' summary(fit)
-#' @importFrom kde1d kde1d dkde1d pkde1d qkde1d
-#' @importFrom cctools cont_conv expand_vec
+#' @importFrom kde1d dkde1d pkde1d qkde1d
 #' @export
 vine <- function(data,
                  margins_controls = list(
@@ -105,7 +106,8 @@ vine <- function(data,
                    cores = 1
                  ),
                  weights = numeric(),
-                 keep_data = FALSE) {
+                 keep_data = FALSE,
+                 cores = 1) {
   ## basic sanity checks (copula_controls are checked by vinecop)
   assert_that(NCOL(data) > 1, msg = "data must be multivariate.")
   data <- expand_factors(data)
@@ -121,21 +123,25 @@ vine <- function(data,
   if (is.null(copula_controls$keep_data)) {
     copula_controls$keep_data <- TRUE
   }
+  copula_controls$cores <- cores
 
   ## expand the required arguments and compute default mult if needed
   margins_controls <- expand_margin_controls(margins_controls, d, data)
+  check_margin_controls(data, margins_controls)
 
   ## estimation of the marginals
   vine <- list()
-  vine$margins <- lapply(1:d, function(k) kde1d(data[, k],
-                                                mult = margins_controls$mult[k],
-                                                xmin = margins_controls$xmin[k],
-                                                xmax = margins_controls$xmax[k],
-                                                bw = margins_controls$bw[k],
-                                                deg = margins_controls$deg[k],
-                                                weights = weights
-  ))
+  vine$margins <- fit_margins_cpp(prep_for_margins(data),
+                                  sapply(data, nlevels),
+                                  mult = margins_controls$mult,
+                                  xmin = margins_controls$xmin,
+                                  xmax = margins_controls$xmax,
+                                  bw = margins_controls$bw,
+                                  deg = margins_controls$deg,
+                                  weights = weights,
+                                  cores)
   vine$margins_controls <- margins_controls
+  vine$margins <- finalize_margins(data, vine$margins)
 
   ## estimation of the R-vine copula --------------
   copula_controls$data <- compute_pseudo_obs(data, vine)
@@ -147,6 +153,11 @@ vine <- function(data,
   finalize_vine(vine, data, weights, keep_data)
 }
 
+prep_for_margins <- function(data) {
+  data <- lapply(data, function(x) if (is.ordered(x)) as.numeric(x) - 1 else x)
+  do.call(cbind, data)
+}
+
 compute_pseudo_obs <- function(data, vine) {
   d <- ncol(data)
   u <- dpq_marg(data, vine)
@@ -155,9 +166,11 @@ compute_pseudo_obs <- function(data, vine) {
     for (k in seq_len(d)) {
       if (is.factor(data[, k])) {
         lv <- as.numeric(data[, k]) - 1
-        lv[lv == 0] <- NA
-        u_sub[, k] <- eval_one_dpq(levels(data[, k])[lv], vine$margins[[k]])
-        u_sub[is.na(u_sub[, k]) & !is.na(data[, k]), k] <- 0
+        lv0 <- which(lv == 0)
+        lv[lv0] <- 1
+        xlv <- factor(levels(data[, k])[lv], levels = levels(data[, k]))
+        u_sub[, k] <- eval_one_dpq(xlv, vine$margins[[k]])
+        u_sub[lv0, k] <- 0
       }
     }
   } else {
@@ -185,17 +198,12 @@ expand_factors <- function(data) {
 #' marginal [stats::Distributions]. Each marginal specification
 #' should be a list with containing at least the distribution family (`"distr"`)
 #' and optionally the parameters, e.g.
-#' ```
-#' list(list(distr = "norm"),
-#'      list(distr = "norm", mu = 1),
-#'      list(distr = "beta", shape1 = 1, shape2 = 1))
-#' ```
+#' `list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))`.
 #' Note that parameters that have no default values have to be provided.
-#' Furthermore, if `margins` has length one, it will be recycled for every
-#' component.
+#' Furthermore, if `margins` has length one, it will be recycled for every component.
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where
-#'   \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
-#'   tree `t`.
+#'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
+#'    tree `t`.
 #' @param structure an `rvine_structure` object, namely a compressed
 #' representation of the vine structure, or an object that can be coerced
 #' into one (see [rvine_structure()] and [as_rvine_structure()]).
@@ -245,9 +253,19 @@ expand_margin_controls <- function(controls, d, data) {
   if (is.null(controls[["mult"]])) {
     controls[["mult"]] <- log(1 + d)
   }
-  for (par in names(controls))
-    controls[[par]] <- expand_vec(controls[[par]], data)
+  for (par in names(controls)) {
+    if (length(controls[[par]]) != ncol(data))
+      controls[[par]] <- rep(controls[[par]], ncol(data))
+  }
   controls
+}
+
+finalize_margins <- function(data, margins) {
+  for (k in seq_along(margins)) {
+    margins[[k]]$x <- data[[k]]
+    margins[[k]]$nobs <- nrow(data)
+  }
+  margins
 }
 
 finalize_vine <- function(vine, data, weights, keep_data) {
