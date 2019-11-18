@@ -13,7 +13,8 @@ vine(
     trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = FALSE, show_trace =
     FALSE, cores = 1),
   weights = numeric(),
-  keep_data = FALSE
+  keep_data = FALSE,
+  cores = 1
 )
 
 vine_dist(margins, pair_copulas, structure)
@@ -45,14 +46,10 @@ store the pseudo-observations used for fitting the copula, use the
 \item{margins}{A list with with each element containing the specification of a
 marginal \link[stats:Distributions]{stats::Distributions}. Each marginal specification
 should be a list with containing at least the distribution family (\code{"distr"})
-and optionally the parameters, e.g.\preformatted{list(list(distr = "norm"),
-     list(distr = "norm", mu = 1),
-     list(distr = "beta", shape1 = 1, shape2 = 1))
-}
-
+and optionally the parameters, e.g.
+\code{list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))}.
 Note that parameters that have no default values have to be provided.
-Furthermore, if \code{margins} has length one, it will be recycled for every
-component.}
+Furthermore, if \code{margins} has length one, it will be recycled for every component.}
 
 \item{pair_copulas}{A nested list of 'bicop_dist' objects, where
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
@@ -88,9 +85,10 @@ to fit the model.
 
 Concerning \code{margins}:
 \itemize{
-\item For objects created with \code{\link[=vine_dist]{vine_dist()}}, it simply corresponds to the
-\code{margins} argument. * For objects created with \code{\link[=vine]{vine()}}, it is a list of
-objects of class \code{kde1d}, see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
+\item For objects created with \code{\link[=vine_dist]{vine_dist()}}, it simply corresponds to the \code{margins}
+argument.
+\item For objects created with \code{\link[=vine]{vine()}}, it is a list of objects of class \code{kde1d},
+see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 }
 }
 \description{
