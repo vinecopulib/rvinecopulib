@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Pseudo-Observations — pseudo_obs • rvinecopulib</title>
+<title>Plotting R-vine structures — plot.rvine_structure • rvinecopulib</title>
 
 
 <!-- jquery -->
@@ -35,8 +35,8 @@
 
 
 
-<meta property="og:title" content="Pseudo-Observations — pseudo_obs" />
-<meta property="og:description" content="Compute the pseudo-observations for the given data matrix." />
+<meta property="og:title" content="Plotting R-vine structures — plot.rvine_structure" />
+<meta property="og:description" content="Plot one or all trees of an R-vine structure." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -103,84 +103,53 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Pseudo-Observations</h1>
+    <h1>Plotting R-vine structures</h1>
     
-    <div class="hidden name"><code>pseudo_obs.Rd</code></div>
+    <div class="hidden name"><code>plot.rvine_structure.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Compute the pseudo-observations for the given data matrix.</p>
+    <p>Plot one or all trees of an R-vine structure.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>pseudo_obs</span>(<span class='no'>x</span>, <span class='kw'>ties_method</span> <span class='kw'>=</span> <span class='st'>"average"</span>, <span class='kw'>lower_tail</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+    <pre class="usage"><span class='co'># S3 method for rvine_structure</span>
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>x</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>edge_labels</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)
+
+<span class='co'># S3 method for rvine_matrix</span>
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>x</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>edge_labels</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>vector or matrix random variates to be converted (column wise) to
-pseudo-observations.</p></td>
+      <td><p>an <code>rvine_structure</code> or <code>rvine_matrixc</code> object.</p></td>
     </tr>
     <tr>
-      <th>ties_method</th>
-      <td><p>similar to <code>ties.method</code> of <code><a href='https://rdrr.io/r/base/rank.html'>rank()</a></code> (only <code>"average"</code>,
-<code>"first"</code> and <code>"random"</code> currently available).</p></td>
+      <th>tree</th>
+      <td><p><code>"ALL"</code> or integer vector; specifies which trees are
+plotted.</p></td>
     </tr>
     <tr>
-      <th>lower_tail</th>
-      <td><p><code>logical</code> which, if `FALSE``, returns the
-pseudo-observations when applying the empirical marginal survival
-functions.</p></td>
+      <th>edge_labels</th>
+      <td><p>either <code>TRUE</code> or <code>FALSE</code>; if <code>TRUE</code> the edge index is
+added to the plot.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>unused.</p></td>
     </tr>
     </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>a vector of matrix of the same dimension as the input containing the
-pseudo-observations.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>Given <code>n</code> realizations \(x_i=(x_{i1}, \ldots,x_{id})\),
-\(i \in \left\lbrace 1, \ldots,n \right\rbrace \)
-of a random vector <code>X</code>, the pseudo-observations are defined via
-\(u_{ij}=r_{ij}/(n+1)\) for
-\(i \in \left\lbrace 1, \ldots,n \right\rbrace\)
-and
-\(j \in \left\lbrace 1, \ldots,d \right\rbrace \), where
-\(r_{ij}\) denotes the rank of \(x_{ij}\) among all \(x_{kj}\),
-\(k \in \left\lbrace 1, \ldots,n \right\rbrace \).</p>
-<p>The pseudo-observations can thus also be computed by component-wise applying
-the empirical distribution functions to the data and scaling the result by
-\(n/(n+1)\). This asymptotically negligible scaling factor is used to force
-the variates to fall inside the open unit hypercube, for example, to avoid
-problems with density evaluation at the boundaries.</p>
-<p>When <code>lower_tail = FALSE</code>, then <code>pseudo_obs()</code> simply returns
-<code>1 - pseudo_obs()</code>.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># pseudo-observations for a vector</span>
-<span class='fu'>pseudo_obs</span>(<span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span>(<span class='fl'>10</span>))</div><div class='output co'>#&gt;  [1] 0.81818182 0.45454545 0.90909091 0.27272727 0.63636364 0.18181818
-#&gt;  [7] 0.72727273 0.54545455 0.36363636 0.09090909</div><div class='input'>
-<span class='co'># pseudo-observations for a matrix</span>
-<span class='fu'>pseudo_obs</span>(<span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span>(<span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span>(<span class='fl'>10</span>), <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span>(<span class='fl'>10</span>)))</div><div class='output co'>#&gt;             [,1]       [,2]
-#&gt;  [1,] 0.54545455 0.36363636
-#&gt;  [2,] 0.09090909 0.18181818
-#&gt;  [3,] 0.63636364 0.63636364
-#&gt;  [4,] 0.36363636 0.90909091
-#&gt;  [5,] 0.27272727 0.81818182
-#&gt;  [6,] 0.72727273 0.27272727
-#&gt;  [7,] 0.18181818 0.45454545
-#&gt;  [8,] 0.45454545 0.54545455
-#&gt;  [9,] 0.90909091 0.72727273
-#&gt; [10,] 0.81818182 0.09090909</div></pre>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='fu'><a href='rvine_structure.html'>cvine_structure</a></span>(<span class='fl'>1</span>:<span class='fl'>5</span>))</div><div class='output co'>#&gt; <span class='error'>Error in cvine_structure(1:5): could not find function "cvine_structure"</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='fu'><a href='rvine_structure_sim.html'>rvine_structure_sim</a></span>(<span class='fl'>5</span>))</div><div class='output co'>#&gt; <span class='error'>Error in rvine_structure_sim(5): could not find function "rvine_structure_sim"</span></div><div class='input'><span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>rbind</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>1</span>, <span class='fl'>1</span>), <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>0</span>), <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>3</span>, <span class='fl'>0</span>, <span class='fl'>0</span>))
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='fu'><a href='rvine_structure.html'>rvine_matrix</a></span>(<span class='no'>mat</span>))</div><div class='img'><img src='plot.rvine_structure-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='fu'><a href='rvine_structure_sim.html'>rvine_matrix_sim</a></span>(<span class='fl'>5</span>))</div><div class='output co'>#&gt; <span class='error'>Error in rvine_matrix_sim(5): could not find function "rvine_matrix_sim"</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#value">Value</a></li>
-      <li><a href="#details">Details</a></li>
       <li><a href="#examples">Examples</a></li>
     </ul>
 
