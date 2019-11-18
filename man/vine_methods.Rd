@@ -66,10 +66,8 @@ pcs <- list(
   list(bicop) # pair-copulas in second tree
 )
 
-# specify R-vine matrix
-mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-
 # set up vine copula model
+mat <- rvine_matrix_sim(3)
 vc <- vine_dist(list(distr = "norm"), pcs, mat)
 
 # simulate from the model

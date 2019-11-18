@@ -163,5 +163,7 @@ cvine
 plot(cvine)
 }
 \seealso{
-\code{\link[=as_rvine_structure]{as_rvine_structure()}}, \code{\link[=plot.rvine_structure]{plot.rvine_structure()}}
+\code{\link[=as_rvine_structure]{as_rvine_structure()}}, \code{\link[=as_rvine_matrix]{as_rvine_matrix()}},
+\code{\link[=plot.rvine_structure]{plot.rvine_structure()}}, \code{\link[=plot.rvine_matrix]{plot.rvine_matrix()}},
+\code{\link[=rvine_structure_sim]{rvine_structure_sim()}}, \code{\link[=rvine_matrix_sim]{rvine_matrix_sim()}}
 }

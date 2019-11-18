@@ -403,16 +403,19 @@ RVineStructure::simulate(size_t d, bool natural_order, std::vector<int> seeds)
   // hence it is stochastically independent of B. Calling
   // pseudo_obs and rescaling gives us a permutation of (1, ..., d)
   // that is independent of B.
+  std::vector<size_t> order(d);
   if (!natural_order) {
-    std::vector<size_t> order(d);
     U.col(0) = tools_stats::to_pseudo_obs_1d(U.col(0)) * (d + 1);
     for (size_t k = 0; k < d; k++) {
       order[k] = static_cast<size_t>(U(k, 0));
     }
-    rvm = RVineStructure(order, rvm.get_struct_array(), true, false);
+  } else {
+    for (size_t i = 0; i < d; ++i) {
+      order[i] = i + 1;
+    }
   }
 
-  return rvm;
+  return RVineStructure(order, rvm.get_struct_array(true), true, false);
 }
 
 //! extract the R-vine matrix representation.
