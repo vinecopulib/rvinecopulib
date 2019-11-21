@@ -10,9 +10,6 @@
 
 namespace vinecopulib {
 
-// forward declaration of parametric subclass
-class ParBicop;
-
 namespace tools_optimization {
 
 //! @brief A class for the controls to Bobyqa

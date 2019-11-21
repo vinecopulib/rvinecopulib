@@ -5,7 +5,6 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <boost/math/tools/minima.hpp>
-#include <vinecopulib/bicop/parametric.hpp>
 #include <vinecopulib/misc/tools_bobyqa.hpp>
 
 namespace vinecopulib {
