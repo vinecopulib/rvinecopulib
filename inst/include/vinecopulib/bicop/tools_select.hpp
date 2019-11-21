@@ -31,11 +31,6 @@ get_c1c2(const Eigen::MatrixXd& data,
          double tau,
          const Eigen::VectorXd& weights);
 
-std::vector<double>
-get_c1c2(const Eigen::MatrixXd& data,
-         double tau,
-         const Eigen::VectorXd& weights);
-
 bool
 preselect_family(std::vector<double> c, double tau, const Bicop& bicop);
 }

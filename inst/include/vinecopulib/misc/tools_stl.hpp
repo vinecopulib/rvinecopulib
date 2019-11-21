@@ -22,7 +22,7 @@ get_order(const std::vector<T>& x)
 {
   std::vector<size_t> order(x.size());
   std::iota(order.begin(), order.end(), 0);
-  std::sort(order.begin(), order.end(), [&](size_t i, size_t j) -> bool {
+  std::stable_sort(order.begin(), order.end(), [&](size_t i, size_t j) -> bool {
     return (x[i] < x[j]);
   });
   return order;

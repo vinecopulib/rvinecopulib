@@ -224,7 +224,7 @@ inline Vinecop vinecop_wrap(const Rcpp::List& vinecop_r, bool check = false)
   auto structure = rvine_structure_wrap(vinecop_r["structure"], check);
   auto pair_copulas = pair_copulas_wrap(vinecop_r["pair_copulas"],
                                         structure.get_dim());
-  Vinecop vc(pair_copulas, structure);
+  Vinecop vc(structure, pair_copulas);
   vc.set_var_types(vinecop_r["var_types"]);
   return vc;
 }

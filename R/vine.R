@@ -9,7 +9,7 @@
 #'   * `mult` numeric vector of length one or d; all bandwidths for marginal
 #'   kernel density estimation are multiplied with `mult`. Defaults to
 #'   `log(1 + d)` where `d` is the number of variables after applying
-#'   [rvinecopulib:::expand_factors()].
+#'   `rvinecopulib:::expand_factors()`.
 #'   * `xmin` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `xmax` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].

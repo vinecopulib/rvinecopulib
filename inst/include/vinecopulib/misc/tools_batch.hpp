@@ -24,7 +24,8 @@ compute_num_batches(size_t num_tasks, size_t num_threads)
   if (num_tasks < num_threads)
     return num_tasks;
   size_t num_batches =
-    num_threads * std::floor(std::sqrt(num_tasks / num_threads));
+    num_threads *
+    static_cast<size_t>(std::floor(std::sqrt(num_tasks / num_threads)));
   return std::min(num_tasks, num_batches);
 }
 

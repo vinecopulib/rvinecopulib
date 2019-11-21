@@ -57,29 +57,29 @@ inline RVineStructure::RVineStructure(
   needed_hfunc2_ = compute_needed_hfunc2();
 }
 
-//! @brief instantiates an RVineStructure object to a D-vine with given ordering
-//! of variables.
-//! @param order the order of variables in the D-vine (diagonal entries in the
-//!    R-vine array); must be a permutation of 1, ..., d.
-//! @param check whether `order shall be checked for validity.
-inline RVineStructure::RVineStructure(const std::vector<size_t>& order,
-                                      bool check)
-  : RVineStructure(order, order.size() - 1, check)
+//! @brief instantiates an RVineStructure object to a D-vine for a given
+//! dimension
+//! @param d the dimension.
+//! @param trunc_lvl the truncation level. By default, it is dim - 1.
+inline RVineStructure::RVineStructure(const size_t& d, const size_t& trunc_lvl)
+  : RVineStructure(tools_stl::seq_int(1, d), std::min(d - 1, trunc_lvl), false)
 {}
 
 //! @brief instantiates an RVineStructure object to a D-vine with given ordering
 //! of variables.
 //! @param order the order of variables in the D-vine (diagonal entries in the
 //!    R-vine array); must be a permutation of 1, ..., d.
-//! @param trunc_lvl the truncation level.
+//! @param trunc_lvl the truncation level. By default, it is d - 1.
 //! @param check whether `order shall be checked for validity.
 inline RVineStructure::RVineStructure(const std::vector<size_t>& order,
                                       const size_t& trunc_lvl,
                                       bool check)
-  : RVineStructure(order,
-                   make_dvine_struct_array(order.size(), trunc_lvl),
-                   true,
-                   false)
+  : RVineStructure(
+      order,
+      make_dvine_struct_array(order.size(),
+                              std::min(order.size() - 1, trunc_lvl)),
+      true,
+      false)
 {
   if (check)
     check_antidiagonal();
@@ -378,7 +378,7 @@ RVineStructure::simulate(size_t d, bool natural_order, std::vector<int> seeds)
   }
 
   for (size_t j = 3; j < d; j++) {
-    int ac = j - 2;
+    size_t ac = j - 2;
     auto to_assign = tools_stl::seq_int(1, j - 1);
     for (ptrdiff_t k = j - 2; k >= 0; k--) {
       if (B(k, j) == 1) {

@@ -82,8 +82,8 @@ TriangularArray<T>::TriangularArray(size_t d, size_t trunc_lvl)
   : d_(d)
   , trunc_lvl_(std::min(d - 1, trunc_lvl))
 {
-  if (d < 2)
-    throw std::runtime_error("d should be greater than 1");
+  if (d < 1)
+    throw std::runtime_error("d should be greater than 0");
 
   arr_ = std::vector<std::vector<T>>(trunc_lvl_);
   for (size_t i = 0; i < trunc_lvl_; i++)

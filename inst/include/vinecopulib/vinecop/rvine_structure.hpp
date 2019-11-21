@@ -8,6 +8,7 @@
 
 #include <Eigen/Dense>
 #include <boost/property_tree/ptree.hpp>
+#include <limits>
 #include <vinecopulib/misc/triangular_array.hpp>
 
 namespace vinecopulib {
@@ -66,14 +67,13 @@ namespace vinecopulib {
 class RVineStructure
 {
 public:
-  RVineStructure() {}
-
+  RVineStructure(const size_t& d = static_cast<size_t>(1),
+                 const size_t& trunc_lvl = std::numeric_limits<size_t>::max());
   RVineStructure(
     const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& mat,
     bool check = true);
-  RVineStructure(const std::vector<size_t>& order, bool check = true);
   RVineStructure(const std::vector<size_t>& order,
-                 const size_t& trunc_lvl,
+                 const size_t& trunc_lvl = std::numeric_limits<size_t>::max(),
                  bool check = true);
   RVineStructure(const std::vector<size_t>& order,
                  const TriangularArray<size_t>& struct_array,
@@ -166,7 +166,7 @@ public:
 //! C-vines are a special class of R-vines where each tree is a star. A C-vine
 //! structure is determined entirely by the order of variables. For example, if
 //! the order is `{1, 2, 3, 4}`, the first tree in the vine connects variable
-//! 1 with all others, the second tree connects variable to with all others,
+//! 4 with all others, the second tree connects variable 3 with all others,
 //! etc.
 class CVineStructure : public RVineStructure
 {

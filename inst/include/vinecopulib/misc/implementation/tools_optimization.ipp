@@ -56,9 +56,9 @@ Optimizer::optimize(const Eigen::VectorXd& initial_parameters,
   if (n_parameters > 1) {
     // const int number_interpolation_conditions = (n_parameters + 1) *
     //        (n_parameters + 2)/2;
-    int number_interpolation_conditions = n_parameters + 3;
-    std::function<double(long, const double*)> f =
-      [objective, this](long n, const double* x) {
+    size_t number_interpolation_conditions = n_parameters + 3;
+    std::function<double(size_t, const double*)> f =
+      [objective, this](size_t n, const double* x) {
         Eigen::Map<const Eigen::VectorXd> par(x, n);
         this->objective_calls_++;
         return -objective(par);

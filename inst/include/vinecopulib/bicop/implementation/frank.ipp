@@ -283,12 +283,13 @@ debyen(const double x, const int n)
 
     /* Abramowitz-Stegun 27.1.1 */
     const double x2pi = x * m_1_2pi;
-    for (unsigned long k = 1; k < sizeof(koeff) / sizeof(double) - 1; k++) {
+    for (size_t k = 1; k < sizeof(koeff) / sizeof(double) - 1; k++) {
       const double sumold = sum;
+      const double kk = static_cast<double>(k);
       /* do not precompute x2pi^2 to avoid loss of precision */
-      sum += (2. + koeff[k]) * pow(x2pi, 2. * k) / (2 * k + n);
+      sum += (2. + koeff[k]) * pow(x2pi, 2. * kk) / (2 * kk + n);
       k++;
-      sum -= (2. + koeff[k]) * pow(x2pi, 2. * k) / (2 * k + n);
+      sum -= (2. + koeff[k]) * pow(x2pi, 2. * kk) / (2 * kk + n);
       if (sum == sumold)
         break;
     }

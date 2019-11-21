@@ -28,7 +28,7 @@ vine_dist(margins, pair_copulas, structure)
 \item \code{mult} numeric vector of length one or d; all bandwidths for marginal
 kernel density estimation are multiplied with \code{mult}. Defaults to
 \code{log(1 + d)} where \code{d} is the number of variables after applying
-\code{\link[rvinecopulib:::expand_factors]{rvinecopulib::::expand_factors()}}.
+\code{rvinecopulib:::expand_factors()}.
 \item \code{xmin} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 \item \code{xmax} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 \item \code{bw} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.

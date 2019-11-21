@@ -13,20 +13,15 @@ inline KernelBicop::KernelBicop()
 {
   // construct default grid (equally spaced on Gaussian scale)
   size_t m = 30;
-  Eigen::VectorXd grid_points(m);
-  for (size_t i = 0; i < m; ++i)
-    grid_points(i) = -3.25 + i * (6.5 / static_cast<double>(m - 1));
-  grid_points = tools_stats::pnorm(grid_points);
+  auto grid_points = this->make_normal_grid(m);
 
   // move boundary points to 0/1, so we don't have to extrapolate
   grid_points(0) = 0.0;
   grid_points(m - 1) = 1.0;
 
-  interp_grid_ =
-    std::make_shared<tools_interpolation::InterpolationGrid>(
-      grid_points,
-      Eigen::MatrixXd::Constant(m, m, 1.0) // independence
-    );
+  interp_grid_ = std::make_shared<tools_interpolation::InterpolationGrid>(
+    grid_points, Eigen::MatrixXd::Constant(m, m, 1.0) // independence
+  );
 }
 
 inline Eigen::VectorXd
@@ -56,13 +51,13 @@ KernelBicop::cdf(const Eigen::MatrixXd& u)
 inline Eigen::VectorXd
 KernelBicop::hfunc1_raw(const Eigen::MatrixXd& u)
 {
-  return interp_grid_->integrate_1d(u, 1).cwiseMin(1 - 1e-20).cwiseMax(1e-20);
+  return interp_grid_->integrate_1d(u, 1);
 }
 
 inline Eigen::VectorXd
 KernelBicop::hfunc2_raw(const Eigen::MatrixXd& u)
 {
-  return interp_grid_->integrate_1d(u, 2).cwiseMin(1 - 1e-20).cwiseMax(1e-20);
+  return interp_grid_->integrate_1d(u, 2);
 }
 
 inline Eigen::VectorXd
@@ -164,5 +159,18 @@ inline Eigen::MatrixXd
 KernelBicop::tau_to_parameters(const double& tau)
 {
   return no_tau_to_parameters(tau);
+}
+
+// construct default grid (equally spaced on Gaussian scale)
+inline Eigen::VectorXd
+KernelBicop::make_normal_grid(size_t m)
+{
+  Eigen::VectorXd grid_points(m);
+  for (size_t i = 0; i < m; ++i)
+    grid_points(i) =
+      -3.25 + static_cast<double>(i) * (6.5 / static_cast<double>(m - 1));
+  grid_points = tools_stats::pnorm(grid_points);
+
+  return grid_points;
 }
 }
