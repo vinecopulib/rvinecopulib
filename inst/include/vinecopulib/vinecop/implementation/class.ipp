@@ -643,8 +643,8 @@ Vinecop::check_var_types(const std::vector<std::string>& var_types) const
 {
   std::stringstream msg;
   if (var_types.size() > d_) {
-    msg << "more var_types (" << var_types.size() << ")"
-        << "than variables (" << d_ << ")-" << std::endl;
+    msg << "more var_types (" << var_types.size() << ") "
+        << "than variables (" << d_ << ")" << std::endl;
     throw std::runtime_error(msg.str());
   }
   for (auto t : var_types) {
