@@ -1,3 +1,13 @@
+# rvinecopulib 0.5.1.1.0 (November 25, 2019)
+
+Release following the updates of vinecopulib to 0.5.1, see 
+https://github.com/vinecopulib/vinecopulib/releases. 
+
+BUG FIX
+
+  * fix out of range bug for weighted TLL influence when sample size is small.  
+
+
 # rvinecopulib 0.5.0.1.0 (November 25, 2019)
 
 Release following the updates of vinecopulib to 0.5.0, see 
