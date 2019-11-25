@@ -181,11 +181,14 @@ standard <em>d/p/q-xxx</em> from <a href='https://rdrr.io/r/stats/Distributions.
 )
 
 <span class='co'># set up vine copula model</span>
-<span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='rvine_structure_sim.html'>rvine_matrix_sim</a></span>(<span class='fl'>3</span>)</div><div class='output co'>#&gt; <span class='error'>Error in rvine_matrix_sim(3): could not find function "rvine_matrix_sim"</span></div><div class='input'><span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vine.html'>vine_dist</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>distr</span> <span class='kw'>=</span> <span class='st'>"norm"</span>), <span class='no'>pcs</span>, <span class='no'>mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in as_rvine_structure(structure): object 'mat' not found</span></div><div class='input'>
+<span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='rvine_structure_sim.html'>rvine_matrix_sim</a></span>(<span class='fl'>3</span>)
+<span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vine.html'>vine_dist</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>distr</span> <span class='kw'>=</span> <span class='st'>"norm"</span>), <span class='no'>pcs</span>, <span class='no'>mat</span>)
+
 <span class='co'># simulate from the model</span>
-<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'>rvine</span>(<span class='fl'>200</span>, <span class='no'>vc</span>)</div><div class='output co'>#&gt; <span class='error'>Error in inherits(vine, "vine_dist"): object 'vc' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/pairs.html'>pairs</a></span>(<span class='no'>x</span>)</div><div class='output co'>#&gt; <span class='error'>Error in pairs(x): object 'x' not found</span></div><div class='input'>
+<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'>rvine</span>(<span class='fl'>200</span>, <span class='no'>vc</span>)
+<span class='fu'><a href='https://rdrr.io/r/graphics/pairs.html'>pairs</a></span>(<span class='no'>x</span>)</div><div class='img'><img src='vine_methods-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># evaluate the density and cdf</span>
-<span class='fu'>dvine</span>(<span class='no'>x</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; <span class='error'>Error: object 'vc' not found</span></div><div class='input'><span class='fu'>pvine</span>(<span class='no'>x</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; <span class='error'>Error: object 'vc' not found</span></div></pre>
+<span class='fu'>dvine</span>(<span class='no'>x</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 0.1496486</div><div class='input'><span class='fu'>pvine</span>(<span class='no'>x</span>[<span class='fl'>1</span>, ], <span class='no'>vc</span>)</div><div class='output co'>#&gt; [1] 0</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -206,7 +209,7 @@ standard <em>d/p/q-xxx</em> from <a href='https://rdrr.io/r/stats/Distributions.
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
 
       </footer>

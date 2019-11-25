@@ -105,9 +105,9 @@
       
     </div>
 
-    <div id="rvinecopulib-0-5-0-1-0-november-20-2019" class="section level1">
+    <div id="rvinecopulib-0-5-0-1-0-november-25-2019" class="section level1">
 <h1 class="page-header">
-<a href="#rvinecopulib-0-5-0-1-0-november-20-2019" class="anchor"></a>rvinecopulib 0.5.0.1.0 (November 20, 2019)<small> Unreleased </small>
+<a href="#rvinecopulib-0-5-0-1-0-november-25-2019" class="anchor"></a>rvinecopulib 0.5.0.1.0 (November 25, 2019)<small> Unreleased </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.5.0, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
 <p>NEW FEATURES</p>
@@ -119,6 +119,10 @@
 <li><p>random sampling of R-vine structures. (#197)</p></li>
 <li><p>add <code>weights</code> argument to <code><a href="../reference/vine.html">vine()</a></code>. (#188)</p></li>
 <li><p>parallelized fitting of margins in <code><a href="../reference/vine.html">vine()</a></code>. (#198)</p></li>
+</ul>
+<p>API BREAK</p>
+<ul>
+<li>The new <code>var_types</code> argument for discrete models has been placed early in <code>bicop()/vinecop()</code> due to its importance. This might break old code calling these functions with unnamed arguments.</li>
 </ul>
 <p>BUG FIXES AND OTHER IMPROVEMENTS</p>
 <ul>
@@ -219,7 +223,7 @@
 </ul>
 <p>BUG FIXES</p>
 <ul>
-<li><p>make mcor correction less agressive (#103).</p></li>
+<li><p>make mcor correction less aggressive (#103).</p></li>
 <li><p>fix truncation of pdf values (#103).</p></li>
 <li><p>use increased search interval for parameter estimation when initial fit is unreasonable (#103).</p></li>
 <li><p>ensure that boundaries are respected for Joe’s <code>hinv</code> methods (#103).</p></li>
@@ -368,7 +372,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li><a href="#rvinecopulib-0-5-0-1-0-november-20-2019">0.5.0.1.0</a></li>
+        <li><a href="#rvinecopulib-0-5-0-1-0-november-25-2019">0.5.0.1.0</a></li>
         <li><a href="#rvinecopulib-0-3-1-1-0-july-4-2019">0.3.1.1.0</a></li>
         <li><a href="#rvinecopulib-0-3-1-1-0-april-19-2019">0.3.1.1.0</a></li>
         <li><a href="#rvinecopulib-0-3-0-1-1-august-22-2018">0.3.0.1.1</a></li>
@@ -396,7 +400,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
 
       </footer>

@@ -1,4 +1,4 @@
-# rvinecopulib 0.5.0.1.0 (November 20, 2019)
+# rvinecopulib 0.5.0.1.0 (November 25, 2019)
 
 Release following the updates of vinecopulib to 0.5.0, see 
 https://github.com/vinecopulib/vinecopulib/releases. The most 
@@ -21,7 +21,12 @@ NEW FEATURES
   * add `weights` argument to `vine()`. (#188)
 
   * parallelized fitting of margins in `vine()`. (#198)
+  
+API BREAK
 
+  * The new `var_types` argument for discrete models has been placed
+    early in `bicop()/vinecop()` due to its importance. This might break old
+    code calling these functions with unnamed arguments.
 
 BUG FIXES AND OTHER IMPROVEMENTS
 
@@ -166,7 +171,7 @@ NEW FEATURES
    
 BUG FIXES
    
-   * make mcor correction less agressive (#103).
+   * make mcor correction less aggressive (#103).
    
    * fix truncation of pdf values (#103).
    
