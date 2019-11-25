@@ -9,8 +9,8 @@ bicop_check_cpp <- function(bicop_r) {
     invisible(.Call(`_rvinecopulib_bicop_check_cpp`, bicop_r))
 }
 
-bicop_select_cpp <- function(data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads) {
-    .Call(`_rvinecopulib_bicop_select_cpp`, data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads)
+bicop_select_cpp <- function(data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads, var_types) {
+    .Call(`_rvinecopulib_bicop_select_cpp`, data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads, var_types)
 }
 
 bicop_pdf_cpp <- function(u, bicop_r) {
@@ -61,6 +61,10 @@ rvine_structure_check_cpp <- function(rvine_struct, is_natural_order) {
     invisible(.Call(`_rvinecopulib_rvine_structure_check_cpp`, rvine_struct, is_natural_order))
 }
 
+rvine_structure_sim_cpp <- function(d, natural_order, seeds) {
+    .Call(`_rvinecopulib_rvine_structure_sim_cpp`, d, natural_order, seeds)
+}
+
 rvine_matrix_check_cpp <- function(matrix) {
     invisible(.Call(`_rvinecopulib_rvine_matrix_check_cpp`, matrix))
 }
@@ -97,7 +101,11 @@ vinecop_mbicv_cpp <- function(u, vinecop_r, psi0, cores) {
     .Call(`_rvinecopulib_vinecop_mbicv_cpp`, u, vinecop_r, psi0, cores)
 }
 
-vinecop_select_cpp <- function(data, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads) {
-    .Call(`_rvinecopulib_vinecop_select_cpp`, data, is_structure_provided, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads)
+vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types) {
+    .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types)
+}
+
+fit_margins_cpp <- function(data, nlevels, mult, xmin, xmax, bw, deg, weights, num_threads) {
+    .Call(`_rvinecopulib_fit_margins_cpp`, data, nlevels, mult, xmin, xmax, bw, deg, weights, num_threads)
 }
 

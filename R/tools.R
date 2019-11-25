@@ -11,6 +11,8 @@
 #'
 #' @noRd
 if_vec_to_matrix <- function(u, to_col = FALSE) {
+  if (is.null(u))
+    return(NULL)
   assert_that(is.numeric(u) | is.data.frame(u))
   if (NCOL(u) == 1) {
     if (to_col) {
@@ -32,7 +34,7 @@ if_vec_to_matrix <- function(u, to_col = FALSE) {
 #' @param parameters the parameters as passed in function call.
 #' @return A `bicop_dist` object.
 #' @noRd
-args2bicop <- function(family, rotation, parameters) {
+args2bicop <- function(family, rotation, parameters, var_types = c("c", "c")) {
   if (all(inherits(family, "bicop_dist"))) {
     return(family)
   } else {
@@ -43,7 +45,7 @@ args2bicop <- function(family, rotation, parameters) {
       parameters <- numeric(0)
     }
     assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
-    return(bicop_dist(family, rotation, parameters))
+    return(bicop_dist(family, rotation, parameters, var_types))
   }
 }
 
@@ -102,13 +104,13 @@ check_and_match_family_set <- function(family_set) {
 
 # Multiple plot function
 #
-# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
-# - cols:   Number of columns in layout
-# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot
+# objects) - cols:   Number of columns in layout - layout: A matrix specifying
+# the layout. If present, 'cols' is ignored.
 #
-# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
-# then plot 1 will go in the upper left, 2 will go in the upper right, and
-# 3 will go all the way across the bottom.
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE), then
+# plot 1 will go in the upper left, 2 will go in the upper right, and 3 will go
+# all the way across the bottom.
 #
 multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
   # Make a list from the ... arguments and plotlist
@@ -213,6 +215,53 @@ get_npars_distr <- function(distr) {
   )
 }
 
+#' @param data the data (after expand_factors() was called).
+#' @param ctrl the margin controls object (after expand_margin_controls() was
+#'   called).
+#' @noRd
+check_margin_controls <- function(data, ctrl) {
+  nms <- colnames(data)
+  if (is.null(nms)) {
+    nms <- as.character(seq_len(ncol(data)))
+  }
+  lapply(seq_len(NCOL(data)), function(k) {
+    msg_var <- paste0("Problem with margin_controls for variable ", nms[k], ": ")
+    tryCatch(
+      assert_that(
+        is.numeric(ctrl$mult[k]), ctrl$mult[k] > 0,
+        is.numeric(ctrl$xmin[k]), is.numeric(ctrl$xmax[k]),
+        is.na(ctrl$bw[k]) | (is.numeric(ctrl$bw[k]) & (ctrl$bw[k] > 0)),
+        is.numeric(ctrl$deg[k])
+      ),
+      error = function(e) stop(msg_var, e$message)
+    )
+
+    if (is.ordered(data[, k]) & (!is.nan(ctrl$xmin[k]) | !is.nan(ctrl$xmax[k]))) {
+      stop(msg_var, "xmin and xmax are not meaningful for x of type ordered.")
+    }
+
+    if (!is.nan(ctrl$xmax[k]) & !is.nan(ctrl$xmin[k])) {
+      if (ctrl$xmin[k] > ctrl$xmax[k]) {
+        stop(msg_var, "xmin is larger than xmax.")
+      }
+    }
+    if (!is.nan(ctrl$xmin[k])) {
+      if (any(data[, k] < ctrl$xmin[k])) {
+        stop(msg_var, "not all data are larger than xmin.")
+      }
+    }
+    if (!is.nan(ctrl$xmax[k])) {
+      if (any(data[, k] > ctrl$xmax[k])) {
+        stop(msg_var, "not all data are samller than xmax.")
+      }
+    }
+    if (!(ctrl$deg[k] %in% 0:2)) {
+      stop(msg_var, "deg must be either 0, 1, or 2.")
+    }
+  })
+}
+
+
 #' @noRd
 #' @importFrom assertthat assert_that on_failure<-
 #' @importFrom assertthat is.number is.string is.flag is.scalar
@@ -230,6 +279,14 @@ on_failure(in_set) <- function(call, env) {
   )
 }
 
+correct_var_types <- function(var_types, data) {
+  is.character(var_types) && in_set(var_types, c("c", "d"))
+}
+
+on_failure(correct_var_types) <- function(call, env) {
+  paste0("var_types must be vector with elements 'c' or 'd'.")
+}
+
 #' Pseudo-Observations
 #'
 #' Compute the pseudo-observations for the given data matrix.
@@ -238,24 +295,28 @@ on_failure(in_set) <- function(call, env) {
 #' pseudo-observations.
 #' @param ties_method similar to `ties.method` of [rank()] (only `"average"`,
 #' `"first"` and `"random"` currently available).
-#' @param lower_tail `logical` which, if `FALSE``, returns the pseudo-observations
-#' when applying the empirical marginal survival functions.
+#' @param lower_tail `logical` which, if `FALSE``, returns the
+#'   pseudo-observations when applying the empirical marginal survival
+#'   functions.
 #' @details
 #' Given `n` realizations \eqn{x_i=(x_{i1}, \ldots,x_{id})},
 #' \eqn{i \in \left\lbrace 1, \ldots,n \right\rbrace }
 #' of a random vector `X`, the pseudo-observations are defined via
-#' \eqn{u_{ij}=r_{ij}/(n+1)} for \eqn{i \in \left\lbrace 1, \ldots,n \right\rbrace }
-#' and \eqn{j \in \left\lbrace 1, \ldots,d \right\rbrace }, where
+#' \eqn{u_{ij}=r_{ij}/(n+1)} for
+#' \eqn{i \in \left\lbrace 1, \ldots,n \right\rbrace}
+#' and
+#' \eqn{j \in \left\lbrace 1, \ldots,d \right\rbrace }, where
 #' \eqn{r_{ij}} denotes the rank of \eqn{x_{ij}} among all \eqn{x_{kj}},
 #' \eqn{k \in \left\lbrace 1, \ldots,n \right\rbrace }.
 #'
 #' The pseudo-observations can thus also be computed by component-wise applying
 #' the empirical distribution functions to the data and scaling the result by
-#' \eqn{n/(n+1)}. This asymptotically negligible scaling factor is used to force the
-#' variates to fall inside the open unit hypercube, for example, to avoid
+#' \eqn{n/(n+1)}. This asymptotically negligible scaling factor is used to force
+#' the variates to fall inside the open unit hypercube, for example, to avoid
 #' problems with density evaluation at the boundaries.
 #'
-#' When `lower_tail = FALSE`, then `pseudo_obs()` simply returns `1 - pseudo_obs()`.
+#' When `lower_tail = FALSE`, then `pseudo_obs()` simply returns
+#' `1 - pseudo_obs()`.
 #'
 #' @return
 #' a vector of matrix of the same dimension as the input containing the

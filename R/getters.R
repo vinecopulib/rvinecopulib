@@ -1,37 +1,43 @@
 #' Extracts components of `bicop_dist` and `vinecop_dist` objects
 #'
 #' Extracts either the structure matrix  (for `vinecop_dist` only), or
-#' pair-copulas, their parameters, Kendall's taus, or families
-#' (for `bicop_dist` and `vinecop_dist`).
+#' pair-copulas, their parameters, Kendall's taus, or families (for `bicop_dist`
+#' and `vinecop_dist`).
 #'
 #' @name getters
-#' @aliases get_pair_copula get_all_pair_copulas get_parameters get_all_parameters
-#' get_ktau get_all_ktaus get_matrix get_structure
+#' @aliases get_pair_copula get_all_pair_copulas get_parameters
+#'   get_all_parameters get_ktau get_all_ktaus get_matrix get_structure
 #' @param object a `bicop_dist`, `vinecop_dist` or `vine_dist` object.
-#' @details
-#' #' The [get_structure] method (for `vinecop_dist` or `vine_dist` objects only)
-#' extracts the structure (see [rvine_structure] for more details).
+#' @details #' The [get_structure] method (for `vinecop_dist` or `vine_dist`
+#' objects only) extracts the structure (see [rvine_structure] for more
+#' details).
 #'
 #' The [get_matrix] method (for `vinecop_dist` or `vine_dist` objects only)
 #' extracts the structure matrix (see [rvine_structure] for more details).
 #'
 #' The other `get_xyz` methods for `vinecop_dist` or `vine_dist` objects return
-#' the entries corresponding to the pair-copula indexed by its `tree` and `edge`.
-#' When `object` is of class `bicop_dist`, `tree` and `edge` are not required. \cr
+#' the entries corresponding to the pair-copula indexed by its `tree` and
+#' `edge`. When `object` is of class `bicop_dist`, `tree` and `edge` are not
+#' required. \cr
 #'
-#' [get_pair_copula] = the pair-copula itself (see [bicop]).\cr
-#' [get_parameters] = the parameters of the pair-copula (i.e., a `numeric`
-#'  scalar, vector, or matrix).\cr
-#' [get_family] = a character for the family (see [bicop] for implemented families).\cr
-#' [get_ktau] = a `numeric` scalar with the pair-copula Kendall's tau.\cr
+#' * [get_pair_copula()] = the pair-copula itself (see [bicop]).
+#'
+#' * [get_parameters()] = the parameters of the pair-copula (i.e., a `numeric`
+#' scalar, vector, or matrix).
+#'
+#' * [get_family()] = a character for the family (see [bicop] for
+#' implemented families).
+#'
+#' * [get_ktau()] = a `numeric` scalar with the pair-copula Kendall's tau.
 #'
 #' The `get_all_xyz` methods (for `vinecop_dist` or `vine_dist` objects only)
 #' return lists of lists, with each element corresponding to a tree in `trees`,
-#' and then elements of the sublists correspond to edges.
-#' The returned lists have two additional attributes: \cr
+#' and then elements of the sublists correspond to edges. The returned lists
+#' have two additional attributes:
 #'
-#' `"d"` = the dimension of the model.\cr
-#' `"trees"` = the extracted trees.\cr
+#' * `"d"` = the dimension of the model.
+#'
+#' * `"trees"` = the extracted trees.
 #'
 #' @examples
 #' # specify pair-copulas
@@ -40,17 +46,17 @@
 #'   list(bicop, bicop), # pair-copulas in first tree
 #'   list(bicop) # pair-copulas in second tree
 #' )
-#' 
+#'
 #' # specify R-vine matrix
 #' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-#' 
+#'
 #' # set up vine copula model
 #' vc <- vinecop_dist(pcs, mat)
-#' 
+#'
 #' # get the structure
 #' get_structure(vc)
 #' all.equal(get_matrix(vc), mat, check.attributes = FALSE)
-#' 
+#'
 #' # get pair-copulas
 #' get_pair_copula(vc, 1, 1)
 #' get_all_pair_copulas(vc)
@@ -101,13 +107,13 @@ get_pair_copula <- function(object, tree = NA, edge = NA) {
     assert_that(is.number(tree),
       tree >= 1,
       tree <= d[2],
-      msg = "tree should be a number between 1 and 
+      msg = "tree should be a number between 1 and
                     the truncation level."
     )
     assert_that(is.number(edge),
       edge >= 1,
       edge <= d[1] - tree,
-      msg = "tree should be a number between 1 and 
+      msg = "tree should be a number between 1 and
                     dimension minus tree."
     )
 
@@ -157,7 +163,7 @@ get_all_pair_copulas <- function(object, trees = NA) {
     assert_that(is.numeric(trees),
       all(trees >= 1),
       all(trees <= d[2]),
-      msg = "the elements of trees should be numbers between 1 and 
+      msg = "the elements of trees should be numbers between 1 and
                     the truncation level."
     )
   }

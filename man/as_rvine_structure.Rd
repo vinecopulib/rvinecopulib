@@ -21,11 +21,9 @@ as_rvine_matrix(x, ...)
 
 \method{as_rvine_matrix}{rvine_structure}(x, ..., validate = FALSE)
 
-\method{as_rvine_structure}{list}(x, ..., is_natural_order = FALSE,
-  byrow = TRUE)
+\method{as_rvine_structure}{list}(x, ..., is_natural_order = FALSE)
 
-\method{as_rvine_matrix}{list}(x, ..., is_natural_order = FALSE,
-  byrow = TRUE)
+\method{as_rvine_matrix}{list}(x, ..., is_natural_order = FALSE)
 
 \method{as_rvine_structure}{rvine_matrix}(x, ..., validate = FALSE)
 
@@ -51,9 +49,6 @@ or to explicitly enable it if you have a structure that you want to re-check.}
 of \code{x} is assumed to be provided in natural order already (a structure is in
 natural order if the anti-diagonal is 1, .., d from bottom left to top
 right).}
-
-\item{byrow}{whether the element of the list named \code{struct_array}
-is assumed to be provided by column or by row.}
 }
 \value{
 Either an object of class \code{rvine_structure} or of class
@@ -81,7 +76,7 @@ checks.
 coerced into an R-vine structure (see \code{\link[=rvine_structure]{rvine_structure()}} for more details).
 }
 
-#' For \code{as_rvine_matrix}:
+For \code{as_rvine_matrix}:
 \itemize{
 \item \code{rvine_structure} : allow to coerce an \code{rvine_structure} into an
 R-vine matrix (useful e.g. for printing).

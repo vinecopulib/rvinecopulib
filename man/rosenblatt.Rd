@@ -16,7 +16,7 @@ models.}
 \item{model}{a model object; classes currently supported are
 \code{bicop_dist()}, \code{vinecop_dist()}, and \code{vine_dist()}.}
 
-\item{cores}{if \code{>1}, computation is parallelized over \code{cores} batches (rows
+\item{cores}{if \verb{>1}, computation is parallelized over \code{cores} batches (rows
 of \code{u}).}
 
 \item{u}{matrix of evaluation points; must be in \eqn{(0, 1)^d}.}
@@ -37,7 +37,8 @@ where \eqn{F(v_k|v_1,\ldots,v_{k-1})} is the conditional distribution of
 \eqn{V_k} given \eqn{V_1 \ldots, V_{k-1}, k = 2,\ldots,d}. The vector \eqn{U}
 are then independent standard uniform variables. The inverse operation
 \deqn{
-  V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}),
+  V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots,
+  V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}),
 }
 can can be used to simulate from a distribution. For any copula \eqn{F}, if
 \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has
@@ -58,4 +59,8 @@ pairs(u)
 
 # inversion
 pairs(inverse_rosenblatt(u, fit))
+
+# works similarly for vinecop models
+vc <- fit$copula
+rosenblatt(pseudo_obs(x), vc)
 }

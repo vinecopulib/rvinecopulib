@@ -8,7 +8,6 @@
 
 #include <Eigen/Dense>
 #include <vinecopulib/vinecop/fit_controls.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <vinecopulib/vinecop/rvine_structure.hpp>
 
 namespace vinecopulib {
@@ -16,7 +15,7 @@ namespace vinecopulib {
 // forward declarations
 class Bicop;
 namespace tools_select {
-    class VinecopSelector;
+class VinecopSelector;
 }
 
 //! @brief A class for vine copula models
@@ -26,174 +25,169 @@ namespace tools_select {
 class Vinecop
 {
 public:
+  // default constructors
+  Vinecop() {}
 
-    // default constructors
-    Vinecop() {}
+  Vinecop(size_t d);
 
-    Vinecop(size_t d);
+  // Constructors without data
+  Vinecop(const RVineStructure& structure,
+          const std::vector<std::vector<Bicop>>& pair_copulas = {},
+          const std::vector<std::string>& var_types = {});
 
-    // Constructors with structure only
-    Vinecop(const RVineStructure &vine_struct);
+  Vinecop(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+          const std::vector<std::vector<Bicop>>& pair_copulas = {},
+          const std::vector<std::string>& var_types = {});
 
-    Vinecop(const Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> &matrix,
-            const bool check_matrix = true);
+  // Constructors from data
+  Vinecop(const Eigen::MatrixXd& data,
+          const RVineStructure& structure = RVineStructure(),
+          const std::vector<std::string>& var_types = {},
+          const FitControlsVinecop& controls = FitControlsVinecop());
 
-    Vinecop(const std::vector<size_t> &order,
-            const TriangularArray<size_t> &struct_array,
-            const bool check_array = true);
+  Vinecop(const Eigen::MatrixXd& data,
+          const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix =
+            Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>(),
+          const std::vector<std::string>& var_types = {},
+          const FitControlsVinecop& controls = FitControlsVinecop());
 
-    // Constructors with pair_copulas + structure
-    Vinecop(const std::vector<std::vector<Bicop>> &pair_copulas,
-            const RVineStructure &vine_struct);
+  // Constructors from files/serialized objects
+  Vinecop(const std::string filename, const bool check = true);
+  Vinecop(const boost::property_tree::ptree input, const bool check = true);
 
-    Vinecop(const std::vector <std::vector<Bicop>> &pair_copulas,
-            const Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> &matrix,
-            const bool check_matrix = true);
+  // Serialize
+  boost::property_tree::ptree to_ptree() const;
+  void to_json(const std::string filename) const;
 
-    Vinecop(const std::vector<std::vector<Bicop>> &pair_copulas,
-            const std::vector<size_t> &order,
-            const TriangularArray<size_t> &struct_array,
-            const bool check_array = true);
+  // Methods modifying structure and/or families and parameters
+  void select(const Eigen::MatrixXd& data,
+              const FitControlsVinecop& controls = FitControlsVinecop());
 
-    // Constructors from data
-    Vinecop(const Eigen::MatrixXd &data,
-            const FitControlsVinecop &controls = FitControlsVinecop());
+  DEPRECATED void select_all(
+    const Eigen::MatrixXd& data,
+    const FitControlsVinecop& controls = FitControlsVinecop());
 
-    Vinecop(const Eigen::MatrixXd &data,
-            const RVineStructure &vine_struct,
-            FitControlsVinecop controls = FitControlsVinecop());
+  DEPRECATED void select_families(
+    const Eigen::MatrixXd& data,
+    const FitControlsVinecop& controls = FitControlsVinecop());
 
-    Vinecop(const Eigen::MatrixXd &data,
-            const Eigen::Matrix <size_t, Eigen::Dynamic, Eigen::Dynamic> &matrix,
-            FitControlsVinecop controls = FitControlsVinecop(),
-            const bool check_matrix = true);
+  // Getters for a single pair copula
+  Bicop get_pair_copula(size_t tree, size_t edge) const;
 
-    Vinecop(const Eigen::MatrixXd &data,
-            const std::vector<size_t> &order,
-            const TriangularArray<size_t> &struct_array,
-            FitControlsVinecop controls = FitControlsVinecop(),
-            const bool check_array = true);
+  BicopFamily get_family(size_t tree, size_t edge) const;
 
+  int get_rotation(size_t tree, size_t edge) const;
 
-    // Constructors from files/serialized objects
-    Vinecop(const char *filename, const bool check_matrix = true);
+  Eigen::MatrixXd get_parameters(size_t tree, size_t edge) const;
 
-    Vinecop(const boost::property_tree::ptree input,
-            const bool check_matrix = true);
+  double get_tau(size_t tree, size_t edge) const;
 
-    // Serialize
-    boost::property_tree::ptree to_ptree() const;
+  size_t get_trunc_lvl() const;
 
-    void to_json(const char *filename) const;
+  // Getters for all pair copulas
+  std::vector<std::vector<Bicop>> get_all_pair_copulas() const;
 
-    // Methods modifying structure and/or families and parameters
-    void select_all(const Eigen::MatrixXd &data,
-                    const FitControlsVinecop &controls = FitControlsVinecop());
+  std::vector<std::vector<BicopFamily>> get_all_families() const;
 
-    void select_families(const Eigen::MatrixXd &data,
-                         const FitControlsVinecop &controls = FitControlsVinecop());
+  std::vector<std::vector<int>> get_all_rotations() const;
 
-    // Getters for a single pair copula
-    Bicop get_pair_copula(size_t tree, size_t edge) const;
+  std::vector<std::vector<Eigen::MatrixXd>> get_all_parameters() const;
 
-    BicopFamily get_family(size_t tree, size_t edge) const;
+  std::vector<std::vector<double>> get_all_taus() const;
 
-    int get_rotation(size_t tree, size_t edge) const;
+  // Getters for the structure
+  size_t get_dim() const;
 
-    Eigen::MatrixXd get_parameters(size_t tree, size_t edge) const;
+  std::vector<size_t> get_order() const;
 
-    double get_tau(size_t tree, size_t edge) const;
+  RVineStructure get_rvine_structure() const;
 
-    size_t get_trunc_lvl() const;
+  Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
 
-    // Getters for all pair copulas
-    std::vector <std::vector<Bicop>> get_all_pair_copulas() const;
+  TriangularArray<size_t> get_struct_array(bool natural_order = false) const;
 
-    std::vector <std::vector<BicopFamily>> get_all_families() const;
+  // getters for fit statistics
+  double get_threshold() const;
+  double get_loglik() const;
+  size_t get_nobs() const;
+  double get_aic() const;
+  double get_bic() const;
+  double get_mbicv(const double psi0 = 0.9) const;
 
-    std::vector <std::vector<int>> get_all_rotations() const;
+  // Stats methods
+  Eigen::VectorXd pdf(Eigen::MatrixXd u, const size_t num_threads = 1) const;
 
-    std::vector <std::vector<Eigen::MatrixXd>> get_all_parameters() const;
+  Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
+                      const size_t N = 1e4,
+                      const size_t num_threads = 1,
+                      std::vector<int> seeds = std::vector<int>()) const;
 
-    std::vector <std::vector<double>> get_all_taus() const;
+  Eigen::MatrixXd simulate(
+    const size_t n,
+    const bool qrng = false,
+    const size_t num_threads = 1,
+    const std::vector<int>& seeds = std::vector<int>()) const;
 
-    // Getters for the structure
-    size_t get_dim() const;
+  Eigen::MatrixXd rosenblatt(const Eigen::MatrixXd& u,
+                             const size_t num_threads = 1) const;
+  Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd& u,
+                                     const size_t num_threads = 1) const;
 
-    std::vector<size_t> get_order() const;
+  void set_all_pair_copulas(
+    const std::vector<std::vector<Bicop>>& pair_copulas);
+  void set_var_types(const std::vector<std::string>& var_types);
 
-    RVineStructure get_rvine_structure() const;
+  std::vector<std::string> get_var_types() const;
 
-    Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
+  // Fit statistics
+  double get_npars() const;
 
-    TriangularArray<size_t> get_struct_array() const;
+  double loglik(const Eigen::MatrixXd& u = Eigen::MatrixXd(),
+                const size_t num_threads = 1) const;
 
-    // getters for fit statistics
-    double get_threshold() const;
-    double get_loglik() const;
-    size_t get_nobs() const;
-    double get_aic() const;
-    double get_bic() const;
-    double get_mbicv(const double psi0) const;
+  double aic(const Eigen::MatrixXd& u = Eigen::MatrixXd(),
+             const size_t num_threads = 1) const;
 
+  double bic(const Eigen::MatrixXd& u = Eigen::MatrixXd(),
+             const size_t num_threads = 1) const;
 
-    // Stats methods
-    Eigen::VectorXd pdf(const Eigen::MatrixXd &u,
-                        const size_t num_threads = 1) const;
+  double mbicv(const Eigen::MatrixXd& u = Eigen::MatrixXd(),
+               const double psi0 = 0.9,
+               const size_t num_threads = 1) const;
 
-    Eigen::VectorXd cdf(const Eigen::MatrixXd &u,
-                        const size_t N = 1e4,
-                        const size_t num_threads = 1,
-                        std::vector<int> seeds = std::vector<int>()) const;
+  // Misc methods
+  static std::vector<std::vector<Bicop>> make_pair_copula_store(
+    const size_t d,
+    const size_t trunc_lvl = std::numeric_limits<size_t>::max());
+  void truncate(size_t trunc_lvl);
 
-    Eigen::MatrixXd simulate(const size_t n,
-                             const bool qrng = false,
-                             const size_t num_threads = 1,
-                             const std::vector<int>& seeds = std::vector<int>()) const;
-
-    Eigen::MatrixXd rosenblatt(const Eigen::MatrixXd &u,
-                               const size_t num_threads = 1) const;
-    Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd &u,
-                                       const size_t num_threads = 1) const;
-
-    // Fit statistics
-    double calculate_npars() const;
-
-    double loglik(const Eigen::MatrixXd &u, const size_t num_threads = 1) const;
-
-    double aic(const Eigen::MatrixXd &u, const size_t num_threads = 1) const;
-
-    double bic(const Eigen::MatrixXd &u, const size_t num_threads = 1) const;
-
-    double mbicv(const Eigen::MatrixXd &u, const double psi0, const size_t num_threads = 1) const;
-
-    // Misc methods
-    static std::vector<std::vector<Bicop>>
-    make_pair_copula_store(const size_t d,
-                           const size_t trunc_lvl = std::numeric_limits<size_t>::max());
-    void truncate(size_t trunc_lvl);
-
-    std::string str() const;
+  std::string str() const;
 
 protected:
-    size_t d_;
-    RVineStructure vine_struct_;
-    std::vector<std::vector<Bicop>> pair_copulas_;
-    double threshold_;
-    double loglik_;
-    size_t nobs_;
+  size_t d_;
+  RVineStructure rvine_structure_;
+  mutable std::vector<std::vector<Bicop>> pair_copulas_;
+  double threshold_{ 0.0 };
+  double loglik_{ NAN };
+  size_t nobs_{ 0 };
+  mutable std::vector<std::string> var_types_;
 
-    void check_data_dim(const Eigen::MatrixXd &data) const;
-    void check_pair_copulas_rvine_structure(
-        const std::vector<std::vector<Bicop>> &pair_copulas) const;
-    double calculate_mbicv_penalty(const size_t nobs, const double psi0) const;
-    void finalize_fit(const tools_select::VinecopSelector& selector);
-    void check_weights_size(const Eigen::VectorXd& weights,
-                            const Eigen::MatrixXd& data) const;
-    void check_enough_data(const Eigen::MatrixXd& data) const;
-    void check_fitted() const;
+  void check_data_dim(const Eigen::MatrixXd& data) const;
+  void check_data(const Eigen::MatrixXd& data) const;
+  void check_pair_copulas_rvine_structure(
+    const std::vector<std::vector<Bicop>>& pair_copulas) const;
+  double calculate_mbicv_penalty(const size_t nobs, const double psi0) const;
+  void finalize_fit(const tools_select::VinecopSelector& selector);
+  void check_weights_size(const Eigen::VectorXd& weights,
+                          const Eigen::MatrixXd& data) const;
+  void check_enough_data(const Eigen::MatrixXd& data) const;
+  void check_fitted() const;
+  void check_var_types(const std::vector<std::string>& var_types) const;
+  void set_continuous_var_types() const;
+  void set_var_types_internal(const std::vector<std::string>& var_types) const;
+  int get_n_discrete() const;
+  Eigen::MatrixXd collapse_data(const Eigen::MatrixXd& u) const;
 };
-
 }
 
 #include <vinecopulib/vinecop/implementation/class.ipp>

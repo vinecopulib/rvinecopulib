@@ -1,100 +1,121 @@
-#' Vine copula models
+#' Fitting vine copula models
 #'
-#' Automated fitting or creation of custom vine copula models
+#' Automated fitting and model selection for vine copula models with continuous
+#' or discrete data.
 #'
-#' @aliases vinecop_dist
 #' @inheritParams bicop
 #' @param family_set a character vector of families; see [bicop()] for
-#' additional options.
+#'   additional options.
 #' @param structure an `rvine_structure` object, namely a compressed
-#' representation of the vine structure, or an object that can be coerced
-#' into one (see [rvine_structure()] and [as_rvine_structure()]).
-#' The dimension must be `length(pair_copulas[[1]]) + 1`; for [vinecop()],
-#' `structure = NA` performs automatic structure selection.
+#'   representation of the vine structure, or an object that can be coerced into
+#'   one (see [rvine_structure()] and [as_rvine_structure()]). The dimension
+#'   must be `length(pair_copulas[[1]]) + 1`; `structure = NA` performs
+#'   automatic selection based on Dissman's algorithm. See *Details* for partial
+#'   selection of the structure.
 #' @param psi0 prior probability of a non-independence copula (only used for
-#'     `selcrit = "mbic"` and `selcrit = "mbicv"`).
+#'   `selcrit = "mbic"` and `selcrit = "mbicv"`).
 #' @param trunc_lvl the truncation level of the vine copula; `Inf` means no
 #'   truncation, `NA` indicates that the truncation level should be selected
 #'   automatically by [mBICV()].
 #' @param tree_crit the criterion for tree selection, one of `"tau"`, `"rho"`,
-#'    `"hoeffd"`, or `"mcor"` for Kendall's \eqn{\tau}, Spearman's \eqn{\rho},
-#'    Hoeffding's \eqn{D}, and maximum correlation, respectively.
+#'   `"hoeffd"`, `"mcor"`, or `"joe"` for Kendall's \eqn{\tau}, Spearman's
+#'   \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation, or logarithm of
+#'   the partial correlation, respectively.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the
 #'   threshold should be selected automatically by [mBICV()].
 #' @param show_trace logical; whether a trace of the fitting progress should be
-#'    printed.
+#'   printed.
 #' @param cores number of cores to use; if more than 1, estimation of pair
-#'    copulas within a tree is done in parallel.
+#'   copulas within a tree is done in parallel.
+#' @param var_types variable types, a length d vector; e.g., `c("c", "c")` for
+#'   two continuous variables, or `c("c", "d")` for first variable continuous
+#'   and second discrete.
 #'
 #' @details
-#' [vinecop_dist()] creates a vine copula by specifying a nested list of
-#' [bicop_dist()] objects and a quadratic structure matrix.
 #'
-#' [vinecop()] provides automated fitting for vine copula models.
-#' The function inherits the parameters of [bicop()].
-#' Optionally, an [rvine_structure()] or [rvine_matrix()] can be used as
-#' input to specify the vine structure. `tree_crit` describes the
-#' criterion for tree selection, one of `"tau"`, `"rho"`, `"hoeffd"` for
-#' Kendall's tau, Spearman's rho, and Hoeffding's D, respectively. Additionally,
-#' `threshold` allows to threshold the `tree_crit` and `trunc_lvl` to truncate
-#' the vine copula, with `threshold_sel` and `trunc_lvl_sel` to automatically
-#' select both parameters.
+#' ## Discrete variables
 #'
-#' @return Objects inheriting from `vinecop_dist` for [vinecop_dist()], and
-#' `vinecop` and `vinecop_dist` for [vinecop()].
+#' When at least one variable is discrete, two types of
+#' "observations" are required in `data`: the first \eqn{n  x  d} block
+#' contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n  x  d}
+#' block contains realizations of \eqn{F_{X_j}(X_j^-)}. The minus indicates a
+#' left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+#' \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
+#' limit and the cdf itself coincide. Respective columns can be omitted in the
+#' second block.
 #'
-#' Object from the `vinecop_dist` class are lists containing:
+#' ## Partial structure selection
 #'
-#' * `pair_copulas`, a list of lists. Each element of `pair_copulas` corresponds
-#' to a tree, which is itself a list of `bicop_dist` objects, see [bicop_dist()].
-#' * `structure`, an `rvine_structure` object, namely a compressed
-#' representation of the vine structure, or an object that can be coerced
-#' into one (see [rvine_structure()] and [as_rvine_structure()]).
-#' * `npars`, a `numeric` with the number of (effective) parameters.
+#' It is possible to fix the vine structure only in the first trees and select
+#' the remaining ones automatically. To specify only the first `k` trees, supply
+#' a `k`-truncated `rvine_structure()` or `rvine_matrix()`. All trees up to
+#' `trunc_lvl` will then be selected automatically.
 #'
-#' For objects from the `vinecop` class, elements of the sublists in
-#' `pair_copulas` are also `bicop` objects, see [bicop()]. Additionally,
-#' objects from the `vinecop` class contain:
+#' @return
 #'
-#' * `threshold`, the (set or estimated) threshold used for thresholding the vine.
+#' Objects inheriting from `vinecop` and `vinecop_dist` for [vinecop()]. In
+#' addition to the entries provided by [vinecop_dist()], there are:
+#'
+#' * `threshold`, the (set or estimated) threshold used for thresholding the
+#' vine.
+#'
 #' * `data` (optionally, if `keep_data = TRUE` was used), the dataset that was
 #' passed to [vinecop()].
-#' * `controls`, a `list` with the set of fit controls that was passed to [vinecop()].
-#' * `nobs`, an `integer` with the number of observations that was used
-#' to fit the model.
 #'
-#' @examples
-#' # specify pair-copulas
-#' bicop <- bicop_dist("bb1", 90, c(3, 2))
-#' pcs <- list(
-#'   list(bicop, bicop), # pair-copulas in first tree
-#'   list(bicop) # pair-copulas in second tree
-#' )
-#' 
-#' # specify R-vine matrix
-#' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-#' 
-#' # set up vine copula model
-#' vc <- vinecop_dist(pcs, mat)
-#' 
-#' # show model
-#' summary(vc)
-#' 
-#' # simulate some data
-#' u <- rvinecop(50, vc)
-#' 
-#' # estimate a vine copula model
-#' fit <- vinecop(u, "par")
-#' fit
-#' summary(fit)
-#' str(fit, 3)
+#' * `controls`, a `list` with fit controls that was passed to [vinecop()].
+#'
+#' * `nobs`, the number of observations that were used to fit the model.
+#'
+#' @seealso [vinecop()], [dvinecop()], [pvinecop()], [rvinecop()],
+#'   [plot.vinecop()], [contour.vinecop()]
 #' @export
-vinecop <- function(data, family_set = "all", structure = NA,
-                    par_method = "mle", nonpar_method = "constant", mult = 1,
-                    selcrit = "bic", weights = numeric(), psi0 = 0.9,
-                    presel = TRUE, trunc_lvl = Inf, tree_crit = "tau",
-                    threshold = 0, keep_data = FALSE, show_trace = FALSE,
-                    cores = 1) {
+#' @examples
+#' ## simulate dummy data
+#' x <- rnorm(30) * matrix(1, 30, 5) + 0.5 * matrix(rnorm(30 * 5), 30, 5)
+#' u <- pseudo_obs(x)
+#'
+#' ## fit and select the model structure, family and parameters
+#' fit <- vinecop(u)
+#' summary(fit)
+#' plot(fit)
+#' contour(fit)
+#'
+#' ## select by log-likelihood criterion from one-paramter families
+#' fit <- vinecop(u, family_set = "onepar", selcrit = "bic")
+#' summary(fit)
+#'
+#' ## Gaussian D-vine
+#' fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss")
+#' plot(fit)
+#' contour(fit)
+#'
+#' ## Partial structure selection with only first tree specified
+#' structure <- rvine_structure(order = 1:5, list(rep(5, 4)))
+#' structure
+#' fit <- vinecop(u, structure = structure, family = "gauss")
+#' plot(fit)
+#'
+#' ## 1-truncated model with random structure
+#' fit <- vinecop(u, structure = rvine_structure_sim(5), trunc_lvl = 1)
+#' contour(fit)
+#'
+#' ## Model for discrete data
+#' x <- qpois(u, 1)  # transform to Poisson margins
+#' # we require two types of observations (see Details)
+#' u_disc <- cbind(ppois(x, 1), ppois(x - 1, 1))
+#' fit <- vinecop(u_disc, var_types = rep("d", 5))
+#'
+#' ## Model for mixed data
+#' x <- qpois(u[, 1], 1)  # transform first variable to Poisson margin
+#' # we require two types of observations (see Details)
+#' u_disc <- cbind(ppois(x, 1), u[, 2:5], ppois(x - 1, 1))
+#' fit <- vinecop(u_disc, var_types = c("d", rep("c", 4)))
+vinecop <- function(data, var_types = rep("c", ncol(data)), family_set = "all",
+                    structure = NA, par_method = "mle",
+                    nonpar_method = "constant", mult = 1, selcrit = "bic",
+                    weights = numeric(), psi0 = 0.9, presel = TRUE,
+                    trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
+                    keep_data = FALSE, show_trace = FALSE, cores = 1) {
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||
@@ -111,23 +132,23 @@ vinecop <- function(data, family_set = "all", structure = NA,
     is.string(tree_crit),
     is.scalar(threshold),
     is.flag(keep_data),
-    is.number(cores), cores > 0
+    is.number(cores), cores > 0,
+    correct_var_types(var_types)
   )
 
   # check if families known (w/ partial matching) and expand convenience defs
   family_set <- process_family_set(family_set, par_method)
 
   ## pre-process input
-  data <- if_vec_to_matrix(data)
-  is_structure_provided <- !(is.scalar(structure) && is.na(structure))
-  if (is_structure_provided) {
+  if (is.scalar(structure) && is.na(structure)) {
+    structure <- rvine_structure(seq_along(var_types))
+  } else {
     structure <- as_rvine_structure(structure)
   }
 
   ## fit and select copula model
   vinecop <- vinecop_select_cpp(
     data = data,
-    is_structure_provided = is_structure_provided,
     structure = structure,
     family_set = family_set,
     par_method = par_method,
@@ -147,7 +168,8 @@ vinecop <- function(data, family_set = "all", structure = NA,
     select_truncation_level = is.na(trunc_lvl),
     select_threshold = is.na(threshold),
     show_trace = show_trace,
-    num_threads = cores
+    num_threads = cores,
+    var_types = var_types
   )
 
   ## make all pair-copulas bicop objects
@@ -155,9 +177,6 @@ vinecop <- function(data, family_set = "all", structure = NA,
     vinecop$pair_copulas,
     function(tree) lapply(tree, as.bicop)
   )
-
-  ## make the structure a rvine-structure object
-  class(vinecop$structure) <- c("rvine_structure", class(vinecop$structure))
 
   ## add information about the fit
   vinecop$names <- colnames(data)
@@ -177,17 +196,59 @@ vinecop <- function(data, family_set = "all", structure = NA,
     threshold = threshold
   )
   vinecop$nobs <- nrow(data)
-
-  structure(vinecop, class = c("vinecop", "vinecop_dist"))
+  vinecop
 }
 
-#' @param pair_copulas A nested list of 'bicop_dist' objects, where
-#'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
-#'    tree `t`.
-#' @rdname vinecop
+#' Vine copula models
+#'
+#' Create custom vine copula models by specifying the pair-copulas, structure,
+#' and variable types.
+#'
+#' @return
+#'
+#' Object of class `vinecop_dist`, i.e., a list containing:
+#'
+#' * `pair_copulas`, a list of lists. Each element of `pair_copulas` corresponds
+#' to a tree, which is itself a list of [bicop_dist()] objects.
+#'
+#' * `structure`, a compressed representation of the vine structure, or an
+#' object that can be coerced into one (see [rvine_structure()] and
+#' [as_rvine_structure()]).
+#'
+#' * `npars`, a `numeric` with the number of (effective) parameters.
+#'
+#' * `var_types` the variable types.
+#'
+#' @inheritParams vinecop
+#' @param pair_copulas A nested list of '[bicop_dist()]' objects, where
+#'   \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
+#'   tree `t`.
+#' @seealso [rvine_structure()], [rvine_matrix()], [vinecop()],
+#'   [plot.vinecop_dist()], [contour.vinecop_dist()], [dvinecop()],
+#'   [pvinecop()], [rvinecop()]
 #' @export
-vinecop_dist <- function(pair_copulas, structure) {
-
+#' @examples
+#' # specify pair-copulas
+#' bicop <- bicop_dist("bb1", 90, c(3, 2))
+#' pcs <- list(
+#'   list(bicop, bicop), # pair-copulas in first tree
+#'   list(bicop) # pair-copulas in second tree
+#' )
+#'
+#' # specify R-vine matrix
+#' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
+#'
+#' # set up vine copula model
+#' vc <- vinecop_dist(pcs, mat)
+#'
+#' # visualization
+#' plot(vc)
+#' contour(vc)
+#'
+#' # simulate from the model
+#' pairs(rvinecop(200, vc))
+vinecop_dist <- function(pair_copulas, structure,
+                         var_types = rep("c", length(pair_copulas[[1]]) + 1)) {
   # create object
   vinecop <- structure(
     list(
@@ -198,7 +259,7 @@ vinecop_dist <- function(pair_copulas, structure) {
   )
 
   # sanity checks
-  assert_that(is.list(pair_copulas))
+  assert_that(is.list(pair_copulas), correct_var_types(var_types))
   if (length(pair_copulas) > length(pair_copulas[[1]])) {
     stop("'pair_copulas' has more trees than variables.")
   }
@@ -212,6 +273,7 @@ vinecop_dist <- function(pair_copulas, structure) {
     vinecop$structure,
     length(vinecop$pair_copulas)
   )
+  vinecop$var_types <- var_types
   vinecop_check_cpp(vinecop)
   vinecop$npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
   vinecop$loglik <- NA

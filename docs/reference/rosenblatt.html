@@ -8,21 +8,25 @@
 
 <title>(Inverse) Rosenblatt transform — rosenblatt • rvinecopulib</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -30,13 +34,14 @@
 
 
 
-<meta property="og:title" content="(Inverse) Rosenblatt transform — rosenblatt" />
 
+<meta property="og:title" content="(Inverse) Rosenblatt transform — rosenblatt" />
 <meta property="og:description" content="The Rosenblatt transform takes data generated from a model and turns it into
 independent uniform variates, The inverse Rosenblatt transform computes
 conditional quantiles and can be used simulate from a stochastic model,
 see Details." />
 <meta name="twitter:card" content="summary" />
+
 
 
 
@@ -48,6 +53,7 @@ see Details." />
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
 
 
   </head>
@@ -66,7 +72,7 @@ see Details." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0.1.0</span>
       </span>
     </div>
 
@@ -74,7 +80,7 @@ see Details." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -85,7 +91,6 @@ see Details." />
   <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         
       </ul>
@@ -95,6 +100,7 @@ see Details." />
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
@@ -106,18 +112,16 @@ see Details." />
     </div>
 
     <div class="ref-description">
-    
     <p>The Rosenblatt transform takes data generated from a model and turns it into
 independent uniform variates, The inverse Rosenblatt transform computes
 conditional quantiles and can be used simulate from a stochastic model,
 see <em>Details</em>.</p>
-    
     </div>
 
     <pre class="usage"><span class='fu'>rosenblatt</span>(<span class='no'>x</span>, <span class='no'>model</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
 <span class='fu'>inverse_rosenblatt</span>(<span class='no'>u</span>, <span class='no'>model</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -129,7 +133,7 @@ models.</p></td>
     <tr>
       <th>model</th>
       <td><p>a model object; classes currently supported are
-<code><a href='bicop.html'>bicop_dist()</a></code>, <code><a href='vinecop.html'>vinecop_dist()</a></code>, and <code><a href='vine.html'>vine_dist()</a></code>.</p></td>
+<code><a href='bicop_dist.html'>bicop_dist()</a></code>, <code><a href='vinecop_dist.html'>vinecop_dist()</a></code>, and <code><a href='vine.html'>vine_dist()</a></code>.</p></td>
     </tr>
     <tr>
       <th>cores</th>
@@ -141,7 +145,7 @@ of <code>u</code>).</p></td>
       <td><p>matrix of evaluation points; must be in \((0, 1)^d\).</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The Rosenblatt transform (Rosenblatt, 1952) \(U = T(V)\) of a random vector
@@ -153,39 +157,241 @@ where \(F(v_k|v_1,\ldots,v_{k-1})\) is the conditional distribution of
 \(V_k\) given \(V_1 \ldots, V_{k-1}, k = 2,\ldots,d\). The vector \(U\)
 are then independent standard uniform variables. The inverse operation
 $$
-  V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}),
+  V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots,
+  V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}),
 $$
 can can be used to simulate from a distribution. For any copula \(F\), if
 \(U\) is a vector of independent random variables, \(V = T^{-1}(U)\) has
 distribution \(F\).</p>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># simulate data with some dependence</span>
-<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/lapply'>replicate</a></span>(<span class='fl'>3</span>, <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/Normal'>rnorm</a></span>(<span class='fl'>200</span>))
+<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>replicate</a></span>(<span class='fl'>3</span>, <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span>(<span class='fl'>200</span>))
 <span class='no'>x</span>[, <span class='fl'>2</span>:<span class='fl'>3</span>] <span class='kw'>&lt;-</span> <span class='no'>x</span>[, <span class='fl'>2</span>:<span class='fl'>3</span>] + <span class='no'>x</span>[, <span class='fl'>1</span>]
-<span class='fu'><a href='https://www.rdocumentation.org/packages/graphics/topics/pairs'>pairs</a></span>(<span class='no'>x</span>)</div><div class='img'><img src='rosenblatt-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/graphics/pairs.html'>pairs</a></span>(<span class='no'>x</span>)</div><div class='img'><img src='rosenblatt-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># estimate a vine distribution model</span>
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vine.html'>vine</a></span>(<span class='no'>x</span>, <span class='kw'>copula_controls</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"par"</span>))
+<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vine.html'>vine</a></span>(<span class='no'>x</span>, <span class='kw'>copula_controls</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"par"</span>))
 
 <span class='co'># transform into independent uniforms</span>
 <span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'>rosenblatt</span>(<span class='no'>x</span>, <span class='no'>fit</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/graphics/topics/pairs'>pairs</a></span>(<span class='no'>u</span>)</div><div class='img'><img src='rosenblatt-2.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/graphics/pairs.html'>pairs</a></span>(<span class='no'>u</span>)</div><div class='img'><img src='rosenblatt-2.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># inversion</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/graphics/topics/pairs'>pairs</a></span>(<span class='fu'>inverse_rosenblatt</span>(<span class='no'>u</span>, <span class='no'>fit</span>))</div><div class='img'><img src='rosenblatt-3.png' alt='' width='700' height='433' /></div></pre>
+<span class='fu'><a href='https://rdrr.io/r/graphics/pairs.html'>pairs</a></span>(<span class='fu'>inverse_rosenblatt</span>(<span class='no'>u</span>, <span class='no'>fit</span>))</div><div class='img'><img src='rosenblatt-3.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='co'># works similarly for vinecop models</span>
+<span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='no'>fit</span>$<span class='no'>copula</span>
+<span class='fu'>rosenblatt</span>(<span class='fu'><a href='pseudo_obs.html'>pseudo_obs</a></span>(<span class='no'>x</span>), <span class='no'>vc</span>)</div><div class='output co'>#&gt;               [,1]        [,2]        [,3]
+#&gt;   [1,] 0.760266032 0.613286548 0.084577114
+#&gt;   [2,] 0.299592316 0.486804154 0.910447761
+#&gt;   [3,] 0.112716112 0.984157235 0.741293532
+#&gt;   [4,] 0.157085931 0.629460998 0.273631841
+#&gt;   [5,] 0.972864121 0.114090274 0.766169154
+#&gt;   [6,] 0.630566674 0.363272024 0.905472637
+#&gt;   [7,] 0.126578273 0.938462289 0.940298507
+#&gt;   [8,] 0.157152775 0.050873904 0.820895522
+#&gt;   [9,] 0.814229128 0.513538049 0.925373134
+#&gt;  [10,] 0.911751245 0.349084221 0.467661692
+#&gt;  [11,] 0.098813493 0.982777935 0.189054726
+#&gt;  [12,] 0.820459195 0.430131946 0.373134328
+#&gt;  [13,] 0.913356954 0.960337675 0.611940299
+#&gt;  [14,] 0.096000372 0.597958947 0.786069652
+#&gt;  [15,] 0.746430680 0.490069223 0.671641791
+#&gt;  [16,] 0.810530117 0.441015403 0.203980100
+#&gt;  [17,] 0.842344726 0.607479780 0.268656716
+#&gt;  [18,] 0.718462856 0.253295768 0.552238806
+#&gt;  [19,] 0.625285250 0.757671403 0.681592040
+#&gt;  [20,] 0.075775982 0.749967919 0.422885572
+#&gt;  [21,] 0.233079136 0.190777565 0.492537313
+#&gt;  [22,] 0.006601251 0.327878777 0.975124378
+#&gt;  [23,] 0.036229084 0.599990761 0.194029851
+#&gt;  [24,] 0.275102180 0.223489544 0.631840796
+#&gt;  [25,] 0.611332493 0.446171013 0.935323383
+#&gt;  [26,] 0.632643404 0.070770617 0.487562189
+#&gt;  [27,] 0.209937318 0.811802974 0.726368159
+#&gt;  [28,] 0.151296491 0.883769214 0.462686567
+#&gt;  [29,] 0.216192352 0.011051461 0.472636816
+#&gt;  [30,] 0.621683756 0.367099481 0.621890547
+#&gt;  [31,] 0.152124794 0.577708309 0.044776119
+#&gt;  [32,] 0.224923565 0.927762945 0.646766169
+#&gt;  [33,] 0.602602678 0.245815234 0.557213930
+#&gt;  [34,] 0.072526211 0.451997095 0.990049751
+#&gt;  [35,] 0.898730004 0.624282288 0.159203980
+#&gt;  [36,] 0.231460180 0.127006073 0.069651741
+#&gt;  [37,] 0.547250544 0.544400737 0.870646766
+#&gt;  [38,] 0.752990264 0.130797689 0.174129353
+#&gt;  [39,] 0.829275637 0.976974851 0.223880597
+#&gt;  [40,] 0.596827798 0.099589451 0.587064677
+#&gt;  [41,] 0.377402580 0.116570914 0.199004975
+#&gt;  [42,] 0.099799978 0.979910756 0.895522388
+#&gt;  [43,] 0.136862296 0.704100479 0.810945274
+#&gt;  [44,] 0.326963662 0.244883136 0.800995025
+#&gt;  [45,] 0.310574932 0.822518983 0.258706468
+#&gt;  [46,] 0.034134886 0.897074991 0.323383085
+#&gt;  [47,] 0.551780289 0.668811021 0.716417910
+#&gt;  [48,] 0.695739110 0.764008049 0.980099502
+#&gt;  [49,] 0.973104109 0.139140510 0.402985075
+#&gt;  [50,] 0.741400417 0.120947492 0.875621891
+#&gt;  [51,] 0.816877649 0.218016612 0.850746269
+#&gt;  [52,] 0.951131189 0.982893284 0.522388060
+#&gt;  [53,] 0.340673159 0.468369821 0.711442786
+#&gt;  [54,] 0.190135244 0.495066110 0.606965174
+#&gt;  [55,] 0.197585902 0.690665587 0.442786070
+#&gt;  [56,] 0.093146470 0.634515099 0.512437811
+#&gt;  [57,] 0.330485349 0.415842183 0.601990050
+#&gt;  [58,] 0.768752303 0.303923316 0.825870647
+#&gt;  [59,] 0.454966871 0.385614292 0.363184080
+#&gt;  [60,] 0.196868312 0.201709840 0.149253731
+#&gt;  [61,] 0.210709273 0.700271974 0.014925373
+#&gt;  [62,] 0.749792209 0.352692025 0.592039801
+#&gt;  [63,] 0.394564969 0.633344409 0.228855721
+#&gt;  [64,] 0.508291903 0.487232806 0.751243781
+#&gt;  [65,] 0.926805397 0.027065449 0.845771144
+#&gt;  [66,] 0.806694808 0.795428233 0.950248756
+#&gt;  [67,] 0.882931786 0.891991807 0.248756219
+#&gt;  [68,] 0.598304419 0.190800886 0.517412935
+#&gt;  [69,] 0.943278313 0.353640813 0.253731343
+#&gt;  [70,] 0.645403931 0.113475030 0.830845771
+#&gt;  [71,] 0.019285916 0.777122518 0.547263682
+#&gt;  [72,] 0.880795001 0.267934815 0.796019900
+#&gt;  [73,] 0.096486898 0.813112693 0.701492537
+#&gt;  [74,] 0.933937179 0.825616565 0.437810945
+#&gt;  [75,] 0.020393735 0.279936046 0.731343284
+#&gt;  [76,] 0.744220164 0.687398563 0.746268657
+#&gt;  [77,] 0.187555211 0.135468053 0.054726368
+#&gt;  [78,] 0.350654294 0.848854940 0.114427861
+#&gt;  [79,] 0.484890507 0.748299643 0.855721393
+#&gt;  [80,] 0.119366937 0.698632676 0.960199005
+#&gt;  [81,] 0.371064447 0.709974869 0.144278607
+#&gt;  [82,] 0.853045207 0.699805868 0.771144279
+#&gt;  [83,] 0.823089087 0.015250245 0.318407960
+#&gt;  [84,] 0.916381465 0.390152771 0.965174129
+#&gt;  [85,] 0.997679511 0.500598348 0.532338308
+#&gt;  [86,] 0.336465334 0.115072719 0.104477612
+#&gt;  [87,] 0.642635636 0.805173060 0.393034826
+#&gt;  [88,] 0.056295738 0.847555652 0.920398010
+#&gt;  [89,] 0.920759070 0.646271673 0.328358209
+#&gt;  [90,] 0.954193208 0.384973898 0.756218905
+#&gt;  [91,] 0.876566774 0.643045671 0.641791045
+#&gt;  [92,] 0.320756453 0.983751472 0.815920398
+#&gt;  [93,] 0.500603111 0.071699606 0.840796020
+#&gt;  [94,] 0.133824779 0.408530836 0.915422886
+#&gt;  [95,] 0.479536844 0.866566153 0.885572139
+#&gt;  [96,] 0.338990116 0.042167157 0.696517413
+#&gt;  [97,] 0.504140543 0.532098306 0.094527363
+#&gt;  [98,] 0.372238340 0.913238777 0.348258706
+#&gt;  [99,] 0.713625381 0.463501745 0.706467662
+#&gt; [100,] 0.930283850 0.518560735 0.865671642
+#&gt; [101,] 0.194127748 0.346946597 0.577114428
+#&gt; [102,] 0.088823459 0.730022156 0.537313433
+#&gt; [103,] 0.552925113 0.607806531 0.781094527
+#&gt; [104,] 0.921157242 0.102103532 0.064676617
+#&gt; [105,] 0.075550934 0.541490390 0.338308458
+#&gt; [106,] 0.745174069 0.189817266 0.059701493
+#&gt; [107,] 0.613360820 0.868597244 0.880597015
+#&gt; [108,] 0.603669951 0.972294148 0.676616915
+#&gt; [109,] 0.835626949 0.607975509 0.427860697
+#&gt; [110,] 0.828510326 0.321856340 0.407960199
+#&gt; [111,] 0.179386038 0.048735032 0.368159204
+#&gt; [112,] 0.322636100 0.741016806 0.383084577
+#&gt; [113,] 0.408018151 0.079744888 0.721393035
+#&gt; [114,] 0.947861605 0.512951704 0.572139303
+#&gt; [115,] 0.256611332 0.077709085 0.502487562
+#&gt; [116,] 0.371556071 0.995768517 0.019900498
+#&gt; [117,] 0.053280913 0.953107100 0.656716418
+#&gt; [118,] 0.275350966 0.580775672 0.890547264
+#&gt; [119,] 0.832781919 0.488879657 0.736318408
+#&gt; [120,] 0.405853729 0.358307287 0.527363184
+#&gt; [121,] 0.115472176 0.017106716 0.353233831
+#&gt; [122,] 0.140908146 0.047156330 0.029850746
+#&gt; [123,] 0.883499286 0.118546079 0.263681592
+#&gt; [124,] 0.543889797 0.043873116 0.243781095
+#&gt; [125,] 0.288444366 0.750712201 0.238805970
+#&gt; [126,] 0.069733041 0.061768041 0.542288557
+#&gt; [127,] 0.078026879 0.835449232 0.507462687
+#&gt; [128,] 0.649825898 0.221677108 0.179104478
+#&gt; [129,] 0.251512930 0.650951625 0.129353234
+#&gt; [130,] 0.512359478 0.848520126 0.343283582
+#&gt; [131,] 0.697168138 0.142116685 0.184079602
+#&gt; [132,] 0.489908941 0.824879185 0.109452736
+#&gt; [133,] 0.647522896 0.493952527 0.995024876
+#&gt; [134,] 0.756742957 0.328842681 0.288557214
+#&gt; [135,] 0.836602258 0.530974673 0.099502488
+#&gt; [136,] 0.006544470 0.741654368 0.233830846
+#&gt; [137,] 0.402122694 0.006700749 0.164179104
+#&gt; [138,] 0.644369498 0.131299305 0.079601990
+#&gt; [139,] 0.755891792 0.520367312 0.039800995
+#&gt; [140,] 0.555823794 0.412571569 0.691542289
+#&gt; [141,] 0.667587230 0.433713937 0.945273632
+#&gt; [142,] 0.455664853 0.807581082 0.791044776
+#&gt; [143,] 0.694790201 0.945883662 0.074626866
+#&gt; [144,] 0.437509054 0.962786617 0.457711443
+#&gt; [145,] 0.244575836 0.409325051 0.985074627
+#&gt; [146,] 0.752367472 0.813434352 0.432835821
+#&gt; [147,] 0.828586692 0.404790709 0.134328358
+#&gt; [148,] 0.363180256 0.513583305 0.213930348
+#&gt; [149,] 0.631272846 0.975225907 0.955223881
+#&gt; [150,] 0.137163333 0.489428917 0.169154229
+#&gt; [151,] 0.756965756 0.124679918 0.651741294
+#&gt; [152,] 0.221312603 0.638256439 0.417910448
+#&gt; [153,] 0.569768768 0.114298977 0.661691542
+#&gt; [154,] 0.473873996 0.552585295 0.139303483
+#&gt; [155,] 0.019259229 0.313367340 0.582089552
+#&gt; [156,] 0.679033918 0.460975274 0.308457711
+#&gt; [157,] 0.623805027 0.054653601 0.298507463
+#&gt; [158,] 0.392235719 0.317165722 0.124378109
+#&gt; [159,] 0.449654207 0.067876234 0.482587065
+#&gt; [160,] 0.668811687 0.324760732 0.567164179
+#&gt; [161,] 0.796797654 0.604735338 0.278606965
+#&gt; [162,] 0.899542026 0.619196362 0.089552239
+#&gt; [163,] 0.107947613 0.732065185 0.218905473
+#&gt; [164,] 0.385687016 0.684475734 0.616915423
+#&gt; [165,] 0.145720786 0.382182108 0.208955224
+#&gt; [166,] 0.056327574 0.455721490 0.034825871
+#&gt; [167,] 0.432368939 0.531630179 0.412935323
+#&gt; [168,] 0.042350657 0.373725639 0.636815920
+#&gt; [169,] 0.455709018 0.130341305 0.313432836
+#&gt; [170,] 0.099063844 0.674558877 0.009950249
+#&gt; [171,] 0.582942581 0.236039267 0.283582090
+#&gt; [172,] 0.782135467 0.501709804 0.358208955
+#&gt; [173,] 0.951511920 0.840433811 0.388059701
+#&gt; [174,] 0.922124926 0.578884621 0.776119403
+#&gt; [175,] 0.818716381 0.400401458 0.666666667
+#&gt; [176,] 0.728921922 0.995098838 0.835820896
+#&gt; [177,] 0.970496191 0.530750138 0.970149254
+#&gt; [178,] 0.414222203 0.812113133 0.900497512
+#&gt; [179,] 0.530201953 0.711657087 0.024875622
+#&gt; [180,] 0.903790216 0.042729959 0.562189055
+#&gt; [181,] 0.810579807 0.158688507 0.303482587
+#&gt; [182,] 0.155484263 0.219934728 0.597014925
+#&gt; [183,] 0.529862489 0.444354960 0.805970149
+#&gt; [184,] 0.703160642 0.559854358 0.398009950
+#&gt; [185,] 0.848275465 0.429957249 0.497512438
+#&gt; [186,] 0.549175482 0.553256495 0.119402985
+#&gt; [187,] 0.899810630 0.342137853 0.293532338
+#&gt; [188,] 0.634094459 0.574677073 0.860696517
+#&gt; [189,] 0.325007129 0.158613055 0.452736318
+#&gt; [190,] 0.439494776 0.724326980 0.477611940
+#&gt; [191,] 0.879168764 0.787977591 0.154228856
+#&gt; [192,] 0.651405703 0.510466646 0.626865672
+#&gt; [193,] 0.811350685 0.430626899 0.049751244
+#&gt; [194,] 0.465726723 0.698512799 0.447761194
+#&gt; [195,] 0.479958575 0.543739980 0.004975124
+#&gt; [196,] 0.402795234 0.495952166 0.686567164
+#&gt; [197,] 0.218995617 0.279861729 0.761194030
+#&gt; [198,] 0.769815388 0.647518174 0.378109453
+#&gt; [199,] 0.459835405 0.684192845 0.333333333
+#&gt; [200,] 0.235399399 0.683281683 0.930348259</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
       <li><a href="#details">Details</a></li>
-      
       <li><a href="#examples">Examples</a></li>
     </ul>
 
   </div>
 </div>
+
 
       <footer>
       <div class="copyright">
@@ -193,13 +399,16 @@ distribution \(F\).</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

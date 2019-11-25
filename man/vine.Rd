@@ -5,12 +5,17 @@
 \alias{vine_dist}
 \title{Vine copula models}
 \usage{
-vine(data, margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN,
-  bw = NA), copula_controls = list(family_set = "all", structure = NA,
-  par_method = "mle", nonpar_method = "constant", mult = 1, selcrit =
-  "bic", psi0 = 0.9, presel = TRUE, trunc_lvl = Inf, tree_crit = "tau",
-  threshold = 0, keep_data = FALSE, show_trace = FALSE, cores = 1),
-  keep_data = FALSE)
+vine(
+  data,
+  margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN, bw = NA, deg = 2),
+  copula_controls = list(family_set = "all", structure = NA, par_method = "mle",
+    nonpar_method = "constant", mult = 1, selcrit = "bic", psi0 = 0.9, presel = TRUE,
+    trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = FALSE, show_trace =
+    FALSE, cores = 1),
+  weights = numeric(),
+  keep_data = FALSE,
+  cores = 1
+)
 
 vine_dist(margins, pair_copulas, structure)
 }
@@ -20,19 +25,25 @@ vine_dist(margins, pair_copulas, structure)
 \item{margins_controls}{a list with arguments to be passed to
 \code{\link[kde1d:kde1d]{kde1d::kde1d()}}. Currently, there can be
 \itemize{
-\item \code{mult} numeric; all bandwidths for marginal kernel density estimation
-are multiplied with \code{mult_1d}. Defaults to \code{log(1 + d)} where \code{d} is
-the number of variables after applying \code{\link[cctools:expand_as_numeric]{cctools::expand_as_numeric()}}.
+\item \code{mult} numeric vector of length one or d; all bandwidths for marginal
+kernel density estimation are multiplied with \code{mult}. Defaults to
+\code{log(1 + d)} where \code{d} is the number of variables after applying
+\code{rvinecopulib:::expand_factors()}.
 \item \code{xmin} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 \item \code{xmax} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 \item \code{bw} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
+\item \code{deg} numeric vector of length one or d; \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 }}
 
 \item{copula_controls}{a list with arguments to be passed to \code{\link[=vinecop]{vinecop()}}.}
 
+\item{weights}{optional vector of weights for each observation.}
+
 \item{keep_data}{whether the original data should be stored; if you want to
 store the pseudo-observations used for fitting the copula, use the
 \code{copula_controls} argument.}
+
+\item{cores}{the number of cores to use for parallel computations.}
 
 \item{margins}{A list with with each element containing the specification of a
 marginal \link[stats:Distributions]{stats::Distributions}. Each marginal specification

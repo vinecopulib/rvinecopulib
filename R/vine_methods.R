@@ -36,34 +36,29 @@
 #'   list(bicop, bicop), # pair-copulas in first tree
 #'   list(bicop) # pair-copulas in second tree
 #' )
-#' 
-#' # specify R-vine matrix
-#' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-#' 
+#'
 #' # set up vine copula model
+#' mat <- rvine_matrix_sim(3)
 #' vc <- vine_dist(list(distr = "norm"), pcs, mat)
-#' 
+#'
 #' # simulate from the model
 #' x <- rvine(200, vc)
 #' pairs(x)
-#' 
+#'
 #' # evaluate the density and cdf
 #' dvine(x[1, ], vc)
 #' pvine(x[1, ], vc)
 #' @rdname vine_methods
-#' @importFrom cctools expand_as_numeric
 #' @export
 dvine <- function(x, vine, cores = 1) {
   stopifnot(inherits(vine, "vine_dist"))
   if (NCOL(x) == 1) {
     x <- t(x)
   }
-  nms <- colnames(x)
-  # must be numeric, factors are expanded
-  x <- expand_as_numeric(x)
-  # variables must be in same order
-  if (!is.null(nms)) {
-    x <- x[, colnames(vine$data), drop = FALSE]
+
+  x <- expand_factors(x)
+  if (!is.null(vine$names)) {
+    x <- x[, vine$names, drop = FALSE]
   }
 
   # prepare marginals if only one is specified
@@ -76,10 +71,8 @@ dvine <- function(x, vine, cores = 1) {
   margvals <- dpq_marg(x, vine, "d")
 
   if (!is.null(vine$copula)) {
-    # PIT to copula data
-    u <- dpq_marg(x, vine)
-    # evaluate vine density
-    vinevals <- vinecop_pdf_cpp(if_vec_to_matrix(u), vine$copula, cores)
+    u <- compute_pseudo_obs(x, vine)
+    vinevals <- dvinecop(u, vine$copula, cores)
   } else {
     vinevals <- rep(1, nrow(x))
   }
@@ -97,12 +90,9 @@ pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
   if (NCOL(x) == 1) {
     x <- t(x)
   }
-  nms <- colnames(x)
-  # must be numeric, factors are expanded
-  x <- expand_as_numeric(x)
-  # variables must be in same order
-  if (!is.null(nms)) {
-    x <- x[, colnames(vine$data), drop = FALSE]
+  x <- expand_factors(x)
+  if (!is.null(vine$names)) {
+    x <- x[, vine$names, drop = FALSE]
   }
 
   # prepare marginals if only one is specified
@@ -111,19 +101,16 @@ pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
   }
 
   # PIT to copula data
-  u <- dpq_marg(x, vine)
+  u <- compute_pseudo_obs(x, vine)
 
   # Evaluate copula if needed
   if (!is.null(vine$copula)) {
-    vals <- vinecop_cdf_cpp(
-      if_vec_to_matrix(u), vine$copula, n_mc,
-      cores, get_seeds()
-    )
+    vals <- pvinecop(u, vine$copula, n_mc, cores)
   } else {
-    vals <- u
+    vals <- apply(u, 1, prod)
   }
 
-  return(vals)
+  vals
 }
 
 #' @rdname vine_methods
@@ -144,7 +131,9 @@ rvine <- function(n, vine, qrng = FALSE, cores = 1) {
   }
 
   # use quantile transformation for marginals
-  dpq_marg(U, vine, "q")
+  X <- dpq_marg(U, vine, "q")
+  colnames(X) <- vine$names
+  X
 }
 
 #' @export
@@ -259,25 +248,27 @@ get_vine_margin_summary <- function(object) {
 
 dpq_marg <- function(x, vine, what = "p") {
   d <- ncol(x)
-  if (inherits(vine, "vine")) {
-    fun <- switch(what,
-      p = pkde1d,
-      d = dkde1d,
-      q = qkde1d
-    )
+  res <- lapply(seq_len(d),
+                function(i) eval_one_dpq(x[, i], vine$margins[[i]], what))
+  do.call(cbind, res)
+}
+
+eval_one_dpq <- function(x, margin, what = "p") {
+  if (inherits(margin, "kde1d")) {
+    dpq <- switch(what,
+                  p = pkde1d(x, margin),
+                  d = dkde1d(x, margin),
+                  q = qkde1d(x, margin))
   } else {
-    fun <- function(x, margin) {
-      par <- margin[names(margin) != "distr"]
-      par[[length(par) + 1]] <- x
-      names(par)[[length(par)]] <- switch(what,
-        p = "q",
-        d = "x",
-        q = "p"
-      )
-      do.call(get(paste0(what, margin$distr)), par)
-    }
+    par <- margin[names(margin) != "distr"]
+    par[[length(par) + 1]] <- x
+    names(par)[[length(par)]] <- switch(what,
+                                        p = "q",
+                                        d = "x",
+                                        q = "p")
+    dpq <- do.call(get(paste0(what, margin$distr)), par)
   }
-  sapply(seq_len(d), function(i) fun(x[, i], vine$margins[[i]]))
+  dpq
 }
 
 collate_u <- function(x) {

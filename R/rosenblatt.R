@@ -26,7 +26,8 @@
 #' \eqn{V_k} given \eqn{V_1 \ldots, V_{k-1}, k = 2,\ldots,d}. The vector \eqn{U}
 #' are then independent standard uniform variables. The inverse operation
 #' \deqn{
-#'   V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}),
+#'   V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots,
+#'   V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}),
 #' }
 #' can can be used to simulate from a distribution. For any copula \eqn{F}, if
 #' \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has
@@ -37,16 +38,20 @@
 #' x <- replicate(3, rnorm(200))
 #' x[, 2:3] <- x[, 2:3] + x[, 1]
 #' pairs(x)
-#' 
+#'
 #' # estimate a vine distribution model
 #' fit <- vine(x, copula_controls = list(family_set = "par"))
-#' 
+#'
 #' # transform into independent uniforms
 #' u <- rosenblatt(x, fit)
 #' pairs(u)
-#' 
+#'
 #' # inversion
 #' pairs(inverse_rosenblatt(u, fit))
+#'
+#' # works similarly for vinecop models
+#' vc <- fit$copula
+#' rosenblatt(pseudo_obs(x), vc)
 #' @export
 rosenblatt <- function(x, model, cores = 1) {
   assert_that(

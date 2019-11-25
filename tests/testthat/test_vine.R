@@ -10,8 +10,8 @@ test_that("returns proper 'vine' object", {
   expect_identical(
     names(fit),
     c(
-      "margins", "margins_controls", "copula",
-      "copula_controls", "npars", "loglik", "data", "nobs", "names"
+      "margins", "margins_controls", "copula", "copula_controls",
+      "npars", "loglik", "data", "weights", "nobs", "names", "var_levels"
     )
   )
 })
@@ -25,6 +25,7 @@ test_that("S3 generics work", {
   )
   expect_error(predict(fit, u, what = "hfunc1"))
   expect_length(attr(logLik(fit), "df"), 1)
+  expect_length(predict(fit, u[1, ], what = "pdf"), 1)
 })
 
 test_that("print/summary generics work", {
@@ -32,18 +33,6 @@ test_that("print/summary generics work", {
   s <- summary(fit)
   expect_is(s$margins, c("summary_df", "data.frame"))
   expect_is(s$copula, c("summary_df", "data.frame"))
-})
-
-test_that("discrete data work", {
-  n <- 1e2
-  x1 <- rnorm(n)
-  x2 <- ordered(sample(5, n, TRUE), 1:5)
-  x3 <- x1 + as.numeric(x2) + rnorm(n, sd = 0.5)
-
-  my_data <- data.frame(x1, x2, x3)
-  fit <- vine(my_data)
-  sim <- rvine(n * 10, fit)
-  expect_equal(sort(unique(sim[, 2])), 1:5)
 })
 
 test_that("truncation works", {
@@ -66,6 +55,15 @@ test_that("margins_controls works", {
     2 / log(6) * sapply(fit$margins, "[[", "bw")
   )
 
-  fit_xmin <- vine(abs(u), margins_controls = list(xmin = 0))
+  fit_xmin <- vine(abs(u), margins_controls = list(xmin = 0, deg = 1, mult = 1:5))
   expect_equal(sapply(fit_xmin$margins, "[[", "xmin"), rep(0, 5))
+  expect_equal(sapply(fit_xmin$margins, "[[", "deg"), rep(1, 5))
+})
+
+test_that("weights work", {
+  w <- rexp(nrow(u))
+  fit_weights <- vine(u, copula_controls = list(family_set = "nonpar"),
+                     weights = w, keep_data = TRUE)
+  expect_equal(fit_weights$weights, w)
+  expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
 })

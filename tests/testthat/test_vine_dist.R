@@ -14,8 +14,7 @@ test_that("constructor creates proper `vine_dist` object", {
 
 test_that("d/p/r- functions work", {
   u <- rvine(50, vc)
-  expect_false(any(rvine(50, vc, qrng = FALSE) ==
-    rvine(50, vc, qrng = FALSE)))
+  expect_false(any(rvine(50, vc, qrng = FALSE) == rvine(50, vc, qrng = FALSE)))
   set.seed(1)
   u <- rvine(50, vc, qrng = TRUE)
   set.seed(1)
@@ -52,7 +51,7 @@ test_that("print/summary/dim generics work", {
   expect_equal(nrow(s$margins), 3)
   expect_equal(ncol(s$margins), 2)
   expect_equal(nrow(s$copula), 3)
-  expect_equal(ncol(s$copula), 9)
+  expect_equal(ncol(s$copula), 10)
 
   expect_equivalent(dim(vc)[1], 3)
   expect_equivalent(dim(vc)[2], 2)

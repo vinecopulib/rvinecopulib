@@ -7,11 +7,9 @@
 \alias{contour.vinecop}
 \title{Plotting \code{vinecop_dist} and \code{vinecop} objects.}
 \usage{
-\method{plot}{vinecop_dist}(x, tree = 1, var_names = "ignore",
-  edge_labels = NULL, ...)
+\method{plot}{vinecop_dist}(x, tree = 1, var_names = "ignore", edge_labels = NULL, ...)
 
-\method{plot}{vinecop}(x, tree = 1, var_names = "ignore",
-  edge_labels = NULL, ...)
+\method{plot}{vinecop}(x, tree = 1, var_names = "ignore", edge_labels = NULL, ...)
 
 \method{contour}{vinecop_dist}(x, tree = "ALL", cex.nums = 1, ...)
 
@@ -23,16 +21,21 @@
 \item{tree}{\code{"ALL"} or integer vector; specifies which trees are
 plotted.}
 
-\item{var_names}{integer; specifies how to make use of variable names: \cr
-\code{"ignore"} = variable names are ignored,
-\cr \code{"use"} = variable names are used to annotate vertices,
-\cr \code{"legend"} = uses numbers in plot and adds a legend for variable names.}
+\item{var_names}{integer; specifies how to make use of variable names:
+\itemize{
+\item `"ignore"`` = variable names are ignored,
+\item `"use"`` = variable names are used to annotate vertices,
+\item `"legend"`` = uses numbers in plot and adds a legend for variable names.
+}}
 
 \item{edge_labels}{character; either a vector of edge labels or one of the
-following: \cr \code{"family"} = pair-copula family (see
-\code{\link[rvinecopulib:bicop_dist]{bicop_dist}}), \cr \code{"tau"} =
-pair-copula Kendall's tau\cr \code{"family_tau"} = pair-copula family and
-Kendall's tau, \cr \code{"pair"} = for the name of the involved variables.}
+following:
+\itemize{
+\item \code{"family"} = pair-copula family (see \verb{[bicop_dist()]}),
+\item `"tau"`` = pair-copula Kendall's tau
+\item `"family_tau"`` = pair-copula family and Kendall's tau,
+\item `"pair"`` = the name of the involved variables.
+}}
 
 \item{\dots}{Unused for \code{plot} and passed to
 \code{\link[rvinecopulib:contour.bicop]{contour.bicop}} for \code{contour}.}
@@ -55,7 +58,7 @@ be \code{1.25/length(tree)*(d - min(tree))} times the plot width.
 d <- 20
 n <- 2e2
 u <- matrix(runif(n * d), n, d)
-vc <- vinecop(u, "indep")
+vc <- vinecop(u, family = "indep")
 
 # plot
 plot(vc, tree = c(1, 2))
@@ -64,7 +67,7 @@ plot(vc, edge_labels = "pair")
 # set up another vine copula model
 pcs <- lapply(1:3, function(j) # pair-copulas in tree j
   lapply(runif(4 - j), function(cor) bicop_dist("gaussian", 0, cor)))
-mat <- matrix(c(1, 2, 3, 4, 1, 2, 3, 0, 1, 2, 0, 0, 1, 0, 0, 0), 4, 4)
+mat <- rvine_matrix_sim(4)
 vc <- vinecop_dist(pcs, mat)
 
 # contour plot

@@ -22,7 +22,8 @@ inference algorithms for both vine copula and bivariate copula models.
 Advantages over VineCopula are  
 * a sleaker and more modern API,
 * shorter runtimes, especially in high dimensions,
-* nonparametric and multi-parameter families.
+* nonparametric and multi-parameter families,
+* ability to model discrete variables.
 
 As VineCopula, the package is primarily made for the statistical analysis of 
 **vine copula models**. The package includes tools for parameter estimation, 

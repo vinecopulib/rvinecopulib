@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <vinecopulib/bicop/fit_controls.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <vinecopulib/bicop/fit_controls.hpp>
 
 namespace vinecopulib {
 
@@ -23,128 +23,134 @@ class Bicop
 {
 
 public:
-    // Constructors
-    Bicop(const BicopFamily family = BicopFamily::indep,
-          const int rotation = 0,
-          const Eigen::MatrixXd &parameters = Eigen::MatrixXd());
+  // Constructors
+  Bicop(const BicopFamily family = BicopFamily::indep,
+        const int rotation = 0,
+        const Eigen::MatrixXd& parameters = Eigen::MatrixXd(),
+        const std::vector<std::string>& var_types = { "c", "c" });
 
-    Bicop(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
-          const FitControlsBicop &controls = FitControlsBicop());
+  Bicop(const Eigen::MatrixXd& data,
+        const FitControlsBicop& controls = FitControlsBicop(),
+        const std::vector<std::string>& var_types = { "c", "c" });
 
-    Bicop(const char *filename);
+  Bicop(const std::string filename);
 
-    Bicop(const boost::property_tree::ptree input);
+  Bicop(const boost::property_tree::ptree input);
 
-    // Serialize
-    boost::property_tree::ptree to_ptree() const;
+  // Serialize
+  boost::property_tree::ptree to_ptree() const;
 
-    void to_json(const char *filename) const;
+  void to_json(const std::string filename) const;
 
-    // Getters and setters
-    BicopFamily get_family() const;
+  // Getters and setters
+  BicopFamily get_family() const;
 
-    std::string get_family_name() const;
+  std::string get_family_name() const;
 
-    int get_rotation() const;
+  int get_rotation() const;
 
-    Eigen::MatrixXd get_parameters() const;
+  Eigen::MatrixXd get_parameters() const;
 
-    double get_tau() const;
+  double get_tau() const;
 
-    double get_loglik() const;
-    size_t get_nobs() const;
-    double get_aic() const;
-    double get_bic() const;
-    double get_mbic(const double psi0) const;
+  double get_npars() const;
 
-    void set_rotation(const int rotation);
+  double get_loglik() const;
+  size_t get_nobs() const;
+  double get_aic() const;
+  double get_bic() const;
+  double get_mbic(const double psi0 = 0.9) const;
 
-    void set_parameters(const Eigen::MatrixXd &parameters);
+  void set_rotation(const int rotation);
 
-    // Stats methods
-    Eigen::VectorXd
-    pdf(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+  void set_parameters(const Eigen::MatrixXd& parameters);
 
-    Eigen::VectorXd
-    cdf(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+  void set_var_types(const std::vector<std::string>& var_types = { "c", "c" });
 
-    Eigen::VectorXd
-    hfunc1(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+  std::vector<std::string> get_var_types() const;
 
-    Eigen::VectorXd
-    hfunc2(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+  // Stats methods
+  Eigen::VectorXd pdf(const Eigen::MatrixXd& u) const;
 
-    Eigen::VectorXd
-    hinv1(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+  Eigen::VectorXd cdf(const Eigen::MatrixXd& u) const;
 
-    Eigen::VectorXd
-    hinv2(const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+  Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u) const;
 
-    Eigen::Matrix<double, Eigen::Dynamic, 2>
-    simulate(const size_t &n,
-             const bool qrng = false,
-             const std::vector<int>& seeds = std::vector<int>()) const;
+  Eigen::VectorXd hfunc2(const Eigen::MatrixXd& u) const;
 
+  Eigen::VectorXd hinv1(const Eigen::MatrixXd& u) const;
 
-    // Methods modifying the family/rotation/parameters
-    void fit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &data,
-             const FitControlsBicop &controls = FitControlsBicop());
+  Eigen::VectorXd hinv2(const Eigen::MatrixXd& u) const;
 
-    void select(const Eigen::Matrix<double, Eigen::Dynamic, 2>& data,
-                FitControlsBicop controls = FitControlsBicop());
+  Eigen::MatrixXd simulate(
+    const size_t& n,
+    const bool qrng = false,
+    const std::vector<int>& seeds = std::vector<int>()) const;
 
-    // Fit statistics
-    double loglik(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
-            Eigen::Matrix<double, Eigen::Dynamic, 2>()) const;
+  // Methods modifying the family/rotation/parameters
+  void fit(const Eigen::MatrixXd& data,
+           const FitControlsBicop& controls = FitControlsBicop());
 
-    double aic(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
-            Eigen::Matrix<double, Eigen::Dynamic, 2>()) const;
+  void select(const Eigen::MatrixXd& data,
+              FitControlsBicop controls = FitControlsBicop());
 
-    double bic(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
-            Eigen::Matrix<double, Eigen::Dynamic, 2>()) const;
+  // Fit statistics
+  double loglik(const Eigen::MatrixXd& u = Eigen::MatrixXd()) const;
 
-    double mbic(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u =
-            Eigen::Matrix<double, Eigen::Dynamic, 2>(),
-        const double psi0 = 0.9) const;
+  double aic(const Eigen::MatrixXd& u = Eigen::MatrixXd()) const;
 
-    // Misc
-    std::string str() const;
+  double bic(const Eigen::MatrixXd& u = Eigen::MatrixXd()) const;
 
-    double calculate_npars() const;
+  double mbic(const Eigen::MatrixXd& u = Eigen::MatrixXd(),
+              const double psi0 = 0.9) const;
 
-    double parameters_to_tau(const Eigen::MatrixXd &parameters) const;
+  // Misc
+  std::string str() const;
 
-    Eigen::MatrixXd tau_to_parameters(const double &tau) const;
+  double parameters_to_tau(const Eigen::MatrixXd& parameters) const;
 
-    void flip();
+  Eigen::MatrixXd tau_to_parameters(const double& tau) const;
 
-    Eigen::MatrixXd get_parameters_lower_bounds() const;
+  void flip();
 
-    Eigen::MatrixXd get_parameters_upper_bounds() const;
+  Eigen::MatrixXd get_parameters_lower_bounds() const;
+
+  Eigen::MatrixXd get_parameters_upper_bounds() const;
+
+  Bicop as_continuous() const;
 
 private:
+  Eigen::MatrixXd format_data(const Eigen::MatrixXd& u) const;
 
-    Eigen::Matrix<double, Eigen::Dynamic, 2> cut_and_rotate(
-        const Eigen::Matrix<double, Eigen::Dynamic, 2> &u) const;
+  void rotate_data(Eigen::MatrixXd& u) const;
 
-    void check_rotation(int rotation) const;
+  Eigen::MatrixXd prep_for_abstract(const Eigen::MatrixXd& u) const;
 
-    void check_weights_size(const Eigen::VectorXd& weights,
-                            const Eigen::MatrixXd& data) const;
+  void check_rotation(int rotation) const;
 
-    void check_fitted() const;
+  void check_data(const Eigen::MatrixXd& u) const;
 
-    double compute_mbic_penalty(const size_t nobs, const double psi0) const;
+  void check_data_dim(const Eigen::MatrixXd& u) const;
 
-    BicopPtr get_bicop() const;
+  void check_var_types(const std::vector<std::string>& var_types) const;
 
-    BicopPtr bicop_;
-    int rotation_;
-    size_t nobs_;
+  void flip_var_types();
+
+  void check_weights_size(const Eigen::VectorXd& weights,
+                          const Eigen::MatrixXd& data) const;
+
+  void check_fitted() const;
+
+  unsigned short get_n_discrete() const;
+
+  double compute_mbic_penalty(const size_t nobs, const double psi0) const;
+
+  BicopPtr get_bicop() const;
+
+  BicopPtr bicop_;
+  int rotation_{ 0 };
+  size_t nobs_{ 0 };
+  mutable std::vector<std::string> var_types_;
 };
 }
 

@@ -1,3 +1,46 @@
+# rvinecopulib 0.5.0.1.0 (November 25, 2019)
+
+Release following the updates of vinecopulib to 0.5.0, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+NEW FEATURES
+
+  * modelling discrete variables with bivariate or vine copulas. (#195)
+
+  * selection of partially specified R-vine structures. (#195)
+
+  * convenience classes `dvine_structure()`/`cvine_structure()` for D- and 
+    C-vine structures. (#195)
+
+  * new criterion for tree selection: `"joe"` corresponds to -log(1-r^2), 
+    where r is the pairwise partial correlation. (#195)
+
+  * random sampling of R-vine structures. (#197)
+
+  * add `weights` argument to `vine()`. (#188)
+
+  * parallelized fitting of margins in `vine()`. (#198)
+  
+API BREAK
+
+  * The new `var_types` argument for discrete models has been placed
+    early in `bicop()/vinecop()` due to its importance. This might break old
+    code calling these functions with unnamed arguments.
+
+BUG FIXES AND OTHER IMPROVEMENTS
+
+  * better support for 0-truncated structures. (#195)
+
+  * ensure consistency of TLL likelihood during and after fit. (#195)
+
+  * fixed order of ranks in `pseudo_obs(.., ties.method = "first")`. (#195)
+
+  * safer computation of multivariate normal cdf. (#195)
+
+  * improved memory efficiency. (#195)
+
+
 # rvinecopulib 0.3.1.1.0 (July 4, 2019)
 
 Release following the updates of vinecopulib to 0.3.2, see 
@@ -128,7 +171,7 @@ NEW FEATURES
    
 BUG FIXES
    
-   * make mcor correction less agressive (#103).
+   * make mcor correction less aggressive (#103).
    
    * fix truncation of pdf values (#103).
    

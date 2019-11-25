@@ -9,7 +9,10 @@ vc <- vinecop_dist(pcs, mat)
 
 test_that("constructor creates proper vinecop_dist object", {
   expect_s3_class(vc, "vinecop_dist")
-  expect_identical(names(vc), c("pair_copulas", "structure", "npars", "loglik"))
+  expect_identical(
+    names(vc),
+    c("pair_copulas", "structure", "var_types", "npars", "loglik")
+  )
 })
 
 
@@ -59,7 +62,7 @@ test_that("print/summary/dim generics work", {
   expect_silent(s <- summary(vc))
   expect_is(s, "data.frame")
   expect_equal(nrow(s), 3)
-  expect_equal(ncol(s), 9)
+  expect_equal(ncol(s), 10)
   expect_equivalent(dim(vc), c(3, 2))
 })
 

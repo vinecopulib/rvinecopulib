@@ -17,8 +17,9 @@ pvinecop(u, vinecop, n_mc = 10^4, cores = 1)
 rvinecop(n, vinecop, qrng = FALSE, cores = 1)
 }
 \arguments{
-\item{u}{evaluation points, either a length d vector or a d-column matrix,
-where d is the number of variables in the vine.}
+\item{u}{matrix of evaluation points; must contain at least d columns, where
+d is the number of variables in the vine. More columns are required for
+discrete models, see \emph{Details}.}
 
 \item{vinecop}{an object of class \code{"vinecop_dist"}.}
 
@@ -44,33 +45,53 @@ The \code{vinecop} object is recycled to the length of the
 result.
 }
 \description{
-Density, distribution function and random generation
-for the vine copula distribution.
+Density, distribution function and random generation for the vine copula
+distribution.
 }
 \details{
-See \link{vinecop} for the estimation and construction of vine copula models.
-Here, the density, distribution function and random generation
-for the vine copulas are standard.
+See \code{\link[=vinecop]{vinecop()}} for the estimation and construction of vine copula
+models.
+\subsection{Discrete variables}{
+
+When at least one variable is discrete, two types of
+"observations" are required in \code{u}: the first \eqn{n \; x \; d} block
+contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n \; x \; d}
+block contains realizations of \eqn{F_{X_j}(X_j^-)}. The minus indicates a
+left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+\eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
+limit and the cdf itself coincide. Respective columns can be omitted in the
+second block.
+}
 }
 \examples{
-# specify pair-copulas
-bicop <- bicop_dist("bb1", 90, c(3, 2))
-pcs <- list(
-  list(bicop, bicop), # pair-copulas in first tree
-  list(bicop) # pair-copulas in second tree
-)
+## simulate dummy data
+x <- rnorm(30) * matrix(1, 30, 5) + 0.5 * matrix(rnorm(30 * 5), 30, 5)
+u <- pseudo_obs(x)
 
-# specify R-vine matrix
-mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-
-# set up vine copula model
-vc <- vinecop_dist(pcs, mat)
+## fit a model
+vc <- vinecop(u, family = "clayton")
 
 # simulate from the model
-u <- rvinecop(200, vc)
+u <- rvinecop(100, vc)
 pairs(u)
 
 # evaluate the density and cdf
 dvinecop(u[1, ], vc)
 pvinecop(u[1, ], vc)
+
+## Discrete models
+vc$var_types <- rep("d", 5)  # convert model to discrete
+
+# with discrete data we need two types of observations (see Details)
+x <- qpois(u, 1)  # transform to Poisson margins
+u_disc <- cbind(ppois(x, 1), ppois(x - 1, 1))
+
+dvinecop(u_disc[1:5, ], vc)
+pvinecop(u_disc[1:5, ], vc)
+
+# simulated data always has uniform margins
+pairs(rvinecop(200, vc))
+}
+\seealso{
+\code{\link[=vinecop_dist]{vinecop_dist()}}, \code{\link[=vinecop]{vinecop()}}, \code{\link[=plot.vinecop]{plot.vinecop()}}, \code{\link[=contour.vinecop]{contour.vinecop()}}
 }

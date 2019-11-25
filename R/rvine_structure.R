@@ -1,11 +1,13 @@
 #' R-vine structure
 #'
-#' R-vine structures are compressed representations encoding the tree
-#' structure of the vine, i.e. the conditioned/conditioning
-#' variables of each edge.
+#' R-vine structures are compressed representations encoding the tree structure
+#' of the vine, i.e. the conditioned/conditioning variables of each edge. The
+#' functions `[cvine_structure()]` or `[dvine_structure()]` give a simpler way
+#' to construct C-vines (every tree is a star) and D-vines (every tree is a
+#' path), respectively (see *Examples*).
 #'
-#' The R-vine structure is essentially a lower-triangular matrix/triangular array,
-#' with a notation that differs from the one in the VineCopula package.
+#' The R-vine structure is essentially a lower-triangular matrix/triangular
+#' array, with a notation that differs from the one in the VineCopula package.
 #' An example array is
 #' ```
 #' 4 4 4 4
@@ -26,9 +28,8 @@
 #' }
 #'
 #' An R-vine structure can be converted to an R-vine matrix using
-#' [as_rvine_matrix()], which encodes the same model with a square matrix
-#' filled with zeros. For instance, the matrix corresponding to the structure
-#' above is:
+#' [as_rvine_matrix()], which encodes the same model with a square matrix filled
+#' with zeros. For instance, the matrix corresponding to the structure above is:
 #' ```
 #' 4 4 4 4
 #' 3 3 3 0
@@ -40,121 +41,136 @@
 #'
 #' Denoting by `M[i, j]` the array entry in row `i` and column `j` (the
 #' pair-copula index for edge `e` in tree `t` of a `d` dimensional vine is
-#' `(M[d - 1 - t, e], M[t, e]; M[t - 1, e], ..., M[0, e])`. Less formally,
+#' `(M[d + 1 - e, e], M[t, e]; M[t - 1, e], ..., M[1, e])`. Less formally,
+#'
 #' 1. Start with the counter-diagonal element of column `e` (first conditioned
-#'                                                           variable).
+#' variable).
+#'
 #' 2. Jump up to the element in row `t` (second conditioned variable).
+#'
 #' 3. Gather all entries further up in column `e` (conditioning set).
 #'
 #' Internally, the diagonal is stored separately from the off-diagonal elements,
-#' which are stored as a triangular array. For instance, the off-diagonal elements
-#' off the structure above are stored as
+#' which are stored as a triangular array. For instance, the off-diagonal
+#' elements off the structure above are stored as
 #' ```
 #' 4 4 4
 #' 3 3
 #' 2
 #' ```
 #' for the structure above. The reason is that it allows for parsimonious
-#' representations of truncated models. For instance, the 2-truncated model
-#' is represented by the same diagonal and the following truncated triangular
+#' representations of truncated models. For instance, the 2-truncated model is
+#' represented by the same diagonal and the following truncated triangular
 #' array:
 #' ```
 #' 4 4 4
 #' 3 3
 #' ```
 #'
-#' A valid R-vine structure or matrix must satisfy several conditions which
-#' are checked when [rvine_structure()], [rvine_matrix()], or some coercion
-#' methods (see [as_rvine_structure()] and `as_rvine_matrix(`) are called:
+#' A valid R-vine structure or matrix must satisfy several conditions which are
+#' checked when [rvine_structure()], [rvine_matrix()], or some coercion methods
+#' (see [as_rvine_structure()] and `as_rvine_matrix(`) are called:
+#'
 #' 1. It can only contain numbers between 1 and d (and additionally zeros for
 #' R-vine matrices).
-#' 3. The anti-diagonal must contain the numbers 1, ..., d.
-#' 4. The anti-diagonal entry of a column must not be contained in any
-#' column further to the right.
-#' 5. The entries of a column must be contained in all columns to the left.
-#' 6. The proximity condition must hold: For all t = 1, ..., d - 2 and
-#' e = 0, ..., d - t - 1 there must exist an index j > d, such that
-#' `(M[t, e], {M[0, e], ..., M[t-1, e]})` equals either
-#' `(M[d-j-1, j], {M[0, j], ..., M[t-1, j]})` or
-#' `(M[t-1, j], {M[d-j-1, j], M[0, j], ..., M[t-2, j]})`.
 #'
-#' Condition 6 already implies conditions 2-5, but is more difficult to
-#' check by hand.
+#' 2. The anti-diagonal must contain the numbers 1, ..., d.
+#'
+#' 3. The anti-diagonal entry of a column must not be contained in any column
+#' further to the right.
+#'
+#' 4. The entries of a column must be contained in all columns to the left.
+#'
+#' 5. The proximity condition must hold: For all t = 1, ..., d - 2 and e = 1,
+#' ..., d - t there must exist an index j > d, such that
+#' `(M[t, e], {M[1, e], ..., M[t - 1, e]})` equals either
+#' `(M[d + 1 - j, j], {M[1, j], ..., M[t - 1, j]})` or
+#' `(M[t - 1, j], {M[d + 1 - j, j], M[1, j], ..., M[t - 2, j]})`.
+#'
+#'
+#' Condition 5 already implies conditions 2-4, but is more difficult to check by
+#' hand.
 #'
 #' @param order a vector of positive integers.
 #' @param struct_array a list of vectors of positive integers. The vectors
-#' represent rows of the r-rvine structure and the number of elements have to
-#' be compatible with the `order` vector.
-#' @param is_natural_order whether `struct_array` is assumed to be provided
-#' in natural order already (a structure is in natural order if the anti-
-#' diagonal is 1, .., d from bottom left to top right).
-#' @param byrow whether `struct_array` is assumed to be provided
-#' by column or by row.
+#'   represent rows of the r-rvine structure and the number of elements have to
+#'   be compatible with the `order` vector. If empty, the model is 0-truncated.
+#' @param is_natural_order whether `struct_array` is assumed to be provided in
+#'   natural order already (a structure is in natural order if the anti-
+#'   diagonal is 1, .., d from bottom left to top right).
 #'
 #' @return Either an `rvine_structure` or an `rvine_matrix`.
 #' @export
-#' @seealso as_rvine_structure
+#' @seealso [as_rvine_structure()], [as_rvine_matrix()],
+#'   [plot.rvine_structure()], [plot.rvine_matrix()],
+#'   [rvine_structure_sim()], [rvine_matrix_sim()]
 #' @examples
-#' 
+#'
 #' # R-vine structures can be constructed from the order vector and struct_array
 #' rvine_structure(order = 1:4, struct_array = list(
 #'   c(4, 4, 4),
 #'   c(3, 3),
 #'   2
 #' ))
-#' 
+#'
 #' # R-vine matrices can be constructed from standard matrices
 #' mat <- matrix(c(4, 3, 2, 1, 4, 3, 2, 0, 4, 3, 0, 0, 4, 0, 0, 0), 4, 4)
 #' rvine_matrix(mat)
-#' 
+#'
 #' # coerce to R-vine structure
 #' str(as_rvine_structure(mat))
-#' 
+#'
 #' # truncate and construct the R-vine matrix
 #' mat[3, 1] <- 0
 #' rvine_matrix(mat)
-#' 
+#'
 #' # or use directly the R-vine structure constructor
 #' rvine_structure(order = 1:4, struct_array = list(
 #'   c(4, 4, 4),
 #'   c(3, 3)
 #' ))
-#' 
+#'
 #' # throws an error
 #' mat[3, 1] <- 5
 #' try(rvine_matrix(mat))
+#'
+#' # C-vine structure
+#' cvine <- cvine_structure(1:5)
+#' cvine
+#' plot(cvine)
+#'
+#' # D-vine structure
+#' dvine <- dvine_structure(c(1, 4, 2, 3, 5))
+#' dvine
+#' plot(dvine)
+#'
 #' @name rvine_structure
-#' @aliases rvine_matrix is.rvine_structure is.rvine_matrix
-rvine_structure <- function(order, struct_array, is_natural_order = FALSE, byrow = TRUE) {
+#' @aliases rvine_matrix is.rvine_structure is.rvine_matrix dvine_structure
+#'   cvine_structure
+rvine_structure <- function(order, struct_array = list(), is_natural_order = FALSE) {
 
   # sanity checks and extract dimension/trunc_lvl
   assert_that(is.vector(order) && all(sapply(order, is.count)),
     msg = "Order should be a vector of positive integers."
   )
   assert_that(is.vector(struct_array) || is.list(struct_array))
-  if (is.list(struct_array)) {
-    struct_array <- unlist(struct_array)
-  }
-  assert_that(all(sapply(struct_array, is.count)),
+  assert_that(all(rapply(struct_array, function(i) sapply(i, is.count))),
     msg = "All elements of struct_array should be positive integers."
   )
   d <- length(order)
-  dd <- cumsum((d - 1):1)
-  assert_that(length(struct_array) %in% dd,
-    msg = "The number of elements in struct_array is incompatible
-                with order."
+  assert_that(length(struct_array) < length(order),
+    msg = paste("The length of struct array is incompatible with order,",
+                "it should be in {1, ..., length(order) - 1}")
   )
-  trunc_lvl <- which(dd == length(struct_array))
 
-  # create column-wise structure array
-  if (byrow) {
-    dd <- c(1, 1 + dd[-(d - 1)])
-    struct_array <- lapply(1:(d - 1), function(i)
-      struct_array[dd[1:min((d - i), trunc_lvl)] + (i - 1)])
-  } else {
-    struct_array <- lapply(1:(d - 1), function(i)
-      struct_array[1:min((d - i), trunc_lvl) + (i - 1)])
-  }
+  trunc_lvl <- length(struct_array)
+  lens <- sapply(seq_len(trunc_lvl), function(j) length(struct_array[[j]]))
+  assert_that(all(lens == seq(d - 1, d - trunc_lvl)),
+    msg = paste(
+      "The number of elements in struct_array is incompatible with order.",
+      "The first entry of struct_array should be a vectors of size" ,
+      "length(order) - 1, the second of size length(order) - 2), etc.")
+  )
 
   # create and check output
   output <- rvine_structure_cpp(
@@ -172,6 +188,94 @@ rvine_structure <- function(order, struct_array, is_natural_order = FALSE, byrow
   output
 }
 
+#' Plotting R-vine structures
+#'
+#' Plot one or all trees of an R-vine structure.
+#'
+#' @param x an `rvine_structure` or `rvine_matrixc` object.
+#' @param tree `"ALL"` or integer vector; specifies which trees are
+#' plotted.
+#' @param edge_labels either `TRUE` or `FALSE`; if `TRUE` the edge index is
+#'   added to the plot.
+#' @param ... unused.
+#' @aliases plot.rvine_matrix
+#' @export
+#' @examples
+#' plot(cvine_structure(1:5))
+#' plot(rvine_structure_sim(5))
+plot.rvine_structure <- function(x, tree = 1, edge_labels = FALSE, ...) {
+  assert_that(is.flag(edge_labels))
+  d <- dim(x)[1]
+  trunc_lvl <- dim(x)[2]
+  pcs <- lapply(seq_len(min(d - 1, trunc_lvl)),
+                function(i) lapply(seq_len(d - i), function(j) bicop_dist()))
+  plot(vinecop_dist(pcs, x),
+       tree = tree,
+       edge_labels = if (edge_labels) "pair" else NULL)
+}
+
+#' @rdname plot.rvine_structure
+#' @examples
+#' mat <- rbind(c(1, 1, 1), c(2, 2, 0), c(3, 0, 0))
+#' plot(rvine_matrix(mat))
+#' plot(rvine_matrix_sim(5))
+plot.rvine_matrix <- function(x, tree = 1, edge_labels = FALSE, ...) {
+  plot(as_rvine_structure(x), tree = tree, edge_labels = edge_labels)
+}
+
+#' @rdname rvine_structure
+#' @param trunc_lvl the truncation level
+#' @export
+#' @examples
+#' cvine <- cvine_structure(1:5)
+#' cvine
+#' plot(cvine)
+cvine_structure <- function(order, trunc_lvl = Inf) {
+  assert_that(is.vector(order) && all(sapply(order, is.count)),
+              msg = "Order should be a vector of positive integers.")
+  assert_that(is.scalar(trunc_lvl) & is.number(trunc_lvl))
+
+  d <- length(order)
+  trunc_lvl <- min(trunc_lvl, d - 1)
+  vars <- rev(seq_len(d))
+  struct_array <- lapply(seq(1, trunc_lvl), function(i) rep(vars[i], d - i))
+
+  output <- rvine_structure_cpp(
+    list(
+      order = order,
+      struct_array = struct_array,
+      d = d,
+      trunc_lvl = trunc_lvl
+    ),
+    FALSE, TRUE
+  )
+  structure(output, class = c("rvine_structure", "list"))
+}
+
+#' @rdname rvine_structure
+#' @export
+dvine_structure <- function(order, trunc_lvl = Inf) {
+  assert_that(is.vector(order) && all(sapply(order, is.count)),
+              msg = "Order should be a vector of positive integers.")
+  assert_that(is.scalar(trunc_lvl) & is.number(trunc_lvl))
+
+  d <- length(order)
+  trunc_lvl <- min(trunc_lvl, d - 1)
+  vars <- rev(seq_len(d))
+  struct_array <- lapply(seq(1, trunc_lvl), function(i) seq(i + 1, d))
+
+  output <- rvine_structure_cpp(
+    list(
+      order = order,
+      struct_array = struct_array,
+      d = d,
+      trunc_lvl = trunc_lvl
+    ),
+    FALSE, TRUE
+  )
+  structure(output, class = c("rvine_structure", "list"))
+}
+
 #' @param matrix an R-vine matrix, see *Details*.
 #' @rdname rvine_structure
 #' @export
@@ -185,7 +289,7 @@ rvine_matrix_nocheck <- function(matrix) {
   class(matrix) <- c("rvine_matrix", class(matrix))
   attr(matrix, "d") <- d
   attr(matrix, "trunc_lvl") <- ifelse(any(matrix[, 1] == 0),
-    min(which(matrix[, 1] == 0)),
+    min(which(matrix[, 1] == 0)) - 1,
     d - 1
   )
   matrix
@@ -247,4 +351,37 @@ is.rvine_structure <- function(structure) {
 #' @export
 is.rvine_matrix <- function(matrix) {
   inherits(matrix, "rvine_matrix")
+}
+
+
+#' Simulate R-vine structures
+#'
+#' Simulates from a uniform distribution over all R-vine structures on d
+#' variables. `rvine_structure_sim()` returns an [rvine_structure()] object,
+#' `rvine_matrix_sim()` an [rvine_matrix()].
+#'
+#' @aliases rvine_matrix_sim
+#'
+#' @param d the number of variables
+#' @param natural_order boolean; whether the structures should be in natural
+#'   order (counter-diagonal is `1:d`).
+#'
+#' @seealso [rvine_structure()], [rvine_matrix()],
+#'    [plot.rvine_structure()], [plot.rvine_matrix()]
+#' @export
+#' @examples
+#' rvine_structure_sim(10)
+#'
+#' rvine_structure_sim(10, natural_order = TRUE)  # counter-diagonal is 1:d
+#'
+#' rvine_matrix_sim(10)
+rvine_structure_sim <- function(d, natural_order = FALSE) {
+  assert_that(is.count(d), is.flag(natural_order))
+  rvine_structure_sim_cpp(d, natural_order, get_seeds())
+}
+
+#' @rdname rvine_structure_sim
+#' @export
+rvine_matrix_sim <- function(d, natural_order = FALSE) {
+  as_rvine_matrix(rvine_structure_sim(d, natural_order))
 }
