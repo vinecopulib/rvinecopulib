@@ -130,7 +130,11 @@ TllBicop::fit_local_likelihood(const Eigen::MatrixXd& x,
     }
     res(k, 0) *= f0;
     if (weights.size() > 0) {
-      res(k, 1) = calculate_infl(n, f0, b, B, det_irB, S, method, weights(k));
+      // average weight in neighborhood of evaluation point (essentially a
+      // kernel regression estimate);
+      // kernels have already been multiplied with weights above
+      double w = kernels.sum() / kernels.cwiseQuotient(weights).sum();
+      res(k, 1) = calculate_infl(n, f0, b, B, det_irB, S, method, w);
     } else {
       res(k, 1) = calculate_infl(n, f0, b, B, det_irB, S, method, 1.0);
     }
