@@ -33,3 +33,17 @@ test_that("C- and D-vine structures work", {
   expect_identical(dv, dvine_structure(6, 4))
 })
 
+test_that("plot functions work", {
+  struct <- as_rvine_structure(mat)
+  mat <- rvine_matrix(mat)
+  vc <- vinecop_dist(list(replicate(3, bicop_dist(), simplify = FALSE)), struct)
+  p <- plot(vc)
+  ps <- plot(struct)
+  pm <- plot(mat)
+  p$plot_env <- NULL
+  ps$plot_env <- NULL
+  pm$plot_env <- NULL
+  expect_equivalent(p, ps)
+  expect_equivalent(p, pm)
+})
+
