@@ -25,7 +25,8 @@ plotted.}
 \itemize{
 \item `"ignore"`` = variable names are ignored,
 \item `"use"`` = variable names are used to annotate vertices,
-\item `"legend"`` = uses numbers in plot and adds a legend for variable names.
+\item `"legend"`` = uses numbers in plot and adds a legend for variable names,
+\item `"hide"`` = no numbers or names, just the node.
 }}
 
 \item{edge_labels}{character; either a vector of edge labels or one of the

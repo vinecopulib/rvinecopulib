@@ -86,6 +86,7 @@ test_that("plot functions work", {
   expect_silent(p <- plot(vc, edge_labels = "tau", var_names = "use"))
   expect_silent(p <- plot(vc, edge_labels = "pair"))
   expect_silent(p <- plot(vc, edge_labels = "family_tau"))
+  expect_silent(p <- plot(vc, var_names = "hide"))
   expect_error(p <- plot(vc, edge_labels = "no"))
   expect_error(p <- plot(vc, var_names = "isaidno"))
   expect_error(p <- plot(vc, tree = 10))
