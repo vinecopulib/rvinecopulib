@@ -1,8 +1,7 @@
 rvinecopulib
 ==========
 
-[![Build status Linux](https://travis-ci.org/vinecopulib/rvinecopulib.svg?branch=master)](https://travis-ci.org/vinecopulib/rvinecopulib)
-[![Windows Build status](http://ci.appveyor.com/api/projects/status/github/vinecopulib/rvinecopulib?svg=true)](https://ci.appveyor.com/project/vinecopulib/rvinecopulib)
+[![Travis-CI Build Status](https://travis-ci.org/vinecopulib/rvinecopulib.svg?branch=master)](https://travis-ci.org/vinecopulib/rvinecopulib) 
 [![Coverage Status](https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/master.svg)](https://codecov.io/github/vinecopulib/rvinecopulib?branch=master)
 [![CRAN version](http://www.r-pkg.org/badges/version/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib) 
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib)
