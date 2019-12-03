@@ -67,3 +67,4 @@ jobs:
         run: |
           Rscript -e 'remotes::install_github("r-lib/covr@gh-actions")'
           Rscript -e 'covr::codecov(line_exclusion = list.files(recursive = TRUE)[grep("^(?!.*wrappers).*\\.(hpp|h|cpp|c|ipp)$", list.files(recursive = TRUE), perl = TRUE)], token = "${{secrets.CODECOV_TOKEN}}")'
+        shell: bash
