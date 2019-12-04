@@ -29,8 +29,7 @@ plotted.}
 \item `"hide"`` = no numbers or names, just the node.
 }}
 
-\item{edge_labels}{character; either a vector of edge labels or one of the
-following:
+\item{edge_labels}{character; options are:
 \itemize{
 \item \code{"family"} = pair-copula family (see \verb{[bicop_dist()]}),
 \item `"tau"`` = pair-copula Kendall's tau

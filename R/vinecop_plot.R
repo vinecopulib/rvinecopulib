@@ -21,8 +21,7 @@
 #' * `"use"`` = variable names are used to annotate vertices,
 #' * `"legend"`` = uses numbers in plot and adds a legend for variable names,
 #' * `"hide"`` = no numbers or names, just the node.
-#' @param edge_labels character; either a vector of edge labels or one of the
-#' following:
+#' @param edge_labels character; options are:
 #' * `"family"` = pair-copula family (see `[bicop_dist()]`),
 #' * `"tau"`` = pair-copula Kendall's tau
 #' * `"family_tau"`` = pair-copula family and Kendall's tau,
