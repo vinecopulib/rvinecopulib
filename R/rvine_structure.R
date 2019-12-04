@@ -193,25 +193,18 @@ rvine_structure <- function(order, struct_array = list(), is_natural_order = FAL
 #' Plot one or all trees of an R-vine structure.
 #'
 #' @param x an `rvine_structure` or `rvine_matrixc` object.
-#' @param tree `"ALL"` or integer vector; specifies which trees are
-#' plotted.
-#' @param edge_labels either `TRUE` or `FALSE`; if `TRUE` the edge index is
-#'   added to the plot.
-#' @param ... unused.
+#' @param ... passed to `plot.vinecop_dist()`.
 #' @aliases plot.rvine_matrix
 #' @export
 #' @examples
 #' plot(cvine_structure(1:5))
 #' plot(rvine_structure_sim(5))
-plot.rvine_structure <- function(x, tree = 1, edge_labels = FALSE, ...) {
-  assert_that(is.flag(edge_labels))
+plot.rvine_structure <- function(x, ...) {
   d <- dim(x)[1]
   trunc_lvl <- dim(x)[2]
   pcs <- lapply(seq_len(min(d - 1, trunc_lvl)),
                 function(i) lapply(seq_len(d - i), function(j) bicop_dist()))
-  plot(vinecop_dist(pcs, x),
-       tree = tree,
-       edge_labels = if (edge_labels) "pair" else NULL)
+  plot.vinecop_dist(vinecop_dist(pcs, x), ...)
 }
 
 #' @rdname plot.rvine_structure
@@ -220,8 +213,8 @@ plot.rvine_structure <- function(x, tree = 1, edge_labels = FALSE, ...) {
 #' plot(rvine_matrix(mat))
 #' plot(rvine_matrix_sim(5))
 #' @export
-plot.rvine_matrix <- function(x, tree = 1, edge_labels = FALSE, ...) {
-  plot(as_rvine_structure(x), tree = tree, edge_labels = edge_labels)
+plot.rvine_matrix <- function(x, ...) {
+  plot(as_rvine_structure(x), ...)
 }
 
 #' @rdname rvine_structure
