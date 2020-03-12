@@ -1,3 +1,16 @@
+# (in progress)
+
+- single-integer constructors for `dvine_structure()`/`cvine_structure()` (#203).
+
+- add `var_names = "hide"` option in `plot.vinecop_dist()`.  (#203)
+
+- add function `plot.rvine_matrix()` .  (#203)
+
+BUG FIXES
+
+- fix bug for (negative) tau to parameter conversion for Frank family. (#207)
+
+
 # rvinecopulib 0.5.1.1.0 (November 25, 2019)
 
 Release following the updates of vinecopulib to 0.5.1, see 
