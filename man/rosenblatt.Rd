@@ -40,7 +40,7 @@ are then independent standard uniform variables. The inverse operation
   V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots,
   V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}),
 }
-can can be used to simulate from a distribution. For any copula \eqn{F}, if
+can be used to simulate from a distribution. For any copula \eqn{F}, if
 \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has
 distribution \eqn{F}.
 }

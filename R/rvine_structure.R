@@ -22,7 +22,7 @@
 #' 0    \tab  0    \tab `(1, 4)`       \cr
 #'      \tab  1    \tab `(2, 4)`       \cr
 #'      \tab  2    \tab `(3, 4)`       \cr
-#' 1    \tab  0    \tab `(1, 3; 2)`    \cr
+#' 1    \tab  0    \tab `(1, 3; 4)`    \cr
 #'      \tab  1    \tab `(2, 3; 4)`    \cr
 #' 2    \tab  0    \tab `(1, 2; 3, 4)`
 #' }
@@ -192,7 +192,7 @@ rvine_structure <- function(order, struct_array = list(), is_natural_order = FAL
 #'
 #' Plot one or all trees of an R-vine structure.
 #'
-#' @param x an `rvine_structure` or `rvine_matrixc` object.
+#' @param x an `rvine_structure` or `rvine_matrix` object.
 #' @param ... passed to `plot.vinecop_dist()`.
 #' @aliases plot.rvine_matrix
 #' @export
@@ -220,10 +220,6 @@ plot.rvine_matrix <- function(x, ...) {
 #' @rdname rvine_structure
 #' @param trunc_lvl the truncation level
 #' @export
-#' @examples
-#' cvine <- cvine_structure(1:5)
-#' cvine
-#' plot(cvine)
 cvine_structure <- function(order, trunc_lvl = Inf) {
   if (is.count(order))
     order <- seq_len(order)
