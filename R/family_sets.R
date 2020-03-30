@@ -30,6 +30,10 @@ family_set_itau <- c(
   "indep", family_set_onepar, "t"
 )
 
+family_set_rotationless <- c(
+  "frank", family_set_elliptical, family_set_nonparametric
+)
+
 family_set_all <- unique(
   c(family_set_parametric, family_set_nonparametric)
 )

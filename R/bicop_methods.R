@@ -169,7 +169,7 @@ par_to_ktau <- function(family, rotation, parameters) {
 #' @export
 ktau_to_par <- function(family, tau) {
   bicop <- args2bicop(family)
-  if (!(bicop$family %in% c(family_set_elliptical, family_set_nonparametric))) {
+  if (!(bicop$family %in% family_set_rotationless)) {
     bicop$rotation <- ifelse(tau > 0, 0, 90)
   }
   bicop_tau_to_par_cpp(bicop, tau)

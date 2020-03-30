@@ -70,6 +70,10 @@ test_that("parameter <-> tau conversion works", {
   # two-parameter
   tau <- par_to_ktau("bb1", 0, c(1, 2))
   expect_error(ktau_to_par("bb1", 0.5))
+
+  # rotationless
+  ktau_to_par("frank", 0.5)
+  ktau_to_par("frank", -0.5)
 })
 
 test_that("print method produces output", {
