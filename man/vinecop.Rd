@@ -109,9 +109,10 @@ or discrete data.
 \details{
 \subsection{Discrete variables}{
 
+Let \code{n} be the number of observations and \code{d} the number of variables.
 When at least one variable is discrete, two types of
-"observations" are required in \code{data}: the first \eqn{n  x  d} block
-contains realizations of \eqn{F_{X_j}(X_j)}. The second \eqn{n  x  d}
+"observations" are required in \code{data}: the first \verb{n  x  d} block
+contains realizations of \eqn{F_{X_j}(X_j)}. The second \verb{n  x  d}
 block contains realizations of \eqn{F_{X_j}(X_j^-)}. The minus indicates a
 left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left

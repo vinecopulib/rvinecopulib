@@ -10,7 +10,7 @@
 \method{plot}{rvine_matrix}(x, ...)
 }
 \arguments{
-\item{x}{an \code{rvine_structure} or \code{rvine_matrixc} object.}
+\item{x}{an \code{rvine_structure} or \code{rvine_matrix} object.}
 
 \item{...}{passed to \code{plot.vinecop_dist()}.}
 }
