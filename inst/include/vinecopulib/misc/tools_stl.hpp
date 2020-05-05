@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -30,7 +30,7 @@ get_order(const std::vector<T>& x)
 
 template<typename T>
 bool
-is_member(T element, std::vector<T> set)
+is_member(T element, const std::vector<T>& set)
 {
   return std::find(set.begin(), set.end(), element) != set.end();
 }
@@ -50,7 +50,7 @@ intersect(std::vector<T> x, std::vector<T> y)
 
 template<class T>
 size_t
-find_position(T x, std::vector<T> vec)
+find_position(T x, const std::vector<T>& vec)
 {
   return std::distance(vec.begin(), find(vec.begin(), vec.end(), x));
 }
@@ -90,7 +90,7 @@ cat(T x, const std::vector<T>& y)
 
 template<class T>
 std::vector<T>
-set_sym_diff(std::vector<T> x, std::vector<T> y)
+set_sym_diff(const std::vector<T>& x, const std::vector<T>& y)
 {
   std::vector<T> dxy = set_diff(x, y);
   auto dyx = set_diff(y, x);
@@ -106,7 +106,7 @@ reverse(std::vector<T>& x)
 
 template<class T>
 bool
-is_same_set(std::vector<T> x, std::vector<T> y)
+is_same_set(const std::vector<T>& x, const std::vector<T>& y)
 {
   auto z = intersect(x, y);
   return ((z.size() == x.size()) & (z.size() == y.size()));
@@ -114,7 +114,7 @@ is_same_set(std::vector<T> x, std::vector<T> y)
 
 template<class T>
 bool
-is_member(std::vector<T> x, std::vector<T> y)
+is_member(const std::vector<T>& x, const std::vector<T>& y)
 {
   auto z = intersect(x, y);
   return z.size() == x.size();

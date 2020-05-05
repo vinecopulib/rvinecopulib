@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -25,16 +25,16 @@ const family_bimap family_names =
     (BicopFamily::bb8, "BB8")
     (BicopFamily::tll, "TLL");
 
-//! converts a BicopFamily into a string with its name.
-//! @param family the family.
+//! @brief Converts a BicopFamily into a string with its name.
+//! @param family The family.
 inline std::string
 get_family_name(BicopFamily family)
 {
   return family_names.left.at(family);
 }
 
-//! converts a string name into a BicopFamily.
-//! @param family the family name.
+//! @brief Converts a string name into a BicopFamily.
+//! @param family The family name.
 inline BicopFamily
 get_family_enum(std::string family)
 {

@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -18,46 +18,49 @@ namespace tools_select {
 class VinecopSelector;
 }
 
-//! @brief A class for vine copula models
+//! @brief A class for vine copula models.
 //!
-//! A vine copula model is characterized by the structure matrix (see
-//! TriangularArray) and the pair-copulas.
+//! A vine copula model is characterized by its structure (see
+//! `RVineStructure` objects) and the pair-copulas.
 class Vinecop
 {
 public:
   // default constructors
   Vinecop() {}
 
-  Vinecop(size_t d);
+  explicit Vinecop(size_t d);
 
   // Constructors without data
-  Vinecop(const RVineStructure& structure,
-          const std::vector<std::vector<Bicop>>& pair_copulas = {},
-          const std::vector<std::string>& var_types = {});
+  explicit Vinecop(const RVineStructure& structure,
+                   const std::vector<std::vector<Bicop>>& pair_copulas = {},
+                   const std::vector<std::string>& var_types = {});
 
-  Vinecop(const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
-          const std::vector<std::vector<Bicop>>& pair_copulas = {},
-          const std::vector<std::string>& var_types = {});
+  explicit Vinecop(
+    const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
+    const std::vector<std::vector<Bicop>>& pair_copulas = {},
+    const std::vector<std::string>& var_types = {});
 
   // Constructors from data
-  Vinecop(const Eigen::MatrixXd& data,
-          const RVineStructure& structure = RVineStructure(),
-          const std::vector<std::string>& var_types = {},
-          const FitControlsVinecop& controls = FitControlsVinecop());
+  explicit Vinecop(const Eigen::MatrixXd& data,
+                   const RVineStructure& structure = RVineStructure(),
+                   const std::vector<std::string>& var_types = {},
+                   const FitControlsVinecop& controls = FitControlsVinecop());
 
-  Vinecop(const Eigen::MatrixXd& data,
-          const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix =
-            Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>(),
-          const std::vector<std::string>& var_types = {},
-          const FitControlsVinecop& controls = FitControlsVinecop());
+  explicit Vinecop(
+    const Eigen::MatrixXd& data,
+    const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix =
+      Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>(),
+    const std::vector<std::string>& var_types = {},
+    const FitControlsVinecop& controls = FitControlsVinecop());
 
   // Constructors from files/serialized objects
-  Vinecop(const std::string filename, const bool check = true);
-  Vinecop(const boost::property_tree::ptree input, const bool check = true);
+  explicit Vinecop(const std::string& filename, const bool check = true);
+  explicit Vinecop(const boost::property_tree::ptree input,
+                   const bool check = true);
 
   // Serialize
   boost::property_tree::ptree to_ptree() const;
-  void to_json(const std::string filename) const;
+  void to_json(const std::string& filename) const;
 
   // Methods modifying structure and/or families and parameters
   void select(const Eigen::MatrixXd& data,

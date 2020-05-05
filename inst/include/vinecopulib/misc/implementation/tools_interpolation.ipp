@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -12,11 +12,11 @@ namespace vinecopulib {
 namespace tools_interpolation {
 //! Constructor
 //!
-//! @param grid_points an ascending sequence of grid_points; used in both
+//! @param grid_points An ascending sequence of grid_points; used in both
 //! dimensions.
-//! @param values a dxd matrix of copula density values evaluated at
+//! @param values A dxd matrix of copula density values evaluated at
 //! (grid_points_i, grid_points_j).
-//! @param norm_times how many times the normalization routine should run.
+//! @param norm_times How many times the normalization routine should run.
 inline InterpolationGrid::InterpolationGrid(const Eigen::VectorXd& grid_points,
                                             const Eigen::MatrixXd& values,
                                             int norm_times)
@@ -72,7 +72,7 @@ InterpolationGrid::flip()
 
 //! renormalizes the estimate to uniform margins
 //!
-//! @param times how many times the normalization routine should run.
+//! @param times How many times the normalization routine should run.
 inline void
 InterpolationGrid::normalize_margins(int times)
 {
@@ -116,16 +116,16 @@ InterpolationGrid::get_indices(double x0, double x1)
 
 //! Interpolate linearly in two dimensions
 //!
-//! @param z11 value corresponding to (x1, y1)
-//! @param z12 value corresponding to (x1, y2)
-//! @param z21 value corresponding to (x2, y1)
-//! @param z22 value corresponding to (x2, y2)
-//! @param x1 first cell value for the first dimension
-//! @param x2 second cell value for the first dimension
-//! @param y1 first cell value for the second dimension
-//! @param y2 second cell value for the second dimension
-//! @param x evaluation point for the first dimension
-//! @param y evaluation point for the second dimension
+//! @param z11 Value corresponding to (x1, y1)
+//! @param z12 Value corresponding to (x1, y2)
+//! @param z21 Value corresponding to (x2, y1)
+//! @param z22 Value corresponding to (x2, y2)
+//! @param x1 First cell value for the first dimension
+//! @param x2 Second cell value for the first dimension
+//! @param y1 First cell value for the second dimension
+//! @param y2 Second cell value for the second dimension
+//! @param x Evaluation point for the first dimension
+//! @param y Evaluation point for the second dimension
 inline double
 InterpolationGrid::bilinear_interpolation(double z11,
                                           double z12,
@@ -152,7 +152,7 @@ InterpolationGrid::bilinear_interpolation(double z11,
 
 //! Interpolation in two dimensions
 //!
-//! @param x mx2 matrix of evaluation points.
+//! @param x Mx2 matrix of evaluation points.
 //! @return a vector of resulting interpolated values
 inline Eigen::VectorXd
 InterpolationGrid::interpolate(const Eigen::MatrixXd& x)
@@ -177,8 +177,8 @@ InterpolationGrid::interpolate(const Eigen::MatrixXd& x)
 
 //! Integrate the grid along one axis
 //!
-//! @param u mx2 matrix of evaluation points
-//! @param cond_var either 1 or 2; the axis considered fixed.
+//! @param u Mx2 matrix of evaluation points
+//! @param cond_var Either 1 or 2; the axis considered fixed.
 //! @return a vector of resulting integral values
 inline Eigen::VectorXd
 InterpolationGrid::integrate_1d(const Eigen::MatrixXd& u, size_t cond_var)
@@ -211,7 +211,7 @@ InterpolationGrid::integrate_1d(const Eigen::MatrixXd& u, size_t cond_var)
 
 //! Integrate the grid along the two axis
 //!
-//! @param u mx2 matrix of evaluation points
+//! @param u Mx2 matrix of evaluation points
 //! @return a vector of resulting integral values
 inline Eigen::VectorXd
 InterpolationGrid::integrate_2d(const Eigen::MatrixXd& u)
@@ -243,9 +243,9 @@ InterpolationGrid::integrate_2d(const Eigen::MatrixXd& u)
 
 //! Integrate using a trapezoid rule
 //!
-//! @param upr upper limit of integration (lower is 0).
-//! @param vals vector of values to be interpolated and integrated.
-//! @param grid vector of grid points on which vals has been computed.
+//! @param upr Upper limit of integration (lower is 0).
+//! @param vals Vector of values to be interpolated and integrated.
+//! @param grid Vector of grid points on which vals has been computed.
 //!
 //! @return integral of a piecewise linear function defined by (grid_i, vals_i).
 inline double

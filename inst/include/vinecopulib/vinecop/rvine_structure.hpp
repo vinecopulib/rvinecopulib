@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -13,7 +13,7 @@
 
 namespace vinecopulib {
 
-//! @brief R-vine structures
+//! @brief A class for R-vine structures.
 //!
 //! RVineStructure objects encode the tree structure of the vine, i.e. the
 //! conditioned/conditioning variables of each edge. It is represented by a
@@ -67,24 +67,26 @@ namespace vinecopulib {
 class RVineStructure
 {
 public:
-  RVineStructure(const size_t& d = static_cast<size_t>(1),
-                 const size_t& trunc_lvl = std::numeric_limits<size_t>::max());
-  RVineStructure(
+  explicit RVineStructure(
+    const size_t& d = static_cast<size_t>(1),
+    const size_t& trunc_lvl = std::numeric_limits<size_t>::max());
+  explicit RVineStructure(
     const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& mat,
     bool check = true);
-  RVineStructure(const std::vector<size_t>& order,
-                 const size_t& trunc_lvl = std::numeric_limits<size_t>::max(),
-                 bool check = true);
+  explicit RVineStructure(
+    const std::vector<size_t>& order,
+    const size_t& trunc_lvl = std::numeric_limits<size_t>::max(),
+    bool check = true);
   RVineStructure(const std::vector<size_t>& order,
                  const TriangularArray<size_t>& struct_array,
                  bool natural_order = false,
                  bool check = true);
-  RVineStructure(const std::string filename, const bool check = true);
-  RVineStructure(const boost::property_tree::ptree input,
-                 const bool check = true);
+  explicit RVineStructure(const std::string& filename, const bool check = true);
+  explicit RVineStructure(const boost::property_tree::ptree input,
+                          const bool check = true);
 
   boost::property_tree::ptree to_ptree() const;
-  void to_json(const std::string filename) const;
+  void to_json(const std::string& filename) const;
 
   size_t get_dim() const;
   size_t get_trunc_lvl() const;
@@ -148,30 +150,36 @@ protected:
 std::ostream&
 operator<<(std::ostream& os, const RVineStructure& rvs);
 
-//! @brief D-vine structures
+//! @brief A class for D-vine structures.
 //!
 //! D-vines are a special class of R-vines where each tree is a path. A D-vine
 //! structure is determined entirely by the order of variables. For example, if
-//! the order is `{1, 2, 3, 4}`, the first tree in the vine is 1-2-3-4 and all
+//! the order is `(1, 2, 3, 4)`, the first tree in the vine is 1-2-3-4 and all
 //! further trees are unique due to the proximity condition.
+//!
+//! Note that `DVineStructure` objects inherit the methods and attributes of
+//! `RVineStructure` objects.
 class DVineStructure : public RVineStructure
 {
 public:
-  DVineStructure(const std::vector<size_t>& order);
+  explicit DVineStructure(const std::vector<size_t>& order);
   DVineStructure(const std::vector<size_t>& order, size_t trunc_lvl);
 };
 
-//! @brief C-vine structures
+//! @brief A class for C-vine structures.
 //!
 //! C-vines are a special class of R-vines where each tree is a star. A C-vine
 //! structure is determined entirely by the order of variables. For example, if
 //! the order is `{1, 2, 3, 4}`, the first tree in the vine connects variable
 //! 4 with all others, the second tree connects variable 3 with all others,
 //! etc.
+//!
+//! Note that `CVineStructure` objects inherit the methods and attributes of
+//! `RVineStructure` objects.
 class CVineStructure : public RVineStructure
 {
 public:
-  CVineStructure(const std::vector<size_t>& order);
+  explicit CVineStructure(const std::vector<size_t>& order);
   CVineStructure(const std::vector<size_t>& order, size_t trunc_lvl);
 };
 }

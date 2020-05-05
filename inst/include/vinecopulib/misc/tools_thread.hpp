@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -72,7 +72,7 @@ inline ThreadPool::ThreadPool()
 {}
 
 //! constructs a thread pool with `nThreads` threads.
-//! @param nWorkers number of worker threads to create; if `nThreads = 0`, all
+//! @param nWorkers Number of worker threads to create; if `nThreads = 0`, all
 //!    work pushed to the pool will be done in the main thread.
 inline ThreadPool::ThreadPool(size_t nWorkers)
 {
@@ -92,8 +92,8 @@ inline ThreadPool::~ThreadPool() noexcept
 }
 
 //! pushes jobs to the thread pool.
-//! @param f a function taking an arbitrary number of arguments.
-//! @param args a comma-seperated list of the other arguments that shall
+//! @param f A function taking an arbitrary number of arguments.
+//! @param args A comma-seperated list of the other arguments that shall
 //!   be passed to `f`.
 //!
 //! The function returns void; if a job returns a result, use `pushReturn()`.
@@ -116,8 +116,8 @@ ThreadPool::push(F&& f, Args&&... args)
 }
 
 //! maps a function on a list of items, possibly running tasks in parallel.
-//! @param f function to be mapped.
-//! @param items an objects containing the items on which `f` shall be
+//! @param f Function to be mapped.
+//! @param items An objects containing the items on which `f` shall be
 //!   mapped; must allow for `auto` loops (i.e., `std::begin(I)`/
 //!  `std::end(I)` must be defined).
 template<class F, class I>
@@ -173,7 +173,7 @@ ThreadPool::start_worker()
   workers_.emplace_back([this] {
     std::function<void()> job;
     // observe thread pool; only stop after all jobs are done
-    while (!stopped_ | !jobs_.empty()) {
+    while ((!stopped_) | (!jobs_.empty())) {
       // must hold a lock while modifying shared variables
       std::unique_lock<std::mutex> lk(m_tasks_);
 
@@ -201,7 +201,7 @@ ThreadPool::start_worker()
 }
 
 //! executes a job safely and let's pool know when it's busy.
-//! @param job job to be exectued.
+//! @param job Job to be exectued.
 inline void
 ThreadPool::do_job(std::function<void()>&& job)
 {
@@ -269,7 +269,7 @@ ThreadPool::all_jobs_done()
   return (num_busy_ == 0) && jobs_.empty();
 }
 
-//! checks whether wait() needs to wake up
+//! checks whether `wait()` needs to wake up
 inline bool
 ThreadPool::wait_for_wake_up_event()
 {
