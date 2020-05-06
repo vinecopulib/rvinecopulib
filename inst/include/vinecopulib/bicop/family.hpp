@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -87,7 +87,7 @@ const std::vector<BicopFamily> bb = { BicopFamily::bb1,
                                       BicopFamily::bb7,
                                       BicopFamily::bb8 };
 
-//! @brief All copulas that don't have a rotation
+//! @brief All copulas that don't have a rotation.
 //!
 //! (because they already cover positive and negative dependence)
 const std::vector<BicopFamily> rotationless = { BicopFamily::indep,

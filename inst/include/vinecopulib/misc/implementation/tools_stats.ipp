@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -16,16 +16,16 @@ namespace vinecopulib {
 //! Utilities for statistical analysis
 namespace tools_stats {
 
-//! @brief simulates from the multivariate uniform distribution
+//! @brief Simulates from the multivariate uniform distribution.
 //!
-//! @param n number of observations.
-//! @param d dimension.
-//! @param qrng if true, quasi-numbers are generated.
-//! @param seeds seeds of the random number generator; if empty (default),
+//! @param n Number of observations.
+//! @param d Dimension.
+//! @param qrng If true, quasi-numbers are generated.
+//! @param seeds Seeds of the random number generator; if empty (default),
 //!   the random number generator is seeded randomly.
 //!
 //! If `qrng = TRUE`, generalized Halton sequences (see `ghalton()`) are used
-//! for `d <= 300` and Sobol sequences otherwise (see `sobol()`).
+//! for \f$ d \leq 300 \f$ and Sobol sequences otherwise (see `sobol()`).
 //!
 //! @return An \f$ n \times d \f$ matrix of independent
 //! \f$ \mathrm{U}[0, 1] \f$ random variables.
@@ -62,16 +62,17 @@ simulate_uniform(const size_t& n,
   return u.unaryExpr([&](double) { return distribution(generator); });
 }
 
-//! @brief applies the empirical probability integral transform to a data
+//! @brief Applies the empirical probability integral transform to a data
 //! matrix.
 //!
 //! Gives pseudo-observations from the copula by applying the empirical
-//! distribution function (scaled by n + 1) to each margin/column.
+//! distribution function (scaled by \f$ n + 1 \f$) to each margin/column.
 //!
-//! @param x a matrix of real numbers.
-//! @param ties_method indicates how to treat ties; same as in R, see
+//! @param x A matrix of real numbers.
+//! @param ties_method Indicates how to treat ties; same as in R, see
 //! https://stat.ethz.ch/R-manual/R-devel/library/base/html/rank.html.
-//! @return Psuedo-observations of the copula, i.e. F_X(X) (column-wise)
+//! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$
+//! (column-wise).
 inline Eigen::MatrixXd
 to_pseudo_obs(Eigen::MatrixXd x, std::string ties_method)
 {
@@ -82,16 +83,16 @@ to_pseudo_obs(Eigen::MatrixXd x, std::string ties_method)
   return x;
 }
 
-//! @brief applies the empirical probability integral transform to a data
+//! @brief Applies the empirical probability integral transform to a data
 //! vector.
 //!
 //! Gives pseudo-observations from the copula by applying the empirical
-//! distribution function (scaled by n + 1) to each margin/column.
+//! distribution function (scaled by \f$ n + 1 \f$) to each margin/column.
 //!
-//! @param x a vector of real numbers.
-//! @param ties_method indicates how to treat ties; same as in R, see
+//! @param x A vector of real numbers.
+//! @param ties_method Indicates how to treat ties; same as in R, see
 //! https://stat.ethz.ch/R-manual/R-devel/library/base/html/rank.html.
-//! @return Psuedo-observations of the copula, i.e. F_X(X) (column-wise)
+//! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$.
 inline Eigen::VectorXd
 to_pseudo_obs_1d(Eigen::VectorXd x, std::string ties_method)
 {
@@ -298,15 +299,15 @@ pairwise_mcor(const Eigen::MatrixXd& x, const Eigen::VectorXd& weights)
 }
 //! @}
 
-//! @brief simulates from the multivariate Generalized Halton Sequence.
+//! @brief Simulates from the multivariate Generalized Halton Sequence.
 //!
 //! For more information on Generalized Halton Sequence, see
 //! Faure, H., Lemieux, C. (2009). Generalized Halton Sequences in 2008:
 //! A Comparative Study. ACM-TOMACS 19(4), Article 15.
 //!
-//! @param n number of observations.
-//! @param d dimension.
-//! @param seeds seeds to scramble the quasi-random numbers; if empty (default),
+//! @param n Number of observations.
+//! @param d Dimension.
+//! @param seeds Seeds to scramble the quasi-random numbers; if empty (default),
 //!   the quasi-random number generator is seeded randomly.
 //!
 //! @return An \f$ n \times d \f$ matrix of quasi-random
@@ -360,15 +361,15 @@ ghalton(const size_t& n, const size_t& d, std::vector<int> seeds)
   return res.transpose();
 }
 
-//! @brief simulates from the multivariate Sobol sequence.
+//! @brief Simulates from the multivariate Sobol sequence.
 //!
 //! For more information on the Sobol sequence, see S. Joe and F. Y. Kuo
-//! (2008), Constructing Sobol  sequences with better two-dimensional
+//! (2008), constructing Sobol  sequences with better two-dimensional
 //! projections, SIAM J. Sci. Comput. 30, 2635–2654.
 //!
-//! @param n number of observations.
-//! @param d dimension.
-//! @param seeds seeds to scramble the quasi-random numbers; if empty (default),
+//! @param n Number of observations.
+//! @param d Dimension.
+//! @param seeds Seeds to scramble the quasi-random numbers; if empty (default),
 //!   the quasi-random number generator is seeded randomly.
 //!
 //! @return An \f$ n \times d \f$ matrix of quasi-random
@@ -450,7 +451,7 @@ sobol(const size_t& n, const size_t& d, std::vector<int> seeds)
   return output;
 }
 
-//! @brief computes bivariate t probabilities.
+//! @brief Computes bivariate t probabilities.
 //!
 //! Based on the method described by
 //! Dunnett, C.W. and M. Sobel, (1954),
@@ -459,9 +460,9 @@ sobol(const size_t& n, const size_t& d, std::vector<int> seeds)
 //! Biometrika 41, pp. 153-169. Translated from the Fortran routines of
 //! Alan Genz (www.math.wsu.edu/faculty/genz/software/fort77/mvtdstpack.f).
 //!
-//! @param z an \f$ n \times 2 \f$ matrix of evaluation points.
-//! @param nu number of degrees of freedom.
-//! @param rho correlation.
+//! @param z An \f$ n \times 2 \f$ matrix of evaluation points.
+//! @param nu Number of degrees of freedom.
+//! @param rho Correlation.
 //!
 //! @return An \f$ n \times 1 \f$ vector of probabilities.
 inline Eigen::VectorXd
@@ -576,7 +577,7 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
   return tools_eigen::binaryExpr_or_nan(z, f);
 }
 
-//! @brief compute bivariate normal probabilities.
+//! @brief Compute bivariate normal probabilities.
 //!
 //! A function for computing bivariate normal probabilities;
 //! developed using Drezner, Z. and Wesolowsky, G. O. (1989),
@@ -586,8 +587,8 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
 //! Alan Genz and Yihong Ge. Translated from the Fortran routines of
 //! Alan Genz (www.math.wsu.edu/faculty/genz/software/fort77/mvtdstpack.f).
 //!
-//! @param z an \f$ n \times 2 \f$ matrix of evaluation points.
-//! @param rho correlation.
+//! @param z An \f$ n \times 2 \f$ matrix of evaluation points.
+//! @param rho Correlation.
 //!
 //! @return An \f$ n \times 1 \f$ vector of probabilities.
 inline Eigen::VectorXd

@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -10,7 +10,7 @@
 
 namespace vinecopulib {
 
-//! @brief An abstract class for parametric copula families
+//! @brief An abstract class for parametric copula families.
 //!
 //! This class is used in the implementation underlying the Bicop class.
 //! Users should not use AbstractBicop or derived classes directly, but
@@ -49,7 +49,7 @@ private:
   void adjust_parameters_bounds(Eigen::MatrixXd& lb,
                                 Eigen::MatrixXd& ub,
                                 const double& tau,
-                                const std::string method);
+                                const std::string& method);
 
   void check_parameters(const Eigen::MatrixXd& parameters);
 

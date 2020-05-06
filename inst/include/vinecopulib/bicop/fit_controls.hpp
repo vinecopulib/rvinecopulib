@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -11,7 +11,7 @@
 #include <vinecopulib/bicop/family.hpp>
 
 namespace vinecopulib {
-//! @brief A class for controlling fit of bivariate copula models.
+//! @brief A class for controlling fits of bivariate copula models.
 //!
 class FitControlsBicop
 {
@@ -27,10 +27,10 @@ public:
                    bool preselect_families = true,
                    size_t num_threads = 1);
 
-  FitControlsBicop(std::string parametric_method);
+  explicit FitControlsBicop(std::string parametric_method);
 
-  FitControlsBicop(std::string nonparametric_method,
-                   double nonparametric_mult = 1.0);
+  explicit FitControlsBicop(std::string nonparametric_method,
+                            double nonparametric_mult = 1.0);
 
   // Getters
   std::vector<BicopFamily> get_family_set() const;
@@ -69,6 +69,12 @@ public:
   void set_psi0(double psi0);
 
   void set_num_threads(size_t num_threads);
+
+  // Misc
+  std::string str() const;
+
+protected:
+  std::string str_internal(bool print_threads = true) const;
 
 private:
   std::vector<BicopFamily> family_set_;

@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -10,27 +10,27 @@
 
 //! Tools for bivariate and vine copula modeling
 namespace vinecopulib {
-//! @brief creates the controls for fitting bivariate copula models.
+//! @brief Instantiates the controls for fitting bivariate copula models.
 //!
-//! @param family_set the set of copula families to consider (if empty, then
+//! @param family_set The set of copula families to consider (if empty, then
 //!     all families are included).
-//! @param parametric_method the fit method for parametric families;
+//! @param parametric_method The fit method for parametric families;
 //!     possible choices: `"mle"`, `"itau"`.
-//! @param nonparametric_method the fit method for the local-likelihood
+//! @param nonparametric_method The fit method for the local-likelihood
 //!     nonparametric family (TLLs); possible choices: `"constant"`,
 //!     `"linear"`, `"quadratic"`.
-//! @param nonparametric_mult a factor with which the smoothing parameters
+//! @param nonparametric_mult A factor with which the smoothing parameters
 //!     are multiplied.
-//! @param selection_criterion the selection criterion (`"loglik"`, `"aic"`
+//! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`
 //!     or `"bic"`).
-//! @param weights a vector of weights for the observations.
-//! @param psi0 only for `selection_criterion = "mbic"): prior probability of
+//! @param weights A vector of weights for the observations.
+//! @param psi0 Only for `selection_criterion = "mbic", the prior probability of
 //!     non-independence.
-//! @param preselect_families whether to exclude families before fitting
+//! @param preselect_families Whether to exclude families before fitting
 //!     based on symmetry properties of the data.
-//! @param num_threads number of concurrent threads to use while fitting
+//! @param num_threads Number of concurrent threads to use while fitting
 //!     copulas for different families; never uses more than the number
-//!     returned by `std::thread::hardware_concurrency()`.
+//!     of concurrent threads supported by the implementation.
 inline FitControlsBicop::FitControlsBicop(std::vector<BicopFamily> family_set,
                                           std::string parametric_method,
                                           std::string nonparametric_method,
@@ -52,8 +52,8 @@ inline FitControlsBicop::FitControlsBicop(std::vector<BicopFamily> family_set,
   set_num_threads(num_threads);
 }
 
-//! @brief creates default controls except for the parameteric method.
-//! @param parametric_method the fit method for parametric families;
+//! @brief Instantiates default controls except for the parameteric method.
+//! @param parametric_method The fit method for parametric families;
 //!     possible choices: `"mle"`, `"itau"`.
 inline FitControlsBicop::FitControlsBicop(std::string parametric_method)
   : FitControlsBicop()
@@ -61,11 +61,11 @@ inline FitControlsBicop::FitControlsBicop(std::string parametric_method)
   set_parametric_method(parametric_method);
 }
 
-//! @brief creates default controls except for the nonparametric method.
-//! @param nonparametric_method the fit method for the local-likelihood
+//! @brief Instantiates default controls except for the nonparametric method.
+//! @param nonparametric_method The fit method for the local-likelihood
 //!     nonparametric family (TLLs); possible choices: `"constant"`,
 //!     `"linear"`, `"quadratic"`.
-//! @param nonparametric_mult a factor with which the smoothing parameters
+//! @param nonparametric_mult A factor with which the smoothing parameters
 //!     are multiplied.
 inline FitControlsBicop::FitControlsBicop(std::string nonparametric_method,
                                           double nonparametric_mult)
@@ -189,14 +189,14 @@ FitControlsBicop::get_psi0() const
   return psi0_;
 }
 
-//! sets the family set.
+//! Sets the family set.
 inline void
 FitControlsBicop::set_family_set(std::vector<BicopFamily> family_set)
 {
   family_set_ = family_set;
 }
 
-//! sets the parametric method.
+//! Sets the parametric method.
 inline void
 FitControlsBicop::set_parametric_method(std::string parametric_method)
 {
@@ -204,7 +204,7 @@ FitControlsBicop::set_parametric_method(std::string parametric_method)
   parametric_method_ = parametric_method;
 }
 
-//! sets the nonparmetric method.
+//! Sets the nonparmetric method.
 inline void
 FitControlsBicop::set_nonparametric_method(std::string nonparametric_method)
 {
@@ -212,7 +212,7 @@ FitControlsBicop::set_nonparametric_method(std::string nonparametric_method)
   nonparametric_method_ = nonparametric_method;
 }
 
-//! sets the nonparametric multiplier.
+//! Sets the nonparametric multiplier.
 inline void
 FitControlsBicop::set_nonparametric_mult(double nonparametric_mult)
 {
@@ -220,7 +220,7 @@ FitControlsBicop::set_nonparametric_mult(double nonparametric_mult)
   nonparametric_mult_ = nonparametric_mult;
 }
 
-//! sets the selection criterion
+//! Sets the selection criterion.
 inline void
 FitControlsBicop::set_selection_criterion(std::string selection_criterion)
 {
@@ -228,7 +228,7 @@ FitControlsBicop::set_selection_criterion(std::string selection_criterion)
   selection_criterion_ = selection_criterion;
 }
 
-//! sets the observation weights.
+//! Sets the observation weights.
 inline void
 FitControlsBicop::set_weights(const Eigen::VectorXd& weights)
 {
@@ -236,14 +236,14 @@ FitControlsBicop::set_weights(const Eigen::VectorXd& weights)
   weights_ = weights / weights.sum() * weights.size();
 }
 
-//! sets whether to preselect the families.
+//! Sets whether to preselect the families.
 inline void
 FitControlsBicop::set_preselect_families(bool preselect_families)
 {
   preselect_families_ = preselect_families;
 }
 
-//! sets the prior probability for mBIC.
+//! Sets the prior probability for mBIC.
 inline void
 FitControlsBicop::set_psi0(double psi0)
 {
@@ -251,7 +251,7 @@ FitControlsBicop::set_psi0(double psi0)
   psi0_ = psi0;
 }
 
-//! sets the number of threads.
+//! Sets the number of threads.
 inline void
 FitControlsBicop::set_num_threads(size_t num_threads)
 {
@@ -272,4 +272,51 @@ FitControlsBicop::process_num_threads(size_t num_threads)
   return num_threads;
 }
 //! @}
+
+//! @brief Summarizes the controls into a string (can be used for printing).
+inline std::string
+FitControlsBicop::str() const
+{
+  return str_internal();
+}
+
+inline std::string
+FitControlsBicop::str_internal(bool print_threads) const
+{
+  std::stringstream controls_str;
+
+  controls_str << "Family set: ";
+  auto family_set = get_family_set();
+  for (size_t j = 0; j < family_set.size(); j++) {
+    if (j > 0) {
+      controls_str << ", ";
+    }
+    controls_str << get_family_name(family_set[j]);
+  }
+  controls_str << std::endl;
+
+  controls_str << "Parametric method: " << get_parametric_method() << std::endl;
+  controls_str << "Nonparametric method: " << get_nonparametric_method()
+               << std::endl;
+  controls_str << "Nonparametric multiplier: " << get_nonparametric_mult()
+               << std::endl;
+  controls_str << "Weights: "
+               << static_cast<std::string>(get_weights().size() == 0 ? "no"
+                                                                     : "yes")
+               << std::endl;
+  controls_str << "Selection criterion: " << get_selection_criterion()
+               << std::endl;
+  controls_str << "Preselect families: "
+               << static_cast<std::string>(get_preselect_families() ? "yes"
+                                                                    : "no")
+               << std::endl;
+  controls_str << "mBIC prior probability: " << get_psi0() << std::endl;
+  if (print_threads) {
+    controls_str << "Number of threads: "
+                 << (get_num_threads() == 0 ? 1 : get_num_threads())
+                 << std::endl;
+  }
+  return controls_str.str().c_str();
+}
+
 }

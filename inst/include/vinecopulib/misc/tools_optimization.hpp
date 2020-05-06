@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -12,7 +12,7 @@ namespace vinecopulib {
 
 namespace tools_optimization {
 
-//! @brief A class for the controls to Bobyqa
+//! @brief A class for the controls to Bobyqa.
 class BobyqaControls
 {
 public:

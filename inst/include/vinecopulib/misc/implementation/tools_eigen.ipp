@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -14,7 +14,7 @@ namespace vinecopulib {
 namespace tools_eigen {
 
 //! remove rows of a matrix which contain nan values
-//! @param x the matrix.
+//! @param x The matrix.
 inline void
 remove_nans(Eigen::MatrixXd& x)
 {
@@ -29,8 +29,8 @@ remove_nans(Eigen::MatrixXd& x)
 }
 
 //! remove rows of a matrix which contain nan values or have zero weight
-//! @param x the matrix.
-//! @param a vector of weights that is either empty or whose size is equal to
+//! @param x The matrix.
+//! @param a Vector of weights that is either empty or whose size is equal to
 //!   the number of columns of x.
 inline void
 remove_nans(Eigen::MatrixXd& x, Eigen::VectorXd& weights)
@@ -60,9 +60,9 @@ remove_nans(Eigen::MatrixXd& x, Eigen::VectorXd& weights)
 }
 
 //! trims all elements in the matrix to the interval `[lower, upper]`.
-//! @param x data matrix.
-//! @param lower lower bound of the interval.
-//! @param upper upper bound of the interval.
+//! @param x Data matrix.
+//! @param lower Lower bound of the interval.
+//! @param upper Upper bound of the interval.
 inline void
 trim(Eigen::MatrixXd& x, const double& lower, const double& upper)
 {
@@ -76,9 +76,9 @@ trim(Eigen::MatrixXd& x, const double& lower, const double& upper)
 }
 
 //! trims all elements in the matrix to the interval `[lower, upper]`.
-//! @param x data matrix.
-//! @param lower lower bound of the interval.
-//! @param upper upper bound of the interval.
+//! @param x Data matrix.
+//! @param lower Lower bound of the interval.
+//! @param upper Upper bound of the interval.
 inline void
 trim(Eigen::VectorXd& x, const double& lower, const double& upper)
 {
@@ -92,7 +92,7 @@ trim(Eigen::VectorXd& x, const double& lower, const double& upper)
 }
 
 //! check if all elements are contained in the unit cube.
-//! @param u copula data.
+//! @param u Copula data.
 //! @return `true` if all data lie in the unit cube; throws an error otherwise.
 inline bool
 check_if_in_unit_cube(const Eigen::MatrixXd& u)
@@ -105,7 +105,7 @@ check_if_in_unit_cube(const Eigen::MatrixXd& u)
 }
 
 //! swap the columns of a two-column matrix
-//! @param u the matrix.
+//! @param u The matrix.
 //! @return a new matrix v with `v.col(0) = u.col(1)`, `v.col(1) = u.col(0)`.
 inline Eigen::MatrixXd
 swap_cols(Eigen::MatrixXd u)
@@ -127,11 +127,11 @@ unique(const Eigen::VectorXd& x)
 //! computes the inverse \f$ f^{-1} \f$ of a function \f$ f \f$ by the
 //! bisection method.
 //!
-//! @param x evaluation points.
-//! @param f the function to invert.
-//! @param lb lower bound.
-//! @param ub upper bound.
-//! @param n_iter the number of iterations for the bisection (defaults to 35,
+//! @param x Evaluation points.
+//! @param f The function to invert.
+//! @param lb Lower bound.
+//! @param ub Upper bound.
+//! @param n_iter The number of iterations for the bisection (defaults to 35,
 //! guaranteeing an accuracy of 0.5^35 ~= 6e-11).
 //!
 //! @return \f$ f^{-1}(x) \f$.
@@ -167,7 +167,7 @@ invert_f(const Eigen::VectorXd& x,
 //! expand a vector into a matrix with two columns where each row
 //! contains one combination of the vector elements
 //!
-//! @param grid_points the vector to expand.
+//! @param grid_points The vector to expand.
 inline Eigen::MatrixXd
 expand_grid(const Eigen::VectorXd& grid_points)
 {
@@ -189,8 +189,8 @@ expand_grid(const Eigen::VectorXd& grid_points)
 //! The function is currently **not safe** and may cause crashes when the
 //! arguments are specified incorrectly.
 //!
-//! @param filename the name of the file to read from.
-//! @param max_buffer_size the maximal buffer size.
+//! @param filename The name of the file to read from.
+//! @param max_buffer_size The maximal buffer size.
 inline Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>
 read_matxs(const char* filename, int max_buffer_size)
 {
@@ -205,8 +205,8 @@ read_matxs(const char* filename, int max_buffer_size)
 //! The function is currently **not safe** and may cause crashes when the
 //! arguments are specified incorrectly.
 //!
-//! @param filename the name of the file to read from.
-//! @param max_buffer_size the maximal buffer size.
+//! @param filename The name of the file to read from.
+//! @param max_buffer_size The maximal buffer size.
 inline Eigen::MatrixXd
 read_matxd(const char* filename, int max_buffer_size)
 {

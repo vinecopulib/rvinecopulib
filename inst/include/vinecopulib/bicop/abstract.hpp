@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -12,7 +12,7 @@
 #include <vinecopulib/bicop/family.hpp>
 
 namespace vinecopulib {
-//! @brief An abstract class for bivariate copula families
+//! @brief An abstract class for bivariate copula families.
 //!
 //! This class is used in the implementation underlying the Bicop class.
 //! Users should not use AbstractBicop or derived classes directly, but
@@ -54,7 +54,7 @@ protected:
                    std::string method,
                    double mult,
                    const Eigen::VectorXd& weights) = 0;
-  
+
   virtual double get_npars() = 0;
 
   virtual double parameters_to_tau(const Eigen::MatrixXd& parameters) = 0;
@@ -101,7 +101,7 @@ protected:
 
   // Data members
   BicopFamily family_;
-  double loglik_{NAN};
+  double loglik_{ NAN };
   std::vector<std::string> var_types_{ "c", "c" };
 };
 

@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -18,7 +18,7 @@ namespace tools_serialization {
 
 //! conversion from Eigen::Matrix to boost::property_tree::ptree
 //!
-//! @param matrix the Eigen::Matrix to convert.
+//! @param matrix The Eigen::Matrix to convert.
 //! @return the corresponding boost::property_tree::ptree.
 template<class T>
 inline boost::property_tree::ptree
@@ -43,7 +43,7 @@ matrix_to_ptree(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> matrix)
 
 //! conversion from vinecopulib::TriangularArray to boost::property_tree::ptree
 //!
-//! @param array the vinecopulib::TriangularArray to convert.
+//! @param array The vinecopulib::TriangularArray to convert.
 //! @return the corresponding boost::property_tree::ptree.
 template<class T>
 inline boost::property_tree::ptree
@@ -67,7 +67,7 @@ triangular_array_to_ptree(TriangularArray<T> array)
 
 //! conversion from std::vector to boost::property_tree::ptree
 //!
-//! @param matrix the std::vector to convert.
+//! @param matrix The std::vector to convert.
 //! @return the corresponding boost::property_tree::ptree.
 template<class T>
 inline boost::property_tree::ptree
@@ -85,7 +85,7 @@ vector_to_ptree(std::vector<T> vec)
 
 //! conversion from boost::property_tree::ptree to Eigen::Matrix
 //!
-//! @param iroot the boost::property_tree::ptree to convert.
+//! @param iroot The boost::property_tree::ptree to convert.
 //! @return the corresponding Eigen::Matrix.
 template<typename T>
 inline Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>
@@ -125,7 +125,7 @@ ptree_to_matrix(const boost::property_tree::ptree input)
 
 //! conversion from boost::property_tree::ptree to vinecopulib::TriangularArray
 //!
-//! @param iroot the boost::property_tree::ptree to convert.
+//! @param iroot The boost::property_tree::ptree to convert.
 //! @return the corresponding vinecopulib::TriangularArray
 template<typename T>
 inline TriangularArray<T>
@@ -147,7 +147,7 @@ ptree_to_triangular_array(const boost::property_tree::ptree input)
 
 //! conversion from boost::property_tree::ptree to std::vector
 //!
-//! @param iroot the boost::property_tree::ptree to convert.
+//! @param iroot The boost::property_tree::ptree to convert.
 //! @return the corresponding std::vector.
 template<typename T>
 inline std::vector<T>

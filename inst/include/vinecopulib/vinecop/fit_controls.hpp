@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -19,7 +19,7 @@
 #endif
 
 namespace vinecopulib {
-//! @brief A class for controlling fit of bivariate copula models.
+//! @brief A class for controlling fits of vine copula models.
 //!
 class FitControlsVinecop : public FitControlsBicop
 {
@@ -27,30 +27,32 @@ public:
   // Constructor
   FitControlsVinecop();
 
-  FitControlsVinecop(std::vector<BicopFamily> family_set,
-                     std::string parametric_method = "mle",
-                     std::string nonparametric_method = "quadratic",
-                     double nonparametric_mult = 1.0,
-                     size_t trunc_lvl = std::numeric_limits<size_t>::max(),
-                     std::string tree_criterion = "tau",
-                     double threshold = 0.0,
-                     std::string selection_criterion = "bic",
-                     const Eigen::VectorXd& weights = Eigen::VectorXd(),
-                     double psi0 = 0.9,
-                     bool preselect_families = true,
-                     bool select_trunc_lvl = false,
-                     bool select_threshold = false,
-                     bool show_trace = false,
-                     size_t num_threads = 1);
+  explicit FitControlsVinecop(
+    std::vector<BicopFamily> family_set,
+    std::string parametric_method = "mle",
+    std::string nonparametric_method = "quadratic",
+    double nonparametric_mult = 1.0,
+    size_t trunc_lvl = std::numeric_limits<size_t>::max(),
+    std::string tree_criterion = "tau",
+    double threshold = 0.0,
+    std::string selection_criterion = "bic",
+    const Eigen::VectorXd& weights = Eigen::VectorXd(),
+    double psi0 = 0.9,
+    bool preselect_families = true,
+    bool select_trunc_lvl = false,
+    bool select_threshold = false,
+    bool show_trace = false,
+    size_t num_threads = 1);
 
-  FitControlsVinecop(const FitControlsBicop& controls,
-                     size_t trunc_lvl = std::numeric_limits<size_t>::max(),
-                     std::string tree_criterion = "tau",
-                     double threshold = 0.0,
-                     bool select_trunc_lvl = false,
-                     bool select_threshold = false,
-                     bool show_trace = false,
-                     size_t num_threads = 1);
+  explicit FitControlsVinecop(
+    const FitControlsBicop& controls,
+    size_t trunc_lvl = std::numeric_limits<size_t>::max(),
+    std::string tree_criterion = "tau",
+    double threshold = 0.0,
+    bool select_trunc_lvl = false,
+    bool select_threshold = false,
+    bool show_trace = false,
+    size_t num_threads = 1);
 
   // Getters
   DEPRECATED size_t get_truncation_level() const;
@@ -87,6 +89,9 @@ public:
   void set_select_threshold(bool select_threshold);
 
   void set_fit_controls_bicop(FitControlsBicop controls);
+
+  // Misc
+  std::string str() const;
 
 private:
   size_t trunc_lvl_;

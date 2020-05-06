@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -43,9 +43,9 @@ class TriangularArray
 {
 public:
   TriangularArray() = default;
-  TriangularArray(size_t d);
+  explicit TriangularArray(size_t d);
   TriangularArray(size_t d, size_t trunc_lvl);
-  TriangularArray(const std::vector<std::vector<T>>& rows);
+  explicit TriangularArray(const std::vector<std::vector<T>>& rows);
 
   T& operator()(size_t row, size_t column);
   T operator()(size_t row, size_t column) const;
@@ -63,20 +63,20 @@ private:
   std::vector<std::vector<T>> arr_;
 };
 
-//! @brief construct a triangular array of dimension `d`.
+//! @brief Construct a triangular array of dimension `d`.
 //!
 //! The array has `d-1` columns and `d-1` rows.
-//! @param d the dimension of the underlying vine.
+//! @param d The dimension of the underlying vine.
 template<typename T>
 TriangularArray<T>::TriangularArray(size_t d)
   : TriangularArray(d, d - 1)
 {}
 
-//! @brief construct a truncated triangular array
+//! @brief Construct a truncated triangular array.
 //!
 //! The array has `d-1` columns and `min(trunc_lvl, d-1)` rows.
-//! @param d the dimension of the vine.
-//! @param trunc_lvl the truncation level.
+//! @param d The dimension of the vine.
+//! @param trunc_lvl The truncation level.
 template<typename T>
 TriangularArray<T>::TriangularArray(size_t d, size_t trunc_lvl)
   : d_(d)
@@ -90,11 +90,11 @@ TriangularArray<T>::TriangularArray(size_t d, size_t trunc_lvl)
     arr_[i] = std::vector<T>(d_ - i);
 }
 
-//! @brief construct a truncated triangular array from nested vector.
+//! @brief Construct a truncated triangular array from nested vector.
 //!
 //! An arrax of dimension `d` has `d-1` columns and `min(trunc_lvl, d-1)`
 //! rows.
-//! @param rows a vector of rows; the length of the first row defines
+//! @param rows A vector of rows; the length of the first row defines
 //! the dimension of the triangular array. The number of rows defines
 //! the truncation level.
 template<typename T>
@@ -119,9 +119,9 @@ TriangularArray<T>::TriangularArray(const std::vector<std::vector<T>>& rows)
   arr_ = rows;
 }
 
-//! @brief access one element of the trapezoid (writable).
-//! @param row the row level.
-//! @param column the column in this row.
+//! @brief Access one element of the trapezoid (writable).
+//! @param row The row level.
+//! @param column The column in this row.
 template<typename T>
 T&
 TriangularArray<T>::operator()(size_t row, size_t column)
@@ -131,9 +131,9 @@ TriangularArray<T>::operator()(size_t row, size_t column)
   return arr_[row][column];
 }
 
-//! @brief access one element of the trapezoid (non-writable).
-//! @param row the row level.
-//! @param column the column in this row.
+//! @brief Access one element of the trapezoid (non-writable).
+//! @param row The row level.
+//! @param column The column in this row.
 template<typename T>
 T
 TriangularArray<T>::operator()(size_t row, size_t column) const
@@ -143,10 +143,10 @@ TriangularArray<T>::operator()(size_t row, size_t column) const
   return arr_[row][column];
 }
 
-//! @brief truncates the trapezoid.
+//! @brief Truncates the trapezoid.
 //! If the trapezoid is already truncated at a level
 //! less than `trunc_lvl`, the function does nothing.
-//! @param trunc_lvl the truncation level.
+//! @param trunc_lvl The truncation level.
 template<typename T>
 void
 TriangularArray<T>::truncate(size_t trunc_lvl)
@@ -157,8 +157,8 @@ TriangularArray<T>::truncate(size_t trunc_lvl)
   }
 }
 
-//! @brief equality operator to compare two TriangularArray objects.
-//! @param rhs right-hand-side of the equality operator.
+//! @brief Equality operator to compare two TriangularArray objects.
+//! @param rhs Right-hand-side of the equality operator.
 template<typename T>
 bool
 TriangularArray<T>::operator==(const TriangularArray<T>& rhs) const
@@ -175,7 +175,7 @@ TriangularArray<T>::operator==(const TriangularArray<T>& rhs) const
   return true;
 }
 
-//! get the truncation level of the underlying vine.
+//! Get the truncation level of the underlying vine..
 template<typename T>
 size_t
 TriangularArray<T>::get_trunc_lvl() const
@@ -183,7 +183,7 @@ TriangularArray<T>::get_trunc_lvl() const
   return trunc_lvl_;
 }
 
-//! get the dimension of the underlying vine (the matrix has `d-1` columns and
+//! Get the dimension of the underlying vine (the matrix has `d-1` columns and.
 //! `min(trunv_lvl, d-1)` rows).
 template<typename T>
 size_t
@@ -207,9 +207,9 @@ TriangularArray<T>::str() const
   return str.str();
 }
 
-//! @brief ostream method for TriangularArray, to be used with `std::cout`
-//! @param os an output stream.
-//! @param tri_array n triangular array.
+//! @brief Ostream method for TriangularArray, to be used with `std::cout`.
+//! @param os An output stream.
+//! @param tri_array A triangular array.
 template<typename T>
 std::ostream&
 operator<<(std::ostream& os, const TriangularArray<T>& tri_array)

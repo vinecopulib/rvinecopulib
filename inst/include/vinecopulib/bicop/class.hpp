@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -29,18 +29,18 @@ public:
         const Eigen::MatrixXd& parameters = Eigen::MatrixXd(),
         const std::vector<std::string>& var_types = { "c", "c" });
 
-  Bicop(const Eigen::MatrixXd& data,
-        const FitControlsBicop& controls = FitControlsBicop(),
-        const std::vector<std::string>& var_types = { "c", "c" });
+  explicit Bicop(const Eigen::MatrixXd& data,
+                 const FitControlsBicop& controls = FitControlsBicop(),
+                 const std::vector<std::string>& var_types = { "c", "c" });
 
-  Bicop(const std::string filename);
+  explicit Bicop(const std::string& filename);
 
-  Bicop(const boost::property_tree::ptree input);
+  explicit Bicop(const boost::property_tree::ptree input);
 
   // Serialize
   boost::property_tree::ptree to_ptree() const;
 
-  void to_json(const std::string filename) const;
+  void to_json(const std::string& filename) const;
 
   // Getters and setters
   BicopFamily get_family() const;
