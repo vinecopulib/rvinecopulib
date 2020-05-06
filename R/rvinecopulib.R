@@ -7,7 +7,7 @@
 #' Advantages over 'VineCopula' are a sleeker and more modern API, improved
 #' performances, especially in high dimensions, nonparametric and
 #' multi-parameter families. The 'rvinecopulib' package includes 'vinecopulib'
-#' as header-only C++ library (currently version 0.3.1). Thus users do not need
+#' as header-only C++ library (currently version 0.5.2). Thus users do not need
 #' to install 'vinecopulib' itself in order to use 'rvinecopulib'. Since their
 #' initial releases, 'vinecopulib' is licensed under the MIT License, and
 #' 'rvinecopulib' is licensed under the GNU GPL version 3.
