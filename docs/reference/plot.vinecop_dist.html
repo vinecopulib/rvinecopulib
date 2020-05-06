@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -41,7 +45,6 @@ plot.vinecop_dist plots one or all trees of a given R-vine copula
 model. Edges can be labeled with information about the corresponding
 pair-copula. contour.vinecop_dist produces a matrix of contour plots
 (using plot.bicop)." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -59,7 +62,7 @@ pair-copula. contour.vinecop_dist produces a matrix of contour plots
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -73,7 +76,7 @@ pair-copula. contour.vinecop_dist produces a matrix of contour plots
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2.1.0</span>
       </span>
     </div>
 
@@ -93,7 +96,12 @@ pair-copula. contour.vinecop_dist produces a matrix of contour plots
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/vinecopulib/rvinecopulib/">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -108,7 +116,7 @@ pair-copula. contour.vinecop_dist produces a matrix of contour plots
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Plotting <code>vinecop_dist</code> and <code>vinecop</code> objects.</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/vinecopulib/rvinecopulib/blob/master/R/vinecop_plot.R'><code>R/vinecop_plot.R</code></a></small>
     <div class="hidden name"><code>plot.vinecop_dist.Rd</code></div>
     </div>
 
@@ -121,10 +129,10 @@ pair-copula. <code>contour.vinecop_dist</code> produces a matrix of contour plot
     </div>
 
     <pre class="usage"><span class='co'># S3 method for vinecop_dist</span>
-<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>x</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>var_names</span> <span class='kw'>=</span> <span class='st'>"ignore"</span>, <span class='kw'>edge_labels</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>x</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>var_names</span> <span class='kw'>=</span> <span class='st'>"ignore"</span>, <span class='kw'>edge_labels</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
 
 <span class='co'># S3 method for vinecop</span>
-<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>x</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>var_names</span> <span class='kw'>=</span> <span class='st'>"ignore"</span>, <span class='kw'>edge_labels</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>x</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>var_names</span> <span class='kw'>=</span> <span class='st'>"ignore"</span>, <span class='kw'>edge_labels</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
 
 <span class='co'># S3 method for vinecop_dist</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span>(<span class='no'>x</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='st'>"ALL"</span>, <span class='kw'>cex.nums</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>...</span>)
@@ -149,13 +157,13 @@ plotted.</p></td>
       <td><p>integer; specifies how to make use of variable names:</p><ul>
 <li><p>`"ignore"`` = variable names are ignored,</p></li>
 <li><p>`"use"`` = variable names are used to annotate vertices,</p></li>
-<li><p>`"legend"`` = uses numbers in plot and adds a legend for variable names.</p></li>
+<li><p>`"legend"`` = uses numbers in plot and adds a legend for variable names,</p></li>
+<li><p>`"hide"`` = no numbers or names, just the node.</p></li>
 </ul></td>
     </tr>
     <tr>
       <th>edge_labels</th>
-      <td><p>character; either a vector of edge labels or one of the
-following:</p><ul>
+      <td><p>character; options are:</p><ul>
 <li><p><code>"family"</code> = pair-copula family (see <code>[bicop_dist()]</code>),</p></li>
 <li><p>`"tau"`` = pair-copula Kendall's tau</p></li>
 <li><p>`"family_tau"`` = pair-copula family and Kendall's tau,</p></li>
@@ -190,7 +198,7 @@ be <code>1.25/length(tree)*(d - min(tree))</code> times the plot width.</p>
 <span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vinecop.html'>vinecop</a></span>(<span class='no'>u</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"indep"</span>)
 
 <span class='co'># plot</span>
-<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>vc</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>2</span>))</div><div class='img'><img src='plot.vinecop_dist-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>vc</span>, <span class='kw'>edge_labels</span> <span class='kw'>=</span> <span class='st'>"pair"</span>)</div><div class='img'><img src='plot.vinecop_dist-2.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>vc</span>, <span class='kw'>tree</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>2</span>))</div><div class='img'><img src='plot.vinecop_dist-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>vc</span>, <span class='kw'>edge_labels</span> <span class='kw'>=</span> <span class='st'>"pair"</span>)</div><div class='img'><img src='plot.vinecop_dist-2.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># set up another vine copula model</span>
 <span class='no'>pcs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span>(<span class='fl'>1</span>:<span class='fl'>3</span>, <span class='kw'>function</span>(<span class='no'>j</span>) <span class='co'># pair-copulas in tree j</span>
   <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span>(<span class='fu'><a href='https://rdrr.io/r/stats/Uniform.html'>runif</a></span>(<span class='fl'>4</span> - <span class='no'>j</span>), <span class='kw'>function</span>(<span class='no'>cor</span>) <span class='fu'><a href='bicop_dist.html'>bicop_dist</a></span>(<span class='st'>"gaussian"</span>, <span class='fl'>0</span>, <span class='no'>cor</span>)))
@@ -200,17 +208,10 @@ be <code>1.25/length(tree)*(d - min(tree))</code> times the plot width.</p>
 <span class='co'># contour plot</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span>(<span class='no'>vc</span>)</div><div class='img'><img src='plot.vinecop_dist-3.png' alt='' width='700' height='433' /></div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#details">Details</a></li>
-      <li><a href="#see-also">See also</a></li>
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
-    <h2>Author</h2>
-    <p>Thomas Nagler, Thibault Vatter</p>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -221,7 +222,7 @@ be <code>1.25/length(tree)*(d - min(tree))</code> times the plot width.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>
