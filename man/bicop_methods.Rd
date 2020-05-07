@@ -81,7 +81,7 @@ When inverting H-functions, the inverse is then taken with respect to the
 other variable, that is \code{v} when \code{cond_var = 1} and \code{u} when \code{cond_var = 2}.
 \subsection{Discrete variables}{
 
-When at least one variable is discrete, mote than two columns are required
+When at least one variable is discrete, more than two columns are required
 for \code{u}: the first \eqn{n \times 2} block contains realizations of
 \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
 realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a

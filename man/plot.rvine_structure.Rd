@@ -5,20 +5,14 @@
 \alias{plot.rvine_matrix}
 \title{Plotting R-vine structures}
 \usage{
-\method{plot}{rvine_structure}(x, tree = 1, edge_labels = FALSE, ...)
+\method{plot}{rvine_structure}(x, ...)
 
-\method{plot}{rvine_matrix}(x, tree = 1, edge_labels = FALSE, ...)
+\method{plot}{rvine_matrix}(x, ...)
 }
 \arguments{
-\item{x}{an \code{rvine_structure} or \code{rvine_matrixc} object.}
+\item{x}{an \code{rvine_structure} or \code{rvine_matrix} object.}
 
-\item{tree}{\code{"ALL"} or integer vector; specifies which trees are
-plotted.}
-
-\item{edge_labels}{either \code{TRUE} or \code{FALSE}; if \code{TRUE} the edge index is
-added to the plot.}
-
-\item{...}{unused.}
+\item{...}{passed to \code{plot.vinecop_dist()}.}
 }
 \description{
 Plot one or all trees of an R-vine structure.

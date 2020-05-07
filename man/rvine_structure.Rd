@@ -58,7 +58,7 @@ tree \tab  edge \tab pair-copulas   \cr
 0    \tab  0    \tab \verb{(1, 4)}       \cr
 \tab  1    \tab \verb{(2, 4)}       \cr
 \tab  2    \tab \verb{(3, 4)}       \cr
-1    \tab  0    \tab \verb{(1, 3; 2)}    \cr
+1    \tab  0    \tab \verb{(1, 3; 4)}    \cr
 \tab  1    \tab \verb{(2, 3; 4)}    \cr
 2    \tab  0    \tab \verb{(1, 2; 3, 4)}
 }
@@ -158,9 +158,6 @@ dvine <- dvine_structure(c(1, 4, 2, 3, 5))
 dvine
 plot(dvine)
 
-cvine <- cvine_structure(1:5)
-cvine
-plot(cvine)
 }
 \seealso{
 \code{\link[=as_rvine_structure]{as_rvine_structure()}}, \code{\link[=as_rvine_matrix]{as_rvine_matrix()}},

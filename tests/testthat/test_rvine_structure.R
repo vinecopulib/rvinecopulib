@@ -20,3 +20,30 @@ test_that("print/dim generics work", {
   expect_equivalent(dim(rvs), c(4, 3))
   expect_equivalent(dim(rvm), c(4, 3))
 })
+
+test_that("C- and D-vine structures work", {
+  cv <- cvine_structure(1:6, trunc_lvl = 4)
+  expect_equivalent(dim(cv), c(6, 4))
+  expect_equivalent(cv$order, 1:6)
+  expect_identical(cv, cvine_structure(6, 4))
+
+  dv <- dvine_structure(1:6, trunc_lvl = 4)
+  expect_equivalent(dim(dv), c(6, 4))
+  expect_equivalent(dv$order, 1:6)
+  expect_identical(dv, dvine_structure(6, 4))
+})
+
+test_that("plot functions work", {
+  struct <- as_rvine_structure(mat)
+  mat <- rvine_matrix(mat)
+  vc <- vinecop_dist(list(replicate(3, bicop_dist(), simplify = FALSE)), struct)
+  p <- plot(vc)
+  ps <- plot(struct)
+  pm <- plot(mat)
+  p$plot_env <- NULL
+  ps$plot_env <- NULL
+  pm$plot_env <- NULL
+  expect_equivalent(p, ps)
+  expect_equivalent(p, pm)
+})
+

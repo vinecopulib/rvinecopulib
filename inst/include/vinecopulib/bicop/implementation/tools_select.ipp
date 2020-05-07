@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -12,7 +12,7 @@ namespace vinecopulib {
 namespace tools_select {
 //! returns only those rotations that yield the appropriate
 //! association direction.
-//! @param data captured by reference to avoid data copies;
+//! @param data Captured by reference to avoid data copies;
 //!     should NOT be modified though.
 inline std::vector<Bicop>
 create_candidate_bicops(const Eigen::MatrixXd& data,
@@ -130,17 +130,17 @@ get_c1c2(const Eigen::MatrixXd& data,
   double c1, c2;
   Eigen::VectorXd w;
 
-  w = (weights.size() > 0) ? weights.head(count1 - 1) : weights;
   if (count1 == 0) {
     c1 = 0.0;
   } else {
+    w = (weights.size() > 0) ? weights.head(count1 - 1) : weights;
     c1 = wdm::wdm(z1.block(0, 0, count1 - 1, 2), "cor", w)(0, 1);
   }
 
-  w = (weights.size() > 0) ? weights.head(count2 - 1) : weights;
   if (count2 == 0) {
     c2 = 0.0;
   } else {
+    w = (weights.size() > 0) ? weights.head(count2 - 1) : weights;
     c2 = wdm::wdm(z2.block(0, 0, count2 - 1, 2), "cor", w)(0, 1);
   }
 

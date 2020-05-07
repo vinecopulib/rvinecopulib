@@ -15,7 +15,7 @@
 #'   \code{"exp"} with standard exponential margins, and  \code{"flexp"} with
 #'   flipped exponential margins. Default is \code{"norm"} for \code{type =
 #'   "contour"}, and \code{"unif"} for \code{type = "surface"}.
-#' @param size integer; the plot is based on values on a \eqn{size x size} grid,
+#' @param size integer; the plot is based on values on a `size x size` grid,
 #'   default is 100.
 #' @param \dots optional arguments passed to \code{\link{contour}} or
 #'   \code{\link{wireframe}}.

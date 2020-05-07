@@ -22,7 +22,7 @@
 #' 0    \tab  0    \tab `(1, 4)`       \cr
 #'      \tab  1    \tab `(2, 4)`       \cr
 #'      \tab  2    \tab `(3, 4)`       \cr
-#' 1    \tab  0    \tab `(1, 3; 2)`    \cr
+#' 1    \tab  0    \tab `(1, 3; 4)`    \cr
 #'      \tab  1    \tab `(2, 3; 4)`    \cr
 #' 2    \tab  0    \tab `(1, 2; 3, 4)`
 #' }
@@ -192,26 +192,19 @@ rvine_structure <- function(order, struct_array = list(), is_natural_order = FAL
 #'
 #' Plot one or all trees of an R-vine structure.
 #'
-#' @param x an `rvine_structure` or `rvine_matrixc` object.
-#' @param tree `"ALL"` or integer vector; specifies which trees are
-#' plotted.
-#' @param edge_labels either `TRUE` or `FALSE`; if `TRUE` the edge index is
-#'   added to the plot.
-#' @param ... unused.
+#' @param x an `rvine_structure` or `rvine_matrix` object.
+#' @param ... passed to `plot.vinecop_dist()`.
 #' @aliases plot.rvine_matrix
 #' @export
 #' @examples
 #' plot(cvine_structure(1:5))
 #' plot(rvine_structure_sim(5))
-plot.rvine_structure <- function(x, tree = 1, edge_labels = FALSE, ...) {
-  assert_that(is.flag(edge_labels))
+plot.rvine_structure <- function(x, ...) {
   d <- dim(x)[1]
   trunc_lvl <- dim(x)[2]
   pcs <- lapply(seq_len(min(d - 1, trunc_lvl)),
                 function(i) lapply(seq_len(d - i), function(j) bicop_dist()))
-  plot(vinecop_dist(pcs, x),
-       tree = tree,
-       edge_labels = if (edge_labels) "pair" else NULL)
+  plot.vinecop_dist(vinecop_dist(pcs, x), ...)
 }
 
 #' @rdname plot.rvine_structure
@@ -219,18 +212,17 @@ plot.rvine_structure <- function(x, tree = 1, edge_labels = FALSE, ...) {
 #' mat <- rbind(c(1, 1, 1), c(2, 2, 0), c(3, 0, 0))
 #' plot(rvine_matrix(mat))
 #' plot(rvine_matrix_sim(5))
-plot.rvine_matrix <- function(x, tree = 1, edge_labels = FALSE, ...) {
-  plot(as_rvine_structure(x), tree = tree, edge_labels = edge_labels)
+#' @export
+plot.rvine_matrix <- function(x, ...) {
+  plot(as_rvine_structure(x), ...)
 }
 
 #' @rdname rvine_structure
 #' @param trunc_lvl the truncation level
 #' @export
-#' @examples
-#' cvine <- cvine_structure(1:5)
-#' cvine
-#' plot(cvine)
 cvine_structure <- function(order, trunc_lvl = Inf) {
+  if (is.count(order))
+    order <- seq_len(order)
   assert_that(is.vector(order) && all(sapply(order, is.count)),
               msg = "Order should be a vector of positive integers.")
   assert_that(is.scalar(trunc_lvl) & is.number(trunc_lvl))
@@ -255,6 +247,8 @@ cvine_structure <- function(order, trunc_lvl = Inf) {
 #' @rdname rvine_structure
 #' @export
 dvine_structure <- function(order, trunc_lvl = Inf) {
+  if (is.count(order))
+    order <- seq_len(order)
   assert_that(is.vector(order) && all(sapply(order, is.count)),
               msg = "Order should be a vector of positive integers.")
   assert_that(is.scalar(trunc_lvl) & is.number(trunc_lvl))

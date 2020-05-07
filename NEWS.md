@@ -1,3 +1,28 @@
+# rvinecopulib 0.5.2.1.0 (May 7, 2020)
+
+Release following the updates of vinecopulib to 0.5.2, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+NEW FEATURES
+
+  * single-integer constructors for `dvine_structure()`/`cvine_structure()`. (#203)
+
+  * add `var_names = "hide"` option in `plot.vinecop_dist()`. (#203)
+
+  * add function `plot.rvine_matrix()`. (#203)
+
+BUG FIXES
+
+  * fix bug for (negative) tau to parameter conversion for Frank family. (#207)
+
+  * fix rare error `rvine_structure_sim()/rvine_matrix_sim()` 
+
+  * safeguard `"tll"` family against comonotonic data. 
+
+  * stabilize archimedean h-functions near independence.
+
+
 # rvinecopulib 0.5.1.1.0 (November 25, 2019)
 
 Release following the updates of vinecopulib to 0.5.1, see 

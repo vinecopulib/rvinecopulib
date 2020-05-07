@@ -1,8 +1,7 @@
 rvinecopulib
 ==========
 
-[![Build status Linux](https://travis-ci.org/vinecopulib/rvinecopulib.svg?branch=master)](https://travis-ci.org/vinecopulib/rvinecopulib)
-[![Windows Build status](http://ci.appveyor.com/api/projects/status/github/vinecopulib/rvinecopulib?svg=true)](https://ci.appveyor.com/project/vinecopulib/rvinecopulib)
+[![R build status](https://github.com/vinecopulib/rvinecopulib/workflows/R-CMD-check/badge.svg)](https://github.com/vinecopulib/rvinecopulib)
 [![Coverage Status](https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/master.svg)](https://codecov.io/github/vinecopulib/rvinecopulib?branch=master)
 [![CRAN version](http://www.r-pkg.org/badges/version/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib) 
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib)
@@ -35,12 +34,14 @@ for a detailed description of all functions.
 Table of contents
 -----------------
 
-- [How to install](#how-to-install)
-- [Package overview](#package-overview)
-	- [Bivariate copula modeling: bicop_dist and bicop](#bivariate-copula-modeling-bicop_dist-and-bicop)
-	- [Vine copula modeling: vinecop_dist and vinecop](#vine-copula-modeling-vinecop_dist-and-vinecop)
-	- [Bivariate copula families](#bivariate-copula-families)
-- [References](#references)
+- [rvinecopulib](#rvinecopulib)
+  - [Table of contents](#table-of-contents)
+  - [How to install](#how-to-install)
+  - [Package overview](#package-overview)
+    - [Bivariate copula modeling: bicop_dist and bicop](#bivariate-copula-modeling-bicopdist-and-bicop)
+    - [Vine copula modeling: vinecop_dist and vinecop](#vine-copula-modeling-vinecopdist-and-vinecop)
+    - [Bivariate copula families](#bivariate-copula-families)
+  - [References](#references)
 
 ------------------------------------------------------------------------
 
@@ -153,20 +154,20 @@ range of dependence patterns. For Archimedean copula families,
 rotated versions are included to cover negative dependence as well. 
 Additionally, nonparametric families are also supported.
 
-| type          | name                  | name in R     |
-|---------------|-----------------------|---------------|
-| -             | Independence          | "indep"       |
-| Elliptical    | Gaussian              | "gaussian"    |
-| "             | Student t             | "student"     |
-| Archimedean   | Clayton               | "clayton"     |
-| "             | Gumbel                | "gumbel"      |
-| "             | Frank                 | "frank"       |
-| "             | Joe                   | "joe"         |
-| "             | Clayton-Gumbel (BB1)  | "bb1"         |
-| "             | Joe-Gumbel (BB6)      | "bb6"         |
-| "             | Joe-Clayton (BB7)     | "bb7"         |
-| "             | Joe-Frank (BB8)       | "bb8"         |
-| Nonparametric | Transformation kernel | "tll"         |
+| type          | name                  | name in R  |
+| ------------- | --------------------- | ---------- |
+| -             | Independence          | "indep"    |
+| Elliptical    | Gaussian              | "gaussian" |
+| "             | Student t             | "student"  |
+| Archimedean   | Clayton               | "clayton"  |
+| "             | Gumbel                | "gumbel"   |
+| "             | Frank                 | "frank"    |
+| "             | Joe                   | "joe"      |
+| "             | Clayton-Gumbel (BB1)  | "bb1"      |
+| "             | Joe-Gumbel (BB6)      | "bb6"      |
+| "             | Joe-Clayton (BB7)     | "bb7"      |
+| "             | Joe-Frank (BB8)       | "bb8"      |
+| Nonparametric | Transformation kernel | "tll"      |
 
 Note that several convenience vectors of families are included:
 * `"all"` contains all the families
@@ -185,18 +186,18 @@ Note that several convenience vectors of families are included:
 The following table shows the parameter ranges of bivariate copula families with 
 one or two parameters:
 
-| Copula family                    | `par[1]`        | `par[2]`  |
-|:---------------------------------|:-------------|:-------------|
-| Gaussian                         | `(-1, 1)`    | -            |
-| Student t                        | `(-1, 1)`    | `(2,Inf)`    |
-| Clayton                          | `(0, Inf)`   | -            |
-| Gumbel                           | `[1, Inf)`   | -            |
-| Frank                            | `R \ {0}`    | -            |
-| Joe                              | `(1, Inf)`   | -            |
-| Clayton-Gumbel (BB1)             | `(0, Inf)`   | `[1, Inf)`   |
-| Joe-Gumbel (BB6)                 | `[1 ,Inf)`   | `[1, Inf)`   |
-| Joe-Clayton (BB7)                | `[1, Inf)`   | `(0, Inf)`   |
-| Joe-Frank (BB8)                  | `[1, Inf)`   | `(0, 1]`     |
+| Copula family        | `par[1]`   | `par[2]`   |
+| :------------------- | :--------- | :--------- |
+| Gaussian             | `(-1, 1)`  | -          |
+| Student t            | `(-1, 1)`  | `(2,Inf)`  |
+| Clayton              | `(0, Inf)` | -          |
+| Gumbel               | `[1, Inf)` | -          |
+| Frank                | `R \ {0}`  | -          |
+| Joe                  | `(1, Inf)` | -          |
+| Clayton-Gumbel (BB1) | `(0, Inf)` | `[1, Inf)` |
+| Joe-Gumbel (BB6)     | `[1 ,Inf)` | `[1, Inf)` |
+| Joe-Clayton (BB7)    | `[1, Inf)` | `(0, Inf)` |
+| Joe-Frank (BB8)      | `[1, Inf)` | `(0, 1]`   |
 
 ------------------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -7,16 +7,16 @@
 #include <stdexcept>
 #include <vinecopulib/misc/tools_stl.hpp>
 
-//! @file bicop/implementation/fit_controls.ipp
-//! @brief Fit controls for Bicop class (Implementation)
+//! @file vinecop/implementation/fit_controls.ipp
+//! @brief Fit controls for Vinecop class (Implementation).
 
 //! Tools for bivariate and vine copula modeling
 namespace vinecopulib {
-//! creates default controls for fitting vine copula models.
+//! Instantiates default controls for fitting vine copula models.
 inline FitControlsVinecop::FitControlsVinecop()
   : FitControlsBicop()
 {
-  trunc_lvl_ = std::numeric_limits<int>::max();
+  trunc_lvl_ = std::numeric_limits<size_t>::max();
   threshold_ = 0.0;
   tree_criterion_ = "tau";
   select_trunc_lvl_ = false;
@@ -24,35 +24,35 @@ inline FitControlsVinecop::FitControlsVinecop()
   show_trace_ = false;
 }
 
-//! @brief creates custom controls for fitting vine copula models.
-//! @param family_set the set of copula families to consider (if empty, then
+//! @brief Instantiates custom controls for fitting vine copula models.
+//! @param family_set The set of copula families to consider (if empty, then
 //!     all families are included).
-//! @param parametric_method the fit method for parametric families;
+//! @param parametric_method The fit method for parametric families;
 //!     possible choices: `"mle"`, `"itau"`.
-//! @param nonparametric_method the fit method for the local-likelihood
+//! @param nonparametric_method The fit method for the local-likelihood
 //!     nonparametric family (TLLs); possible choices: `"constant"`,
 //!     `"linear"`, `"quadratic"`.
-//! @param nonparametric_mult a factor with which the smoothing parameters
+//! @param nonparametric_mult A factor with which the smoothing parameters
 //!     are multiplied.
-//! @param trunc_lvl truncation level for truncated vines.
-//! @param tree_criterion the criterion for selecting the maximum spanning
+//! @param trunc_lvl Truncation level for truncated vines.
+//! @param tree_criterion The criterion for selecting the maximum spanning
 //!     tree ("tau", "hoeffd", "rho", and "mcor" implemented so far).
-//! @param threshold for thresholded vines (0 = no threshold).
-//! @param selection_criterion the selection criterion (`"loglik"`, `"aic"`
+//! @param threshold For thresholded vines (0 = no threshold).
+//! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`
 //!     or `"bic"`).
-//! @param weights a vector of weights for the observations.
-//! @param psi0 only for `selection_criterion = "mbic"): prior probability of
+//! @param weights A vector of weights for the observations.
+//! @param psi0 Only for `selection_criterion = "mbic", prior probability of
 //!     non-independence.
-//! @param preselect_families whether to exclude families before fitting
+//! @param preselect_families Whether to exclude families before fitting
 //!     based on symmetry properties of the data.
-//! @param select_trunc_lvl whether the truncation shall be selected
+//! @param select_trunc_lvl Whether the truncation shall be selected
 //!     automatically.
-//! @param select_threshold whether the threshold parameter shall be
+//! @param select_threshold Whether the threshold parameter shall be
 //!     selected automatically.
-//! @param show_trace whether to show a trace of the building progress.
-//! @param num_threads number of concurrent threads to use while fitting
-//!     pair copulas within a tree; never uses more than the number returned
-//!     by `std::thread::hardware_concurrency()`.
+//! @param show_trace Whether to show a trace of the building progress.
+//! @param num_threads Number of concurrent threads to use while fitting
+//!     pair copulas within a tree; never uses more than the number
+//!     of concurrent threads supported by the implementation.
 inline FitControlsVinecop::FitControlsVinecop(
   std::vector<BicopFamily> family_set,
   std::string parametric_method,
@@ -87,18 +87,18 @@ inline FitControlsVinecop::FitControlsVinecop(
   set_num_threads(num_threads);
 }
 
-//! @brief creates custom controls for fitting vine copula models.
-//! @param trunc_lvl truncation level for truncated vines.
-//! @param tree_criterion the criterion for selecting the maximum spanning
+//! @brief Instantiates custom controls for fitting vine copula models.
+//! @param trunc_lvl Truncation level for truncated vines.
+//! @param tree_criterion The criterion for selecting the maximum spanning
 //!     tree ("tau", "hoeffd" and "rho" implemented so far).
-//! @param threshold for thresholded vines (0 = no threshold).
-//! @param show_trace whether to show a trace of the building progress.
-//! @param select_trunc_lvl whether the truncation shall be selected
+//! @param threshold For thresholded vines (0 = no threshold).
+//! @param show_trace Whether to show a trace of the building progress.
+//! @param select_trunc_lvl Whether the truncation shall be selected
 //!     automatically.
-//! @param select_threshold whether the threshold parameter shall be
+//! @param select_threshold Whether the threshold parameter shall be
 //!     selected automatically.
-//! @param controls see FitControlsBicop.
-//! @param num_threads number of concurrent threads to use while fitting
+//! @param controls See FitControlsBicop.
+//! @param num_threads Number of concurrent threads to use while fitting
 //!     pair copulas within a tree; never uses more than the number returned
 //!     by `std::thread::hardware_concurrency()``.
 inline FitControlsVinecop::FitControlsVinecop(const FitControlsBicop& controls,
@@ -151,7 +151,7 @@ FitControlsVinecop::get_trunc_lvl() const
   return trunc_lvl_;
 }
 
-//! sets the truncation level.
+//! Sets the truncation level.
 inline void
 FitControlsVinecop::set_trunc_lvl(size_t trunc_lvl)
 {
@@ -169,7 +169,7 @@ FitControlsVinecop::get_select_trunc_lvl() const
   return select_trunc_lvl_;
 }
 
-//! sets whether to select the truncation level automatically.
+//! Sets whether to select the truncation level automatically.
 inline void
 FitControlsVinecop::set_select_trunc_lvl(bool select_trunc_lvl)
 {
@@ -183,7 +183,7 @@ FitControlsVinecop::get_tree_criterion() const
   return tree_criterion_;
 }
 
-//! sets the criterion for tree selection.
+//! Sets the criterion for tree selection.
 inline void
 FitControlsVinecop::set_tree_criterion(std::string tree_criterion)
 {
@@ -198,7 +198,7 @@ FitControlsVinecop::get_threshold() const
   return threshold_;
 }
 
-//! sets the threshold parameter
+//! Sets the threshold parameter.
 inline void
 FitControlsVinecop::set_threshold(double threshold)
 {
@@ -227,7 +227,7 @@ FitControlsVinecop::get_select_threshold() const
   return select_threshold_;
 }
 
-//! sets whether to select the threshold automatically.
+//! Sets whether to select the threshold automatically.
 inline void
 FitControlsVinecop::set_select_threshold(bool select_threshold)
 {
@@ -240,7 +240,7 @@ FitControlsVinecop::needs_sparse_select() const
   return (select_trunc_lvl_ | select_threshold_);
 }
 
-//! returns the fit controls for bivariate fitting.
+//! Returns the fit controls for bivariate fitting.
 inline FitControlsBicop
 FitControlsVinecop::get_fit_controls_bicop() const
 {
@@ -250,11 +250,12 @@ FitControlsVinecop::get_fit_controls_bicop() const
                                   get_nonparametric_mult(),
                                   get_selection_criterion(),
                                   get_weights(),
+                                  get_psi0(),
                                   get_preselect_families());
   return controls_bicop;
 }
 
-//! sets the fit controls for bivariate fitting.
+//! Sets the fit controls for bivariate fitting.
 inline void
 FitControlsVinecop::set_fit_controls_bicop(FitControlsBicop controls)
 {
@@ -264,4 +265,35 @@ FitControlsVinecop::set_fit_controls_bicop(FitControlsBicop controls)
   set_preselect_families(controls.get_preselect_families());
 }
 //! @}
+
+//! @brief Summarizes the controls into a string (can be used for printing).
+inline std::string
+FitControlsVinecop::str() const
+{
+  std::stringstream controls_str;
+
+  controls_str << str_internal(false);
+  controls_str << "Truncation level: "
+               << (get_trunc_lvl() == std::numeric_limits<size_t>::max()
+                     ? "none (default)"
+                     : std::to_string(get_trunc_lvl()))
+               << std::endl;
+  controls_str << "Tree criterion: " << get_tree_criterion() << std::endl;
+  controls_str << "Threshold: " << get_threshold() << std::endl;
+  controls_str << "Select truncation level: "
+               << static_cast<std::string>(get_select_trunc_lvl() ? "yes"
+                                                                  : "no")
+               << std::endl;
+  controls_str << "Select threshold: "
+               << static_cast<std::string>(get_select_trunc_lvl() ? "yes"
+                                                                  : "no")
+               << std::endl;
+  controls_str << "Show trace: "
+               << static_cast<std::string>(get_show_trace() ? "yes" : "no")
+               << std::endl;
+  controls_str << "Number of threads: "
+               << (get_num_threads() == 0 ? 1 : get_num_threads()) << std::endl;
+  return controls_str.str().c_str();
+}
+
 }

@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -22,11 +22,11 @@ inline Optimizer::Optimizer()
   : controls_(BobyqaControls())
 {}
 
-//! set the optimizer's controls.
+//! Sets the optimizer's controls..
 //!
-//! @param initial_trust_region initial trust region.
-//! @param final_trust_region final trust region.
-//! @param maxeval maximal number of evaluations of the objective.
+//! @param initial_trust_region Initial trust region.
+//! @param final_trust_region Final trust region.
+//! @param maxeval Maximal number of evaluations of the objective.
 inline void
 Optimizer::set_controls(double initial_trust_region,
                         double final_trust_region,
@@ -35,13 +35,13 @@ Optimizer::set_controls(double initial_trust_region,
   controls_ = BobyqaControls(initial_trust_region, final_trust_region, maxeval);
 }
 
-//! @brief solve the maximization problem.
+//! @brief Solve the maximization problem.
 //!
-//! @param initial_parameters of starting values for the optimization
+//! @param initial_parameters Starting values for the optimization
 //!     algorithm.
-//! @param lower_bounds lower bounds for the parameters.
-//! @param upper_bounds upper bounds for the parameters.
-//! @param the objective function to maximize.
+//! @param lower_bounds Lower bounds for the parameters.
+//! @param upper_bounds Upper bounds for the parameters.
+//! @param the Objective function to maximize.
 //! @return the optimal parameters.
 inline Eigen::VectorXd
 Optimizer::optimize(const Eigen::VectorXd& initial_parameters,
@@ -92,14 +92,14 @@ Optimizer::optimize(const Eigen::VectorXd& initial_parameters,
   return optimal_parameters;
 }
 
-//! @brief returns how often the objective function was called.
+//! @brief Returns how often the objective function was called.
 inline size_t
 Optimizer::get_objective_calls() const
 {
   return objective_calls_;
 }
 
-//! @brief returns the objective value at the maximum.
+//! @brief Returns the objective value at the maximum.
 inline double
 Optimizer::get_objective_max() const
 {
@@ -124,7 +124,7 @@ Optimizer::check_parameters_size(const Eigen::VectorXd& initial_parameters,
   }
 }
 
-//! Create controls using the default contructor
+//! Instantiates controls using the default contructor
 //!
 //! The defaults are
 //! ```
@@ -139,11 +139,11 @@ inline BobyqaControls::BobyqaControls()
   maxeval_ = 1000;
 }
 
-//! Create controls by passing the arguments
+//! Instantiates controls by passing the arguments
 //!
-//! @param initial_trust_region initial trust region.
-//! @param final_trust_region final trust region.
-//! @param maxeval maximal number of evaluations of the objective.
+//! @param initial_trust_region Initial trust region.
+//! @param final_trust_region Final trust region.
+//! @param maxeval Maximal number of evaluations of the objective.
 inline BobyqaControls::BobyqaControls(double initial_trust_region,
                                       double final_trust_region,
                                       int maxeval)

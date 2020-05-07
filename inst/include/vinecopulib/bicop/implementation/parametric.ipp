@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -133,7 +133,7 @@ ParBicop::fit(const Eigen::MatrixXd& data,
 }
 
 //! ensures that starting values are sufficiently separated from bounds
-//! @param tau kendall's tau
+//! @param tau Kendall's tau
 inline double
 ParBicop::winsorize_tau(double tau) const
 {
@@ -154,7 +154,7 @@ inline void
 ParBicop::adjust_parameters_bounds(Eigen::MatrixXd& lb,
                                    Eigen::MatrixXd& ub,
                                    const double& tau,
-                                   const std::string method)
+                                   const std::string& method)
 {
   if (method == "itau") {
     // for pseudo mle, we can ignore the first parameter
@@ -178,10 +178,10 @@ ParBicop::adjust_parameters_bounds(Eigen::MatrixXd& lb,
     } else {
       lb = tau_to_parameters(std::max(std::fabs(tau) - 0.1, 1e-10));
       ub = tau_to_parameters(std::min(std::fabs(tau) + 0.1, 0.95));
-  }
-  // make sure that parameter bounds are respected
-  lb = lb2.cwiseMax(lb);
-  ub = ub2.cwiseMin(ub);
+    }
+    // make sure that parameter bounds are respected
+    lb = lb2.cwiseMax(lb);
+    ub = ub2.cwiseMin(ub);
   }
 }
 

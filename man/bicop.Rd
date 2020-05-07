@@ -83,7 +83,7 @@ can be selected automatically from a vector of options.
 \details{
 \subsection{Discrete variables}{
 
-When at least one variable is discrete, mote than two columns are required
+When at least one variable is discrete, more than two columns are required
 for \code{data}: the first \eqn{n \times 2} block contains realizations of
 \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
 realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a

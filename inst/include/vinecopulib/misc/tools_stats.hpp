@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -15,7 +15,7 @@ namespace tools_stats {
 
 //! @brief Density function of the Standard normal distribution.
 //!
-//! @param x evaluation points.
+//! @param x Evaluation points.
 //!
 //! @return An \f$ n \times d \f$ matrix of evaluated densities.
 inline Eigen::MatrixXd
@@ -28,7 +28,7 @@ dnorm(const Eigen::MatrixXd& x)
 
 //! @brief Distribution function of the Standard normal distribution.
 //!
-//! @param x evaluation points.
+//! @param x Evaluation points.
 //!
 //! @return An \f$ n \times d \f$ matrix of evaluated probabilities.
 inline Eigen::MatrixXd
@@ -41,7 +41,7 @@ pnorm(const Eigen::MatrixXd& x)
 
 //! @brief Quantile function of the Standard normal distribution.
 //!
-//! @param x evaluation points.
+//! @param x Evaluation points.
 //!
 //! @return An \f$ n \times d \f$ matrix of evaluated quantiles.
 inline Eigen::MatrixXd
@@ -54,8 +54,8 @@ qnorm(const Eigen::MatrixXd& x)
 
 //! @brief Density function of the Student t distribution.
 //!
-//! @param x evaluation points.
-//! @param nu degrees of freedom parameter.
+//! @param x Evaluation points.
+//! @param nu Degrees of freedom parameter.
 //!
 //! @return An \f$ n \times d \f$ matrix of evaluated densities.
 inline Eigen::MatrixXd
@@ -68,8 +68,8 @@ dt(const Eigen::MatrixXd& x, double nu)
 
 //! @brief Distribution function of the Student t distribution.
 //!
-//! @param x evaluation points.
-//! @param nu degrees of freedom parameter.
+//! @param x Evaluation points.
+//! @param nu Degrees of freedom parameter.
 //!
 //! @return An \f$ n \times d \f$ matrix of evaluated probabilities.
 inline Eigen::MatrixXd
@@ -82,8 +82,8 @@ pt(const Eigen::MatrixXd& x, double nu)
 
 //! @brief Quantile function of the Student t distribution.
 //!
-//! @param x evaluation points.
-//! @param nu degrees of freedom parameter.
+//! @param x Evaluation points.
+//! @param nu Degrees of freedom parameter.
 //!
 //! @return An \f$ n \times d \f$ matrix of evaluated quantiles.
 inline Eigen::MatrixXd

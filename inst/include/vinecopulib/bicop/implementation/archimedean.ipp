@@ -1,4 +1,4 @@
-// Copyright © 2016-2019 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -37,7 +37,7 @@ ArchimedeanBicop::hfunc1_raw(const Eigen::MatrixXd& u)
   auto f = [this](const double& u1, const double& u2) {
     double temp = generator_inv(generator(u1) + generator(u2));
     temp = generator_derivative(u1) / generator_derivative(temp);
-    return std::min(temp, 1.0);
+    return std::isnan(temp) ? u2 : std::min(temp, 1.0);
   };
   return tools_eigen::binaryExpr_or_nan(u, f);
 }

@@ -19,9 +19,9 @@
 #' @param var_names integer; specifies how to make use of variable names:
 #' * `"ignore"`` = variable names are ignored,
 #' * `"use"`` = variable names are used to annotate vertices,
-#' * `"legend"`` = uses numbers in plot and adds a legend for variable names.
-#' @param edge_labels character; either a vector of edge labels or one of the
-#' following:
+#' * `"legend"`` = uses numbers in plot and adds a legend for variable names,
+#' * `"hide"`` = no numbers or names, just the node.
+#' @param edge_labels character; options are:
 #' * `"family"` = pair-copula family (see `[bicop_dist()]`),
 #' * `"tau"`` = pair-copula Kendall's tau
 #' * `"family_tau"`` = pair-copula family and Kendall's tau,
@@ -90,7 +90,7 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
       tree <- seq_len(trunc_lvl)
     }
   }
-  assert_that(in_set(var_names, c("ignore", "use", "legend")))
+  assert_that(in_set(var_names, c("ignore", "use", "legend", "hide")))
   if (!is.null(edge_labels)) {
     assert_that(in_set(edge_labels, c("pair", "tau", "family", "family_tau")))
   }
@@ -105,11 +105,7 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
   }
 
   #### loop through the trees and create graph objects
-  g <- lapply(tree, get_graph,
-    vc = x,
-    edge_labels = edge_labels,
-    var_names = var_names
-  )
+  g <- lapply(tree, get_graph, vc = x, edge_labels = edge_labels)
 
   plots <- vector("list", length(tree))
   name <- NULL # for the CRAN check
@@ -129,12 +125,14 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
     }
     p <- p +
       ggraph::geom_node_point(col = "#56B4E9", size = 3) +
-      ggraph::geom_node_text(ggplot2::aes(label = name),
-        fontface = "bold",
-        repel = TRUE
-      ) +
       ggplot2::theme_void() +
       ggplot2::labs(title = paste0("Tree ", tree[i]))
+    if (var_names != "hide") {
+      p <- p + ggraph::geom_node_text(ggplot2::aes(label = name),
+        fontface = "bold",
+        repel = TRUE
+      )
+    }
     if (var_names == "legend") {
       p <- p + ggplot2::labs(caption = paste(x$names, names,
         sep = " = ",
@@ -157,7 +155,7 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
 plot.vinecop <- plot.vinecop_dist
 
 ## creates a graph object for a tree in a given vinecop_dist
-get_graph <- function(tree, vc, edge_labels, var_names) {
+get_graph <- function(tree, vc, edge_labels) {
   M <- get_matrix(vc)
   d <- dim(vc)[1]
 
