@@ -110,7 +110,7 @@
 #' # we require two types of observations (see Details)
 #' u_disc <- cbind(ppois(x, 1), u[, 2:5], ppois(x - 1, 1))
 #' fit <- vinecop(u_disc, var_types = c("d", rep("c", 4)))
-vinecop <- function(data, var_types = rep("c", ncol(data)), family_set = "all",
+vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
                     structure = NA, par_method = "mle",
                     nonpar_method = "constant", mult = 1, selcrit = "bic",
                     weights = numeric(), psi0 = 0.9, presel = TRUE,
@@ -148,7 +148,7 @@ vinecop <- function(data, var_types = rep("c", ncol(data)), family_set = "all",
 
   ## fit and select copula model
   vinecop <- vinecop_select_cpp(
-    data = data,
+    data = as.matrix(data),
     structure = structure,
     family_set = family_set,
     par_method = par_method,
@@ -195,7 +195,7 @@ vinecop <- function(data, var_types = rep("c", ncol(data)), family_set = "all",
     tree_crit = tree_crit,
     threshold = threshold
   )
-  vinecop$nobs <- nrow(data)
+  vinecop$nobs <- NROW(data)
   vinecop
 }
 

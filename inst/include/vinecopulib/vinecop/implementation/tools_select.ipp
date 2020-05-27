@@ -138,8 +138,8 @@ VinecopSelector::get_rvine_structure() const
 inline std::vector<std::vector<Bicop>>
 VinecopSelector::make_pair_copula_store(size_t d, size_t trunc_lvl)
 {
-  if (d < 2) {
-    throw std::runtime_error("the dimension should be larger than 1");
+  if (d < 1) {
+    throw std::runtime_error("dimension must be be > 0.");
   }
 
   size_t n_trees = std::min(d - 1, trunc_lvl);
