@@ -77,3 +77,13 @@ test_that("partial selection works", {
                        paste(m_old[1, -5], diag(m_old[5:2, ])))
   expect_true(all(paste(diag(m_new[5:2, ]), m_new[1, -5]) %in% tree1_old_edges))
 })
+
+test_that("d = 1 works", {
+  vc <- vinecop(runif(20), structure = rvine_structure(1))
+  vc2 <- vinecop(runif(20))
+  expect_identical(vc, vc2)
+
+  expect_equal(AIC(vc), 0)
+  expect_equal(dim(summary(vc))[1], 0)
+})
+

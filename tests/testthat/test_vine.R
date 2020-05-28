@@ -67,3 +67,9 @@ test_that("weights work", {
   expect_equal(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
 })
+
+test_that("d = 1 works", {
+  vc <- vine(runif(20))
+  expect_equal(dim(summary(vc)$margins)[1], 1)
+  expect_equal(dim(summary(vc)$copula)[1], 0)
+})
