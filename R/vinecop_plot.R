@@ -256,6 +256,10 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
   assert_that((length(tree) == 1 && tree == "ALL") || all(tree <= trunc_lvl),
     msg = "Selected tree does not exist."
   )
+  if (trunc_lvl == 0) {
+    warning("Model contains no pair copulas (trunc_lvl = 0).")
+    return(invisible(NULL))
+  }
 
   if (any(tree == "ALL")) {
     tree <- seq_len(trunc_lvl)

@@ -69,7 +69,8 @@
 #' @export
 dvinecop <- function(u, vinecop, cores = 1) {
   assert_that(inherits(vinecop, "vinecop_dist"))
-  vinecop_pdf_cpp(if_vec_to_matrix(u), vinecop, cores)
+  u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
+  vinecop_pdf_cpp(u, vinecop, cores)
 }
 
 #' @rdname vinecop_methods
@@ -81,7 +82,8 @@ pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
     inherits(vinecop, "vinecop_dist"),
     is.number(n_mc), is.count(cores)
   )
-  vinecop_cdf_cpp(if_vec_to_matrix(u), vinecop, n_mc, cores, get_seeds())
+  u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
+  vinecop_cdf_cpp(as.matrix(u), vinecop, n_mc, cores, get_seeds())
 }
 
 #' @rdname vinecop_methods
@@ -195,7 +197,7 @@ predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4,
     is.number(n_mc),
     is.number(cores), cores > 0
   )
-  newdata <- if_vec_to_matrix(newdata)
+  newdata <- if_vec_to_matrix(newdata, dim(object)[1] == 1)
   switch(
     what,
     "pdf" = vinecop_pdf_cpp(newdata, object, cores),
@@ -263,7 +265,7 @@ mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
     object$loglik,
     sum(log(dvinecop(newdata, object)))
   )
-  -2 * ll + compute_mBICV_penalty(object, psi0)
+  - 2 * ll + compute_mBICV_penalty(object, psi0)
 }
 
 compute_mBICV_penalty <- function(object, psi0) {

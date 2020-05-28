@@ -47,3 +47,18 @@ test_that("plot functions work", {
   expect_equivalent(p, pm)
 })
 
+test_that("d = 1 works", {
+  struct <- rvine_structure(1)
+  expect_length(struct$struct_array, 0)
+  expect_length(struct$order, 1)
+
+  mat <- as_rvine_matrix(struct)
+  expect_equal(unname(dim(mat)), c(1, 0))
+
+  expect_output(print(struct))
+  expect_error(plot(struct))
+
+  expect_silent(dvine_structure(1))
+  expect_silent(cvine_structure(1))
+})
+

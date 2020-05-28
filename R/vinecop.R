@@ -248,7 +248,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
 #' # simulate from the model
 #' pairs(rvinecop(200, vc))
 vinecop_dist <- function(pair_copulas, structure,
-                         var_types = rep("c", length(pair_copulas[[1]]) + 1)) {
+                         var_types = rep("c", dim(structure)[1])) {
   # create object
   vinecop <- structure(
     list(
@@ -260,8 +260,10 @@ vinecop_dist <- function(pair_copulas, structure,
 
   # sanity checks
   assert_that(is.list(pair_copulas), correct_var_types(var_types))
-  if (length(pair_copulas) > length(pair_copulas[[1]])) {
-    stop("'pair_copulas' has more trees than variables.")
+  if (length(pair_copulas) > 0) {
+    if (length(pair_copulas) > length(pair_copulas[[1]])) {
+      stop("'pair_copulas' has more trees than variables.")
+    }
   }
 
   pc_lst <- unlist(pair_copulas, recursive = FALSE)
@@ -275,7 +277,7 @@ vinecop_dist <- function(pair_copulas, structure,
   )
   vinecop$var_types <- var_types
   vinecop_check_cpp(vinecop)
-  vinecop$npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
+  vinecop$npars <- do.call(sum, lapply(pc_lst, function(x) x[["npars"]]))
   vinecop$loglik <- NA
 
   vinecop
