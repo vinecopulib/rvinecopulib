@@ -168,6 +168,7 @@ par_to_ktau <- function(family, rotation, parameters) {
 #' @param tau Kendall's \eqn{\tau}.
 #' @export
 ktau_to_par <- function(family, tau) {
+  assert_that(is.number(tau), !is.na(tau))
   bicop <- args2bicop(family)
   if (!(bicop$family %in% family_set_rotationless)) {
     bicop$rotation <- ifelse(tau > 0, 0, 90)
