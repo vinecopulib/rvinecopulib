@@ -114,7 +114,7 @@
 #' @export
 bicop <- function(data, var_types = c("c", "c"), family_set = "all",
                   par_method = "mle", nonpar_method = "quadratic", mult = 1,
-                  selcrit = "bic", weights = numeric(), psi0 = 0.9,
+                  selcrit = "aic", weights = numeric(), psi0 = 0.9,
                   presel = TRUE, keep_data = FALSE, cores = 1) {
   assert_that(
     is.character(family_set),

@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -53,7 +57,7 @@
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-news">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -67,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2.1.0</span>
       </span>
     </div>
 
@@ -87,7 +91,12 @@
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/vinecopulib/rvinecopulib/">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -101,13 +110,32 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Changelog <small></small></h1>
-      
+      <h1 data-toc-skip>Changelog <small></small></h1>
+      <small>Source: <a href='https://github.com/vinecopulib/rvinecopulib/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="rvinecopulib-0-5-2-1-0-may-7-2020" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.2.1.0">
+<a href="#rvinecopulib-0-5-2-1-0-may-7-2020" class="anchor"></a>rvinecopulib 0.5.2.1.0 (May 7, 2020)<small> Unreleased </small>
+</h1>
+<p>Release following the updates of vinecopulib to 0.5.2, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
+<p>NEW FEATURES</p>
+<ul>
+<li><p>single-integer constructors for <code><a href="../reference/rvine_structure.html">dvine_structure()</a></code>/<code><a href="../reference/rvine_structure.html">cvine_structure()</a></code>. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/203'>#203</a>)</p></li>
+<li><p>add <code>var_names = "hide"</code> option in <code><a href="../reference/plot.vinecop_dist.html">plot.vinecop_dist()</a></code>. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/203'>#203</a>)</p></li>
+<li><p>add function <code><a href="../reference/plot.rvine_structure.html">plot.rvine_matrix()</a></code>. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/203'>#203</a>)</p></li>
+</ul>
+<p>BUG FIXES</p>
+<ul>
+<li><p>fix bug for (negative) tau to parameter conversion for Frank family. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/207'>#207</a>)</p></li>
+<li><p>fix rare error <code>rvine_structure_sim()/rvine_matrix_sim()</code></p></li>
+<li><p>safeguard <code>"tll"</code> family against comonotonic data.</p></li>
+<li><p>stabilize archimedean h-functions near independence.</p></li>
+</ul>
+</div>
     <div id="rvinecopulib-0-5-1-1-0-november-25-2019" class="section level1">
-<h1 class="page-header">
-<a href="#rvinecopulib-0-5-1-1-0-november-25-2019" class="anchor"></a>rvinecopulib 0.5.1.1.0 (November 25, 2019)<small> Unreleased </small>
+<h1 class="page-header" data-toc-text="0.5.1.1.0">
+<a href="#rvinecopulib-0-5-1-1-0-november-25-2019" class="anchor"></a>rvinecopulib 0.5.1.1.0 (November 25, 2019)<small> 2019-11-26 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.5.1, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>.</p>
 <p>BUG FIX</p>
@@ -116,19 +144,19 @@
 </ul>
 </div>
     <div id="rvinecopulib-0-5-0-1-0-november-25-2019" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.5.0.1.0">
 <a href="#rvinecopulib-0-5-0-1-0-november-25-2019" class="anchor"></a>rvinecopulib 0.5.0.1.0 (November 25, 2019)<small> 2019-11-25 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.5.0, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
 <p>NEW FEATURES</p>
 <ul>
-<li><p>modelling discrete variables with bivariate or vine copulas. (#195)</p></li>
-<li><p>selection of partially specified R-vine structures. (#195)</p></li>
-<li><p>convenience classes <code><a href="../reference/rvine_structure.html">dvine_structure()</a></code>/<code><a href="../reference/rvine_structure.html">cvine_structure()</a></code> for D- and C-vine structures. (#195)</p></li>
-<li><p>new criterion for tree selection: <code>"joe"</code> corresponds to -log(1-r^2), where r is the pairwise partial correlation. (#195)</p></li>
-<li><p>random sampling of R-vine structures. (#197)</p></li>
-<li><p>add <code>weights</code> argument to <code><a href="../reference/vine.html">vine()</a></code>. (#188)</p></li>
-<li><p>parallelized fitting of margins in <code><a href="../reference/vine.html">vine()</a></code>. (#198)</p></li>
+<li><p>modelling discrete variables with bivariate or vine copulas. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/195'>#195</a>)</p></li>
+<li><p>selection of partially specified R-vine structures. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/195'>#195</a>)</p></li>
+<li><p>convenience classes <code><a href="../reference/rvine_structure.html">dvine_structure()</a></code>/<code><a href="../reference/rvine_structure.html">cvine_structure()</a></code> for D- and C-vine structures. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/195'>#195</a>)</p></li>
+<li><p>new criterion for tree selection: <code>"joe"</code> corresponds to -log(1-r^2), where r is the pairwise partial correlation. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/195'>#195</a>)</p></li>
+<li><p>random sampling of R-vine structures. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/197'>#197</a>)</p></li>
+<li><p>add <code>weights</code> argument to <code><a href="../reference/vine.html">vine()</a></code>. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/188'>#188</a>)</p></li>
+<li><p>parallelized fitting of margins in <code><a href="../reference/vine.html">vine()</a></code>. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/198'>#198</a>)</p></li>
 </ul>
 <p>API BREAK</p>
 <ul>
@@ -136,76 +164,76 @@
 </ul>
 <p>BUG FIXES AND OTHER IMPROVEMENTS</p>
 <ul>
-<li><p>better support for 0-truncated structures. (#195)</p></li>
-<li><p>ensure consistency of TLL likelihood during and after fit. (#195)</p></li>
-<li><p>fixed order of ranks in <code><a href="../reference/pseudo_obs.html">pseudo_obs(.., ties.method = "first")</a></code>. (#195)</p></li>
-<li><p>safer computation of multivariate normal cdf. (#195)</p></li>
-<li><p>improved memory efficiency. (#195)</p></li>
+<li><p>better support for 0-truncated structures. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/195'>#195</a>)</p></li>
+<li><p>ensure consistency of TLL likelihood during and after fit. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/195'>#195</a>)</p></li>
+<li><p>fixed order of ranks in <code><a href="../reference/pseudo_obs.html">pseudo_obs(.., ties.method = "first")</a></code>. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/195'>#195</a>)</p></li>
+<li><p>safer computation of multivariate normal cdf. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/195'>#195</a>)</p></li>
+<li><p>improved memory efficiency. (<a href='https://github.com/vinecopulib/rvinecopulib/issues/195'>#195</a>)</p></li>
 </ul>
 </div>
     <div id="rvinecopulib-0-3-1-1-0-july-4-2019" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.3.1.1.0">
 <a href="#rvinecopulib-0-3-1-1-0-july-4-2019" class="anchor"></a>rvinecopulib 0.3.1.1.0 (July 4, 2019)<small> 2019-04-19 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.3.2, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
 <p>NEW FEATURES</p>
 <ul>
-<li><p>improved extensibility for packages including on the C++-headers of vinecopulib (#178)</p></li>
-<li><p>new EDA function <code><a href="../reference/pairs_copula_data.html">pairs_copula_data()</a></code> (#181).</p></li>
+<li><p>improved extensibility for packages including on the C++-headers of vinecopulib (<a href='https://github.com/vinecopulib/rvinecopulib/issues/178'>#178</a>)</p></li>
+<li><p>new EDA function <code><a href="../reference/pairs_copula_data.html">pairs_copula_data()</a></code> (<a href='https://github.com/vinecopulib/rvinecopulib/issues/181'>#181</a>).</p></li>
 </ul>
 <p>BUG FIXES</p>
 <ul>
-<li><p>ensure that input and output type of <code><a href="../reference/pseudo_obs.html">pseudo_obs()</a></code> match (#182).</p></li>
-<li><p>fix printing of <code>"tll"</code> family in `summary.vinecop() (#183).</p></li>
+<li><p>ensure that input and output type of <code><a href="../reference/pseudo_obs.html">pseudo_obs()</a></code> match (<a href='https://github.com/vinecopulib/rvinecopulib/issues/182'>#182</a>).</p></li>
+<li><p>fix printing of <code>"tll"</code> family in `summary.vinecop() (<a href='https://github.com/vinecopulib/rvinecopulib/issues/183'>#183</a>).</p></li>
 </ul>
 </div>
     <div id="rvinecopulib-0-3-1-1-0-april-19-2019" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.3.1.1.0">
 <a href="#rvinecopulib-0-3-1-1-0-april-19-2019" class="anchor"></a>rvinecopulib 0.3.1.1.0 (April 19, 2019)<small> 2019-04-19 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.3.1, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
 <p>NEW FEATURES</p>
 <ul>
-<li><p>import vinecopulib 0.3.1 (#171)</p></li>
-<li><p>improve documentation (#168, #170)</p></li>
-<li><p>warning message for wrong family in itau method (#169)</p></li>
-<li><p>refactoring for enhanced extensibility of the class <code>Vinecop</code> (vinecopulib #407)</p></li>
-<li><p>simplify algorithms by reversing definition of natural order (vinecopulib #387)</p></li>
-<li><p>improve selection of truncation level (vinecopulib #373)</p></li>
-<li><p>add truncate methods for <code>TriangularArray</code>, <code>RVineStructure</code> and <code>Vinecop</code> (vinecopulib #372)</p></li>
+<li><p>import vinecopulib 0.3.1 (<a href='https://github.com/vinecopulib/rvinecopulib/issues/171'>#171</a>)</p></li>
+<li><p>improve documentation (<a href='https://github.com/vinecopulib/rvinecopulib/issues/168'>#168</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/170'>#170</a>)</p></li>
+<li><p>warning message for wrong family in itau method (<a href='https://github.com/vinecopulib/rvinecopulib/issues/169'>#169</a>)</p></li>
+<li><p>refactoring for enhanced extensibility of the class <code>Vinecop</code> (vinecopulib <a href='https://github.com/vinecopulib/rvinecopulib/issues/407'>#407</a>)</p></li>
+<li><p>simplify algorithms by reversing definition of natural order (vinecopulib <a href='https://github.com/vinecopulib/rvinecopulib/issues/387'>#387</a>)</p></li>
+<li><p>improve selection of truncation level (vinecopulib <a href='https://github.com/vinecopulib/rvinecopulib/issues/373'>#373</a>)</p></li>
+<li><p>add truncate methods for <code>TriangularArray</code>, <code>RVineStructure</code> and <code>Vinecop</code> (vinecopulib <a href='https://github.com/vinecopulib/rvinecopulib/issues/372'>#372</a>)</p></li>
 </ul>
 <p>BUG FIXES</p>
 <ul>
-<li>don’t strip debug symbols unconditionally on linux (#174)</li>
+<li>don’t strip debug symbols unconditionally on linux (<a href='https://github.com/vinecopulib/rvinecopulib/issues/174'>#174</a>)</li>
 </ul>
 </div>
     <div id="rvinecopulib-0-3-0-1-1-august-22-2018" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.3.0.1.1">
 <a href="#rvinecopulib-0-3-0-1-1-august-22-2018" class="anchor"></a>rvinecopulib 0.3.0.1.1 (August 22, 2018)<small> 2018-08-22 </small>
 </h1>
 <p>BUG FIXES</p>
 <ul>
-<li><p>fix non-portable use of <code><a href="https://rdrr.io/r/base/Log.html">log()</a></code> in C++ code (#147).</p></li>
-<li><p>remove parallelized unit test to avoid segfault on Solaris (#147).</p></li>
+<li><p>fix non-portable use of <code><a href="https://rdrr.io/r/base/Log.html">log()</a></code> in C++ code (<a href='https://github.com/vinecopulib/rvinecopulib/issues/147'>#147</a>).</p></li>
+<li><p>remove parallelized unit test to avoid segfault on Solaris (<a href='https://github.com/vinecopulib/rvinecopulib/issues/147'>#147</a>).</p></li>
 </ul>
 </div>
     <div id="rvinecopulib-0-3-0-1-0-august-9-2018" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.3.0.1.0">
 <a href="#rvinecopulib-0-3-0-1-0-august-9-2018" class="anchor"></a>rvinecopulib 0.3.0.1.0 (August 9, 2018)<small> 2018-08-09 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.3.0, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
 <p>NEW FEATURES</p>
 <ul>
-<li><p>new generic <code><a href="../reference/truncate_model.html">truncate_model()</a></code> to truncated vine structures and models (#144).</p></li>
-<li><p>new functions <code><a href="../reference/rosenblatt.html">rosenblatt()</a></code> and <code><a href="../reference/rosenblatt.html">inverse_rosenblatt()</a></code> for computing the (inverse) Rosenblatt transformation (#142).</p></li>
+<li><p>new generic <code><a href="../reference/truncate_model.html">truncate_model()</a></code> to truncated vine structures and models (<a href='https://github.com/vinecopulib/rvinecopulib/issues/144'>#144</a>).</p></li>
+<li><p>new functions <code><a href="../reference/rosenblatt.html">rosenblatt()</a></code> and <code><a href="../reference/rosenblatt.html">inverse_rosenblatt()</a></code> for computing the (inverse) Rosenblatt transformation (<a href='https://github.com/vinecopulib/rvinecopulib/issues/142'>#142</a>).</p></li>
 <li><p>faster algorithms for nonparametric copulas based on bilinear interpolation.</p></li>
-<li><p>refactor vine structures and related algorithms with triangular arrays to improve efficiency of truncated models (#136).</p></li>
-<li><p>new classes <code>rvine_structure</code> and <code>rvine_matrix</code> for storing the vine structure including <code>as_</code>- and <code>is.</code>-generics (#136).</p></li>
-<li><p>allow for generating quasi-random numbers (#126).</p></li>
-<li><p>improved parallelization: faster of fitting vine copula models and parallelized versions of many algorithms including pdf, cdf and simulation (#339, #363).</p></li>
-<li><p>allow weights for observations (#118).</p></li>
-<li><p>faster compilation using only a single wrapper file (#124).</p></li>
-<li><p>improved print and summary generics (#131).</p></li>
+<li><p>refactor vine structures and related algorithms with triangular arrays to improve efficiency of truncated models (<a href='https://github.com/vinecopulib/rvinecopulib/issues/136'>#136</a>).</p></li>
+<li><p>new classes <code>rvine_structure</code> and <code>rvine_matrix</code> for storing the vine structure including <code>as_</code>- and <code>is.</code>-generics (<a href='https://github.com/vinecopulib/rvinecopulib/issues/136'>#136</a>).</p></li>
+<li><p>allow for generating quasi-random numbers (<a href='https://github.com/vinecopulib/rvinecopulib/issues/126'>#126</a>).</p></li>
+<li><p>improved parallelization: faster of fitting vine copula models and parallelized versions of many algorithms including pdf, cdf and simulation (<a href='https://github.com/vinecopulib/rvinecopulib/issues/339'>#339</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/363'>#363</a>).</p></li>
+<li><p>allow weights for observations (<a href='https://github.com/vinecopulib/rvinecopulib/issues/118'>#118</a>).</p></li>
+<li><p>faster compilation using only a single wrapper file (<a href='https://github.com/vinecopulib/rvinecopulib/issues/124'>#124</a>).</p></li>
+<li><p>improved print and summary generics (<a href='https://github.com/vinecopulib/rvinecopulib/issues/131'>#131</a>).</p></li>
 </ul>
 <p>BUG FIXES</p>
 <ul>
@@ -216,32 +244,32 @@
 </ul>
 </div>
     <div id="rvinecopulib-0-2-8-1-0-may-8-2018" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.2.8.1.0">
 <a href="#rvinecopulib-0-2-8-1-0-may-8-2018" class="anchor"></a>rvinecopulib 0.2.8.1.0 (May 8, 2018)<small> 2018-05-09 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.2.8, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
 <p>NEW FEATURES</p>
 <ul>
-<li><p>new <code>vine_dist</code> and <code>vine</code> classes for data with non-uniform margins (#97).</p></li>
-<li><p>new function <code><a href="../reference/truncate_model.html">truncate_model()</a></code> for <code>vinecop_dist</code> and <code>vine_dist</code> objects (#95, #97).</p></li>
-<li><p>new convenience functions <code><a href="../reference/getters.html">get_pair_copula()</a></code>, <code><a href="../reference/getters.html">get_parameters()</a></code>, <code><a href="../reference/getters.html">get_ktau()</a></code>, <code><a href="../reference/getters.html">get_family()</a></code> for <code>bicop_dist</code>, <code>vinecop_dist</code> and <code>vine_dist</code> objects (#95, #107, #109).</p></li>
-<li><p>new convenience functions <code><a href="../reference/getters.html">get_matrix()</a></code>, <code><a href="../reference/getters.html">get_all_pair_copulas()</a></code>, <code><a href="../reference/getters.html">get_all_parameters()</a></code>, <code><a href="../reference/getters.html">get_all_ktaus()</a></code>, <code><a href="../reference/getters.html">get_all_families()</a></code> for <code>vinecop_dist</code> and <code>vine_dist</code> objects (#95, #107, #109).</p></li>
-<li><p>new (<code>dim</code>) and improved (<code>print</code>, <code>summary</code> and <code>logLik</code>) generic methods for <code>vinecop_dist</code> and <code>vine_dist</code> objects (#104, #109, #110).</p></li>
-<li><p>new function <code>pseudo_obs</code> to compute pseudo-observations (#108).</p></li>
-<li><p>improved documentation (#98, #100).</p></li>
-<li><p>improved sanity checks and error messages (#99, #102).</p></li>
+<li><p>new <code>vine_dist</code> and <code>vine</code> classes for data with non-uniform margins (<a href='https://github.com/vinecopulib/rvinecopulib/issues/97'>#97</a>).</p></li>
+<li><p>new function <code><a href="../reference/truncate_model.html">truncate_model()</a></code> for <code>vinecop_dist</code> and <code>vine_dist</code> objects (<a href='https://github.com/vinecopulib/rvinecopulib/issues/95'>#95</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/97'>#97</a>).</p></li>
+<li><p>new convenience functions <code><a href="../reference/getters.html">get_pair_copula()</a></code>, <code><a href="../reference/getters.html">get_parameters()</a></code>, <code><a href="../reference/getters.html">get_ktau()</a></code>, <code><a href="../reference/getters.html">get_family()</a></code> for <code>bicop_dist</code>, <code>vinecop_dist</code> and <code>vine_dist</code> objects (<a href='https://github.com/vinecopulib/rvinecopulib/issues/95'>#95</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/107'>#107</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/109'>#109</a>).</p></li>
+<li><p>new convenience functions <code><a href="../reference/getters.html">get_matrix()</a></code>, <code><a href="../reference/getters.html">get_all_pair_copulas()</a></code>, <code><a href="../reference/getters.html">get_all_parameters()</a></code>, <code><a href="../reference/getters.html">get_all_ktaus()</a></code>, <code><a href="../reference/getters.html">get_all_families()</a></code> for <code>vinecop_dist</code> and <code>vine_dist</code> objects (<a href='https://github.com/vinecopulib/rvinecopulib/issues/95'>#95</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/107'>#107</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/109'>#109</a>).</p></li>
+<li><p>new (<code>dim</code>) and improved (<code>print</code>, <code>summary</code> and <code>logLik</code>) generic methods for <code>vinecop_dist</code> and <code>vine_dist</code> objects (<a href='https://github.com/vinecopulib/rvinecopulib/issues/104'>#104</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/109'>#109</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/110'>#110</a>).</p></li>
+<li><p>new function <code>pseudo_obs</code> to compute pseudo-observations (<a href='https://github.com/vinecopulib/rvinecopulib/issues/108'>#108</a>).</p></li>
+<li><p>improved documentation (<a href='https://github.com/vinecopulib/rvinecopulib/issues/98'>#98</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/100'>#100</a>).</p></li>
+<li><p>improved sanity checks and error messages (<a href='https://github.com/vinecopulib/rvinecopulib/issues/99'>#99</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/102'>#102</a>).</p></li>
 </ul>
 <p>BUG FIXES</p>
 <ul>
-<li><p>make mcor correction less aggressive (#103).</p></li>
-<li><p>fix truncation of pdf values (#103).</p></li>
-<li><p>use increased search interval for parameter estimation when initial fit is unreasonable (#103).</p></li>
-<li><p>ensure that boundaries are respected for Joe’s <code>hinv</code> methods (#103).</p></li>
-<li><p>improve numerical stability by more restrictive parameter bounds for Joe and BB7 copulas (#103).</p></li>
+<li><p>make mcor correction less aggressive (<a href='https://github.com/vinecopulib/rvinecopulib/issues/103'>#103</a>).</p></li>
+<li><p>fix truncation of pdf values (<a href='https://github.com/vinecopulib/rvinecopulib/issues/103'>#103</a>).</p></li>
+<li><p>use increased search interval for parameter estimation when initial fit is unreasonable (<a href='https://github.com/vinecopulib/rvinecopulib/issues/103'>#103</a>).</p></li>
+<li><p>ensure that boundaries are respected for Joe’s <code>hinv</code> methods (<a href='https://github.com/vinecopulib/rvinecopulib/issues/103'>#103</a>).</p></li>
+<li><p>improve numerical stability by more restrictive parameter bounds for Joe and BB7 copulas (<a href='https://github.com/vinecopulib/rvinecopulib/issues/103'>#103</a>).</p></li>
 </ul>
 </div>
     <div id="rvinecopulib-0-2-7-1-0-march-1-2018" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.2.7.1.0">
 <a href="#rvinecopulib-0-2-7-1-0-march-1-2018" class="anchor"></a>rvinecopulib 0.2.7.1.0 (March 1, 2018)<small> 2018-03-02 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.2.7, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
@@ -255,7 +283,7 @@
 </ul>
 </div>
     <div id="rvinecopulib-0-2-6-1-1-february-24-2018" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.2.6.1.1">
 <a href="#rvinecopulib-0-2-6-1-1-february-24-2018" class="anchor"></a>rvinecopulib 0.2.6.1.1 (February 24, 2018)<small> 2018-02-25 </small>
 </h1>
 <p>Patch of rvinecopulib 0.2.6.1.0.</p>
@@ -265,7 +293,7 @@
 </ul>
 </div>
     <div id="rvinecopulib-0-2-6-1-0-february-23-2018" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.2.6.1.0">
 <a href="#rvinecopulib-0-2-6-1-0-february-23-2018" class="anchor"></a>rvinecopulib 0.2.6.1.0 (February 23, 2018)<small> Unreleased </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.2.6, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
@@ -281,7 +309,7 @@
 </ul>
 </div>
     <div id="rvinecopulib-0-2-5-1-0-january-14-2017" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.2.5.1.0">
 <a href="#rvinecopulib-0-2-5-1-0-january-14-2017" class="anchor"></a>rvinecopulib 0.2.5.1.0 (January 14, 2017)<small> 2018-01-14 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.2.4 and 0.2.5, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
@@ -294,13 +322,13 @@
 <p>BUG FIXES</p>
 <ul>
 <li><p>make bb8 lower bound ensure feasible computations in <code>par_to_tau()</code>.</p></li>
-<li><p>default initialize <code>Rcout</code> (#277).</p></li>
+<li><p>default initialize <code>Rcout</code> (<a href='https://github.com/vinecopulib/rvinecopulib/issues/277'>#277</a>).</p></li>
 <li><p>fix storage order of pair copulas when structure is fixed.</p></li>
 <li><p>fixed selection algorithm for threshold and truncation level.</p></li>
 </ul>
 </div>
     <div id="rvinecopulib-0-2-3-1-0-november-18-2017" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.2.3.1.0">
 <a href="#rvinecopulib-0-2-3-1-0-november-18-2017" class="anchor"></a>rvinecopulib 0.2.3.1.0 (November 18, 2017)<small> 2017-11-18 </small>
 </h1>
 <p>Release following the update of vinecopulib to 0.2.3, see <a href="https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.3" class="uri">https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.3</a>. The most relevant changes are summarized below.</p>
@@ -316,7 +344,7 @@
 </ul>
 </div>
     <div id="rvinecopulib-0-2-2-1-0-november-9-2017" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.2.2.1.0">
 <a href="#rvinecopulib-0-2-2-1-0-november-9-2017" class="anchor"></a>rvinecopulib 0.2.2.1.0 (November 9, 2017)<small> Unreleased </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.2.1 and 0.2.2, see <a href="https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.1" class="uri">https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.1</a> and <a href="https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.2" class="uri">https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.2</a>. The most relevant changes are summarized below.</p>
@@ -334,7 +362,7 @@
 </ul>
 </div>
     <div id="rvinecopulib-0-2-0-1-0-october-30-2017" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.2.0.1.0">
 <a href="#rvinecopulib-0-2-0-1-0-october-30-2017" class="anchor"></a>rvinecopulib 0.2.0.1.0 (October 30, 2017)<small> 2017-10-30 </small>
 </h1>
 <p>Release following the update of vinecopulib to 0.2.0, see <a href="https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.0" class="uri">https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.0</a>. The most relevant changes are summarized below.</p>
@@ -362,7 +390,7 @@
 </ul>
 </div>
     <div id="rvinecopulib-0-1-0-1-1-september-1-2017" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.1.0.1.1">
 <a href="#rvinecopulib-0-1-0-1-1-september-1-2017" class="anchor"></a>rvinecopulib 0.1.0.1.1 (September 1, 2017)<small> 2017-09-01 </small>
 </h1>
 <p>BUG FIXES</p>
@@ -371,35 +399,17 @@
 </ul>
 </div>
     <div id="rvinecopulib-0-1-0-1-0-august-29-2017" class="section level1">
-<h1 class="page-header">
+<h1 class="page-header" data-toc-text="0.1.0.1.0">
 <a href="#rvinecopulib-0-1-0-1-0-august-29-2017" class="anchor"></a>rvinecopulib 0.1.0.1.0 (August 29, 2017)<small> 2017-08-30 </small>
 </h1>
 <p>Initial release.</p>
 </div>
   </div>
 
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <div id="tocnav">
-      <h2>Contents</h2>
-      <ul class="nav nav-pills nav-stacked">
-        <li><a href="#rvinecopulib-0-5-1-1-0-november-25-2019">0.5.1.1.0</a></li>
-        <li><a href="#rvinecopulib-0-5-0-1-0-november-25-2019">0.5.0.1.0</a></li>
-        <li><a href="#rvinecopulib-0-3-1-1-0-july-4-2019">0.3.1.1.0</a></li>
-        <li><a href="#rvinecopulib-0-3-1-1-0-april-19-2019">0.3.1.1.0</a></li>
-        <li><a href="#rvinecopulib-0-3-0-1-1-august-22-2018">0.3.0.1.1</a></li>
-        <li><a href="#rvinecopulib-0-3-0-1-0-august-9-2018">0.3.0.1.0</a></li>
-        <li><a href="#rvinecopulib-0-2-8-1-0-may-8-2018">0.2.8.1.0</a></li>
-        <li><a href="#rvinecopulib-0-2-7-1-0-march-1-2018">0.2.7.1.0</a></li>
-        <li><a href="#rvinecopulib-0-2-6-1-1-february-24-2018">0.2.6.1.1</a></li>
-        <li><a href="#rvinecopulib-0-2-6-1-0-february-23-2018">0.2.6.1.0</a></li>
-        <li><a href="#rvinecopulib-0-2-5-1-0-january-14-2017">0.2.5.1.0</a></li>
-        <li><a href="#rvinecopulib-0-2-3-1-0-november-18-2017">0.2.3.1.0</a></li>
-        <li><a href="#rvinecopulib-0-2-2-1-0-november-9-2017">0.2.2.1.0</a></li>
-        <li><a href="#rvinecopulib-0-2-0-1-0-october-30-2017">0.2.0.1.0</a></li>
-        <li><a href="#rvinecopulib-0-1-0-1-1-september-1-2017">0.1.0.1.1</a></li>
-        <li><a href="#rvinecopulib-0-1-0-1-0-august-29-2017">0.1.0.1.0</a></li>
-      </ul>
-    </div>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 
 </div>
@@ -411,7 +421,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

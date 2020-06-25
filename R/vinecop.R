@@ -112,7 +112,7 @@
 #' fit <- vinecop(u_disc, var_types = c("d", rep("c", 4)))
 vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
                     structure = NA, par_method = "mle",
-                    nonpar_method = "constant", mult = 1, selcrit = "bic",
+                    nonpar_method = "constant", mult = 1, selcrit = "aic",
                     weights = numeric(), psi0 = 0.9, presel = TRUE,
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
                     keep_data = FALSE, show_trace = FALSE, cores = 1) {

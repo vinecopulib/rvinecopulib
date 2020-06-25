@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -39,7 +43,6 @@
 <meta property="og:description" content="Simulates from a uniform distribution over all R-vine structures on d
 variables. rvine_structure_sim() returns an rvine_structure() object,
 rvine_matrix_sim() an rvine_matrix()." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -57,7 +60,7 @@ rvine_matrix_sim() an rvine_matrix()." />
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -71,7 +74,7 @@ rvine_matrix_sim() an rvine_matrix()." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2.1.0</span>
       </span>
     </div>
 
@@ -91,7 +94,12 @@ rvine_matrix_sim() an rvine_matrix()." />
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/vinecopulib/rvinecopulib/">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -106,7 +114,7 @@ rvine_matrix_sim() an rvine_matrix()." />
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Simulate R-vine structures</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/vinecopulib/rvinecopulib/blob/master/R/rvine_structure.R'><code>R/rvine_structure.R</code></a></small>
     <div class="hidden name"><code>rvine_structure_sim.Rd</code></div>
     </div>
 
@@ -141,47 +149,43 @@ order (counter-diagonal is <code>1:d</code>).</p></td>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'>rvine_structure_sim</span>(<span class='fl'>10</span>)</div><div class='output co'>#&gt; 10-dimensional R-vine structure ('rvine_structure')
-#&gt;  3  5  5  3  2  5  5  2  2  2
-#&gt;  5  2  2  5  5  2  2  5  5   
-#&gt;  2  7  3  2  3  4  4  4      
-#&gt; 10  4  8  4  4  3  3         
-#&gt;  4  3  4  7  7  7            
-#&gt;  7  8  7  8  8               
-#&gt;  8 10 10 10                  
-#&gt;  9  9  9                     
-#&gt;  6  6                        
-#&gt;  1                           </div><div class='input'>
+#&gt; 10  3  3  6  7  7  3  7  7  7
+#&gt;  7  7  7  7  3 10  7  3  3   
+#&gt;  3 10  8 10 10  3 10 10      
+#&gt;  1  1 10  3  1  1  1         
+#&gt;  8  8  1  1  6  6            
+#&gt;  4  6  6  8  8               
+#&gt;  6  9  9  9                  
+#&gt;  9  4  4                     
+#&gt;  2  2                        
+#&gt;  5                           </div><div class='input'>
 <span class='fu'>rvine_structure_sim</span>(<span class='fl'>10</span>, <span class='kw'>natural_order</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)  <span class='co'># counter-diagonal is 1:d</span></div><div class='output co'>#&gt; 10-dimensional R-vine structure ('rvine_structure')
-#&gt;  7  8  9  9  9 10  9 10 10 10
-#&gt;  9 10  5 10  7  9 10  9  9   
-#&gt; 10  9  7  8 10  8  8  8      
-#&gt;  8  6 10  7  8  7  7         
-#&gt;  5  7  8  6  6  6            
-#&gt;  3  4  6  5  5               
-#&gt;  6  5  4  4                  
-#&gt;  4  3  3                     
+#&gt; 10 10 10 10 10  9  9 10 10 10
+#&gt;  9  9  8  8  9 10 10  9  9   
+#&gt;  7  8  9  9  8  8  8  8      
+#&gt;  8  4  6  7  7  7  7         
+#&gt;  4  7  7  6  6  6            
+#&gt;  6  6  5  5  5               
+#&gt;  5  5  4  4                  
+#&gt;  3  3  3                     
 #&gt;  2  2                        
 #&gt;  1                           </div><div class='input'>
 <span class='fu'>rvine_matrix_sim</span>(<span class='fl'>10</span>)</div><div class='output co'>#&gt; 10-dimensional R-vine matrix ('rvine_matrix')
-#&gt; 10  6  6  6  4  6 10  6  6  6
-#&gt;  6 10  4  4  6  4  6 10 10   
-#&gt;  4  8 10 10 10 10  4  4      
-#&gt;  9  4  8  9  8  8  8         
-#&gt;  8  9  9  8  9  9            
-#&gt;  5  5  5  5  5               
-#&gt;  3  3  3  3                  
-#&gt;  7  7  7                     
+#&gt;  7  7  8  8  5  7  5  7  7  7
+#&gt;  5  5  7  7  7  5  7  5  5   
+#&gt;  4  4  5  5  8  8  8  8      
+#&gt;  8  8  9  4  9  9  9         
+#&gt;  9 10  4  9  4  4            
+#&gt;  2  9  2  2  2               
+#&gt; 10  2 10 10                  
+#&gt;  6  6  6                     
 #&gt;  1  1                        
-#&gt;  2                           </div></pre>
+#&gt;  3                           </div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#see-also">See also</a></li>
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -192,7 +196,7 @@ order (counter-diagonal is <code>1:d</code>).</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>
