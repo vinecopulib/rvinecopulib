@@ -29,7 +29,6 @@ as_rvine_matrix(x, ...)
 
 \method{as_rvine_matrix}{rvine_matrix}(x, ..., validate = FALSE)
 
-
 \method{as_rvine_structure}{matrix}(x, ..., validate = TRUE)
 
 \method{as_rvine_matrix}{matrix}(x, ..., validate = TRUE)

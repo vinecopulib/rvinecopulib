@@ -59,7 +59,7 @@ rosenblatt <- function(x, model, cores = 1) {
     is.number(cores)
   )
 
-  to_col <- if (is(model, "bicop_dist")) FALSE else (dim(model)[1] == 1)
+  to_col <- if (inherits(model, "bicop_dist")) FALSE else (dim(model)[1] == 1)
   x <- if_vec_to_matrix(x, to_col)
   col_names <- colnames(x)
 
@@ -91,7 +91,7 @@ inverse_rosenblatt <- function(u, model, cores = 1) {
     is.number(cores)
   )
 
-  to_col <- if (is(model, "bicop_dist")) FALSE else (dim(model)[1] == 1)
+  to_col <- if (inherits(model, "bicop_dist")) FALSE else (dim(model)[1] == 1)
   u <- if_vec_to_matrix(u, to_col)
   col_names <- colnames(u)
 

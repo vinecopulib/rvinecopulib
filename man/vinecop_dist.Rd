@@ -4,11 +4,7 @@
 \alias{vinecop_dist}
 \title{Vine copula models}
 \usage{
-vinecop_dist(
-  pair_copulas,
-  structure,
-  var_types = rep("c", length(pair_copulas[[1]]) + 1)
-)
+vinecop_dist(pair_copulas, structure, var_types = rep("c", dim(structure)[1]))
 }
 \arguments{
 \item{pair_copulas}{A nested list of '\code{\link[=bicop_dist]{bicop_dist()}}' objects, where

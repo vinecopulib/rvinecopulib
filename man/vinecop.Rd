@@ -6,7 +6,7 @@
 \usage{
 vinecop(
   data,
-  var_types = rep("c", ncol(data)),
+  var_types = rep("c", NCOL(data)),
   family_set = "all",
   structure = NA,
   par_method = "mle",
