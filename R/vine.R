@@ -109,7 +109,6 @@ vine <- function(data,
                  keep_data = FALSE,
                  cores = 1) {
   ## basic sanity checks (copula_controls are checked by vinecop)
-  assert_that(NCOL(data) > 1, msg = "data must be multivariate.")
   data <- expand_factors(data)
 
   d <- ncol(data)

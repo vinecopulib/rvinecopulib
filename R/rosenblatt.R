@@ -55,10 +55,12 @@
 #' @export
 rosenblatt <- function(x, model, cores = 1) {
   assert_that(
-    is.matrix(x) | is.data.frame(x),
     inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist")),
     is.number(cores)
   )
+
+  to_col <- if (inherits(model, "bicop_dist")) FALSE else (dim(model)[1] == 1)
+  x <- if_vec_to_matrix(x, to_col)
   col_names <- colnames(x)
 
   if (inherits(model, "bicop_dist")) {
@@ -84,11 +86,13 @@ rosenblatt <- function(x, model, cores = 1) {
 #' @export
 inverse_rosenblatt <- function(u, model, cores = 1) {
   assert_that(
-    is.matrix(u) | is.data.frame(u),
     all((u > 0) & (u < 1)),
     inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist")),
     is.number(cores)
   )
+
+  to_col <- if (inherits(model, "bicop_dist")) FALSE else (dim(model)[1] == 1)
+  u <- if_vec_to_matrix(u, to_col)
   col_names <- colnames(u)
 
   if (inherits(model, "bicop_dist")) {

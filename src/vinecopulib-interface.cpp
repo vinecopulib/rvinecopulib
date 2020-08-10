@@ -141,7 +141,6 @@ Rcpp::List rvine_structure_cpp(const Rcpp::List& rvine_structure_r,
 // [[Rcpp::export()]]
 void rvine_structure_check_cpp(const Rcpp::List& rvine_struct,
                                bool is_natural_order) {
-
   auto rvine_structure = rvine_structure_wrap(rvine_struct, true,
                                               is_natural_order);
 }
