@@ -8,11 +8,11 @@ rvinecopulib
 
 Vine copulas are a flexible class of dependence models consisting of bivariate 
 building blocks (see e.g., Aas et al., 2009). You can find a comprehensive 
-list of publications and other materials on [vine-copula.org](http://www.statistics.ma.tum.de/en/research/vine-copula-models/).
+list of publications and other materials on [vine-copula.org](https://www.groups.ma.tum.de/en/statistics/research/vine-copula-models/).
 
 This package is the [R](https://cran.r-project.org/) API to the C++ library 
 [vinecopulib](https://github.com/vinecopulib/vinecopulib), a header-only 
-C++ library for vine copula models based on [Boost](http://www.boost.org/) and 
+C++ library for vine copula models based on [Boost](https://www.boost.org/) and 
 [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page).
 
 It provides high-performance implementations of the core features of the popular
