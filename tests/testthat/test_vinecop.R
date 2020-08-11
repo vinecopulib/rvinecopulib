@@ -46,6 +46,8 @@ test_that("S3 generics work", {
     tolerance = 0.01
   )
   expect_error(predict(fit, u, what = "hfunc1"))
+  fit$data <- NULL
+  expect_error(fitted(fit))
   expect_length(attr(logLik(fit), "df"), 1)
 })
 
@@ -84,6 +86,6 @@ test_that("d = 1 works", {
   expect_identical(vc, vc2)
 
   expect_equal(AIC(vc), 0)
+  expect_equal(mBICV(vc), 0)
   expect_equal(dim(summary(vc))[1], 0)
 })
-
