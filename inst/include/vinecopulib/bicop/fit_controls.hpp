@@ -21,7 +21,7 @@ public:
                    std::string parametric_method = "mle",
                    std::string nonparametric_method = "quadratic",
                    double nonparametric_mult = 1.0,
-                   std::string selection_criterion = "bic",
+                   std::string selection_criterion = "aic",
                    const Eigen::VectorXd& weights = Eigen::VectorXd(),
                    double psi0 = 0.9,
                    bool preselect_families = true,

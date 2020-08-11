@@ -42,15 +42,15 @@ simulate_uniform(const size_t& n,
       return tools_stats::ghalton(n, d, seeds);
     }
   }
-  if ((n < 1) | (d < 1)) {
+  if ((n < 1) || (d < 1)) {
     throw std::runtime_error("n and d must be at least 1.");
   }
   if (seeds.size() == 0) {
     // no seeds provided, seed randomly
     std::random_device rd{};
     seeds = std::vector<int>(5);
-    for (auto& s : seeds)
-      s = static_cast<int>(rd());
+    std::generate(
+      seeds.begin(), seeds.end(), [&]() { return static_cast<int>(rd()); });
   }
 
   // initialize random engine and uniform distribution
@@ -74,7 +74,7 @@ simulate_uniform(const size_t& n,
 //! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$
 //! (column-wise).
 inline Eigen::MatrixXd
-to_pseudo_obs(Eigen::MatrixXd x, std::string ties_method)
+to_pseudo_obs(Eigen::MatrixXd x, const std::string& ties_method)
 {
   for (int j = 0; j < x.cols(); ++j)
     x.col(j) =
@@ -94,7 +94,7 @@ to_pseudo_obs(Eigen::MatrixXd x, std::string ties_method)
 //! https://stat.ethz.ch/R-manual/R-devel/library/base/html/rank.html.
 //! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$.
 inline Eigen::VectorXd
-to_pseudo_obs_1d(Eigen::VectorXd x, std::string ties_method)
+to_pseudo_obs_1d(Eigen::VectorXd x, const std::string& ties_method)
 {
   size_t n = x.size();
   std::vector<double> xvec(x.data(), x.data() + n);
@@ -313,7 +313,7 @@ pairwise_mcor(const Eigen::MatrixXd& x, const Eigen::VectorXd& weights)
 //! @return An \f$ n \times d \f$ matrix of quasi-random
 //! \f$ \mathrm{U}[0, 1] \f$ variables.
 inline Eigen::MatrixXd
-ghalton(const size_t& n, const size_t& d, std::vector<int> seeds)
+ghalton(const size_t& n, const size_t& d, const std::vector<int>& seeds)
 {
 
   Eigen::MatrixXd res(d, n);
@@ -333,14 +333,13 @@ ghalton(const size_t& n, const size_t& d, std::vector<int> seeds)
   Eigen::VectorXi perm = tools_ghalton::permTN2.block(0, 0, d, 1);
   Eigen::MatrixXi coeff(d, 32);
   Eigen::VectorXi tmp(d);
-  int k;
   auto mod = [](const int& u1, const int& u2) { return u1 % u2; };
   for (size_t i = 1; i < n; i++) {
 
     // Find i in the prime base
     tmp = Eigen::VectorXi::Constant(d, static_cast<int>(i));
     coeff = Eigen::MatrixXi::Zero(d, 32);
-    k = 0;
+    int k = 0;
     while ((tmp.maxCoeff() > 0) && (k < 32)) {
       coeff.col(k) = tmp.binaryExpr(base, mod);
       tmp = tmp.cwiseQuotient(base);
@@ -375,7 +374,7 @@ ghalton(const size_t& n, const size_t& d, std::vector<int> seeds)
 //! @return An \f$ n \times d \f$ matrix of quasi-random
 //! \f$ \mathrm{U}[0, 1] \f$ variables.
 inline Eigen::MatrixXd
-sobol(const size_t& n, const size_t& d, std::vector<int> seeds)
+sobol(const size_t& n, const size_t& d, const std::vector<int>& seeds)
 {
 
   // output matrix
@@ -472,8 +471,7 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
   double ors = 1 - pow(rho, 2.0);
 
   auto f = [snu, nu, ors, rho](double h, double k) {
-    double d1, d2, d3, hkn, hpk, bvt, gmph, gmpk, hkrn, qhrk, xnkh, xnhk,
-      btnckh, btnchk, btpdkh, btpdhk;
+    double d1, d2, bvt, gmph, gmpk, xnkh, xnhk, btnckh, btnchk, btpdkh, btpdhk;
     int hs, ks;
 
     double hrk = h - rho * k;
@@ -484,7 +482,7 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
       /* Computing 2nd power */
       d2 = hrk;
       /* Computing 2nd power */
-      d3 = k;
+      double d3 = k;
       xnhk = d1 * d1 / (d2 * d2 + ors * (nu + d3 * d3));
       /* Computing 2nd power */
       d1 = krh;
@@ -534,10 +532,10 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
       d1 = h;
       /* Computing 2nd power */
       d2 = k;
-      qhrk = sqrt(d1 * d1 + d2 * d2 - rho * 2 * h * k + nu * ors);
-      hkrn = h * k + rho * nu;
-      hkn = h * k - nu;
-      hpk = h + k;
+      double qhrk = sqrt(d1 * d1 + d2 * d2 - rho * 2 * h * k + nu * ors);
+      double hkrn = h * k + rho * nu;
+      double hkn = h * k - nu;
+      double hpk = h + k;
       bvt =
         atan2(-snu * (hkn * qhrk + hpk * hkrn), hkn * hkrn - nu * hpk * qhrk) /
         6.2831853071795862;
@@ -630,17 +628,17 @@ pbvnorm(const Eigen::MatrixXd& z, double rho)
 
   auto f = [lg, rho, x, w, phi](double h, double k) {
     size_t i1;
-    double a, b, c, d, d1, d2, as, bs, hk, hs, sn, rs, xs, bvn, asr;
+    double d1, d2, hk, bvn;
     h = -h;
     k = -k;
     hk = h * k;
     bvn = 0.0;
     if (std::fabs(rho) < .925f) {
-      hs = (h * h + k * k) / 2;
-      asr = asin(rho);
+      double hs = (h * h + k * k) / 2;
+      double asr = asin(rho);
       i1 = lg;
       for (size_t i = 0; i < i1; ++i) {
-        sn = std::sin(asr * (x(i) + 1) / 2);
+        double sn = std::sin(asr * (x(i) + 1) / 2);
         bvn += w(i) * std::exp((sn * hk - hs) / (1 - sn * sn));
         sn = std::sin(asr * (-x(i) + 1) / 2);
         bvn += w(i) * std::exp((sn * hk - hs) / (1 - sn * sn));
@@ -654,17 +652,17 @@ pbvnorm(const Eigen::MatrixXd& z, double rho)
         hk = -hk;
       }
       if (std::fabs(rho) < 1.) {
-        as = (1 - rho) * (rho + 1);
-        a = std::sqrt(as);
+        double as = (1 - rho) * (rho + 1);
+        double a = std::sqrt(as);
         /* Computing 2nd power */
         d1 = h - k;
-        bs = d1 * d1;
-        c = (4 - hk) / 8;
-        d = (12 - hk) / 16;
+        double bs = d1 * d1;
+        double c = (4 - hk) / 8;
+        double d = (12 - hk) / 16;
         bvn = a * std::exp(-(bs / as + hk) / 2) *
               (1 - c * (bs - as) * (1 - d * bs / 5) / 3 + c * d * as * as / 5);
         if (hk > -160.) {
-          b = std::sqrt(bs);
+          double b = std::sqrt(bs);
           d1 = -b / a;
           bvn -= std::exp(-hk / 2) * std::sqrt(6.283185307179586) * phi(d1) *
                  b * (1 - c * bs * (1 - d * bs / 5) / 3);
@@ -674,8 +672,8 @@ pbvnorm(const Eigen::MatrixXd& z, double rho)
         for (size_t i = 0; i < i1; ++i) {
           /* Computing 2nd power */
           d1 = a * (x(i) + 1);
-          xs = d1 * d1;
-          rs = std::sqrt(1 - xs);
+          double xs = d1 * d1;
+          double rs = std::sqrt(1 - xs);
           bvn += a * w(i) *
                  (std::exp(-bs / (xs * 2) - hk / (rs + 1)) / rs -
                   std::exp(-(bs / xs + hk) / 2) * (c * xs * (d * xs + 1) + 1));

@@ -118,7 +118,7 @@ FitControlsBicop::check_selection_criterion(std::string selection_criterion)
 inline void
 FitControlsBicop::check_psi0(double psi0)
 {
-  if (!(psi0 > 0.0) | !(psi0 < 1.0)) {
+  if ((psi0 <= 0.0) || (psi0 >= 1.0)) {
     throw std::runtime_error("psi0 must be in the interval (0, 1)");
   }
 }

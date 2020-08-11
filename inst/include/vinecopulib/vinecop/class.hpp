@@ -185,6 +185,7 @@ protected:
                           const Eigen::MatrixXd& data) const;
   void check_enough_data(const Eigen::MatrixXd& data) const;
   void check_fitted() const;
+  void check_indices(const size_t tree, const size_t edge) const;
   void check_var_types(const std::vector<std::string>& var_types) const;
   void set_continuous_var_types() const;
   void set_var_types_internal(const std::vector<std::string>& var_types) const;

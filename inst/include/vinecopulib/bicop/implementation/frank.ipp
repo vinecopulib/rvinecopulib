@@ -55,7 +55,7 @@ FrankBicop::pdf_raw(const Eigen::MatrixXd& u)
 {
   double theta = static_cast<double>(parameters_(0));
   auto f = [theta](const double& u1, const double& u2) {
-    return (theta * (std::exp(theta) - 1.0) *
+    return (theta * std::expm1(theta) *
             std::exp(theta * u2 + theta * u1 + theta)) /
            std::pow(std::exp(theta * u2 + theta * u1) -
                       std::exp(theta * u2 + theta) -

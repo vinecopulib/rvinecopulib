@@ -33,9 +33,13 @@ public:
                  const FitControlsBicop& controls = FitControlsBicop(),
                  const std::vector<std::string>& var_types = { "c", "c" });
 
+  Bicop(const Bicop& other);
+
   explicit Bicop(const std::string& filename);
 
   explicit Bicop(const boost::property_tree::ptree input);
+
+  Bicop& operator=(Bicop other);
 
   // Serialize
   boost::property_tree::ptree to_ptree() const;

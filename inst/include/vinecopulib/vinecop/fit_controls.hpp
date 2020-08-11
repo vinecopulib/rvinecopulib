@@ -35,7 +35,7 @@ public:
     size_t trunc_lvl = std::numeric_limits<size_t>::max(),
     std::string tree_criterion = "tau",
     double threshold = 0.0,
-    std::string selection_criterion = "bic",
+    std::string selection_criterion = "aic",
     const Eigen::VectorXd& weights = Eigen::VectorXd(),
     double psi0 = 0.9,
     bool preselect_families = true,

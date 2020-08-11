@@ -100,7 +100,6 @@ TllBicop::fit_local_likelihood(const Eigen::MatrixXd& x,
   Eigen::MatrixXd res(m, 2);
   res.col(0) = Eigen::VectorXd::Ones(m); // result will be a product
   Eigen::VectorXd kernels(n);
-  double f0;
   Eigen::Vector2d f1;
   Eigen::Vector2d b;
   Eigen::Matrix2d S(B);
@@ -110,7 +109,7 @@ TllBicop::fit_local_likelihood(const Eigen::MatrixXd& x,
     kernels = gaussian_kernel_2d(zz) * det_irB;
     if (weights.size() > 0)
       kernels = kernels.cwiseProduct(weights);
-    f0 = kernels.mean();
+    double f0 = kernels.mean();
     if (method != "constant") {
       zz = (irB * zz.transpose()).transpose();
       f1 = zz.cwiseProduct(kernels.replicate(1, 2)).colwise().mean();
