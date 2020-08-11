@@ -1,3 +1,24 @@
+# rvinecopulib 0.5.3.1.0 (August 11, 2020)
+
+Release following the updates of vinecopulib to 0.5.3, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+### NEW FEATURES
+
+  * allow 1-dimensional models (#216) 
+  
+  * make AIC default selection criterion (#213)
+
+### BUG FIXES
+
+  * catch na in ktau_to_par (#214)
+  
+  * make Bicop/Vinecop objects indepent of copied-from-objects
+
+  * enforce parameters bounds in tau_to_parameters for Archimedean families
+
+
 # rvinecopulib 0.5.2.1.0 (May 7, 2020)
 
 Release following the updates of vinecopulib to 0.5.2, see 
