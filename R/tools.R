@@ -77,7 +77,7 @@ expand_family <- function(family) {
   switch(
     family,
     "archimedean" = family_set_archimedean,
-    "ellipiltical" = family_set_elliptical,
+    "elliptical" = family_set_elliptical,
     "bbs" = family_set_bb,
     "oneparametric" = family_set_onepar,
     "twoparametric" = family_set_twopar,

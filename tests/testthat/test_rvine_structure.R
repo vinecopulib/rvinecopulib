@@ -8,8 +8,11 @@ test_that("constructor and as/is generics work", {
   expect_silent(rvm <- as_rvine_matrix(mylist)) ## true coercion
   expect_silent(as_rvine_structure(mat)) ## calls the constructors
   expect_silent(as_rvine_matrix(mat)) ## true coercion
+  expect_silent(as_rvine_matrix(as_rvine_matrix(mat)))
   expect_true(is.rvine_structure(rvs))
   expect_true(is.rvine_matrix(rvm))
+  mat[1, 1] <- 0
+  expect_silent(as_rvine_matrix(mat, validate = FALSE))
 })
 
 test_that("print/dim generics work", {

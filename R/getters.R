@@ -162,9 +162,8 @@ get_all_pair_copulas <- function(object, trees = NA) {
   if (!any(is.na(trees))) {
     assert_that(is.numeric(trees),
       all(trees >= 1),
-      all(trees <= d[2]),
-      msg = "the elements of trees should be numbers between 1 and
-                    the truncation level."
+      all(trees <= d[1] - 1),
+      msg = "the elements of trees should be numbers between 1 and d - 1."
     )
   }
 
