@@ -73,7 +73,7 @@ and variable types." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3.1.0</span>
       </span>
     </div>
 
@@ -122,11 +122,7 @@ and variable types." />
 and variable types.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>vinecop_dist</span>(
-  <span class='no'>pair_copulas</span>,
-  <span class='no'>structure</span>,
-  <span class='kw'>var_types</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='st'>"c"</span>, <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>pair_copulas</span><span class='kw'>[[</span><span class='fl'>1</span>]]) + <span class='fl'>1</span>)
-)</pre>
+    <pre class="usage"><span class='fu'>vinecop_dist</span>(<span class='no'>pair_copulas</span>, <span class='no'>structure</span>, <span class='kw'>var_types</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='st'>"c"</span>, <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span>(<span class='no'>structure</span>)[<span class='fl'>1</span>]))</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
