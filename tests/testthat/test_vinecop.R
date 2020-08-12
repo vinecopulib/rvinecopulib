@@ -46,6 +46,8 @@ test_that("S3 generics work", {
     tolerance = 0.01
   )
   expect_error(predict(fit, u, what = "hfunc1"))
+  fit$data <- NULL
+  expect_error(fitted(fit))
   expect_length(attr(logLik(fit), "df"), 1)
 })
 
@@ -76,4 +78,14 @@ test_that("partial selection works", {
   tree1_old_edges <- c(paste(diag(m_old[5:2, ]), m_old[1, -5]),
                        paste(m_old[1, -5], diag(m_old[5:2, ])))
   expect_true(all(paste(diag(m_new[5:2, ]), m_new[1, -5]) %in% tree1_old_edges))
+})
+
+test_that("d = 1 works", {
+  vc <- vinecop(runif(20), structure = rvine_structure(1))
+  vc2 <- vinecop(runif(20))
+  expect_identical(vc, vc2)
+
+  expect_equal(AIC(vc), 0)
+  expect_equal(mBICV(vc), 0)
+  expect_equal(dim(summary(vc))[1], 0)
 })

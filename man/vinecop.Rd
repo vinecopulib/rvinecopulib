@@ -6,13 +6,13 @@
 \usage{
 vinecop(
   data,
-  var_types = rep("c", ncol(data)),
+  var_types = rep("c", NCOL(data)),
   family_set = "all",
   structure = NA,
   par_method = "mle",
   nonpar_method = "constant",
   mult = 1,
-  selcrit = "bic",
+  selcrit = "aic",
   weights = numeric(),
   psi0 = 0.9,
   presel = TRUE,

@@ -170,17 +170,17 @@ preselect_family(std::vector<double> c, double tau, const Bicop& bicop)
     }
     bool is_90or180 = is_member(rotation, { 90, 180 });
     if (c[0] - c[1] > 0.05) {
-      if (is_member(family, bicop_families::lt) & is_90or180) {
+      if (is_member(family, bicop_families::lt) && is_90or180) {
         preselect = true;
       }
-      if (is_member(family, bicop_families::ut) & !is_90or180) {
+      if (is_member(family, bicop_families::ut) && !is_90or180) {
         preselect = true;
       }
     } else if (c[0] - c[1] < -0.05) {
-      if (is_member(family, bicop_families::lt) & !is_90or180) {
+      if (is_member(family, bicop_families::lt) && !is_90or180) {
         preselect = true;
       }
-      if (is_member(family, bicop_families::ut) & is_90or180) {
+      if (is_member(family, bicop_families::ut) && is_90or180) {
         preselect = true;
       }
     } else {

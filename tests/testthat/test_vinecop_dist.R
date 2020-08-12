@@ -152,3 +152,18 @@ test_that("getters work", {
   expect_output(print(get_all_pair_copulas(vc)))
   expect_output(print(get_all_pair_copulas(vc, 1)))
 })
+
+
+test_that("d = 1 works", {
+  vc <- vinecop_dist(list(), rvine_structure(1))
+  u <- runif(5)
+  expect_equal(dim(summary(vc))[1], 0)
+
+  expect_equal(dvinecop(u, vc), rep(1, 5))
+  expect_equal(pvinecop(u, vc), u, tol = 1e-2)
+  expect_equal(c(rosenblatt(u, vc)), u)
+  expect_equal(c(inverse_rosenblatt(u, vc)), u)
+  expect_silent(rvinecop(10, vc))
+  expect_error(plot(vc))
+  expect_warning(contour(vc))
+})

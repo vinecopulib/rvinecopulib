@@ -11,7 +11,7 @@ bicop(
   par_method = "mle",
   nonpar_method = "quadratic",
   mult = 1,
-  selcrit = "bic",
+  selcrit = "aic",
   weights = numeric(),
   psi0 = 0.9,
   presel = TRUE,

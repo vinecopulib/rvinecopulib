@@ -35,6 +35,8 @@ test_that("works with vinecop objects", {
   expect_equal(vc_trunc$pair_copulas, vc$pair_copulas[1])
   expect_length(vc_trunc$structure$struct_array[[1]], 3)
   expect_warning(expect_identical(vc_trunc, truncate_model(vc_trunc, 2)))
+
+  expect_warning(get_all_pair_copulas(vc_trunc, 2))
 })
 
 test_that("works with vine objects", {

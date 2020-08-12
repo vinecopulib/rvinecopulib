@@ -56,6 +56,33 @@ inline Bicop::Bicop(const Eigen::MatrixXd& data,
   select(data, controls);
 }
 
+//! @brief Copy constructor (deep copy)
+//!
+//! @param other Bicop object to copy.
+inline Bicop::Bicop(const Bicop& other)
+  : Bicop(other.get_family(),
+          other.get_rotation(),
+          other.get_parameters(),
+          other.get_var_types())
+{
+  nobs_ = other.nobs_;
+  bicop_->set_loglik(other.bicop_->get_loglik());
+}
+
+//! @brief Copy assignment operator (deep copy)
+//!
+//! @param other Bicop object to copy.
+inline Bicop&
+Bicop::operator=(Bicop other)
+{
+  // copy/swap idiom
+  std::swap(bicop_, other.bicop_);
+  std::swap(rotation_, other.rotation_);
+  std::swap(nobs_, other.nobs_);
+  std::swap(var_types_, other.var_types_);
+  return *this;
+}
+
 //! @brief Instantiates from a boost::property_tree::ptree object.
 //! @param input The boost::property_tree::ptree object to convert from
 //! (see `to_ptree()` for the structure of the input).

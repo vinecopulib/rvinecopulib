@@ -31,9 +31,15 @@ test_that("returns proper 'bicop' object", {
   )
 })
 
-test_that("partial matching for family set names", {
+test_that("family sets (w/ partial matching)", {
   bicop(u, family = "arch")
   bicop(u, family = "nonp")
+  bicop(u, family = "elli")
+  bicop(u, family = "onep")
+  bicop(u, family = "two")
+  bicop(u, family = "bbs")
+  bicop(u, family = "itau")
+  expect_warning(bicop(u, par_method = "itau"))
   expect_error(bicop(u, family = "asdf"))
 })
 

@@ -284,6 +284,11 @@ inline void
 Vinecop::select(const Eigen::MatrixXd& data, const FitControlsVinecop& controls)
 {
   check_data(data);
+  if (data.cols() == 1) {
+    loglik_ = 0;
+    nobs_ = data.rows();
+    return;
+  }
   Eigen::MatrixXd u = collapse_data(data);
 
   tools_select::VinecopSelector selector(
@@ -359,24 +364,9 @@ Vinecop::select_families(const Eigen::MatrixXd& data,
 inline Bicop
 Vinecop::get_pair_copula(const size_t tree, const size_t edge) const
 {
-  if (tree > d_ - 2) {
-    std::stringstream message;
-    message << "tree index out of bounds" << std::endl
-            << "allowed: 0, ..., " << d_ - 2 << std::endl
-            << "actual: " << tree << std::endl;
-    throw std::runtime_error(message.str().c_str());
-  }
-  if (edge > d_ - tree - 2) {
-    std::stringstream message;
-    message << "edge index out of bounds" << std::endl
-            << "allowed: 0, ..., " << d_ - tree - 2 << std::endl
-            << "actual: " << edge << std::endl
-            << "tree level: " << tree << std::endl;
-    throw std::runtime_error(message.str().c_str());
-  }
+  this->check_indices(tree, edge);
   if (tree >= pair_copulas_.size()) {
-    // vine is truncated
-    return Bicop();
+    return Bicop(); // vine is truncated
   }
   return pair_copulas_[tree][edge];
 }
@@ -398,7 +388,11 @@ Vinecop::get_all_pair_copulas() const
 inline BicopFamily
 Vinecop::get_family(const size_t tree, const size_t edge) const
 {
-  return get_pair_copula(tree, edge).get_family();
+  this->check_indices(tree, edge);
+  if (tree >= pair_copulas_.size()) {
+    return BicopFamily::indep; // vine is truncated
+  }
+  return pair_copulas_[tree][edge].get_family();
 }
 
 //! @brief Gets the families of all pair copulas.
@@ -412,7 +406,7 @@ Vinecop::get_all_families() const
   for (size_t tree = 0; tree < pair_copulas_.size(); ++tree) {
     families[tree].resize(d_ - 1 - tree);
     for (size_t edge = 0; edge < d_ - 1 - tree; ++edge) {
-      families[tree][edge] = get_family(tree, edge);
+      families[tree][edge] = pair_copulas_[tree][edge].get_family();
     }
   }
 
@@ -426,7 +420,11 @@ Vinecop::get_all_families() const
 inline int
 Vinecop::get_rotation(const size_t tree, const size_t edge) const
 {
-  return get_pair_copula(tree, edge).get_rotation();
+  this->check_indices(tree, edge);
+  if (tree >= pair_copulas_.size()) {
+    return 0; // vine is truncated
+  }
+  return pair_copulas_[tree][edge].get_rotation();
 }
 
 //! @brief Gets the rotations of all pair copulas.
@@ -440,7 +438,7 @@ Vinecop::get_all_rotations() const
   for (size_t tree = 0; tree < pair_copulas_.size(); ++tree) {
     rotations[tree].resize(d_ - 1 - tree);
     for (size_t edge = 0; edge < d_ - 1 - tree; ++edge) {
-      rotations[tree][edge] = get_rotation(tree, edge);
+      rotations[tree][edge] = pair_copulas_[tree][edge].get_rotation();
     }
   }
 
@@ -454,7 +452,11 @@ Vinecop::get_all_rotations() const
 inline Eigen::MatrixXd
 Vinecop::get_parameters(const size_t tree, const size_t edge) const
 {
-  return get_pair_copula(tree, edge).get_parameters();
+  this->check_indices(tree, edge);
+  if (tree >= pair_copulas_.size()) {
+    return Eigen::MatrixXd(); // vine is truncated
+  }
+  return pair_copulas_[tree][edge].get_parameters();
 }
 
 //! @brief Gets the Kendall's \f$ tau \f$ of a pair copula.
@@ -464,7 +466,11 @@ Vinecop::get_parameters(const size_t tree, const size_t edge) const
 inline double
 Vinecop::get_tau(const size_t tree, const size_t edge) const
 {
-  return get_pair_copula(tree, edge).get_tau();
+  this->check_indices(tree, edge);
+  if (tree >= pair_copulas_.size()) {
+    return 0; // vine is truncated
+  }
+  return pair_copulas_[tree][edge].get_tau();
 }
 
 inline size_t
@@ -484,7 +490,7 @@ Vinecop::get_all_parameters() const
   for (size_t tree = 0; tree < parameters.size(); ++tree) {
     parameters[tree].resize(d_ - 1 - tree);
     for (size_t edge = 0; edge < d_ - 1 - tree; ++edge) {
-      parameters[tree][edge] = get_parameters(tree, edge);
+      parameters[tree][edge] = pair_copulas_[tree][edge].get_parameters();
     }
   }
 
@@ -502,7 +508,7 @@ Vinecop::get_all_taus() const
   for (size_t tree = 0; tree < taus.size(); ++tree) {
     taus[tree].resize(d_ - 1 - tree);
     for (size_t edge = 0; edge < d_ - 1 - tree; ++edge) {
-      taus[tree][edge] = get_tau(tree, edge);
+      taus[tree][edge] = pair_copulas_[tree][edge].get_tau();
     }
   }
 
@@ -598,7 +604,7 @@ Vinecop::get_mbicv(const double psi0) const
 inline double
 Vinecop::calculate_mbicv_penalty(const size_t nobs, const double psi0) const
 {
-  if (!(psi0 > 0.0) | !(psi0 < 1.0)) {
+  if ((psi0 <= 0.0) || (psi0 >= 1.0)) {
     throw std::runtime_error("psi0 must be in the interval (0, 1)");
   }
   auto all_fams = get_all_families();
@@ -775,8 +781,8 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
         tools_interface::check_user_interrupt(edge % 100 == 0);
         // extract evaluation point from hfunction matrices (have been
         // computed in previous tree level)
-        Bicop edge_copula = get_pair_copula(tree, edge);
-        auto var_types = edge_copula.get_var_types();
+        Bicop* edge_copula = &pair_copulas_[tree][edge];
+        auto var_types = edge_copula->get_var_types();
         size_t m = rvine_structure_.min_array(tree, edge);
 
         u_e = Eigen::MatrixXd(b.size, 2);
@@ -798,23 +804,23 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
         }
 
         pdf.segment(b.begin, b.size) =
-          pdf.segment(b.begin, b.size).cwiseProduct(edge_copula.pdf(u_e));
+          pdf.segment(b.begin, b.size).cwiseProduct(edge_copula->pdf(u_e));
 
         // h-functions are only evaluated if needed in next step
         if (rvine_structure_.needed_hfunc1(tree, edge)) {
-          hfunc1.col(edge) = edge_copula.hfunc1(u_e);
+          hfunc1.col(edge) = edge_copula->hfunc1(u_e);
           if (var_types[1] == "d") {
             u_e_sub = u_e;
             u_e_sub.col(1) = u_e.col(3);
-            hfunc1_sub.col(edge) = edge_copula.hfunc1(u_e_sub);
+            hfunc1_sub.col(edge) = edge_copula->hfunc1(u_e_sub);
           }
         }
         if (rvine_structure_.needed_hfunc2(tree, edge)) {
-          hfunc2.col(edge) = edge_copula.hfunc2(u_e);
+          hfunc2.col(edge) = edge_copula->hfunc2(u_e);
           if (var_types[0] == "d") {
             u_e_sub = u_e;
             u_e_sub.col(0) = u_e.col(2);
-            hfunc2_sub.col(edge) = edge_copula.hfunc2(u_e_sub);
+            hfunc2_sub.col(edge) = edge_copula->hfunc2(u_e_sub);
           }
         }
       }
@@ -1065,7 +1071,7 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
         }
 
         // h-functions are only evaluated if needed in next step
-        Bicop edge_copula = get_pair_copula(tree, edge).as_continuous();
+        Bicop edge_copula = pair_copulas_[tree][edge].as_continuous();
         if (rvine_structure_.needed_hfunc1(tree, edge)) {
           hfunc1.block(b.begin, edge, b.size, 1) = edge_copula.hfunc1(u_e);
         }
@@ -1161,7 +1167,7 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
         static_cast<double>(n) * static_cast<double>(d) > 1e5);
       size_t tree_start = std::min(trunc_lvl - 1, d - var - 2);
       for (ptrdiff_t tree = tree_start; tree >= 0; --tree) {
-        Bicop edge_copula = get_pair_copula(tree, var).as_continuous();
+        Bicop edge_copula = pair_copulas_[tree][var].as_continuous();
 
         // extract data for conditional pair
         Eigen::MatrixXd U_e(b.size, 2);
@@ -1290,6 +1296,26 @@ Vinecop::check_fitted() const
 {
   if (std::isnan(loglik_)) {
     throw std::runtime_error("copula has not been fitted from data ");
+  }
+}
+
+inline void
+Vinecop::check_indices(const size_t tree, const size_t edge) const
+{
+  if (tree > d_ - 2) {
+    std::stringstream message;
+    message << "tree index out of bounds" << std::endl
+            << "allowed: 0, ..., " << d_ - 2 << std::endl
+            << "actual: " << tree << std::endl;
+    throw std::runtime_error(message.str().c_str());
+  }
+  if (edge > d_ - tree - 2) {
+    std::stringstream message;
+    message << "edge index out of bounds" << std::endl
+            << "allowed: 0, ..., " << d_ - tree - 2 << std::endl
+            << "actual: " << edge << std::endl
+            << "tree level: " << tree << std::endl;
+    throw std::runtime_error(message.str().c_str());
   }
 }
 

@@ -99,12 +99,13 @@ truncate_column <- function(column, trunc_lvl) {
 #' @noRd
 check_trunc_lvl <- function(object, trunc_lvl) {
   msg <- paste0(
-    "trunc_lvl should be a number between 1 and the number of trees (",
+    "trunc_lvl should be a number between 0 and the number of trees (",
     dim(object)["dim"] - 1, ")."
   )
   assert_that(
-    is.count(trunc_lvl),
-    trunc_lvl >= 1,
+    is.number(trunc_lvl),
+    trunc_lvl == round(trunc_lvl),
+    trunc_lvl >= 0,
     trunc_lvl < dim(object)["dim"],
     msg = msg
   )

@@ -87,7 +87,8 @@ ClaytonBicop::tau_to_parameters(const double& tau)
 {
   Eigen::VectorXd parameters(1);
   parameters(0) = 2 * std::fabs(tau) / (1 - std::fabs(tau));
-  return parameters;
+  return parameters.cwiseMax(parameters_lower_bounds_)
+    .cwiseMin(parameters_upper_bounds_);
 }
 
 inline double

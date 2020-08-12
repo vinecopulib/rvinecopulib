@@ -564,6 +564,9 @@ inline TriangularArray<short unsigned>
 RVineStructure::compute_needed_hfunc1() const
 {
   TriangularArray<short unsigned> needed_hfunc1(d_, trunc_lvl_);
+  if (d_ == 1) {
+    return needed_hfunc1;
+  }
 
   for (size_t i = 0; i < std::min(d_ - 2, trunc_lvl_ - 1); i++) {
     for (size_t j = 0; j < d_ - 2 - i; j++) {
@@ -579,6 +582,9 @@ inline TriangularArray<short unsigned>
 RVineStructure::compute_needed_hfunc2() const
 {
   TriangularArray<short unsigned> needed_hfunc2(d_, trunc_lvl_);
+  if (d_ == 1) {
+    return needed_hfunc2;
+  }
 
   for (size_t i = 0; i < std::min(d_ - 2, trunc_lvl_ - 1); i++) {
     for (size_t j = 0; j < d_ - 2 - i; j++) {

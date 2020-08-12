@@ -110,9 +110,9 @@
 #' # we require two types of observations (see Details)
 #' u_disc <- cbind(ppois(x, 1), u[, 2:5], ppois(x - 1, 1))
 #' fit <- vinecop(u_disc, var_types = c("d", rep("c", 4)))
-vinecop <- function(data, var_types = rep("c", ncol(data)), family_set = "all",
+vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
                     structure = NA, par_method = "mle",
-                    nonpar_method = "constant", mult = 1, selcrit = "bic",
+                    nonpar_method = "constant", mult = 1, selcrit = "aic",
                     weights = numeric(), psi0 = 0.9, presel = TRUE,
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
                     keep_data = FALSE, show_trace = FALSE, cores = 1) {
@@ -148,7 +148,7 @@ vinecop <- function(data, var_types = rep("c", ncol(data)), family_set = "all",
 
   ## fit and select copula model
   vinecop <- vinecop_select_cpp(
-    data = data,
+    data = as.matrix(data),
     structure = structure,
     family_set = family_set,
     par_method = par_method,
@@ -195,7 +195,7 @@ vinecop <- function(data, var_types = rep("c", ncol(data)), family_set = "all",
     tree_crit = tree_crit,
     threshold = threshold
   )
-  vinecop$nobs <- nrow(data)
+  vinecop$nobs <- NROW(data)
   vinecop
 }
 
@@ -248,7 +248,7 @@ vinecop <- function(data, var_types = rep("c", ncol(data)), family_set = "all",
 #' # simulate from the model
 #' pairs(rvinecop(200, vc))
 vinecop_dist <- function(pair_copulas, structure,
-                         var_types = rep("c", length(pair_copulas[[1]]) + 1)) {
+                         var_types = rep("c", dim(structure)[1])) {
   # create object
   vinecop <- structure(
     list(
@@ -260,8 +260,10 @@ vinecop_dist <- function(pair_copulas, structure,
 
   # sanity checks
   assert_that(is.list(pair_copulas), correct_var_types(var_types))
-  if (length(pair_copulas) > length(pair_copulas[[1]])) {
-    stop("'pair_copulas' has more trees than variables.")
+  if (length(pair_copulas) > 0) {
+    if (length(pair_copulas) > length(pair_copulas[[1]])) {
+      stop("'pair_copulas' has more trees than variables.")
+    }
   }
 
   pc_lst <- unlist(pair_copulas, recursive = FALSE)
@@ -275,7 +277,7 @@ vinecop_dist <- function(pair_copulas, structure,
   )
   vinecop$var_types <- var_types
   vinecop_check_cpp(vinecop)
-  vinecop$npars <- sum(sapply(pc_lst, function(x) x[["npars"]]))
+  vinecop$npars <- do.call(sum, lapply(pc_lst, function(x) x[["npars"]]))
   vinecop$loglik <- NA
 
   vinecop

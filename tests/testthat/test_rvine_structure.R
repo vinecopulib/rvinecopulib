@@ -8,8 +8,11 @@ test_that("constructor and as/is generics work", {
   expect_silent(rvm <- as_rvine_matrix(mylist)) ## true coercion
   expect_silent(as_rvine_structure(mat)) ## calls the constructors
   expect_silent(as_rvine_matrix(mat)) ## true coercion
+  expect_silent(as_rvine_matrix(as_rvine_matrix(mat)))
   expect_true(is.rvine_structure(rvs))
   expect_true(is.rvine_matrix(rvm))
+  mat[1, 1] <- 0
+  expect_silent(as_rvine_matrix(mat, validate = FALSE))
 })
 
 test_that("print/dim generics work", {
@@ -45,5 +48,20 @@ test_that("plot functions work", {
   pm$plot_env <- NULL
   expect_equivalent(p, ps)
   expect_equivalent(p, pm)
+})
+
+test_that("d = 1 works", {
+  struct <- rvine_structure(1)
+  expect_length(struct$struct_array, 0)
+  expect_length(struct$order, 1)
+
+  mat <- as_rvine_matrix(struct)
+  expect_equal(unname(dim(mat)), c(1, 0))
+
+  expect_output(print(struct))
+  expect_error(plot(struct))
+
+  expect_silent(dvine_structure(1))
+  expect_silent(cvine_structure(1))
 })
 

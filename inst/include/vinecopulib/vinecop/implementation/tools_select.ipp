@@ -56,7 +56,7 @@ calculate_criterion(const Eigen::MatrixXd& data,
 //! @param weights Vector of weights for each observation (can be empty).
 inline Eigen::MatrixXd
 calculate_criterion_matrix(const Eigen::MatrixXd& data,
-                           std::string tree_criterion,
+                           const std::string& tree_criterion,
                            const Eigen::VectorXd& weights)
 {
   size_t n = data.rows();
@@ -138,8 +138,8 @@ VinecopSelector::get_rvine_structure() const
 inline std::vector<std::vector<Bicop>>
 VinecopSelector::make_pair_copula_store(size_t d, size_t trunc_lvl)
 {
-  if (d < 2) {
-    throw std::runtime_error("the dimension should be larger than 1");
+  if (d < 1) {
+    throw std::runtime_error("dimension must be be > 0.");
   }
 
   size_t n_trees = std::min(d - 1, trunc_lvl);
@@ -154,11 +154,11 @@ VinecopSelector::make_pair_copula_store(size_t d, size_t trunc_lvl)
 inline void
 VinecopSelector::select_all_trees(const Eigen::MatrixXd& data)
 {
+  loglik_ = 0.0;
   initialize_new_fit(data);
-  double loglik = 0.0;
   for (size_t t = 0; t < d_ - 1; ++t) {
     select_tree(t); // select pair copulas (+ structure) of tree t
-    loglik += get_loglik_of_tree(t);
+    loglik_ += get_loglik_of_tree(t);
 
     if (controls_.get_show_trace()) {
       std::stringstream tree_heading;
@@ -171,7 +171,6 @@ VinecopSelector::select_all_trees(const Eigen::MatrixXd& data)
       break;
     }
   }
-  loglik_ = loglik;
   finalize(controls_.get_trunc_lvl());
 }
 
@@ -219,7 +218,6 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
 
     // helper variables for checking whether an optimum was found
     double mbicv = 0.0;
-    double mbicv_tree = 0.0;
     double mbicv_trunc = 0.0;
     double loglik = 0.0;
     bool select_trunc_lvl = controls_.get_select_trunc_lvl();
@@ -239,7 +237,7 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
       // update fit statistic
       double loglik_tree = get_loglik_of_tree(t);
       loglik += loglik_tree;
-      mbicv_tree = get_mbicv_of_tree(t, loglik_tree);
+      double mbicv_tree = get_mbicv_of_tree(t, loglik_tree);
       mbicv_trunc += mbicv_tree;
 
       // print trace for this tree level
@@ -304,9 +302,9 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
       set_current_fit_as_opt(loglik);
       mbicv_opt = mbicv;
       // while loop is only for threshold selection
-      needs_break = needs_break | !select_threshold;
+      needs_break = needs_break || !select_threshold;
       // threshold is too close to 0
-      needs_break = needs_break | (controls_.get_threshold() < 0.01);
+      needs_break = needs_break || (controls_.get_threshold() < 0.01);
       // prepare for possible next iteration
       thresholded_crits = get_thresholded_crits();
     }
@@ -711,7 +709,7 @@ VinecopSelector::get_loglik_of_tree(size_t t)
   double ll = 0.0;
   // trees_[0] is base tree, see make_base_tree()
   for (const auto& e : boost::edges(trees_[t + 1])) {
-    ll += trees_[t + 1][e].loglik;
+    ll += trees_[t + 1][e].pair_copula.get_loglik();
   }
   return ll;
 }
@@ -723,7 +721,7 @@ VinecopSelector::get_npars_of_tree(size_t t)
   double npars = 0.0;
   // trees_[0] is base tree, see make_base_tree()
   for (const auto& e : boost::edges(trees_[t + 1])) {
-    npars += trees_[t + 1][e].npars;
+    npars += trees_[t + 1][e].pair_copula.get_npars();
   }
   return npars;
 }
@@ -735,7 +733,8 @@ VinecopSelector::get_num_non_indeps_of_tree(size_t t)
   size_t num_non_indeps = 0;
   // trees_[0] is base tree, see make_base_tree()
   for (const auto& e : boost::edges(trees_[t + 1])) {
-    num_non_indeps += static_cast<size_t>(trees_[t + 1][e].npars > 0);
+    num_non_indeps += static_cast<size_t>(
+      trees_[t + 1][e].pair_copula.get_family() == BicopFamily::indep);
   }
   return num_non_indeps;
 }
@@ -942,7 +941,8 @@ VinecopSelector::remove_edge_data(VineTree& tree)
   }
 }
 
-//! @brief Removes data (hfunc1/hfunc2/pc_data) from all vertices of a vine tree.
+//! @brief Removes data (hfunc1/hfunc2/pc_data) from all vertices of a vine
+//! tree.
 //! @param tree A vine tree.
 inline void
 VinecopSelector::remove_vertex_data(VineTree& tree)
@@ -980,8 +980,8 @@ VinecopSelector::select_pair_copulas(VineTree& tree, const VineTree& tree_opt)
 
     if (!used_old_fit) {
       tree[e].pair_copula = vinecopulib::Bicop();
+      tree[e].pair_copula.set_var_types(tree[e].var_types);
       if (!is_thresholded) {
-        tree[e].pair_copula.set_var_types(tree[e].var_types);
         tree[e].pair_copula.select(tree[e].pc_data, controls_);
       }
     }
@@ -997,10 +997,6 @@ VinecopSelector::select_pair_copulas(VineTree& tree, const VineTree& tree_opt)
       auto sub_data = tree[e].pc_data;
       sub_data.col(0) = sub_data.col(2);
       tree[e].hfunc2_sub = tree[e].pair_copula.hfunc2(sub_data);
-    }
-    tree[e].loglik = tree[e].pair_copula.get_loglik();
-    if (controls_.needs_sparse_select()) {
-      tree[e].npars = tree[e].pair_copula.get_npars();
     }
   };
 

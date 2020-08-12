@@ -39,7 +39,7 @@ calculate_criterion(const Eigen::MatrixXd& data,
 
 Eigen::MatrixXd
 calculate_criterion_matrix(const Eigen::MatrixXd& data,
-                           std::string tree_criterion,
+                           const std::string& tree_criterion,
                            const Eigen::VectorXd& weights);
 
 std::vector<size_t>
@@ -72,8 +72,6 @@ struct EdgeProperties
   double weight;
   double crit;
   vinecopulib::Bicop pair_copula;
-  double loglik;
-  double npars;
   double fit_id;
 };
 typedef boost::adjacency_list<
