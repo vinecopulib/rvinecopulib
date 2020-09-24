@@ -14,6 +14,9 @@
 #' @details See [vinecop()] for the estimation and construction of vine copula
 #' models.
 #'
+#' The copula density is defined as joint density divided by marginal
+#' densities, irrespective of variable types.
+#'
 #' ## Discrete variables
 #'
 #' When at least one variable is discrete, two types of

@@ -23,6 +23,9 @@
 #' @details
 #' See [bicop] for the various implemented copula families.
 #'
+#' The copula density is defined as joint density divided by marginal
+#' densities, irrespective of variable types.
+#'
 #' H-functions (`hbicop()`) are conditional distributions derived
 #' from a copula. If \eqn{C(u, v) = P(U \le u, V \le v)} is a copula, then
 #' \deqn{h_1(u, v) = P(V \le v | U = u) = \partial C(u, v) / \partial u,}
