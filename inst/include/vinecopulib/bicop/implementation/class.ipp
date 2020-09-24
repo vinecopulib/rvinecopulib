@@ -159,6 +159,9 @@ Bicop::to_json(const std::string& filename) const
 
 //! @brief Evaluates the copula density.
 //!
+//! The copula density is defined as joint density divided by marginal 
+//! densities, irrespective of variable types.
+//!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
 //! @return The copula density evaluated at \c u.
@@ -353,7 +356,7 @@ Bicop::simulate(const size_t& n,
 //!
 //! The log-likelihood is defined as
 //! \f[ \mathrm{loglik} = \sum_{i = 1}^n \log c(U_{1, i}, U_{2, i}), \f]
-//! where \f$ c \f$ is the copula density `pdf()`.
+//! where \f$ c \f$ is the copula density, see `Bicop::pdf()`.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
