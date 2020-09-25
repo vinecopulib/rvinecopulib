@@ -869,14 +869,17 @@ Bicop::format_data(const Eigen::MatrixXd& u) const
   auto n_disc = get_n_discrete();
   if (n_disc == 0) {
     return u.leftCols(2);
-  } else if ((n_disc != 1) | (u.cols() == 4)) {
+  } else if (n_disc == 2) {
     return u;
   }
+  // n_disc = 1:
   Eigen::MatrixXd u_new(u.rows(), 4);
   u_new.leftCols(2) = u.leftCols(2);
   int disc_col = (var_types_[1] == "d");
   int cont_col = 1 - disc_col;
-  u_new.col(2 + disc_col) = u.col(2);
+  // in which column is F(x^-) for the discrete variable stored?
+  int old_disc_col = 2 + (u.cols() == 4) * disc_col;
+  u_new.col(2 + disc_col) = u.col(old_disc_col);
   u_new.col(2 + cont_col) = u.col(cont_col);
   return u_new;
 }

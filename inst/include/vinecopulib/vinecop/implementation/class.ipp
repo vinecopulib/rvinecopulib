@@ -774,8 +774,6 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
       if (var_types_[order[j] - 1] == "d") {
         hfunc2_sub.col(j) =
           u.block(b.begin, d_ + disc_cols[order[j] - 1], b.size, 1);
-      } else {
-        hfunc2_sub.col(j) = u.block(b.begin, order[j] - 1, b.size, 1);
       }
     }
 
