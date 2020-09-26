@@ -22,6 +22,7 @@ inline KernelBicop::KernelBicop()
   interp_grid_ = std::make_shared<tools_interpolation::InterpolationGrid>(
     grid_points, Eigen::MatrixXd::Constant(m, m, 1.0) // independence
   );
+  npars_ = 0.0;
 }
 
 inline Eigen::VectorXd

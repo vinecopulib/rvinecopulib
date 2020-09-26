@@ -38,3 +38,5 @@ vignettes/*.pdf
 config.log
 config.status
 revdep/
+# VS code
+.vscode/
