@@ -734,6 +734,9 @@ Vinecop::get_var_types() const
 
 //! @brief Evaluates the copula density.
 //!
+//! The copula density is defined as joint density divided by marginal 
+//! densities, irrespective of variable types.
+//!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
@@ -913,7 +916,7 @@ Vinecop::simulate(const size_t n,
 //!
 //! The log-likelihood is defined as
 //! \f[ \mathrm{loglik} = \sum_{i = 1}^n \log c(U_{1, i}, ..., U_{d, i}), \f]
-//! where \f$ c \f$ is the copula density `pdf()`.
+//! where \f$ c \f$ is the copula density, see `Vinecop::pdf()`.
 //!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
