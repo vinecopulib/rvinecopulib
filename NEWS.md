@@ -1,3 +1,18 @@
+# rvinecopulib 0.5.4.1.0 (September 30, 2020)
+
+Release following the updates of vinecopulib to 0.5.4, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+### BUG FIXES
+
+  * fix uninitialized number of parameters for TLL family
+
+  * fix Kendall's tau of Frank copula for par <= 3
+
+  * fix `dvinecop()` when discrete variables are present (#222)
+
+
 # rvinecopulib 0.5.3.1.0 (August 11, 2020)
 
 Release following the updates of vinecopulib to 0.5.3, see 
