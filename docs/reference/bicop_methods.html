@@ -73,7 +73,7 @@ inverses) for the bivariate copula distribution." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.4.1.0</span>
       </span>
     </div>
 
@@ -198,6 +198,8 @@ result.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>See <a href='bicop.html'>bicop</a> for the various implemented copula families.</p>
+<p>The copula density is defined as joint density divided by marginal
+densities, irrespective of variable types.</p>
 <p>H-functions (<code>hbicop()</code>) are conditional distributions derived
 from a copula. If \(C(u, v) = P(U \le u, V \le v)\) is a copula, then
 $$h_1(u, v) = P(V \le v | U = u) = \partial C(u, v) / \partial u,$$
