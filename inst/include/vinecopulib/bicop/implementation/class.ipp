@@ -159,7 +159,7 @@ Bicop::to_json(const std::string& filename) const
 
 //! @brief Evaluates the copula density.
 //!
-//! The copula density is defined as joint density divided by marginal 
+//! The copula density is defined as joint density divided by marginal
 //! densities, irrespective of variable types.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
@@ -877,7 +877,13 @@ Bicop::format_data(const Eigen::MatrixXd& u) const
   u_new.leftCols(2) = u.leftCols(2);
   int disc_col = (var_types_[1] == "d");
   int cont_col = 1 - disc_col;
-  // in which column is F(x^-) for the discrete variable stored?
+  // We already know that there is one discrete and one continuous variable. Now
+  // there are two cases:
+  // 1. `u.cols() == 3`: then the F(x^-) values for the discrete variable is
+  // always in the last column, i.e. `u.col(2)`.
+  // 2. `u.cols() == 4`: Then the F(x^-) values for the discrete variable is in
+  // the third column if variable 1 is discrete, and in the fourth column if
+  // variable 2 is discrete. Thus, `u.col(2 + disc_col)`.
   int old_disc_col = 2 + (u.cols() == 4) * disc_col;
   u_new.col(2 + disc_col) = u.col(old_disc_col);
   u_new.col(2 + cont_col) = u.col(cont_col);
