@@ -159,6 +159,9 @@ Bicop::to_json(const std::string& filename) const
 
 //! @brief Evaluates the copula density.
 //!
+//! The copula density is defined as joint density divided by marginal
+//! densities, irrespective of variable types.
+//!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
 //! @return The copula density evaluated at \c u.
@@ -353,7 +356,7 @@ Bicop::simulate(const size_t& n,
 //!
 //! The log-likelihood is defined as
 //! \f[ \mathrm{loglik} = \sum_{i = 1}^n \log c(U_{1, i}, U_{2, i}), \f]
-//! where \f$ c \f$ is the copula density `pdf()`.
+//! where \f$ c \f$ is the copula density, see `Bicop::pdf()`.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
@@ -866,14 +869,23 @@ Bicop::format_data(const Eigen::MatrixXd& u) const
   auto n_disc = get_n_discrete();
   if (n_disc == 0) {
     return u.leftCols(2);
-  } else if ((n_disc != 1) | (u.cols() == 4)) {
+  } else if (n_disc == 2) {
     return u;
   }
+  // n_disc = 1:
   Eigen::MatrixXd u_new(u.rows(), 4);
   u_new.leftCols(2) = u.leftCols(2);
   int disc_col = (var_types_[1] == "d");
   int cont_col = 1 - disc_col;
-  u_new.col(2 + disc_col) = u.col(2);
+  // We already know that there is one discrete and one continuous variable. Now
+  // there are two cases:
+  // 1. `u.cols() == 3`: then the F(x^-) values for the discrete variable is
+  // always in the last column, i.e. `u.col(2)`.
+  // 2. `u.cols() == 4`: Then the F(x^-) values for the discrete variable is in
+  // the third column if variable 1 is discrete, and in the fourth column if
+  // variable 2 is discrete. Thus, `u.col(2 + disc_col)`.
+  int old_disc_col = 2 + (u.cols() == 4) * disc_col;
+  u_new.col(2 + disc_col) = u.col(old_disc_col);
   u_new.col(2 + cont_col) = u.col(cont_col);
   return u_new;
 }

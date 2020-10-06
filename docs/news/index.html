@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.4.1.0</span>
       </span>
     </div>
 
@@ -114,9 +114,24 @@
       <small>Source: <a href='https://github.com/vinecopulib/rvinecopulib/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="rvinecopulib-05410-september-30-2020" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.4.1.0">
+<a href="#rvinecopulib-05410-september-30-2020" class="anchor"></a>rvinecopulib 0.5.4.1.0 (September 30, 2020)<small> Unreleased </small>
+</h1>
+<p>Release following the updates of vinecopulib to 0.5.4, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
+<div id="bug-fixes" class="section level3">
+<h3 class="hasAnchor">
+<a href="#bug-fixes" class="anchor"></a>BUG FIXES</h3>
+<ul>
+<li><p>fix uninitialized number of parameters for TLL family</p></li>
+<li><p>fix Kendall’s tau of Frank copula for par &lt;= 3</p></li>
+<li><p>fix <code><a href="../reference/vinecop_methods.html">dvinecop()</a></code> when discrete variables are present (<a href='https://github.com/vinecopulib/rvinecopulib/issues/222'>#222</a>)</p></li>
+</ul>
+</div>
+</div>
     <div id="rvinecopulib-05310-august-11-2020" class="section level1">
 <h1 class="page-header" data-toc-text="0.5.3.1.0">
-<a href="#rvinecopulib-05310-august-11-2020" class="anchor"></a>rvinecopulib 0.5.3.1.0 (August 11, 2020)<small> Unreleased </small>
+<a href="#rvinecopulib-05310-august-11-2020" class="anchor"></a>rvinecopulib 0.5.3.1.0 (August 11, 2020)<small> 2020-08-12 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.5.3, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
 <div id="new-features" class="section level3">
@@ -127,9 +142,9 @@
 <li><p>make AIC default selection criterion (<a href='https://github.com/vinecopulib/rvinecopulib/issues/213'>#213</a>)</p></li>
 </ul>
 </div>
-<div id="bug-fixes" class="section level3">
+<div id="bug-fixes-1" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes" class="anchor"></a>BUG FIXES</h3>
+<a href="#bug-fixes-1" class="anchor"></a>BUG FIXES</h3>
 <ul>
 <li><p>catch na in ktau_to_par (<a href='https://github.com/vinecopulib/rvinecopulib/issues/214'>#214</a>)</p></li>
 <li><p>make Bicop/Vinecop objects indepent of copied-from-objects</p></li>
