@@ -138,7 +138,7 @@ private:
 
   void check_var_types(const std::vector<std::string>& var_types) const;
 
-  void flip_var_types();
+  void flip_abstract_var_types();
 
   void check_weights_size(const Eigen::VectorXd& weights,
                           const Eigen::MatrixXd& data) const;
