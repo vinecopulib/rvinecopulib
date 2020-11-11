@@ -155,11 +155,7 @@ FitControlsVinecop::get_trunc_lvl() const
 inline void
 FitControlsVinecop::set_trunc_lvl(size_t trunc_lvl)
 {
-  if (trunc_lvl == 0) { // select level (likely passed from R)
-    trunc_lvl_ = std::numeric_limits<size_t>::max();
-  } else {
-    trunc_lvl_ = trunc_lvl;
-  }
+  trunc_lvl_ = trunc_lvl;
 }
 
 //! returns whether to select the truncation level automatically.

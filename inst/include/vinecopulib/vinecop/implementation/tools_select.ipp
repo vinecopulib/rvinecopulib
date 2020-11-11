@@ -182,23 +182,7 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
   double d = static_cast<double>(d_);
 
   std::vector<double> thresholded_crits;
-  if (controls_.get_select_threshold()) {
-    // initialize threshold with maximum pairwise |tau| (all pairs get
-    // thresholded)
-    auto tree_crit = controls_.get_tree_criterion();
-    auto crits =
-      calculate_criterion_matrix(data, tree_crit, controls_.get_weights());
-    for (size_t i = 1; i < d_; ++i) {
-      for (size_t j = 0; j < i; ++j) {
-        thresholded_crits.push_back(crits(i, j));
-      }
-    }
-    // this is suboptimal for fixed structures, because several
-    // iterations have to be run before first non-thresholded copula
-    // appears.
-  }
-
-  double mbicv_opt = 0.0;
+  double mbicv_opt = std::numeric_limits<double>::max();
   bool needs_break = false;
   while (!needs_break) {
     // restore family set in case previous threshold iteration also
@@ -309,7 +293,9 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
       thresholded_crits = get_thresholded_crits();
     }
   }
-  trees_ = trees_opt_;
+  if (trees_opt_.size() != 0) {
+    trees_ = trees_opt_;
+  }
   finalize(controls_.get_trunc_lvl());
 }
 
@@ -349,7 +335,7 @@ inline double
 VinecopSelector::get_next_threshold(std::vector<double>& thresholded_crits)
 {
   if (thresholded_crits.size() == 0) {
-    return 0.0;
+    return 1.0;
   }
   // sort in descending order
   std::sort(thresholded_crits.begin(), thresholded_crits.end());
@@ -433,6 +419,7 @@ inline void
 VinecopSelector::finalize(size_t trunc_lvl)
 {
   pair_copulas_ = make_pair_copula_store(d_, trunc_lvl);
+  trunc_lvl = pair_copulas_.size(); // trunc_lvl may be <size_t>::max()
 
   if (structure_known_) {
     using namespace tools_stl;
@@ -542,7 +529,6 @@ VinecopSelector::finalize(size_t trunc_lvl)
 
     // return as RVineStructure
     vine_struct_ = RVineStructure(order, mat);
-
   } else {
 
     for (size_t tree = 0; tree < pair_copulas_.size(); tree++) {
@@ -699,6 +685,7 @@ VinecopSelector::get_mbicv_of_tree(size_t t, double loglik)
     n_eff = std::pow(controls_.get_weights().sum(), 2);
     n_eff /= controls_.get_weights().array().pow(2).sum();
   }
+
   return -2 * loglik + std::log(n_eff) * npars - 2 * log_prior;
 }
 
