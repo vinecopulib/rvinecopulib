@@ -571,7 +571,7 @@ Bicop::set_rotation(const int rotation)
 {
   check_rotation(rotation);
   if ((rotation_ - rotation % 180) != 0) {
-    flip_var_types();
+    flip_abstract_var_types();
   }
   rotation_ = rotation;
   bicop_->set_loglik();
@@ -607,7 +607,7 @@ Bicop::check_data_dim(const Eigen::MatrixXd& u) const
 }
 
 inline void
-Bicop::flip_var_types()
+Bicop::flip_abstract_var_types()
 {
   std::swap(bicop_->var_types_[0], bicop_->var_types_[1]);
 }
@@ -630,7 +630,7 @@ Bicop::set_var_types(const std::vector<std::string>& var_types)
   if (bicop_) {
     bicop_->set_var_types(var_types);
     if (tools_stl::is_member(static_cast<size_t>(rotation_), { 90, 270 })) {
-      flip_var_types();
+      flip_abstract_var_types();
     }
   }
 }
@@ -652,6 +652,7 @@ inline void
 Bicop::flip()
 {
   BicopFamily family = bicop_->get_family();
+  // change internal representation
   if (tools_stl::is_member(family, bicop_families::flip_by_rotation)) {
     double loglik = bicop_->get_loglik();
     if (rotation_ == 90) {
@@ -661,9 +662,11 @@ Bicop::flip()
     }
     bicop_->set_loglik(loglik);
   } else {
-    flip_var_types();
+    flip_abstract_var_types();
     bicop_->flip();
   }
+  // change Bicop-level var_types
+  std::swap(var_types_[0], var_types_[1]);
 }
 
 //! @brief Summarizes the model into a string (can be used for printing).
@@ -833,7 +836,7 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
         new_criterion = -2 * ll + log(n_eff) * npars; // BIC
         if (controls.get_selection_criterion() == "mbic") {
           // correction for mBIC
-          bool is_indep = (this->get_family() == BicopFamily::indep);
+          bool is_indep = (cop.get_family() == BicopFamily::indep);
           double psi0 = controls.get_psi0();
           double log_prior = static_cast<double>(!is_indep) * log(psi0) +
                              static_cast<double>(is_indep) * log(1.0 - psi0);

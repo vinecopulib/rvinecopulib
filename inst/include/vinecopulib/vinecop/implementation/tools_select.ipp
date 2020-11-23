@@ -182,23 +182,7 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
   double d = static_cast<double>(d_);
 
   std::vector<double> thresholded_crits;
-  if (controls_.get_select_threshold()) {
-    // initialize threshold with maximum pairwise |tau| (all pairs get
-    // thresholded)
-    auto tree_crit = controls_.get_tree_criterion();
-    auto crits =
-      calculate_criterion_matrix(data, tree_crit, controls_.get_weights());
-    for (size_t i = 1; i < d_; ++i) {
-      for (size_t j = 0; j < i; ++j) {
-        thresholded_crits.push_back(crits(i, j));
-      }
-    }
-    // this is suboptimal for fixed structures, because several
-    // iterations have to be run before first non-thresholded copula
-    // appears.
-  }
-
-  double mbicv_opt = 0.0;
+  double mbicv_opt = std::numeric_limits<double>::max();
   bool needs_break = false;
   while (!needs_break) {
     // restore family set in case previous threshold iteration also
@@ -207,7 +191,9 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
     controls_.set_trunc_lvl(std::numeric_limits<size_t>::max());
     initialize_new_fit(data);
 
-    // decrease the threshold
+    // decrease the threshold 
+    // (in the first iteration thresholded_crits is empty and the threshold is 
+    // set to 1.0, which fits an independence model)
     if (controls_.get_select_threshold()) {
       controls_.set_threshold(get_next_threshold(thresholded_crits));
       if (controls_.get_show_trace()) {
@@ -247,7 +233,6 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
           std::cout << ", mbicv: " << mbicv_tree << ", loglik: " << loglik_tree;
         }
         std::cout << std::endl;
-        // print fitted pair-copulas for this tree
         print_pair_copulas_of_tree(t);
       }
 
@@ -289,16 +274,17 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
 
     // check whether mbicv-optimal model has been found
     if (mbicv == 0.0) {
+      //// CASE: 0-truncated model is best for this threshold
       set_current_fit_as_opt(loglik);
       if (!select_threshold) {
-        // threshold is fixed, optimal truncation level has been found
+        // threshold is fixed and trunc_lvl has been found -> stop
         needs_break = true;
       }
     } else if (mbicv >= mbicv_opt) {
-      // old model is optimal
+      //// CASE: old model is optimal
       needs_break = true;
     } else {
-      // optimum hasn't been found
+      //// CASE: optimum hasn't been found
       set_current_fit_as_opt(loglik);
       mbicv_opt = mbicv;
       // while loop is only for threshold selection
@@ -309,6 +295,8 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
       thresholded_crits = get_thresholded_crits();
     }
   }
+
+  // set final model
   trees_ = trees_opt_;
   finalize(controls_.get_trunc_lvl());
 }
@@ -349,7 +337,7 @@ inline double
 VinecopSelector::get_next_threshold(std::vector<double>& thresholded_crits)
 {
   if (thresholded_crits.size() == 0) {
-    return 0.0;
+    return 1.0;
   }
   // sort in descending order
   std::sort(thresholded_crits.begin(), thresholded_crits.end());
@@ -433,6 +421,7 @@ inline void
 VinecopSelector::finalize(size_t trunc_lvl)
 {
   pair_copulas_ = make_pair_copula_store(d_, trunc_lvl);
+  trunc_lvl = pair_copulas_.size(); // trunc_lvl may be <size_t>::max()
 
   if (structure_known_) {
     using namespace tools_stl;
@@ -542,7 +531,6 @@ VinecopSelector::finalize(size_t trunc_lvl)
 
     // return as RVineStructure
     vine_struct_ = RVineStructure(order, mat);
-
   } else {
 
     for (size_t tree = 0; tree < pair_copulas_.size(); tree++) {
@@ -699,6 +687,7 @@ VinecopSelector::get_mbicv_of_tree(size_t t, double loglik)
     n_eff = std::pow(controls_.get_weights().sum(), 2);
     n_eff /= controls_.get_weights().array().pow(2).sum();
   }
+
   return -2 * loglik + std::log(n_eff) * npars - 2 * log_prior;
 }
 

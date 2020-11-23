@@ -73,7 +73,7 @@ can be selected automatically from a vector of options." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.4.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5.1.0</span>
       </span>
     </div>
 
@@ -270,8 +270,8 @@ available (<code>"indep"</code>,<code>"gaussian"</code>, <code>"student"</code>,
     <pre class="examples"><div class='input'><span class='co'>## fitting a continuous model from simulated data</span>
 <span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bicop_methods.html'>rbicop</a></span>(<span class='fl'>100</span>, <span class='st'>"clayton"</span>, <span class='fl'>90</span>, <span class='fl'>3</span>)
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>bicop</span>(<span class='no'>u</span>, <span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"par"</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; Bivariate copula fit ('bicop'): family = joe, rotation = 270, parameters = 4.07, var_types = c,c
-#&gt; nobs = 100   logLik = 86.19   npars = 1   AIC = -170.39   BIC = -167.78   </div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; Bivariate copula fit ('bicop'): family = bb7, rotation = 270, parameters = 3.24, 0, var_types = c,c
+#&gt; nobs = 100   logLik = 163.27   npars = 2   AIC = -322.54   BIC = -317.33   </div><div class='input'>
 <span class='co'>## compare fit with true model</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span>(<span class='no'>fit</span>)</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span>(<span class='fu'><a href='bicop_dist.html'>bicop_dist</a></span>(<span class='st'>"clayton"</span>, <span class='fl'>90</span>, <span class='fl'>3</span>), <span class='kw'>col</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>add</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='img'><img src='bicop-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>## fit a model from discrete data</span>
