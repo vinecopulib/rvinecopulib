@@ -836,7 +836,7 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
         new_criterion = -2 * ll + log(n_eff) * npars; // BIC
         if (controls.get_selection_criterion() == "mbic") {
           // correction for mBIC
-          bool is_indep = (this->get_family() == BicopFamily::indep);
+          bool is_indep = (cop.get_family() == BicopFamily::indep);
           double psi0 = controls.get_psi0();
           double log_prior = static_cast<double>(!is_indep) * log(psi0) +
                              static_cast<double>(is_indep) * log(1.0 - psi0);
