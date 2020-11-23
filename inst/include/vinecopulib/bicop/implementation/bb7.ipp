@@ -62,17 +62,17 @@ Bb7Bicop::pdf_raw(const Eigen::MatrixXd& u)
   double delta = static_cast<double>(parameters_(1));
 
   auto f = [theta, delta](const double& u1, const double& u2) {
-    double t1 = 1.0 - u1;
+    double t1 = std::max(1.0 - u1, 1e-30);
     double t2 = std::pow(t1, theta);
-    double t3 = 1.0 - t2;
+    double t3 = std::max(1.0 - t2, 1e-30);
     double t4 = std::pow(t3, -delta);
-    double t5 = 1.0 - u2;
+    double t5 = std::max(1.0 - u2, 1e-30);
     double t6 = std::pow(t5, theta);
-    double t7 = 1.0 - t6;
+    double t7 = std::max(1.0 - t6, 1e-30);
     double t8 = std::pow(t7, -delta);
-    double t9 = t4 + t8 - 1.0;
+    double t9 = std::max(t4 + t8 - 1.0, 1e-30);
     double t11 = std::pow(t9, -1.0 / delta);
-    double t12 = 1.0 - t11;
+    double t12 = std::max(1.0 - t11, 1e-30);
     double t14 = std::pow(t12, 1.0 / theta);
     double t15 = t11 * t11;
     double t16 = t14 * t15;
