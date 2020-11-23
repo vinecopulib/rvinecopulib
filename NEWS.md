@@ -1,3 +1,22 @@
+# rvinecopulib 0.5.5.1.0 (November 24, 2020)
+
+Release following the updates of vinecopulib to 0.5.5, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+### BUG FIXES
+
+  * fix little bug in copula selection based on mBIC
+
+  * stabilize BB7 copula pdf
+
+  * fix threshold selection for (near-)independent data
+
+  * fix vine copula selection for 1-dimensional models with discrete variables
+
+  * fix user-visible variable types
+
+
 # rvinecopulib 0.5.4.1.0 (September 30, 2020)
 
 Release following the updates of vinecopulib to 0.5.4, see 
