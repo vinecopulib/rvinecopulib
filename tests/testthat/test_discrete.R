@@ -1,3 +1,7 @@
+# fixes problems with change in all.equal() behavior in R 4.1.x
+expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
+expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
+
 context("Discrete variables")
 
 set.seed(5)

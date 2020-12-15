@@ -386,6 +386,4 @@ get_seeds <- function() {
   as.numeric(sprintf("%20.0f", runif(20, 1e6, 1e7)))
 }
 
-#' internal function to fix testtthat::expect_equal after new R version
-#' @noRd
-expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
+

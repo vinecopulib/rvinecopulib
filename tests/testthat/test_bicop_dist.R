@@ -1,3 +1,7 @@
+# fixes problems with change in all.equal() behavior in R 4.1.x
+expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
+expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
+
 context("Class 'bicop_dist'")
 
 test_that("constructor creates proper bicop_dist object", {
@@ -91,7 +95,7 @@ test_that("getters work", {
   expect_warning(get_pair_copula(dist, NA, 1))
 
   # test other getters
-  expect_equivalent(get_parameters(dist), coef(dist))
-  expect_equivalent(get_ktau(dist), par_to_ktau(dist))
-  expect_equivalent(get_family(dist), "gumbel")
+  expect_equiv(get_parameters(dist), coef(dist))
+  expect_equiv(get_ktau(dist), par_to_ktau(dist))
+  expect_equiv(get_family(dist), "gumbel")
 })
