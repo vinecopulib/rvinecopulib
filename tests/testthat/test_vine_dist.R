@@ -48,10 +48,10 @@ test_that("print/summary/dim generics work", {
   s <- summary(vc)
   expect_is(s$margins, "data.frame")
   expect_is(s$copula, "data.frame")
-  expect_equal(nrow(s$margins), 3)
-  expect_equal(ncol(s$margins), 2)
-  expect_equal(nrow(s$copula), 3)
-  expect_equal(ncol(s$copula), 10)
+  expect_eql(nrow(s$margins), 3)
+  expect_eql(ncol(s$margins), 2)
+  expect_eql(nrow(s$copula), 3)
+  expect_eql(ncol(s$copula), 10)
 
   expect_equivalent(dim(vc)[1], 3)
   expect_equivalent(dim(vc)[2], 2)
@@ -65,7 +65,7 @@ test_that("getters work", {
 
   # test get_pair_copulas
   expect_silent(pcc <- get_pair_copula(vc, 1, 1))
-  expect_equal(bicop, bicop_dist(pcc$family, pcc$rotation, pcc$parameters))
+  expect_eql(bicop, bicop_dist(pcc$family, pcc$rotation, pcc$parameters))
   expect_error(get_pair_copula(12, 1, 1))
   expect_error(get_pair_copula(vc, 1:2, 1))
   expect_error(get_pair_copula(vc, 1, 1:2))

@@ -192,7 +192,7 @@ summary.vinecop_dist <- function(object, ...) {
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
 #' fit <- vinecop(u, family = "par", keep_data = TRUE)
-#' all.equal(predict(fit, u), fitted(fit))
+#' all.equal(predict(fit, u), fitted(fit), check.environment = FALSE)
 predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4,
                             cores = 1, ...) {
   assert_that(

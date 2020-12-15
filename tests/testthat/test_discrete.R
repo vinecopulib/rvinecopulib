@@ -35,9 +35,9 @@ test_that("bicop works", {
                var_types = c("d", "c"),
                presel = FALSE,
                keep_data = TRUE)
-  expect_equal(cop$family, "gumbel")
-  expect_equal(cop$rotation, 90)
-  expect_equal(cop$parameters[1], 4, tol = 0.5)
+  expect_eql(cop$family, "gumbel")
+  expect_eql(cop$rotation, 90)
+  expect_eql(cop$parameters[1], 4, tol = 0.5)
   expect_identical(cop$var_types, c("d", "c"))
 })
 
@@ -51,7 +51,7 @@ var_types <- c("d", "d", "c")
 
 test_that("vinecop_dist works", {
   cop <- vinecop_dist(pcs, mat, var_types)
-  expect_equal(cop$var_types, var_types)
+  expect_eql(cop$var_types, var_types)
 
   u <- rvinecop(20, cop)
   u <- cbind(u, u)
@@ -89,7 +89,7 @@ test_that("vine works", {
 
   fit <- vine(x)
   sim <- rvine(n * 10, fit)
-  expect_equal(sort(unique(sim[, 2])), 1:5)
+  expect_eql(sort(unique(sim[, 2])), 1:5)
 
   summary(fit)
   expect_identical(fit$copula$var_types, c("c", "d", "c"))

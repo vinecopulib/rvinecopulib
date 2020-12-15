@@ -215,7 +215,8 @@ ktau_to_par <- function(family, tau) {
 #' fit <- bicop(u, family = "par", keep_data = TRUE)
 #'
 #' # Predictions
-#' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
+#' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"),
+#'           check.environment = FALSE)
 #' @rdname predict_bicop
 #' @export
 predict.bicop_dist <- function(object, newdata, what = "pdf", ...) {

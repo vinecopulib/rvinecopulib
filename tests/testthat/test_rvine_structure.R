@@ -56,7 +56,7 @@ test_that("d = 1 works", {
   expect_length(struct$order, 1)
 
   mat <- as_rvine_matrix(struct)
-  expect_equal(unname(dim(mat)), c(1, 0))
+  expect_eql(unname(dim(mat)), c(1, 0))
 
   expect_output(print(struct))
   expect_error(plot(struct))

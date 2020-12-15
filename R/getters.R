@@ -55,12 +55,13 @@
 #'
 #' # get the structure
 #' get_structure(vc)
-#' all.equal(get_matrix(vc), mat, check.attributes = FALSE)
+#' all(get_matrix(vc) == mat)
 #'
 #' # get pair-copulas
 #' get_pair_copula(vc, 1, 1)
 #' get_all_pair_copulas(vc)
-#' all.equal(get_all_pair_copulas(vc), pcs, check.attributes = FALSE)
+#' all.equal(get_all_pair_copulas(vc), pcs,
+#'           check.attributes = FALSE, check.environment = FALSE)
 #' @return
 #' The structure matrix, or pair-copulas, their parameters, Kendall's taus,
 #' or families.
