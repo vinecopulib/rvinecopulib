@@ -1,3 +1,7 @@
+# fixes problems with change in all.equal() behavior in R 4.1.x
+expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
+expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
+
 context("Class 'vinecop_dist'")
 
 set.seed(0)
@@ -53,7 +57,7 @@ test_that("works with truncated vines", {
   # summary table is truncated too
   expect_s3_class(summary(vinecop_dist(pcs[-2], mat)), "summary_df")
   expect_silent(smr <- summary(vinecop_dist(pcs[-2], mat)))
-  expect_equal(nrow(smr), 2)
+  expect_eql(nrow(smr), 2)
 })
 
 test_that("print/summary/dim generics work", {
@@ -61,9 +65,9 @@ test_that("print/summary/dim generics work", {
   expect_s3_class(summary(vc), "summary_df")
   expect_silent(s <- summary(vc))
   expect_is(s, "data.frame")
-  expect_equal(nrow(s), 3)
-  expect_equal(ncol(s), 10)
-  expect_equivalent(dim(vc), c(3, 2))
+  expect_eql(nrow(s), 3)
+  expect_eql(ncol(s), 10)
+  expect_equiv(dim(vc), c(3, 2))
 })
 
 test_that("plot functions work", {
@@ -108,12 +112,12 @@ test_that("getters work", {
   expect_error(get_structure(12))
 
   # test get_matrix
-  expect_equivalent(as_rvine_matrix(mat), get_matrix(vc))
+  expect_equiv(as_rvine_matrix(mat), get_matrix(vc))
   expect_error(get_matrix(12))
 
   # test get_pair_copulas
   expect_silent(pcc <- get_pair_copula(vc, 1, 1))
-  expect_equal(bicop, bicop_dist(pcc$family, pcc$rotation, pcc$parameters))
+  expect_eql(bicop, bicop_dist(pcc$family, pcc$rotation, pcc$parameters))
   expect_error(get_pair_copula(12, 1, 1))
   expect_error(get_pair_copula(vc, 1:2, 1))
   expect_error(get_pair_copula(vc, 1, 1:2))
@@ -123,26 +127,26 @@ test_that("getters work", {
   expect_error(get_pair_copula(vc, 1, 12))
 
   # test get_all_pair_copulas
-  expect_equivalent(pcs, get_all_pair_copulas(vc))
-  expect_equivalent(pcs[1:2], get_all_pair_copulas(vc, 1:2))
+  expect_equiv(pcs, get_all_pair_copulas(vc))
+  expect_equiv(pcs[1:2], get_all_pair_copulas(vc, 1:2))
   expect_error(get_all_pair_copulas(12))
   expect_error(get_all_pair_copulas(vc, 0))
   expect_error(get_all_pair_copulas(vc, 12))
 
   # test other getters
-  expect_equivalent(get_parameters(vc, 1, 1), coef(pcs[[1]][[1]]))
-  expect_equivalent(
+  expect_equiv(get_parameters(vc, 1, 1), coef(pcs[[1]][[1]]))
+  expect_equiv(
     get_all_parameters(vc),
     lapply(pcs, function(tree) lapply(tree, coef))
   )
-  expect_equivalent(get_ktau(vc, 1, 1), par_to_ktau(bicop))
-  expect_equivalent(
+  expect_equiv(get_ktau(vc, 1, 1), par_to_ktau(bicop))
+  expect_equiv(
     get_all_ktaus(vc),
     lapply(pcs, function(tree)
       lapply(tree, function(pc) par_to_ktau(pc)))
   )
-  expect_equivalent(get_family(vc, 1, 1), "bb1")
-  expect_equivalent(
+  expect_equiv(get_family(vc, 1, 1), "bb1")
+  expect_equiv(
     get_all_families(vc),
     lapply(pcs, function(tree)
       lapply(tree, function(pc) pc$family))
@@ -157,12 +161,12 @@ test_that("getters work", {
 test_that("d = 1 works", {
   vc <- vinecop_dist(list(), rvine_structure(1))
   u <- runif(5)
-  expect_equal(dim(summary(vc))[1], 0)
+  expect_eql(dim(summary(vc))[1], 0)
 
-  expect_equal(dvinecop(u, vc), rep(1, 5))
-  expect_equal(pvinecop(u, vc), u, tol = 1e-2)
-  expect_equal(c(rosenblatt(u, vc)), u)
-  expect_equal(c(inverse_rosenblatt(u, vc)), u)
+  expect_eql(dvinecop(u, vc), rep(1, 5))
+  expect_eql(pvinecop(u, vc), u, tol = 1e-2)
+  expect_eql(c(rosenblatt(u, vc)), u)
+  expect_eql(c(inverse_rosenblatt(u, vc)), u)
   expect_silent(rvinecop(10, vc))
   expect_error(plot(vc))
   expect_warning(contour(vc))

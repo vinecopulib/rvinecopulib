@@ -50,5 +50,6 @@ u <- rbicop(500, "gauss", 0, 0.5)
 fit <- bicop(u, family = "par", keep_data = TRUE)
 
 # Predictions
-all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"))
+all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"),
+          check.environment = FALSE)
 }

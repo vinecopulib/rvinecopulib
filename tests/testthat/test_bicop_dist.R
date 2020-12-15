@@ -1,3 +1,7 @@
+# fixes problems with change in all.equal() behavior in R 4.1.x
+expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
+expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
+
 context("Class 'bicop_dist'")
 
 test_that("constructor creates proper bicop_dist object", {
@@ -16,8 +20,8 @@ test_that("checks for family/rotation/parameters consistency", {
 })
 
 test_that("partial matching for family names", {
-  expect_equal(bicop_dist("ind")$family, "indep")
-  expect_equal(bicop_dist("gauss")$family, "gaussian")
+  expect_eql(bicop_dist("ind")$family, "indep")
+  expect_eql(bicop_dist("gauss")$family, "gaussian")
   expect_error(bicop_dist("g"))
 })
 
@@ -56,7 +60,7 @@ test_that("plot functions work", {
 test_that("parameter <-> tau conversion works", {
   dist <- bicop_dist("joe", 90, 3)
 
-  expect_equal(coef(dist), dist$parameters)
+  expect_eql(coef(dist), dist$parameters)
 
   # one-parameter family
   tau <- par_to_ktau(dist)
@@ -65,7 +69,7 @@ test_that("parameter <-> tau conversion works", {
   par <- ktau_to_par(dist, tau)
   expect_identical(par, ktau_to_par("joe", tau))
 
-  expect_equal(3, par[1])
+  expect_eql(3, par[1])
 
   # two-parameter
   tau <- par_to_ktau("bb1", 0, c(1, 2))
@@ -91,7 +95,7 @@ test_that("getters work", {
   expect_warning(get_pair_copula(dist, NA, 1))
 
   # test other getters
-  expect_equivalent(get_parameters(dist), coef(dist))
-  expect_equivalent(get_ktau(dist), par_to_ktau(dist))
-  expect_equivalent(get_family(dist), "gumbel")
+  expect_equiv(get_parameters(dist), coef(dist))
+  expect_equiv(get_ktau(dist), par_to_ktau(dist))
+  expect_equiv(get_family(dist), "gumbel")
 })

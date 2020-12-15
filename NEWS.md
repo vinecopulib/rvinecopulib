@@ -1,3 +1,8 @@
+# rvinecopulib 0.5.5.1.1 (December 15, 2020)
+
+Maintenance release following the changes to `all.equal()` in R 4.1.x.
+
+
 # rvinecopulib 0.5.5.1.0 (November 24, 2020)
 
 Release following the updates of vinecopulib to 0.5.5, see 

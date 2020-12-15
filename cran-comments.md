@@ -1,5 +1,4 @@
-Fixes "uninitialised value" detected by valgrind 
-(https://cran.r-project.org/web/checks/check_results_rvinecopulib.html).
+Maintenance release following the changes to `all.equal()` in R 4.1.x.
 
 ## Test environments
 
@@ -7,7 +6,7 @@ Fixes "uninitialised value" detected by valgrind
 * Windows Server 2019 (release)
 * macOS (release)
 * ubuntu 16.04 (release, oldrel, devel)
-* ubuntu 20.04 with valgrind (release)
+* ubuntu 20.04 (release)
 
 ## R CMD check results
 
