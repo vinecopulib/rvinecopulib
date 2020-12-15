@@ -387,4 +387,5 @@ get_seeds <- function() {
 }
 
 #' internal function to fix testtthat::expect_equal after new R version
+#' @noRd
 expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
