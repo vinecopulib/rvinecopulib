@@ -57,6 +57,8 @@ protected:
 
   virtual double get_npars() = 0;
 
+  virtual void set_npars(const double& npars) = 0;
+
   virtual double parameters_to_tau(const Eigen::MatrixXd& parameters) = 0;
 
   virtual void flip() = 0;

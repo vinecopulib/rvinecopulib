@@ -41,6 +41,8 @@ protected:
 
   double get_npars();
 
+  void set_npars(const double& npars);
+
   virtual Eigen::VectorXd get_start_parameters(const double tau) = 0;
 
 private:

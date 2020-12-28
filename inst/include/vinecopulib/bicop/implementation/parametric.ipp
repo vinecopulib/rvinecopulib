@@ -56,6 +56,13 @@ ParBicop::get_npars()
   return static_cast<double>(parameters_.size());
 }
 
+inline void
+ParBicop::set_npars(const double&)
+{
+  // does nothing
+}
+
+
 // fit
 inline void
 ParBicop::fit(const Eigen::MatrixXd& data,

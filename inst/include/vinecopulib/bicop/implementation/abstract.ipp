@@ -127,6 +127,13 @@ AbstractBicop::set_var_types(const std::vector<std::string>& var_types)
   }
   var_types_ = var_types;
 }
+
+inline void
+AbstractBicop::set_npars(const double& npars)
+{
+  // does nothing by default
+}
+
 //! @}
 
 //! evaluates the pdf, but truncates it's value by DBL_MIN and DBL_MAX.

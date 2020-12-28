@@ -67,6 +67,8 @@ inline Bicop::Bicop(const Bicop& other)
 {
   nobs_ = other.nobs_;
   bicop_->set_loglik(other.bicop_->get_loglik());
+  bicop_->set_npars(other.bicop_->get_npars());
+
 }
 
 //! @brief Copy assignment operator (deep copy)

@@ -52,6 +52,8 @@ protected:
 
   double get_npars() override;
 
+  void set_npars(const double& npars) override;
+
   Eigen::MatrixXd get_parameters() const override;
 
   Eigen::MatrixXd get_parameters_lower_bounds() const override;

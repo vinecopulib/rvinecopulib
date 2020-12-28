@@ -120,6 +120,15 @@ KernelBicop::get_npars()
   return npars_;
 }
 
+inline void
+KernelBicop::set_npars(const double& npars)
+{
+  if (npars < 0) {
+    throw std::runtime_error("npars must be positive.");
+  }
+  npars_ = npars;
+}
+
 inline Eigen::MatrixXd
 KernelBicop::get_parameters() const
 {
