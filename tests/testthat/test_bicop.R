@@ -26,6 +26,7 @@ test_that("returns proper 'bicop' object", {
     c("family", "rotation", "parameters", "var_types",
       "npars", "loglik", "controls", "nobs")
   )
+  expect_gt(fit$npars, 1)
 
   colnames(u) <- paste(1:2)
   expect_identical(
