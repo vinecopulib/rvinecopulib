@@ -1,3 +1,7 @@
+# fixes problems with change in all.equal() behavior in R 4.1.x
+expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
+expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
+
 context("Class 'rvine_structure'")
 
 mat <- matrix(c(4, 3, 2, 1, 4, 3, 2, 0, 4, 3, 0, 0, 4, 0, 0, 0), 4, 4)
@@ -20,19 +24,19 @@ test_that("print/dim generics work", {
   rvm <- as_rvine_matrix(mat)
   expect_output(print(rvs))
   expect_output(print(rvm))
-  expect_equivalent(dim(rvs), c(4, 3))
-  expect_equivalent(dim(rvm), c(4, 3))
+  expect_equiv(dim(rvs), c(4, 3))
+  expect_equiv(dim(rvm), c(4, 3))
 })
 
 test_that("C- and D-vine structures work", {
   cv <- cvine_structure(1:6, trunc_lvl = 4)
-  expect_equivalent(dim(cv), c(6, 4))
-  expect_equivalent(cv$order, 1:6)
+  expect_equiv(dim(cv), c(6, 4))
+  expect_equiv(cv$order, 1:6)
   expect_identical(cv, cvine_structure(6, 4))
 
   dv <- dvine_structure(1:6, trunc_lvl = 4)
-  expect_equivalent(dim(dv), c(6, 4))
-  expect_equivalent(dv$order, 1:6)
+  expect_equiv(dim(dv), c(6, 4))
+  expect_equiv(dv$order, 1:6)
   expect_identical(dv, dvine_structure(6, 4))
 })
 
@@ -46,8 +50,8 @@ test_that("plot functions work", {
   p$plot_env <- NULL
   ps$plot_env <- NULL
   pm$plot_env <- NULL
-  expect_equivalent(p, ps)
-  expect_equivalent(p, pm)
+  expect_equiv(p, ps)
+  expect_equiv(p, pm)
 })
 
 test_that("d = 1 works", {
@@ -56,7 +60,7 @@ test_that("d = 1 works", {
   expect_length(struct$order, 1)
 
   mat <- as_rvine_matrix(struct)
-  expect_equal(unname(dim(mat)), c(1, 0))
+  expect_eql(unname(dim(mat)), c(1, 0))
 
   expect_output(print(struct))
   expect_error(plot(struct))

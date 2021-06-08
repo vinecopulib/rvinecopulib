@@ -1,3 +1,7 @@
+# fixes problems with change in all.equal() behavior in R 4.1.x
+expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
+expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
+
 context("Fitting 'vine' models")
 
 set.seed(5)
@@ -17,8 +21,8 @@ test_that("returns proper 'vine' object", {
 })
 
 test_that("S3 generics work", {
-  expect_equal(predict(fit, u), fitted(fit))
-  expect_equal(
+  expect_eql(predict(fit, u), fitted(fit))
+  expect_eql(
     predict(fit, u, what = "cdf"),
     fitted(fit, what = "cdf"),
     tolerance = 0.01
@@ -50,26 +54,26 @@ test_that("truncation works", {
 
 test_that("margins_controls works", {
   fit_mult <- vine(u, margins_controls = list(mult = 2))
-  expect_equal(
+  expect_eql(
     sapply(fit_mult$margins, "[[", "bw"),
     2 / log(6) * sapply(fit$margins, "[[", "bw")
   )
 
   fit_xmin <- vine(abs(u), margins_controls = list(xmin = 0, deg = 1, mult = 1:5))
-  expect_equal(sapply(fit_xmin$margins, "[[", "xmin"), rep(0, 5))
-  expect_equal(sapply(fit_xmin$margins, "[[", "deg"), rep(1, 5))
+  expect_eql(sapply(fit_xmin$margins, "[[", "xmin"), rep(0, 5))
+  expect_eql(sapply(fit_xmin$margins, "[[", "deg"), rep(1, 5))
 })
 
 test_that("weights work", {
   w <- rexp(nrow(u))
   fit_weights <- vine(u, copula_controls = list(family_set = "nonpar"),
                      weights = w, keep_data = TRUE)
-  expect_equal(fit_weights$weights, w)
+  expect_eql(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
 })
 
 test_that("d = 1 works", {
   vc <- vine(runif(20))
-  expect_equal(dim(summary(vc)$margins)[1], 1)
-  expect_equal(dim(summary(vc)$copula)[1], 0)
+  expect_eql(dim(summary(vc)$margins)[1], 1)
+  expect_eql(dim(summary(vc)$copula)[1], 0)
 })

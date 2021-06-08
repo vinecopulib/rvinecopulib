@@ -1,3 +1,7 @@
+# fixes problems with change in all.equal() behavior in R 4.1.x
+expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
+expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
+
 context("Fitting 'bicop' models")
 
 set.seed(0)
@@ -44,14 +48,14 @@ test_that("family sets (w/ partial matching)", {
 })
 
 test_that("S3 generics work", {
-  expect_equal(predict(fit, u, what = "pdf"), fitted(fit, what = "pdf"))
-  expect_equal(predict(fit, u, what = "cdf"), fitted(fit, what = "cdf"))
-  expect_equal(predict(fit, u, what = "hfunc1"), fitted(fit, what = "hfunc1"))
-  expect_equal(predict(fit, u, what = "hfunc2"), fitted(fit, what = "hfunc2"))
-  expect_equal(predict(fit, u, what = "hinv1"), fitted(fit, what = "hinv1"))
-  expect_equal(predict(fit, u, what = "hinv2"), fitted(fit, what = "hinv2"))
+  expect_eql(predict(fit, u, what = "pdf"), fitted(fit, what = "pdf"))
+  expect_eql(predict(fit, u, what = "cdf"), fitted(fit, what = "cdf"))
+  expect_eql(predict(fit, u, what = "hfunc1"), fitted(fit, what = "hfunc1"))
+  expect_eql(predict(fit, u, what = "hfunc2"), fitted(fit, what = "hfunc2"))
+  expect_eql(predict(fit, u, what = "hinv1"), fitted(fit, what = "hinv1"))
+  expect_eql(predict(fit, u, what = "hinv2"), fitted(fit, what = "hinv2"))
   u <- as.data.frame(u)
-  expect_equivalent(logLik(fit), sum(log(predict(fit, u, what = "pdf"))))
+  expect_equiv(logLik(fit), sum(log(predict(fit, u, what = "pdf"))))
   expect_output(print(fit))
   expect_output(summary(fit))
   expect_output(print(bicop(u, family = "nonp")))

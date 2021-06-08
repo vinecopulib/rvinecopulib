@@ -1,3 +1,7 @@
+# fixes problems with change in all.equal() behavior in R 4.1.x
+expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
+expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
+
 context("Fitting 'vinecop' models")
 
 set.seed(5)
@@ -39,8 +43,8 @@ if (Sys.info()["sysname"] != "SunOS") {
 }
 
 test_that("S3 generics work", {
-  expect_equal(predict(fit, u), fitted(fit_with_data))
-  expect_equal(
+  expect_eql(predict(fit, u), fitted(fit_with_data))
+  expect_eql(
     predict(fit, u, what = "cdf"),
     fitted(fit_with_data, what = "cdf"),
     tolerance = 0.01
@@ -71,7 +75,7 @@ test_that("partial selection works", {
   fit_partial <- vinecop(u[, sample(1:5)],
                          structure = truncate_model(fit$structure, 1),
                          trunc_lvl = 3)
-  expect_equal(unname(dim(fit_partial)[2]), 3)
+  expect_eql(unname(dim(fit_partial)[2]), 3)
 
   m_old <- as_rvine_matrix(fit$structure)
   m_new <- as_rvine_matrix(fit_partial$structure)
@@ -85,7 +89,7 @@ test_that("d = 1 works", {
   vc2 <- vinecop(runif(20))
   expect_identical(vc, vc2)
 
-  expect_equal(AIC(vc), 0)
-  expect_equal(mBICV(vc), 0)
-  expect_equal(dim(summary(vc))[1], 0)
+  expect_eql(AIC(vc), 0)
+  expect_eql(mBICV(vc), 0)
+  expect_eql(dim(summary(vc))[1], 0)
 })
