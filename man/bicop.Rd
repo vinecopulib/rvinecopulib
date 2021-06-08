@@ -108,12 +108,12 @@ following convenience definitions:
 (\code{"gaussian"}, \code{"clayton"}, \code{"gumbel"}, \code{"frank"}, and \code{"joe"}),
 \itemize{
 \item \code{"twopar"} contains the parametric families with two parameters
-(\code{"student"}, \code{"bb1"}, \code{"bb6"}, \code{"bb7"}, and \code{"bb8"}),
+(\code{"t"}, \code{"bb1"}, \code{"bb6"}, \code{"bb7"}, and \code{"bb8"}),
 \item \code{"elliptical"} contains the elliptical families,
 \item \code{"archimedean"} contains the archimedean families,
 \item \code{"BB"} contains the BB families,
 \item \code{"itau"} families for which estimation by Kendall's tau inversion is
-available (\code{"indep"},\code{"gaussian"}, \code{"student"},\code{"clayton"}, \code{"gumbel"},
+available (\code{"indep"},\code{"gaussian"}, \code{"t"},\code{"clayton"}, \code{"gumbel"},
 \code{"frank"}, \code{"joe"}).
 }
 }
