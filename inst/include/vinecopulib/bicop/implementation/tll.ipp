@@ -140,6 +140,11 @@ TllBicop::fit_local_likelihood(const Eigen::MatrixXd& x,
     }
   }
 
+  if (weights.size() > 0) {
+    // estimate can be negative if negative weights are used
+    res.col(0) = res.col(0).array().max(0.0);
+  }
+
   return res;
 }
 
