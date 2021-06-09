@@ -158,7 +158,7 @@ Additionally, nonparametric families are also supported.
 | ------------- | --------------------- | ---------- |
 | -             | Independence          | "indep"    |
 | Elliptical    | Gaussian              | "gaussian" |
-| "             | Student t             | "student"  |
+| "             | Student t             | "t"        |
 | Archimedean   | Clayton               | "clayton"  |
 | "             | Gumbel                | "gumbel"   |
 | "             | Frank                 | "frank"    |

@@ -64,7 +64,7 @@
 #' (`"gaussian"`, `"clayton"`, `"gumbel"`, `"frank"`, and `"joe"`),
 #'
 #' * `"twopar"` contains the parametric families with two parameters
-#' (`"student"`, `"bb1"`, `"bb6"`, `"bb7"`, and `"bb8"`),
+#' (`"t"`, `"bb1"`, `"bb6"`, `"bb7"`, and `"bb8"`),
 #'
 #' * `"elliptical"` contains the elliptical families,
 #'
@@ -73,7 +73,7 @@
 #' * `"BB"` contains the BB families,
 #'
 #' * `"itau"` families for which estimation by Kendall's tau inversion is
-#' available (`"indep"`,`"gaussian"`, `"student"`,`"clayton"`, `"gumbel"`,
+#' available (`"indep"`,`"gaussian"`, `"t"`,`"clayton"`, `"gumbel"`,
 #' `"frank"`, `"joe"`).
 #'
 #' @return
