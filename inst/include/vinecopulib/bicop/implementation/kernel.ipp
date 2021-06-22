@@ -12,7 +12,7 @@ namespace vinecopulib {
 inline KernelBicop::KernelBicop()
 {
   // construct default grid (equally spaced on Gaussian scale)
-  size_t m = 30;
+  size_t m = 50;
   auto grid_points = this->make_normal_grid(m);
 
   // move boundary points to 0/1, so we don't have to extrapolate
@@ -129,13 +129,13 @@ KernelBicop::get_parameters() const
 inline Eigen::MatrixXd
 KernelBicop::get_parameters_lower_bounds() const
 {
-  return Eigen::MatrixXd::Constant(30, 30, 0.0);
+  return Eigen::MatrixXd::Constant(50, 50, 0.0);
 }
 
 inline Eigen::MatrixXd
 KernelBicop::get_parameters_upper_bounds() const
 {
-  return Eigen::MatrixXd::Constant(30, 30, 1e4);
+  return Eigen::MatrixXd::Constant(50, 50, 1e4);
 }
 
 inline void
