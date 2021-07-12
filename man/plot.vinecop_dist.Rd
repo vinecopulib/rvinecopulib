@@ -54,7 +54,7 @@ If you want the contour boxes to be perfect squares, the plot height should
 be \code{1.25/length(tree)*(d - min(tree))} times the plot width.
 
 The \code{plot()} method returns an object that (among other things) contains the
-\link{igraph} representation of the graph; see \emph{Examples}.
+\code{igraph} representation of the graph; see \emph{Examples}.
 }
 \examples{
 # set up vine copula model

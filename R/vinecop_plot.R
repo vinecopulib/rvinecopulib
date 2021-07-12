@@ -10,7 +10,7 @@
 #' be \code{1.25/length(tree)*(d - min(tree))} times the plot width.
 #'
 #' The `plot()` method returns an object that (among other things) contains the
-#' [igraph] representation of the graph; see *Examples*.
+#' `igraph` representation of the graph; see *Examples*.
 #'
 #' @method plot vinecop_dist
 #'
