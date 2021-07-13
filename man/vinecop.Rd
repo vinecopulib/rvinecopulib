@@ -104,10 +104,14 @@ passed to \code{\link[=vinecop]{vinecop()}}.
 }
 \description{
 Automated fitting and model selection for vine copula models with continuous
-or discrete data.
+or discrete data. Selection of the structure is performed using the algorithm
+of Dissmann et al. (2013).
 }
 \details{
 \subsection{Discrete variables}{
+
+The dependence measures used to select trees (default: Kendall's tau) are
+corrected for ties (see \link[wdm:wdm]{wdm::wdm}).
 
 Let \code{n} be the number of observations and \code{d} the number of variables.
 When at least one variable is discrete, two types of
@@ -169,6 +173,12 @@ x <- qpois(u[, 1], 1)  # transform first variable to Poisson margin
 # we require two types of observations (see Details)
 u_disc <- cbind(ppois(x, 1), u[, 2:5], ppois(x - 1, 1))
 fit <- vinecop(u_disc, var_types = c("d", rep("c", 4)))
+}
+\references{
+Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka (2013).
+\emph{Selecting and estimating regular vine copulae and application to
+financial returns.} Computational Statistics & Data Analysis, 59 (1),
+52-69.
 }
 \seealso{
 \code{\link[=vinecop]{vinecop()}}, \code{\link[=dvinecop]{dvinecop()}}, \code{\link[=pvinecop]{pvinecop()}}, \code{\link[=rvinecop]{rvinecop()}},
