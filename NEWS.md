@@ -1,6 +1,6 @@
-# rvinecopulib 0.6.0.1.0 (July 13, 2021)
+# rvinecopulib 0.6.1.1.0 (July 13, 2021)
 
-Release following the updates of vinecopulib to 0.6.0, see 
+Release following the updates of vinecopulib to 0.6.1, see 
 https://github.com/vinecopulib/vinecopulib/releases. The most 
 relevant changes are summarized below.
 
