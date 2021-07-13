@@ -1,7 +1,8 @@
 #' Fitting vine copula models
 #'
 #' Automated fitting and model selection for vine copula models with continuous
-#' or discrete data.
+#' or discrete data. Selection of the structure is performed using the algorithm
+#' of Dissmann et al. (2013).
 #'
 #' @inheritParams bicop
 #' @param family_set a character vector of families; see [bicop()] for
@@ -34,6 +35,9 @@
 #' @details
 #'
 #' ## Discrete variables
+#' The dependence measures used to select trees (default: Kendall's tau) are
+#' corrected for ties (see [wdm::wdm]).
+#'
 #' Let `n` be the number of observations and `d` the number of variables.
 #' When at least one variable is discrete, two types of
 #' "observations" are required in `data`: the first `n  x  d` block
@@ -68,7 +72,13 @@
 #'
 #' @seealso [vinecop()], [dvinecop()], [pvinecop()], [rvinecop()],
 #'   [plot.vinecop()], [contour.vinecop()]
+#' @references
+#' Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka (2013).
+#' *Selecting and estimating regular vine copulae and application to
+#' financial returns.* Computational Statistics & Data Analysis, 59 (1),
+#' 52-69.
 #' @export
+#'
 #' @examples
 #' ## simulate dummy data
 #' x <- rnorm(30) * matrix(1, 30, 5) + 0.5 * matrix(rnorm(30 * 5), 30, 5)

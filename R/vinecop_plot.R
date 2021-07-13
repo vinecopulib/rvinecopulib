@@ -9,6 +9,9 @@
 #' If you want the contour boxes to be perfect squares, the plot height should
 #' be \code{1.25/length(tree)*(d - min(tree))} times the plot width.
 #'
+#' The `plot()` method returns an object that (among other things) contains the
+#' `igraph` representation of the graph; see *Examples*.
+#'
 #' @method plot vinecop_dist
 #'
 #' @aliases contour.vinecop_dist plot.vinecop contour.vinecop
@@ -39,14 +42,18 @@
 #'
 #' @examples
 #' # set up vine copula model
-#' d <- 20
-#' n <- 2e2
-#' u <- matrix(runif(n * d), n, d)
+#' u <- matrix(runif(20 * 10), 20, 10)
 #' vc <- vinecop(u, family = "indep")
 #'
 #' # plot
 #' plot(vc, tree = c(1, 2))
 #' plot(vc, edge_labels = "pair")
+#'
+#' # extract igraph representation
+#' plt <- plot(vc, edge_labels = "family_tau")
+#' igr_obj <- get("g", plt$plot_env)[[1]]
+#' igr_obj  # print object
+#' igraph::E(igr_obj)$name  # extract edge labels
 #'
 #' # set up another vine copula model
 #' pcs <- lapply(1:3, function(j) # pair-copulas in tree j
