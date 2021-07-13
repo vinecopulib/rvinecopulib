@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -18,7 +18,8 @@ inline GaussianBicop::GaussianBicop()
   parameters_upper_bounds_ << 1;
 }
 
-inline Eigen::VectorXd GaussianBicop::pdf_raw(const Eigen::MatrixXd &u)
+inline Eigen::VectorXd
+GaussianBicop::pdf_raw(const Eigen::MatrixXd& u)
 {
   // Inverse Cholesky of the correlation matrix
   double rho = double(this->parameters_(0));

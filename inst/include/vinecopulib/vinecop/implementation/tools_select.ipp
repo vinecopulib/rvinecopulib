@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -191,8 +191,8 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
     controls_.set_trunc_lvl(std::numeric_limits<size_t>::max());
     initialize_new_fit(data);
 
-    // decrease the threshold 
-    // (in the first iteration thresholded_crits is empty and the threshold is 
+    // decrease the threshold
+    // (in the first iteration thresholded_crits is empty and the threshold is
     // set to 1.0, which fits an independence model)
     if (controls_.get_select_threshold()) {
       controls_.set_threshold(get_next_threshold(thresholded_crits));

@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -42,10 +42,8 @@ create_candidate_bicops(const Eigen::MatrixXd& data,
 
   // remove combinations based on symmetry characteristics
   if (controls.get_preselect_families()) {
-    preselect_candidates(new_bicops,
-                         data.leftCols(2),
-                         tau,
-                         controls.get_weights());
+    preselect_candidates(
+      new_bicops, data.leftCols(2), tau, controls.get_weights());
   }
 
   return new_bicops;

@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -33,8 +33,8 @@ private:
 
   double generator_derivative2(const double& u);
 
-    // pdf
-    Eigen::VectorXd pdf_raw(const Eigen::MatrixXd &u);
+  // pdf
+  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u);
 
   // link between Kendall's tau and the par_bicop parameter
   double parameters_to_tau(const Eigen::MatrixXd& par);

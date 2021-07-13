@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -7,8 +7,8 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include <boost/property_tree/ptree.hpp>
 #include <limits>
+#include <vinecopulib/misc/nlohmann_json.hpp>
 #include <vinecopulib/misc/triangular_array.hpp>
 
 namespace vinecopulib {
@@ -82,11 +82,10 @@ public:
                  bool natural_order = false,
                  bool check = true);
   explicit RVineStructure(const std::string& filename, const bool check = true);
-  explicit RVineStructure(const boost::property_tree::ptree input,
-                          const bool check = true);
+  explicit RVineStructure(const nlohmann::json& input, const bool check = true);
 
-  boost::property_tree::ptree to_ptree() const;
-  void to_json(const std::string& filename) const;
+  nlohmann::json to_json() const;
+  void to_file(const std::string& filename) const;
 
   size_t get_dim() const;
   size_t get_trunc_lvl() const;

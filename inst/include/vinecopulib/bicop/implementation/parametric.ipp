@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -46,7 +46,7 @@ ParBicop::flip()
 
 // calculate number of parameters
 inline double
-ParBicop::get_npars()
+ParBicop::get_npars() const
 {
   // indepence copula has no parameters
   if (family_ == BicopFamily::indep) {
@@ -54,6 +54,12 @@ ParBicop::get_npars()
   }
   // otherwise, return length of parameter vector
   return static_cast<double>(parameters_.size());
+}
+
+inline void
+ParBicop::set_npars(const double&)
+{
+  // does nothing
 }
 
 // fit

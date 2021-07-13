@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -32,8 +32,7 @@ unaryExpr_or_nan(const Eigen::MatrixXd& x, const T& func)
 
 template<typename T>
 Eigen::VectorXd
-binaryExpr_or_nan(const Eigen::MatrixXd& u,
-                  const T& func)
+binaryExpr_or_nan(const Eigen::MatrixXd& u, const T& func)
 {
   auto func_or_nan = [&func](const double& u1, const double& u2) {
     if ((boost::math::isnan)(u1) | (boost::math::isnan)(u2)) {

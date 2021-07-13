@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -55,7 +55,9 @@ protected:
                    double mult,
                    const Eigen::VectorXd& weights) = 0;
 
-  virtual double get_npars() = 0;
+  virtual double get_npars() const = 0;
+
+  virtual void set_npars(const double& npars) = 0;
 
   virtual double parameters_to_tau(const Eigen::MatrixXd& parameters) = 0;
 

@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -50,7 +50,9 @@ protected:
 
   Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u) override;
 
-  double get_npars() override;
+  double get_npars() const override;
+
+  void set_npars(const double& npars) override;
 
   Eigen::MatrixXd get_parameters() const override;
 

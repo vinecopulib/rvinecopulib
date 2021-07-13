@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -67,6 +67,7 @@ inline Bicop::Bicop(const Bicop& other)
 {
   nobs_ = other.nobs_;
   bicop_->set_loglik(other.bicop_->get_loglik());
+  bicop_->set_npars(other.bicop_->get_npars());
 }
 
 //! @brief Copy assignment operator (deep copy)
@@ -83,21 +84,21 @@ Bicop::operator=(Bicop other)
   return *this;
 }
 
-//! @brief Instantiates from a boost::property_tree::ptree object.
-//! @param input The boost::property_tree::ptree object to convert from
-//! (see `to_ptree()` for the structure of the input).
-inline Bicop::Bicop(const boost::property_tree::ptree input)
-  : Bicop(get_family_enum(input.get<std::string>("family")),
-          input.get<int>("rotation"),
-          tools_serialization::ptree_to_matrix<double>(
-            input.get_child("parameters")))
+//! @brief Instantiates from a nlohmann::json object.
+//! @param input The nlohmann::json object to convert from
+//! (see `to_json()` for the structure of the input).
+inline Bicop::Bicop(const nlohmann::json& input)
+  : Bicop(get_family_enum(input["family"]),
+          static_cast<int>(input["rotation"]),
+          tools_serialization::json_to_matrix<double>(input["parameters"]))
 {
   // try block for backwards compatibility
   try {
-    var_types_ = tools_serialization::ptree_to_vector<std::string>(
-      input.get_child("var_types"));
-    nobs_ = input.get<size_t>("nobs_");
-    bicop_->set_loglik(input.get<double>("loglik"));
+    var_types_ =
+      tools_serialization::json_to_vector<std::string>(input["var_types"]);
+    nobs_ = static_cast<size_t>(input["nobs_"]);
+    bicop_->set_loglik(input["loglik"]);
+    bicop_->set_npars(input["npars"]);
   } catch (...) {
   }
 }
@@ -112,32 +113,29 @@ inline Bicop::Bicop(const boost::property_tree::ptree input)
 //!
 //! @param filename The name of the JSON file to read.
 inline Bicop::Bicop(const std::string& filename)
-  : Bicop(tools_serialization::json_to_ptree(filename.c_str()))
+  : Bicop(tools_serialization::file_to_json(filename))
 {}
 
-//! @brief Convert the copula into a boost::property_tree::ptree object.
+//! @brief Convert the copula into a nlohmann::json object.
 //!
-//! The boost::property_tree::ptree is contains of three values named
+//! The nlohmann::json is contains of three values named
 //! `"family"`, `"rotation"`, `"parameters"`, `"var_types"`,
 //! respectively a string for the family name, an integer for the rotation,
 //! a numeric matrix for the parameters and a list of two strings for the
 //! variables types.
 //!
-//! @return the boost::property_tree::ptree object containing the copula.
-inline boost::property_tree::ptree
-Bicop::to_ptree() const
+//! @return the nlohmann::json object containing the copula.
+inline nlohmann::json
+Bicop::to_json() const
 {
-  boost::property_tree::ptree output;
-
-  output.put("family", get_family_name());
-  output.put("rotation", rotation_);
-  auto mat_node = tools_serialization::matrix_to_ptree(get_parameters());
-  output.add_child("parameters", mat_node);
-  output.add_child("var_types",
-                   tools_serialization::vector_to_ptree(var_types_));
-
-  output.put("nobs_", nobs_);
-  output.put("loglik", bicop_->get_loglik());
+  nlohmann::json output;
+  output["family"] = get_family_name();
+  output["rotation"] = rotation_;
+  output["parameters"] = tools_serialization::matrix_to_json(get_parameters());
+  output["var_types"] = tools_serialization::vector_to_json(var_types_);
+  output["nobs_"] = nobs_;
+  output["loglik"] = bicop_->get_loglik();
+  output["npars"] = bicop_->get_npars();
 
   return output;
 }
@@ -152,9 +150,9 @@ Bicop::to_ptree() const
 //!
 //! @param filename The name of the file to write.
 inline void
-Bicop::to_json(const std::string& filename) const
+Bicop::to_file(const std::string& filename) const
 {
-  boost::property_tree::write_json(filename.c_str(), to_ptree());
+  tools_serialization::json_to_file(filename, to_json());
 }
 
 //! @brief Evaluates the copula density.
