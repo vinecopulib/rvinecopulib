@@ -73,7 +73,7 @@ and variable types." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0.1.0</span>
       </span>
     </div>
 
@@ -81,7 +81,7 @@ and variable types." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -95,7 +95,7 @@ and variable types." />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/vinecopulib/rvinecopulib/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -122,7 +122,7 @@ and variable types." />
 and variable types.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>vinecop_dist</span>(<span class='no'>pair_copulas</span>, <span class='no'>structure</span>, <span class='kw'>var_types</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='st'>"c"</span>, <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span>(<span class='no'>structure</span>)[<span class='fl'>1</span>]))</pre>
+    <pre class="usage"><span class='fu'>vinecop_dist</span><span class='op'>(</span><span class='va'>pair_copulas</span>, <span class='va'>structure</span>, var_types <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"c"</span>, <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>structure</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -165,27 +165,30 @@ object that can be coerced into one (see <code><a href='rvine_structure.html'>rv
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='rvine_structure.html'>rvine_structure()</a></code>, <code><a href='rvine_structure.html'>rvine_matrix()</a></code>, <code><a href='vinecop.html'>vinecop()</a></code>,
-<code><a href='plot.vinecop_dist.html'>plot.vinecop_dist()</a></code>, <code><a href='plot.vinecop_dist.html'>contour.vinecop_dist()</a></code>, <code><a href='vinecop_methods.html'>dvinecop()</a></code>,
-<code><a href='vinecop_methods.html'>pvinecop()</a></code>, <code><a href='vinecop_methods.html'>rvinecop()</a></code></p></div>
+<code><a href='plot.vinecop_dist.html'>plot.vinecop_dist()</a></code>, <code><a href='plot.vinecop_dist.html'>contour.vinecop_dist()</a></code>, <code><a href='vinecop_distributions.html'>dvinecop()</a></code>,
+<code><a href='vinecop_distributions.html'>pvinecop()</a></code>, <code><a href='vinecop_distributions.html'>rvinecop()</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># specify pair-copulas</span>
-<span class='no'>bicop</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bicop_dist.html'>bicop_dist</a></span>(<span class='st'>"bb1"</span>, <span class='fl'>90</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>3</span>, <span class='fl'>2</span>))
-<span class='no'>pcs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(
-  <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>bicop</span>, <span class='no'>bicop</span>), <span class='co'># pair-copulas in first tree</span>
-  <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>bicop</span>) <span class='co'># pair-copulas in second tree</span>
-)
+<span class='va'>bicop</span> <span class='op'>&lt;-</span> <span class='fu'><a href='bicop_dist.html'>bicop_dist</a></span><span class='op'>(</span><span class='st'>"bb1"</span>, <span class='fl'>90</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>3</span>, <span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>pcs</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>bicop</span>, <span class='va'>bicop</span><span class='op'>)</span>, <span class='co'># pair-copulas in first tree</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>bicop</span><span class='op'>)</span> <span class='co'># pair-copulas in second tree</span>
+<span class='op'>)</span>
 
 <span class='co'># specify R-vine matrix</span>
-<span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>3</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>0</span>, <span class='fl'>0</span>), <span class='fl'>3</span>, <span class='fl'>3</span>)
+<span class='va'>mat</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>3</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>, <span class='fl'>3</span>, <span class='fl'>3</span><span class='op'>)</span>
 
 <span class='co'># set up vine copula model</span>
-<span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop_dist</span>(<span class='no'>pcs</span>, <span class='no'>mat</span>)
+<span class='va'>vc</span> <span class='op'>&lt;-</span> <span class='fu'>vinecop_dist</span><span class='op'>(</span><span class='va'>pcs</span>, <span class='va'>mat</span><span class='op'>)</span>
 
 <span class='co'># visualization</span>
-<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>vc</span>)</div><div class='img'><img src='vinecop_dist-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span>(<span class='no'>vc</span>)</div><div class='img'><img src='vinecop_dist-2.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>vc</span><span class='op'>)</span>
+</div><div class='img'><img src='vinecop_dist-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span><span class='op'>(</span><span class='va'>vc</span><span class='op'>)</span>
+</div><div class='img'><img src='vinecop_dist-2.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># simulate from the model</span>
-<span class='fu'><a href='https://rdrr.io/r/graphics/pairs.html'>pairs</a></span>(<span class='fu'><a href='vinecop_methods.html'>rvinecop</a></span>(<span class='fl'>200</span>, <span class='no'>vc</span>))</div><div class='img'><img src='vinecop_dist-3.png' alt='' width='700' height='433' /></div></pre>
+<span class='fu'><a href='https://rdrr.io/r/graphics/pairs.html'>pairs</a></span><span class='op'>(</span><span class='fu'><a href='vinecop_distributions.html'>rvinecop</a></span><span class='op'>(</span><span class='fl'>200</span>, <span class='va'>vc</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='img'><img src='vinecop_dist-3.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -201,7 +204,7 @@ object that can be coerced into one (see <code><a href='rvine_structure.html'>rv
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

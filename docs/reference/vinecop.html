@@ -41,7 +41,8 @@
 
 <meta property="og:title" content="Fitting vine copula models — vinecop" />
 <meta property="og:description" content="Automated fitting and model selection for vine copula models with continuous
-or discrete data." />
+or discrete data. Selection of the structure is performed using the algorithm
+of Dissmann et al. (2013)." />
 
 
 
@@ -73,7 +74,7 @@ or discrete data." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0.1.0</span>
       </span>
     </div>
 
@@ -81,7 +82,7 @@ or discrete data." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -95,7 +96,7 @@ or discrete data." />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/vinecopulib/rvinecopulib/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -119,28 +120,29 @@ or discrete data." />
 
     <div class="ref-description">
     <p>Automated fitting and model selection for vine copula models with continuous
-or discrete data.</p>
+or discrete data. Selection of the structure is performed using the algorithm
+of Dissmann et al. (2013).</p>
     </div>
 
-    <pre class="usage"><span class='fu'>vinecop</span>(
-  <span class='no'>data</span>,
-  <span class='kw'>var_types</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='st'>"c"</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>NCOL</a></span>(<span class='no'>data</span>)),
-  <span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"all"</span>,
-  <span class='kw'>structure</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
-  <span class='kw'>par_method</span> <span class='kw'>=</span> <span class='st'>"mle"</span>,
-  <span class='kw'>nonpar_method</span> <span class='kw'>=</span> <span class='st'>"constant"</span>,
-  <span class='kw'>mult</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>selcrit</span> <span class='kw'>=</span> <span class='st'>"aic"</span>,
-  <span class='kw'>weights</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>numeric</a></span>(),
-  <span class='kw'>psi0</span> <span class='kw'>=</span> <span class='fl'>0.9</span>,
-  <span class='kw'>presel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>trunc_lvl</span> <span class='kw'>=</span> <span class='fl'>Inf</span>,
-  <span class='kw'>tree_crit</span> <span class='kw'>=</span> <span class='st'>"tau"</span>,
-  <span class='kw'>threshold</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>keep_data</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>show_trace</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>
-)</pre>
+    <pre class="usage"><span class='fu'>vinecop</span><span class='op'>(</span>
+  <span class='va'>data</span>,
+  var_types <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"c"</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>NCOL</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span><span class='op'>)</span>,
+  family_set <span class='op'>=</span> <span class='st'>"all"</span>,
+  structure <span class='op'>=</span> <span class='cn'>NA</span>,
+  par_method <span class='op'>=</span> <span class='st'>"mle"</span>,
+  nonpar_method <span class='op'>=</span> <span class='st'>"constant"</span>,
+  mult <span class='op'>=</span> <span class='fl'>1</span>,
+  selcrit <span class='op'>=</span> <span class='st'>"aic"</span>,
+  weights <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>numeric</a></span><span class='op'>(</span><span class='op'>)</span>,
+  psi0 <span class='op'>=</span> <span class='fl'>0.9</span>,
+  presel <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  trunc_lvl <span class='op'>=</span> <span class='cn'>Inf</span>,
+  tree_crit <span class='op'>=</span> <span class='st'>"tau"</span>,
+  threshold <span class='op'>=</span> <span class='fl'>0</span>,
+  keep_data <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  show_trace <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  cores <span class='op'>=</span> <span class='fl'>1</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -261,9 +263,11 @@ passed to <code>vinecop()</code>.</p></li>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     
-<h3>Discrete variables</h3>
+<h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Discrete variables</h3>
 
 
+<p>The dependence measures used to select trees (default: Kendall's tau) are
+corrected for ties (see <a href='https://rdrr.io/pkg/wdm/man/wdm.html'>wdm::wdm</a>).</p>
 <p>Let <code>n</code> be the number of observations and <code>d</code> the number of variables.
 When at least one variable is discrete, two types of
 "observations" are required in <code>data</code>: the first <code>n  x  d</code> block
@@ -274,7 +278,7 @@ left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 limit and the cdf itself coincide. Respective columns can be omitted in the
 second block.</p>
 
-<h3>Partial structure selection</h3>
+<h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Partial structure selection</h3>
 
 
 <p>It is possible to fix the vine structure only in the first trees and select
@@ -282,92 +286,108 @@ the remaining ones automatically. To specify only the first <code>k</code> trees
 a <code>k</code>-truncated <code><a href='rvine_structure.html'>rvine_structure()</a></code> or <code><a href='rvine_structure.html'>rvine_matrix()</a></code>. All trees up to
 <code>trunc_lvl</code> will then be selected automatically.</p>
 
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka (2013).
+<em>Selecting and estimating regular vine copulae and application to
+financial returns.</em> Computational Statistics &amp; Data Analysis, 59 (1),
+52-69.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code>vinecop()</code>, <code><a href='vinecop_methods.html'>dvinecop()</a></code>, <code><a href='vinecop_methods.html'>pvinecop()</a></code>, <code><a href='vinecop_methods.html'>rvinecop()</a></code>,
+    <div class='dont-index'><p><code>vinecop()</code>, <code><a href='vinecop_distributions.html'>dvinecop()</a></code>, <code><a href='vinecop_distributions.html'>pvinecop()</a></code>, <code><a href='vinecop_distributions.html'>rvinecop()</a></code>,
 <code><a href='plot.vinecop_dist.html'>plot.vinecop()</a></code>, <code><a href='plot.vinecop_dist.html'>contour.vinecop()</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'>## simulate dummy data</span>
-<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span>(<span class='fl'>30</span>) * <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='fl'>1</span>, <span class='fl'>30</span>, <span class='fl'>5</span>) + <span class='fl'>0.5</span> * <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span>(<span class='fl'>30</span> * <span class='fl'>5</span>), <span class='fl'>30</span>, <span class='fl'>5</span>)
-<span class='no'>u</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='pseudo_obs.html'>pseudo_obs</a></span>(<span class='no'>x</span>)
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='fl'>30</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>30</span>, <span class='fl'>5</span><span class='op'>)</span> <span class='op'>+</span> <span class='fl'>0.5</span> <span class='op'>*</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='fl'>30</span> <span class='op'>*</span> <span class='fl'>5</span><span class='op'>)</span>, <span class='fl'>30</span>, <span class='fl'>5</span><span class='op'>)</span>
+<span class='va'>u</span> <span class='op'>&lt;-</span> <span class='fu'><a href='pseudo_obs.html'>pseudo_obs</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
 
 <span class='co'>## fit and select the model structure, family and parameters</span>
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; # A data.frame: 10 x 11 
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>vinecop</span><span class='op'>(</span><span class='va'>u</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; # A data.frame: 10 x 11 
 #&gt;  tree edge conditioned conditioning var_types   family rotation parameters df
-#&gt;     1    1        3, 4                    c,c      bb7        0   2.6, 5.4  2
-#&gt;     1    2        1, 4                    c,c  clayton        0        5.6  1
-#&gt;     1    3        2, 4                    c,c      bb7      180   3.3, 5.0  2
-#&gt;     1    4        4, 5                    c,c      bb7      180   3.5, 2.6  2
-#&gt;     2    1        3, 2            4       c,c    frank        0        1.6  1
-#&gt;     2    2        1, 5            4       c,c gaussian        0       0.31  1
-#&gt;     2    3        2, 5            4       c,c      joe      180        1.5  1
-#&gt;     3    1        3, 5         2, 4       c,c    indep        0             0
-#&gt;     3    2        1, 2         5, 4       c,c    indep        0             0
-#&gt;     4    1        3, 1      5, 2, 4       c,c    indep        0             0
+#&gt;     1    1        1, 3                    c,c gaussian        0       0.87  1
+#&gt;     1    2        2, 3                    c,c    frank        0         11  1
+#&gt;     1    3        3, 5                    c,c gaussian        0       0.85  1
+#&gt;     1    4        4, 5                    c,c      bb7      180   1.6, 2.2  2
+#&gt;     2    1        1, 2            3       c,c    indep        0             0
+#&gt;     2    2        2, 5            3       c,c    indep        0             0
+#&gt;     2    3        3, 4            5       c,c    indep        0             0
+#&gt;     3    1        1, 5         2, 3       c,c    indep        0             0
+#&gt;     3    2        2, 4         5, 3       c,c    indep        0             0
+#&gt;     4    1        1, 4      5, 2, 3       c,c      joe      180        1.3  1
 #&gt;   tau loglik
-#&gt;  0.73   27.4
-#&gt;  0.74   29.8
-#&gt;  0.74   26.6
-#&gt;  0.70   23.0
-#&gt;  0.17    1.0
-#&gt;  0.20    1.4
-#&gt;  0.23    3.1
+#&gt;  0.67   19.0
+#&gt;  0.68   19.4
+#&gt;  0.65   16.9
+#&gt;  0.57   13.2
 #&gt;  0.00    0.0
 #&gt;  0.00    0.0
-#&gt;  0.00    0.0</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>fit</span>)</div><div class='img'><img src='vinecop-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span>(<span class='no'>fit</span>)</div><div class='img'><img src='vinecop-2.png' alt='' width='700' height='433' /></div><div class='input'>
+#&gt;  0.00    0.0
+#&gt;  0.00    0.0
+#&gt;  0.00    0.0
+#&gt;  0.14    2.9</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+</div><div class='img'><img src='vinecop-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+</div><div class='img'><img src='vinecop-2.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>## select by log-likelihood criterion from one-paramter families</span>
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u</span>, <span class='kw'>family_set</span> <span class='kw'>=</span> <span class='st'>"onepar"</span>, <span class='kw'>selcrit</span> <span class='kw'>=</span> <span class='st'>"bic"</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; # A data.frame: 10 x 11 
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>vinecop</span><span class='op'>(</span><span class='va'>u</span>, family_set <span class='op'>=</span> <span class='st'>"onepar"</span>, selcrit <span class='op'>=</span> <span class='st'>"bic"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; # A data.frame: 10 x 11 
 #&gt;  tree edge conditioned conditioning var_types   family rotation parameters df
-#&gt;     1    1        3, 4                    c,c   gumbel      180        3.8  1
-#&gt;     1    2        1, 4                    c,c  clayton        0        5.6  1
-#&gt;     1    3        2, 4                    c,c   gumbel        0        3.7  1
-#&gt;     1    4        4, 5                    c,c gaussian        0        0.9  1
-#&gt;     2    1        3, 2            4       c,c  clayton        0       0.37  1
-#&gt;     2    2        1, 5            4       c,c gaussian        0       0.31  1
-#&gt;     2    3        2, 5            4       c,c      joe      180        1.6  1
-#&gt;     3    1        3, 5         2, 4       c,c    frank        0       0.42  1
-#&gt;     3    2        1, 2         5, 4       c,c gaussian        0     -0.015  1
-#&gt;     4    1        3, 1      5, 2, 4       c,c      joe       90        1.3  1
-#&gt;      tau  loglik
-#&gt;   0.7388 25.7935
-#&gt;   0.7381 29.8054
-#&gt;   0.7320 24.5120
-#&gt;   0.7074 21.8957
-#&gt;   0.1563  1.1143
-#&gt;   0.2006  1.3573
-#&gt;   0.2464  3.6733
-#&gt;   0.0469  0.0709
-#&gt;  -0.0096  0.0032
-#&gt;  -0.1276  0.4534</div><div class='input'>
+#&gt;     1    1        1, 3                    c,c gaussian        0       0.87  1
+#&gt;     1    2        2, 3                    c,c    frank        0         11  1
+#&gt;     1    3        3, 5                    c,c gaussian        0       0.85  1
+#&gt;     1    4        4, 5                    c,c gaussian        0       0.73  1
+#&gt;     2    1        1, 2            3       c,c  clayton        0       0.24  1
+#&gt;     2    2        2, 5            3       c,c  clayton        0       0.22  1
+#&gt;     2    3        3, 4            5       c,c    frank        0        1.4  1
+#&gt;     3    1        1, 5         2, 3       c,c  clayton      270       0.11  1
+#&gt;     3    2        2, 4         5, 3       c,c  clayton        0      0.099  1
+#&gt;     4    1        1, 4      5, 2, 3       c,c  clayton        0        0.3  1
+#&gt;     tau loglik
+#&gt;   0.674  18.96
+#&gt;   0.683  19.43
+#&gt;   0.647  16.89
+#&gt;   0.520   9.42
+#&gt;   0.109   0.64
+#&gt;   0.101   0.73
+#&gt;   0.157   0.78
+#&gt;  -0.052   0.16
+#&gt;   0.047   0.26
+#&gt;   0.132   2.04</div><div class='input'>
 <span class='co'>## Gaussian D-vine</span>
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u</span>, <span class='kw'>structure</span> <span class='kw'>=</span> <span class='fu'><a href='rvine_structure.html'>dvine_structure</a></span>(<span class='fl'>1</span>:<span class='fl'>5</span>), <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"gauss"</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>fit</span>)</div><div class='img'><img src='vinecop-3.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span>(<span class='no'>fit</span>)</div><div class='img'><img src='vinecop-4.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>vinecop</span><span class='op'>(</span><span class='va'>u</span>, structure <span class='op'>=</span> <span class='fu'><a href='rvine_structure.html'>dvine_structure</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>)</span>, family <span class='op'>=</span> <span class='st'>"gauss"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+</div><div class='img'><img src='vinecop-3.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+</div><div class='img'><img src='vinecop-4.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>## Partial structure selection with only first tree specified</span>
-<span class='no'>structure</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='rvine_structure.html'>rvine_structure</a></span>(<span class='kw'>order</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>5</span>, <span class='fl'>4</span>)))
-<span class='no'>structure</span></div><div class='output co'>#&gt; 5-dimensional R-vine structure ('rvine_structure'), 1-truncated
+<span class='va'>structure</span> <span class='op'>&lt;-</span> <span class='fu'><a href='rvine_structure.html'>rvine_structure</a></span><span class='op'>(</span>order <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='fl'>4</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>structure</span>
+</div><div class='output co'>#&gt; 5-dimensional R-vine structure ('rvine_structure'), 1-truncated
 #&gt; 5 5 5 5 5
 #&gt;       4  
 #&gt;     3    
 #&gt;   2      
-#&gt; 1        </div><div class='input'><span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u</span>, <span class='kw'>structure</span> <span class='kw'>=</span> <span class='no'>structure</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"gauss"</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>fit</span>)</div><div class='img'><img src='vinecop-5.png' alt='' width='700' height='433' /></div><div class='input'>
+#&gt; 1        </div><div class='input'><span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>vinecop</span><span class='op'>(</span><span class='va'>u</span>, structure <span class='op'>=</span> <span class='va'>structure</span>, family <span class='op'>=</span> <span class='st'>"gauss"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+</div><div class='img'><img src='vinecop-5.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>## 1-truncated model with random structure</span>
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u</span>, <span class='kw'>structure</span> <span class='kw'>=</span> <span class='fu'><a href='rvine_structure_sim.html'>rvine_structure_sim</a></span>(<span class='fl'>5</span>), <span class='kw'>trunc_lvl</span> <span class='kw'>=</span> <span class='fl'>1</span>)
-<span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span>(<span class='no'>fit</span>)</div><div class='img'><img src='vinecop-6.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>vinecop</span><span class='op'>(</span><span class='va'>u</span>, structure <span class='op'>=</span> <span class='fu'><a href='rvine_structure_sim.html'>rvine_structure_sim</a></span><span class='op'>(</span><span class='fl'>5</span><span class='op'>)</span>, trunc_lvl <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/graphics/contour.html'>contour</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+</div><div class='img'><img src='vinecop-6.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>## Model for discrete data</span>
-<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>qpois</a></span>(<span class='no'>u</span>, <span class='fl'>1</span>)  <span class='co'># transform to Poisson margins</span>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>qpois</a></span><span class='op'>(</span><span class='va'>u</span>, <span class='fl'>1</span><span class='op'>)</span>  <span class='co'># transform to Poisson margins</span>
 <span class='co'># we require two types of observations (see Details)</span>
-<span class='no'>u_disc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span>(<span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>ppois</a></span>(<span class='no'>x</span>, <span class='fl'>1</span>), <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>ppois</a></span>(<span class='no'>x</span> - <span class='fl'>1</span>, <span class='fl'>1</span>))
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u_disc</span>, <span class='kw'>var_types</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='st'>"d"</span>, <span class='fl'>5</span>))
+<span class='va'>u_disc</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>ppois</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='fl'>1</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>ppois</a></span><span class='op'>(</span><span class='va'>x</span> <span class='op'>-</span> <span class='fl'>1</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>vinecop</span><span class='op'>(</span><span class='va'>u_disc</span>, var_types <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"d"</span>, <span class='fl'>5</span><span class='op'>)</span><span class='op'>)</span>
 
 <span class='co'>## Model for mixed data</span>
-<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>qpois</a></span>(<span class='no'>u</span>[, <span class='fl'>1</span>], <span class='fl'>1</span>)  <span class='co'># transform first variable to Poisson margin</span>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>qpois</a></span><span class='op'>(</span><span class='va'>u</span><span class='op'>[</span>, <span class='fl'>1</span><span class='op'>]</span>, <span class='fl'>1</span><span class='op'>)</span>  <span class='co'># transform first variable to Poisson margin</span>
 <span class='co'># we require two types of observations (see Details)</span>
-<span class='no'>u_disc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span>(<span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>ppois</a></span>(<span class='no'>x</span>, <span class='fl'>1</span>), <span class='no'>u</span>[, <span class='fl'>2</span>:<span class='fl'>5</span>], <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>ppois</a></span>(<span class='no'>x</span> - <span class='fl'>1</span>, <span class='fl'>1</span>))
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>vinecop</span>(<span class='no'>u_disc</span>, <span class='kw'>var_types</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"d"</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='st'>"c"</span>, <span class='fl'>4</span>)))</div></pre>
+<span class='va'>u_disc</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>ppois</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='fl'>1</span><span class='op'>)</span>, <span class='va'>u</span><span class='op'>[</span>, <span class='fl'>2</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>]</span>, <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>ppois</a></span><span class='op'>(</span><span class='va'>x</span> <span class='op'>-</span> <span class='fl'>1</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>vinecop</span><span class='op'>(</span><span class='va'>u_disc</span>, var_types <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"d"</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"c"</span>, <span class='fl'>4</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -383,7 +403,7 @@ a <code>k</code>-truncated <code><a href='rvine_structure.html'>rvine_structure(
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
