@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -38,7 +38,8 @@ StudentBicop::pdf_raw(const Eigen::MatrixXd& u)
   return f;
 }
 
-inline Eigen::VectorXd StudentBicop::cdf(const Eigen::MatrixXd &u)
+inline Eigen::VectorXd
+StudentBicop::cdf(const Eigen::MatrixXd& u)
 {
   using namespace tools_stats;
 
@@ -75,7 +76,8 @@ StudentBicop::hfunc1_raw(const Eigen::MatrixXd& u)
   return h;
 }
 
-inline Eigen::VectorXd StudentBicop::hinv1_raw(const Eigen::MatrixXd &u)
+inline Eigen::VectorXd
+StudentBicop::hinv1_raw(const Eigen::MatrixXd& u)
 {
   double rho = double(this->parameters_(0));
   double nu = double(this->parameters_(1));

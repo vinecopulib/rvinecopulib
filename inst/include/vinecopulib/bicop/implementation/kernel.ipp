@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -115,9 +115,18 @@ KernelBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
 }
 
 inline double
-KernelBicop::get_npars()
+KernelBicop::get_npars() const
 {
   return npars_;
+}
+
+inline void
+KernelBicop::set_npars(const double& npars)
+{
+  if (npars < 0) {
+    throw std::runtime_error("npars must be positive.");
+  }
+  npars_ = npars;
 }
 
 inline Eigen::MatrixXd

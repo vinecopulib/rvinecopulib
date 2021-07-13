@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -39,6 +39,7 @@ inline Vinecop::Vinecop(const RVineStructure& structure,
   if (pair_copulas.size() > 0) {
     set_all_pair_copulas(pair_copulas);
   }
+
   if (var_types.size() > 0) {
     set_var_types(var_types);
   } else {
@@ -120,22 +121,22 @@ inline Vinecop::Vinecop(
   : Vinecop(data, RVineStructure(matrix), var_types, controls)
 {}
 
-//! @brief Instantiates from a boost::property_tree::ptree object.
-//! @param input The boost::property_tree::ptree object to convert from
-//! (see `to_ptree()` for the structure of the input).
+//! @brief Instantiates from a nlohmann::json object.
+//! @param input The nlohmann::json object to convert from
+//! (see `to_json()` for the structure of the input).
 //! @param check Whether to check if the `"structure"` node represents
 //!      a valid R-vine structure.
-inline Vinecop::Vinecop(const boost::property_tree::ptree input,
-                        const bool check)
+inline Vinecop::Vinecop(const nlohmann::json& input, const bool check)
 {
-  rvine_structure_ = RVineStructure(input.get_child("structure"), check);
+  rvine_structure_ = RVineStructure(input["structure"], check);
   d_ = static_cast<size_t>(rvine_structure_.get_dim());
+  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
 
-  boost::property_tree::ptree pcs_node = input.get_child("pair copulas");
-  for (size_t tree = 0; tree < d_ - 1; ++tree) {
-    boost::property_tree::ptree tree_node;
+  nlohmann::json pcs_json = input["pair copulas"];
+  for (size_t tree = 0; tree < std::min(d_, trunc_lvl); ++tree) {
+    nlohmann::json tree_json;
     try {
-      tree_node = pcs_node.get_child("tree" + std::to_string(tree));
+      tree_json = pcs_json["tree" + std::to_string(tree)];
     } catch (...) {
       break; // vine was truncated, no more trees to parse
     }
@@ -144,19 +145,18 @@ inline Vinecop::Vinecop(const boost::property_tree::ptree input,
     pair_copulas_[tree].resize(d_ - tree - 1);
 
     for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
-      boost::property_tree::ptree pc_node =
-        tree_node.get_child("pc" + std::to_string(edge));
-      pair_copulas_[tree][edge] = Bicop(pc_node);
+      nlohmann::json pc_json = tree_json["pc" + std::to_string(edge)];
+      pair_copulas_[tree][edge] = Bicop(pc_json);
     }
   }
 
   // try block for backwards compatibility
   try {
-    var_types_ = tools_serialization::ptree_to_vector<std::string>(
-      input.get_child("var_types"));
-    nobs_ = input.get<size_t>("nobs_");
-    threshold_ = input.get<double>("threshold");
-    loglik_ = input.get<double>("loglik");
+    var_types_ =
+      tools_serialization::json_to_vector<std::string>(input["var_types"]);
+    nobs_ = static_cast<size_t>(input["nobs_"]);
+    threshold_ = static_cast<double>(input["threshold"]);
+    loglik_ = static_cast<double>(input["loglik"]);
   } catch (...) {
   }
 }
@@ -176,42 +176,41 @@ inline Vinecop::Vinecop(const boost::property_tree::ptree input,
 //! @param check Whether to check if the `"structure"` node of the input
 //! represents a valid R-vine structure.
 inline Vinecop::Vinecop(const std::string& filename, const bool check)
-  : Vinecop(tools_serialization::json_to_ptree(filename.c_str()), check)
+  : Vinecop(tools_serialization::file_to_json(filename), check)
 {}
 
-//! @brief Converts the copula into a boost::property_tree::ptree object.
+//! @brief Converts the copula into a nlohmann::json object.
 //!
-//! The `ptree` object contains two nodes : `"structure"` for the vine
+//! The `nlohmann::json` object contains two nodes : `"structure"` for the vine
 //! structure, which itself contains nodes `"array"` for the structure
 //! triangular array and `"order"` for the order vector, and `"pair copulas"`.
 //! The former two encode the R-Vine structure and the latter is a list of
 //! child nodes for the trees (`"tree1"`, `"tree2"`, etc), each containing
 //! a list of child nodes for the edges (`"pc1"`, `"pc2"`, etc).
-//! See Bicop::to_ptree() for the encoding of pair-copulas.
+//! See Bicop::to_json() for the encoding of pair-copulas.
 //!
-//! @return the boost::property_tree::ptree object containing the copula.
-inline boost::property_tree::ptree
-Vinecop::to_ptree() const
+//! @return the nlohmann::json object containing the copula.
+inline nlohmann::json
+Vinecop::to_json() const
 {
-  boost::property_tree::ptree pair_copulas;
+  nlohmann::json pair_copulas;
   for (size_t tree = 0; tree < pair_copulas_.size(); ++tree) {
-    boost::property_tree::ptree tree_node;
+    nlohmann::json tree_json;
     for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
-      tree_node.add_child("pc" + std::to_string(edge),
-                          pair_copulas_[tree][edge].to_ptree());
+      tree_json["pc" + std::to_string(edge)] =
+        pair_copulas_[tree][edge].to_json();
     }
-    pair_copulas.add_child("tree" + std::to_string(tree), tree_node);
+    pair_copulas["tree" + std::to_string(tree)] = tree_json;
   }
 
-  boost::property_tree::ptree output;
-  output.add_child("pair copulas", pair_copulas);
-  auto structure_node = rvine_structure_.to_ptree();
-  output.add_child("structure", structure_node);
-  output.add_child("var_types",
-                   tools_serialization::vector_to_ptree(var_types_));
-  output.put("nobs_", nobs_);
-  output.put("threshold", threshold_);
-  output.put("loglik", loglik_);
+  nlohmann::json output;
+  output["pair copulas"] = pair_copulas;
+  auto structure_json = rvine_structure_.to_json();
+  output["structure"] = structure_json;
+  output["var_types"] = tools_serialization::vector_to_json(var_types_);
+  output["nobs_"] = nobs_;
+  output["threshold"] = threshold_;
+  output["loglik"] = loglik_;
 
   return output;
 }
@@ -229,9 +228,9 @@ Vinecop::to_ptree() const
 //!
 //! @param filename The name of the JSON file to write.
 inline void
-Vinecop::to_json(const std::string& filename) const
+Vinecop::to_file(const std::string& filename) const
 {
-  boost::property_tree::write_json(filename.c_str(), this->to_ptree());
+  tools_serialization::json_to_file(filename, this->to_json());
 }
 
 //! @brief Initializes object for storing pair copulas.
@@ -267,15 +266,17 @@ Vinecop::make_pair_copula_store(const size_t d, const size_t trunc_lvl)
 //! *Selecting and estimating regular vine copulae and application to
 //! financial returns.* Computational Statistics & Data Analysis, 59 (1),
 //! 52-69.
+//! The dependence measure used to select trees (default: Kendall's tau) is
+//! corrected for ties (see the wdm library).
 //!
-//! When at least one variable is discrete, two types of "observations"
-//! are required: the first \f$ n \times d \f$ block contains realizations of
-//! \f$ F_Y(Y), F_X(X) \f$; the second \f$ n \times d \f$ block contains
-//! realizations of \f$ F_Y(Y^-), F_X(X^-), ... \f$. The minus indicates a
-//! left-sided limit of the cdf. For continuous variables the left limit and the
-//! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
-//! F_Y(Y^-) = F_Y(Y - 1) \f$. Continuous variables in the second block can
-//! be omitted.
+//! When at least one variable is discrete, two types of
+//! "observations" are required: the first \f$ n \times d \f$ block contains
+//! realizations of \f$ F_Y(Y), F_X(X) \f$; the second \f$ n \times d \f$ block
+//! contains realizations of \f$ F_Y(Y^-), F_X(X^-), ... \f$. The minus
+//! indicates a left-sided limit of the cdf. For continuous variables the left
+//! limit and the cdf itself coincide. For, e.g., an integer-valued variable, it
+//! holds \f$ F_Y(Y^-) = F_Y(Y - 1) \f$. Continuous variables in the second
+//! block can be omitted.
 //!
 //! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   observations, where \f$ k \f$ is the number of discrete variables.
@@ -734,7 +735,7 @@ Vinecop::get_var_types() const
 
 //! @brief Evaluates the copula density.
 //!
-//! The copula density is defined as joint density divided by marginal 
+//! The copula density is defined as joint density divided by marginal
 //! densities, irrespective of variable types.
 //!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
@@ -1140,9 +1141,9 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
     size_t n_half = n / 2;
     size_t n_left = n - n_half;
     U_vine.block(0, 0, n_half, d) =
-      inverse_rosenblatt(u.block(0, 0, n_half, d));
+      inverse_rosenblatt(u.block(0, 0, n_half, d), num_threads);
     U_vine.block(n_half, 0, n_left, d) =
-      inverse_rosenblatt(u.block(n_half, 0, n_left, d));
+      inverse_rosenblatt(u.block(n_half, 0, n_left, d), num_threads);
     return U_vine;
   }
 
@@ -1391,11 +1392,16 @@ Vinecop::str() const
       if (t > 0) {
         str << " | ";
         for (size_t cv = t - 1; cv > 0; --cv) {
-          str << arr(cv, e) - 1 << ",";
+          str << arr(cv, e) << ",";
         }
         str << arr(0, e);
       }
-      str << " <-> " << pair_copulas_[t][e].str() << std::endl;
+      str << " <-> ";
+      if (t < pair_copulas_.size()) {
+        str << pair_copulas_[t][e].str() << std::endl;
+      } else {
+        str << "Independence" << std::endl;
+      }
     }
   }
   return str.str();

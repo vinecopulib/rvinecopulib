@@ -158,7 +158,7 @@ Additionally, nonparametric families are also supported.
 | ------------- | --------------------- | ---------- |
 | -             | Independence          | "indep"    |
 | Elliptical    | Gaussian              | "gaussian" |
-| "             | Student t             | "student"  |
+| "             | Student t             | "t"        |
 | Archimedean   | Clayton               | "clayton"  |
 | "             | Gumbel                | "gumbel"   |
 | "             | Frank                 | "frank"    |
@@ -176,7 +176,7 @@ Note that several convenience vectors of families are included:
 * `"one_par"` contains the parametric families with a single parameter
 (`"gaussian"`, `"clayton"`, `"gumbel"`, `"frank"`, and `"joe"`)
 * `"two_par"` contains the parametric families with two parameters
-(`"student"`, `"bb1"`, `"bb6"`, `"bb7"`, and `"bb8"`)
+(`"t"`, `"bb1"`, `"bb6"`, `"bb7"`, and `"bb8"`)
 * `"elliptical"` contains the elliptical families
 * `"archimedean"` contains the archimedean families
 * `"BB"` contains the BB families
@@ -204,4 +204,5 @@ one or two parameters:
 References
 ----------
 
-Aas, K., C. Czado, A. Frigessi, and H. Bakken (2009). Pair-copula constructions of multiple dependence. Insurance: Mathematics and Economics 44 (2), 182-198.
+Aas, K., C. Czado, A. Frigessi, and H. Bakken (2009). Pair-copula constructions 
+of multiple dependence. Insurance: Mathematics and Economics 44 (2), 182-198.

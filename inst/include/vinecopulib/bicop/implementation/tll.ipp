@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -138,6 +138,11 @@ TllBicop::fit_local_likelihood(const Eigen::MatrixXd& x,
     } else {
       res(k, 1) = calculate_infl(n, f0, b, B, det_irB, S, method, 1.0);
     }
+  }
+
+  if (weights.size() > 0) {
+    // estimate can be negative if negative weights are used
+    res.col(0) = res.col(0).array().max(0.0);
   }
 
   return res;

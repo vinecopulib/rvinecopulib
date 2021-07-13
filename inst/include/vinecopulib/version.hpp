@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -16,7 +16,7 @@
 //  VINECOPULIB_VERSION / 100 % 1000 is the minor version
 //  VINECOPULIB_VERSION / 100000 is the major version
 
-#define VINECOPULIB_VERSION 000504
+#define VINECOPULIB_VERSION 000601
 
 //
 //  VINECOPULIB_LIB_VERSION must be defined to be the same as
@@ -24,4 +24,4 @@
 //  major version number, y is the minor version number, and z is the patch
 //  level if not 0.
 
-#define VINECOPULIB_LIB_VERSION "0_5_4"
+#define VINECOPULIB_LIB_VERSION "0_6_1"

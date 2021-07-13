@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -50,7 +50,8 @@ JoeBicop::generator_derivative(const double& u)
 //           std::pow(-1 + std::pow(1 - u, theta), 2);
 //}
 
-inline Eigen::VectorXd JoeBicop::pdf_raw(const Eigen::MatrixXd &u)
+inline Eigen::VectorXd
+JoeBicop::pdf_raw(const Eigen::MatrixXd& u)
 {
   double theta = static_cast<double>(parameters_(0));
   auto f = [theta](const double& u1, const double& u2) {
@@ -64,7 +65,8 @@ inline Eigen::VectorXd JoeBicop::pdf_raw(const Eigen::MatrixXd &u)
 }
 
 // inverse h-function
-inline Eigen::VectorXd JoeBicop::hinv1_raw(const Eigen::MatrixXd &u)
+inline Eigen::VectorXd
+JoeBicop::hinv1_raw(const Eigen::MatrixXd& u)
 {
   double theta = double(parameters_(0));
   double u1, u2;

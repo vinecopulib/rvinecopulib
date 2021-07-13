@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -98,7 +98,6 @@ FrankBicop::get_start_parameters(const double tau)
   return par;
 }
 
-
 //! @brief computes the Debye function of order 1.
 //! @param x the argument and upper limit of the integral. x>=0.
 //! @return the Debye function. Zero if x<=0.
@@ -115,7 +114,7 @@ debye1(const double& x)
   if (x >= 3.) {
     double sum = 1.64493406684822643647241516665e+00;
     static constexpr std::array<short, 14> kLim{ 0, 0, 0, 13, 10, 8, 7,
-                                                  6, 5, 5, 4,  4,  4, 3 };
+                                                 6, 5, 5, 4,  4,  4, 3 };
     const short kmax = (x < 14) ? kLim[static_cast<int>(x)] : 3;
     for (short k = 1; k <= kmax; k++) {
       const double xk = x * k;
@@ -211,4 +210,3 @@ debye1(const double& x)
   }
 }
 }
-

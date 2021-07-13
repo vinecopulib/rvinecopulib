@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1.1.0</span>
       </span>
     </div>
 
@@ -79,7 +79,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -93,7 +93,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/vinecopulib/rvinecopulib/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -114,9 +114,25 @@
       <small>Source: <a href='https://github.com/vinecopulib/rvinecopulib/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="rvinecopulib-06110-july-13-2021" class="section level1">
+<h1 class="page-header" data-toc-text="0.6.1.1.0">
+<a href="#rvinecopulib-06110-july-13-2021" class="anchor"></a>rvinecopulib 0.6.1.1.0 (July 13, 2021)<small> Unreleased </small>
+</h1>
+<p>Release following the updates of vinecopulib to 0.6.1, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
+<div id="bug-fixes" class="section level3">
+<h3 class="hasAnchor">
+<a href="#bug-fixes" class="anchor"></a>BUG FIXES</h3>
+<ul>
+<li><p>improved documentation (<a href='https://github.com/vinecopulib/rvinecopulib/issues/241'>#241</a>, <a href='https://github.com/vinecopulib/rvinecopulib/issues/239'>#239</a>)</p></li>
+<li><p>use <code>num_threads</code> in recursive calls to the inverse Rosenblatt</p></li>
+<li><p>force TLL to be nonnegative (<a href='https://github.com/vinecopulib/rvinecopulib/issues/238'>#238</a>)</p></li>
+<li><p>fix number of parameters for TLL</p></li>
+</ul>
+</div>
+</div>
     <div id="rvinecopulib-05511-december-15-2020" class="section level1">
 <h1 class="page-header" data-toc-text="0.5.5.1.1">
-<a href="#rvinecopulib-05511-december-15-2020" class="anchor"></a>rvinecopulib 0.5.5.1.1 (December 15, 2020)<small> Unreleased </small>
+<a href="#rvinecopulib-05511-december-15-2020" class="anchor"></a>rvinecopulib 0.5.5.1.1 (December 15, 2020)<small> 2021-01-06 </small>
 </h1>
 <p>Maintenance release following the changes to <code><a href="https://rdrr.io/r/base/all.equal.html">all.equal()</a></code> in R 4.1.x.</p>
 </div>
@@ -125,9 +141,9 @@
 <a href="#rvinecopulib-05510-november-24-2020" class="anchor"></a>rvinecopulib 0.5.5.1.0 (November 24, 2020)<small> 2020-11-23 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.5.5, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
-<div id="bug-fixes" class="section level3">
+<div id="bug-fixes-1" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes" class="anchor"></a>BUG FIXES</h3>
+<a href="#bug-fixes-1" class="anchor"></a>BUG FIXES</h3>
 <ul>
 <li><p>fix little bug in copula selection based on mBIC</p></li>
 <li><p>stabilize BB7 copula pdf</p></li>
@@ -142,13 +158,13 @@
 <a href="#rvinecopulib-05410-september-30-2020" class="anchor"></a>rvinecopulib 0.5.4.1.0 (September 30, 2020)<small> 2020-10-03 </small>
 </h1>
 <p>Release following the updates of vinecopulib to 0.5.4, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
-<div id="bug-fixes-1" class="section level3">
+<div id="bug-fixes-2" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes-1" class="anchor"></a>BUG FIXES</h3>
+<a href="#bug-fixes-2" class="anchor"></a>BUG FIXES</h3>
 <ul>
 <li><p>fix uninitialized number of parameters for TLL family</p></li>
 <li><p>fix Kendall’s tau of Frank copula for par &lt;= 3</p></li>
-<li><p>fix <code><a href="../reference/vinecop_methods.html">dvinecop()</a></code> when discrete variables are present (<a href='https://github.com/vinecopulib/rvinecopulib/issues/222'>#222</a>)</p></li>
+<li><p>fix <code><a href="../reference/vinecop_distributions.html">dvinecop()</a></code> when discrete variables are present (<a href='https://github.com/vinecopulib/rvinecopulib/issues/222'>#222</a>)</p></li>
 </ul>
 </div>
 </div>
@@ -165,9 +181,9 @@
 <li><p>make AIC default selection criterion (<a href='https://github.com/vinecopulib/rvinecopulib/issues/213'>#213</a>)</p></li>
 </ul>
 </div>
-<div id="bug-fixes-2" class="section level3">
+<div id="bug-fixes-3" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes-2" class="anchor"></a>BUG FIXES</h3>
+<a href="#bug-fixes-3" class="anchor"></a>BUG FIXES</h3>
 <ul>
 <li><p>catch na in ktau_to_par (<a href='https://github.com/vinecopulib/rvinecopulib/issues/214'>#214</a>)</p></li>
 <li><p>make Bicop/Vinecop objects indepent of copied-from-objects</p></li>
@@ -443,7 +459,7 @@
 <p>BUG FIXES</p>
 <ul>
 <li><p>error thrown whenever <code><a href="../reference/vinecop.html">vinecop()</a></code> or <code><a href="../reference/bicop.html">bicop()</a></code> are called with data sets containing a single row.</p></li>
-<li><p>made order of <code><a href="../reference/vinecop_methods.html">rvinecop(..., U)</a></code> consistent for d = 2 and d &gt; 2.</p></li>
+<li><p>made order of <code><a href="../reference/vinecop_distributions.html">rvinecop(..., U)</a></code> consistent for d = 2 and d &gt; 2.</p></li>
 <li><p>fixed bug in interpolation of kernel estimators near upper right corner.</p></li>
 <li><p>interpolation grid is now symmetric around (0.5, 0.5).</p></li>
 <li><p>stabilized quadratic tll estimator near zero.</p></li>
@@ -482,7 +498,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

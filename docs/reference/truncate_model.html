@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1.1.0</span>
       </span>
     </div>
 
@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -94,7 +94,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/vinecopulib/rvinecopulib/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -120,19 +120,19 @@
     <p>Extracts a truncated sub-vine based on a truncation level supplied by user.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>truncate_model</span>(<span class='no'>object</span>, <span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>truncate_model</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for rvine_structure</span>
-<span class='fu'>truncate_model</span>(<span class='no'>object</span>, <span class='no'>trunc_lvl</span>, <span class='no'>...</span>)
+<span class='fu'>truncate_model</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>trunc_lvl</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for rvine_matrix</span>
-<span class='fu'>truncate_model</span>(<span class='no'>object</span>, <span class='no'>trunc_lvl</span>, <span class='no'>...</span>)
+<span class='fu'>truncate_model</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>trunc_lvl</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for vinecop_dist</span>
-<span class='fu'>truncate_model</span>(<span class='no'>object</span>, <span class='no'>trunc_lvl</span>, <span class='no'>...</span>)
+<span class='fu'>truncate_model</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>trunc_lvl</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for vine_dist</span>
-<span class='fu'>truncate_model</span>(<span class='no'>object</span>, <span class='no'>trunc_lvl</span>, <span class='no'>...</span>)</pre>
+<span class='fu'>truncate_model</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>trunc_lvl</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -163,28 +163,30 @@ results in a 2-truncated vine (i.e., a vine with two trees). Note that
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># specify pair-copulas</span>
-<span class='no'>bicop</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bicop_dist.html'>bicop_dist</a></span>(<span class='st'>"bb1"</span>, <span class='fl'>90</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>3</span>, <span class='fl'>2</span>))
-<span class='no'>pcs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(
-  <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>bicop</span>, <span class='no'>bicop</span>), <span class='co'># pair-copulas in first tree</span>
-  <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>bicop</span>) <span class='co'># pair-copulas in second tree</span>
-)
+<span class='va'>bicop</span> <span class='op'>&lt;-</span> <span class='fu'><a href='bicop_dist.html'>bicop_dist</a></span><span class='op'>(</span><span class='st'>"bb1"</span>, <span class='fl'>90</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>3</span>, <span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>pcs</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>bicop</span>, <span class='va'>bicop</span><span class='op'>)</span>, <span class='co'># pair-copulas in first tree</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>bicop</span><span class='op'>)</span> <span class='co'># pair-copulas in second tree</span>
+<span class='op'>)</span>
 
 <span class='co'># specify R-vine matrix</span>
-<span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>3</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>0</span>, <span class='fl'>0</span>), <span class='fl'>3</span>, <span class='fl'>3</span>)
+<span class='va'>mat</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>3</span>, <span class='fl'>1</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>1</span>, <span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>, <span class='fl'>3</span>, <span class='fl'>3</span><span class='op'>)</span>
 
 <span class='co'># set up vine structure</span>
-<span class='no'>structure</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='as_rvine_structure.html'>as_rvine_structure</a></span>(<span class='no'>mat</span>)
+<span class='va'>structure</span> <span class='op'>&lt;-</span> <span class='fu'><a href='as_rvine_structure.html'>as_rvine_structure</a></span><span class='op'>(</span><span class='va'>mat</span><span class='op'>)</span>
 
 <span class='co'># truncate the model</span>
-<span class='fu'>truncate_model</span>(<span class='no'>structure</span>, <span class='fl'>1</span>)</div><div class='output co'>#&gt; 3-dimensional R-vine structure ('rvine_structure'), 1-truncated
+<span class='fu'>truncate_model</span><span class='op'>(</span><span class='va'>structure</span>, <span class='fl'>1</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; 3-dimensional R-vine structure ('rvine_structure'), 1-truncated
 #&gt; 1 1 1
 #&gt;   2  
 #&gt; 3    </div><div class='input'>
 <span class='co'># set up vine copula model</span>
-<span class='no'>vc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='vinecop_dist.html'>vinecop_dist</a></span>(<span class='no'>pcs</span>, <span class='no'>mat</span>)
+<span class='va'>vc</span> <span class='op'>&lt;-</span> <span class='fu'><a href='vinecop_dist.html'>vinecop_dist</a></span><span class='op'>(</span><span class='va'>pcs</span>, <span class='va'>mat</span><span class='op'>)</span>
 
 <span class='co'># truncate the model</span>
-<span class='fu'>truncate_model</span>(<span class='no'>vc</span>, <span class='fl'>1</span>)</div><div class='output co'>#&gt; 3-dimensional vine copula model ('vinecop_dist'), 1-truncated</div></pre>
+<span class='fu'>truncate_model</span><span class='op'>(</span><span class='va'>vc</span>, <span class='fl'>1</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; 3-dimensional vine copula model ('vinecop_dist'), 1-truncated</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -200,7 +202,7 @@ results in a 2-truncated vine (i.e., a vine with two trees). Note that
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

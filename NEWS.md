@@ -1,3 +1,20 @@
+# rvinecopulib 0.6.1.1.0 (July 13, 2021)
+
+Release following the updates of vinecopulib to 0.6.1, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+### BUG FIXES
+
+- improved documentation (#241, #239)
+
+- use `num_threads` in recursive calls to the inverse Rosenblatt
+
+- force TLL to be nonnegative (#238)
+
+- fix number of parameters for TLL
+
+
 # rvinecopulib 0.5.5.1.1 (December 15, 2020)
 
 Maintenance release following the changes to `all.equal()` in R 4.1.x.

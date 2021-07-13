@@ -1,4 +1,4 @@
-// Copyright © 2016-2020 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -21,7 +21,8 @@ IndepBicop::pdf_raw(const Eigen::MatrixXd& u)
   return tools_eigen::binaryExpr_or_nan(u, f);
 }
 
-inline Eigen::VectorXd IndepBicop::cdf(const Eigen::MatrixXd &u)
+inline Eigen::VectorXd
+IndepBicop::cdf(const Eigen::MatrixXd& u)
 {
   return u.rowwise().prod();
 }
