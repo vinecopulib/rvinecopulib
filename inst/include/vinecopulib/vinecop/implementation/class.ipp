@@ -39,12 +39,12 @@ inline Vinecop::Vinecop(const RVineStructure& structure,
   if (pair_copulas.size() > 0) {
     set_all_pair_copulas(pair_copulas);
   }
-  rvine_structure_.truncate(pair_copulas.size());
-  
+
   if (var_types.size() > 0) {
     set_var_types(var_types);
+  } else {
+    set_continuous_var_types();
   }
-  else { set_continuous_var_types(); }
 }
 
 //! @brief Instantiates an arbitrary vine copula model.
@@ -1396,7 +1396,12 @@ Vinecop::str() const
         }
         str << arr(0, e);
       }
-      str << " <-> " << pair_copulas_[t][e].str() << std::endl;
+      str << " <-> ";
+      if (t < pair_copulas_.size()) {
+        str << pair_copulas_[t][e].str() << std::endl;
+      } else {
+        str << "Independence" << std::endl;
+      }
     }
   }
   return str.str();
