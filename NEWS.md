@@ -1,3 +1,12 @@
+# rvinecopulib 0.6.1.1.1 (October 6, 2021)
+
+### BUG FIXES
+
+- remove illegal pragmas from json header (#245) 
+
+- allow tree restriction in summary functions (#244)
+
+
 # rvinecopulib 0.6.1.1.0 (July 13, 2021)
 
 Release following the updates of vinecopulib to 0.6.1, see 
