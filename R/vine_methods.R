@@ -147,7 +147,7 @@ print.vine_dist <- function(x, ...) {
 summary.vine_dist <- function(object, ...) {
   list(
     margins = get_vine_dist_margin_summary(object),
-    copula = summary(object$copula)
+    copula = summary(object$copula, ...)
   )
 }
 
@@ -228,10 +228,7 @@ print.vine <- function(x, ...) {
 
 #' @export
 summary.vine <- function(object, ...) {
-  list(
-    margins = get_vine_margin_summary(object),
-    copula = summary(object$copula)
-  )
+  summary.vine_dist(object, ...)
 }
 
 get_vine_margin_summary <- function(object) {
