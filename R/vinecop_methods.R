@@ -120,11 +120,13 @@ print.vinecop_dist <- function(x, ...) {
 
 #' @importFrom utils capture.output
 #' @export
-summary.vinecop_dist <- function(object, ...) {
+summary.vinecop_dist <- function(object,
+                                 trees = seq_len(dim(object)["trunc_lvl"]),
+                                 ...) {
   mat <- as_rvine_matrix(get_structure(object))
   d <- dim(object)[1]
-  n_trees <- dim(object)[2]
-  n_pcs <- length(unlist(object$pair_copulas, recursive = FALSE))
+  trees <- intersect(trees, seq_len(dim(object)["trunc_lvl"]))
+  n_pcs <- length(unlist(object$pair_copulas[trees], recursive = FALSE))
   mdf <- as.data.frame(matrix(NA, n_pcs, 10))
   names(mdf) <- c(
     "tree", "edge",
@@ -132,7 +134,7 @@ summary.vinecop_dist <- function(object, ...) {
     "family", "rotation", "parameters", "df", "tau"
   )
   k <- 1
-  for (t in seq_len(n_trees)) {
+  for (t in trees) {
     for (e in seq_len(d - t)) {
       mdf$tree[k] <- t
       mdf$edge[k] <- e
@@ -293,13 +295,12 @@ print.vinecop <- function(x, ...) {
 
 
 #' @export
-summary.vinecop <- function(object, ...) {
-  mdf <- summary.vinecop_dist(object)
-
+summary.vinecop <- function(object, trees = seq_len(dim(object)["trunc_lvl"]), ...) {
+  trees <- intersect(trees, seq_len(dim(object)["trunc_lvl"]))
+  mdf <- summary.vinecop_dist(object, trees)
   d <- dim(object)[1]
-  trunc_lvl <- dim(object)[2]
   k <- 1
-  for (t in seq_len(trunc_lvl)) {
+  for (t in trees) {
     for (e in seq_len(d - t)) {
       mdf$loglik[k] <- object$pair_copulas[[t]][[e]]$loglik
       k <- k + 1
