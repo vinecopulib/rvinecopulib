@@ -1,7 +1,7 @@
 Package: rvinecopulib
 Type: Package
 Title: High Performance Algorithms for Vine Copula Modeling
-Version: 0.6.1.1.0
+Version: 0.6.1.1.1
 Authors@R: c(
         person("Thomas", "Nagler",, "info@vinecopulib.org", role = c("aut", "cre")),
         person("Thibault", "Vatter",, "info@vinecopulib.org", role = c("aut"))
@@ -19,7 +19,6 @@ Description: Provides an interface to 'vinecopulib', a C++ library for vine
  is licensed under the GNU GPL version 3.
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
-LazyData: true
 NeedsCompilation: yes
 Imports:
     assertthat,

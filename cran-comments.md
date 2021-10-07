@@ -1,12 +1,9 @@
-Maintenance release following the changes to `all.equal()` in R 4.1.x.
-
 ## Test environments
 
 * CRAN win builder (devel)
 * Windows Server 2019 (release)
 * macOS (release)
-* ubuntu 16.04 (release, oldrel, devel)
-* ubuntu 20.04 (release)
+* ubuntu 20.04 (release, oldrel, devel)
 
 ## R CMD check results
 
@@ -14,8 +11,10 @@ There were no ERRORs or WARNINGs.
 
 ## Reverse dependencies
 
-Checked covsim: 0 errors | 0 warnings | 1 notes
-Checked simIReff: 0 errors | 0 warnings | 0 notes
-Checked vinereg : 0 errors | 0 warnings | 0 notes
+## revdepcheck results
 
-All notes unrelated to this package.
+We checked 5 reverse dependencies, comparing R CMD check results across CRAN 
+and dev versions of this package.
+
+ * We saw 0 new problems
+ * We failed to check 0 packages
