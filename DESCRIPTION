@@ -19,7 +19,6 @@ Description: Provides an interface to 'vinecopulib', a C++ library for vine
  is licensed under the GNU GPL version 3.
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
-LazyData: true
 NeedsCompilation: yes
 Imports:
     assertthat,
