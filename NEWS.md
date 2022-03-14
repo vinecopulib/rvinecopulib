@@ -1,3 +1,8 @@
+# rvinecopulib 0.6.1.1.2 (March 14, 2022)
+
+- enforce use on recent version of RcppThread for proper handling of linker flags
+
+
 # rvinecopulib 0.6.1.1.1 (October 6, 2021)
 
 ### BUG FIXES
