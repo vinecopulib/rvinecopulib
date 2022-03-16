@@ -961,7 +961,7 @@ inline void
 Bicop::check_weights_size(const Eigen::VectorXd& weights,
                           const Eigen::MatrixXd& data) const
 {
-  if ((weights.size() > 0) & (weights.size() != data.rows())) {
+  if ((weights.size() > 0) && (weights.size() != data.rows())) {
     throw std::runtime_error("sizes of weights and data don't match.");
   }
 }

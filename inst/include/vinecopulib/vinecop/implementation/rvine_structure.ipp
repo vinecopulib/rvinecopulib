@@ -630,7 +630,7 @@ RVineStructure::check_upper_tri() const
 
   for (size_t i = 0; i < trunc_lvl_; ++i) {
     for (size_t j = 0; j < d_ - 1 - i; ++j) {
-      if ((struct_array_(i, j) < 1) | (struct_array_(i, j) > d_)) {
+      if ((struct_array_(i, j) < 1) || (struct_array_(i, j) > d_)) {
         throw std::runtime_error("not a valid R-vine array: " + problem);
       }
     }

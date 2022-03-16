@@ -122,7 +122,7 @@ TllBicop::fit_local_likelihood(const Eigen::MatrixXd& x,
         res(k) *= std::sqrt(S.determinant()) / det_irB;
       }
       res(k) *= std::exp(-0.5 * double(b.transpose() * S * b));
-      if ((boost::math::isnan)(res(k)) | (boost::math::isinf)(res(k))) {
+      if ((boost::math::isnan)(res(k)) || (boost::math::isinf)(res(k))) {
         // inverse operation might go wrong due to rounding when
         // true value is equal or close to zero
         res(k) = 0.0;
@@ -265,7 +265,7 @@ TllBicop::fit(const Eigen::MatrixXd& data,
   infl = Eigen::Map<Eigen::MatrixXd>(infl_vec.data(), m, m).transpose();
   // don't normalize margins of the EDF! (norm_times = 0)
   auto infl_grid = InterpolationGrid(grid_points, infl, 0);
-  if ((var_types_[0] == "d") | (var_types_[1] == "d")) {
+  if ((var_types_[0] == "d") || (var_types_[1] == "d")) {
     // for discrete, use mid ranks to compute EDF and log-likelihood
     // (this is closer to "observations" than jittered or "upper" pseudo data)
     psobs = 0.5 * (data.leftCols(2) + data.rightCols(2)).array();
