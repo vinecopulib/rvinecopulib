@@ -1,4 +1,4 @@
-# rvinecopulib 0.6.1.1.2 (March 17, 2022)
+# rvinecopulib 0.6.1.1.3 (March 17, 2022)
 
 - avoid bitwise operations on Boolean variables.
 
