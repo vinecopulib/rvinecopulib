@@ -1,3 +1,8 @@
+# rvinecopulib 0.6.1.1.3 (March 17, 2022)
+
+- avoid bitwise operations on Boolean variables.
+
+
 # rvinecopulib 0.6.1.1.2 (March 14, 2022)
 
 - enforce use on recent version of RcppThread for proper handling of linker flags

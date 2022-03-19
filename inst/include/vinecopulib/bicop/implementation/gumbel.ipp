@@ -72,7 +72,7 @@ GumbelBicop::hinv1_raw(const Eigen::MatrixXd& u)
   for (int j = 0; j < u.rows(); ++j) {
     u1 = u(j, 1);
     u2 = u(j, 0);
-    if ((boost::math::isnan)(u1) | (boost::math::isnan)(u2)) {
+    if ((boost::math::isnan)(u1) || (boost::math::isnan)(u2)) {
       hinv(j) = std::numeric_limits<double>::quiet_NaN();
     } else {
       hinv(j) = qcondgum(&u1, &u2, &theta);
