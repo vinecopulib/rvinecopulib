@@ -108,6 +108,13 @@ or discrete data. Selection of the structure is performed using the algorithm
 of Dissmann et al. (2013).
 }
 \details{
+\subsection{Missing data}{
+
+If there are missing data (i.e., \code{NA} entries), incomplete observations are
+discarded before fitting a pair-copula. This is done on a pair-by-pair basis
+so that the maximal available information is used.
+}
+
 \subsection{Discrete variables}{
 
 The dependence measures used to select trees (default: Kendall's tau) are

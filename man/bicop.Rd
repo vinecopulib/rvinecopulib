@@ -81,6 +81,8 @@ Fit a bivariate copula model for continuous or discrete data. The family
 can be selected automatically from a vector of options.
 }
 \details{
+If there are missing data (i.e., \code{NA} entries), incomplete observations are
+discarded before fitting the copula.
 \subsection{Discrete variables}{
 
 When at least one variable is discrete, more than two columns are required
