@@ -20,7 +20,8 @@ vine(
 vine_dist(margins, pair_copulas, structure)
 }
 \arguments{
-\item{data}{a matrix or data.frame.}
+\item{data}{a matrix or data.frame. Discrete variables have to be declared as
+\code{ordered()}.}
 
 \item{margins_controls}{a list with arguments to be passed to
 \code{\link[kde1d:kde1d]{kde1d::kde1d()}}. Currently, there can be
@@ -128,4 +129,11 @@ x <- rvine(50, vc)
 # estimate a vine copula model
 fit <- vine(x, copula_controls = list(family_set = "par"))
 summary(fit)
+
+## model for discrete data
+x <- as.data.frame(x)
+x[, 1] <- ordered(round(x[, 1]), levels = seq.int(-5, 5))
+fit_disc <- vine(x, copula_controls = list(family_set = "par"))
+summary(fit_disc)
+
 }
