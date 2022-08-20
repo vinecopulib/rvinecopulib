@@ -97,6 +97,8 @@ public:
                   const FitControlsVinecop& controls,
                   std::vector<std::string> var_types);
 
+  virtual ~VinecopSelector() = default;
+
   std::vector<std::vector<Bicop>> get_pair_copulas() const;
 
   RVineStructure get_rvine_structure() const;
