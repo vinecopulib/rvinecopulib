@@ -991,7 +991,8 @@ VinecopSelector::select_pair_copulas(VineTree& tree, const VineTree& tree_opt)
 
   // make sure that Bicop.select() doesn't spawn too many new threads
   size_t num_threads = controls_.get_num_threads();
-  controls_.set_num_threads(num_threads / boost::num_edges(tree));
+  // controls_.set_num_threads(num_threads / boost::num_edges(tree));
+  controls_.set_num_threads(0);
   pool_.map(select_pc, boost::edges(tree));
   pool_.wait();
   controls_.set_num_threads(num_threads);
