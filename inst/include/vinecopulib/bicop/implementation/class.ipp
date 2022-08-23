@@ -1,4 +1,4 @@
-// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -866,6 +866,7 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
 
     tools_thread::ThreadPool pool(controls.get_num_threads());
     pool.map(fit_and_compare, bicops);
+    pool.wait();
   }
 }
 
