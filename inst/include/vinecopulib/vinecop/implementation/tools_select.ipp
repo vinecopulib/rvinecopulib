@@ -1,4 +1,4 @@
-// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -570,7 +570,7 @@ VinecopSelector::add_pc_info(const EdgeIterator& e, VineTree& tree)
   // collect pseudo observations for next tree
   tree[e].pc_data.col(0) = get_hfunc(tree[v0], pos0 == 0);
   tree[e].pc_data.col(1) = get_hfunc(tree[v1], pos1 == 0);
-  if ((tree[e].var_types[0] == "d") || (tree[e].var_types[1] == "d")) {
+  if ((tree[e].var_types[0] == "d") | (tree[e].var_types[1] == "d")) {
     tree[e].pc_data.conservativeResize(n, 4);
     tree[e].pc_data.col(2) = get_hfunc_sub(tree[v0], pos0 == 0);
     tree[e].pc_data.col(3) = get_hfunc_sub(tree[v1], pos1 == 0);
@@ -896,7 +896,7 @@ VinecopSelector::min_spanning_tree(VineTree& graph)
   prim_minimum_spanning_tree(graph, targets.data());
   for (size_t v1 = 0; v1 < d; ++v1) {
     for (size_t v2 = 0; v2 < v1; ++v2) {
-      if ((v2 != targets[v1]) && (v1 != targets[v2])) {
+      if ((v2 != targets[v1]) & (v1 != targets[v2])) {
         boost::remove_edge(v1, v2, graph);
       }
     }
@@ -989,9 +989,9 @@ VinecopSelector::select_pair_copulas(VineTree& tree, const VineTree& tree_opt)
     }
   };
 
-  // make sure that Bicop.select() doesn't spawn new threads
+  // make sure that Bicop.select() doesn't spawn too many new threads
   size_t num_threads = controls_.get_num_threads();
-  controls_.set_num_threads(0);
+  controls_.set_num_threads(num_threads / boost::num_edges(tree));
   pool_.map(select_pc, boost::edges(tree));
   pool_.wait();
   controls_.set_num_threads(num_threads);

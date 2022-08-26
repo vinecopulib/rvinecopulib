@@ -1,4 +1,4 @@
-// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -74,7 +74,7 @@ JoeBicop::hinv1_raw(const Eigen::MatrixXd& u)
   for (int j = 0; j < u.rows(); ++j) {
     u1 = u(j, 1);
     u2 = u(j, 0);
-    if ((boost::math::isnan)(u1) || (boost::math::isnan)(u2)) {
+    if ((boost::math::isnan)(u1) | (boost::math::isnan)(u2)) {
       hinv(j) = std::numeric_limits<double>::quiet_NaN();
     } else {
       hinv(j) = qcondjoe(&u1, &u2, &theta);

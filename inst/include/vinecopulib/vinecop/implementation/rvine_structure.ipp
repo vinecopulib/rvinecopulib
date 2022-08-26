@@ -1,4 +1,4 @@
-// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -630,7 +630,7 @@ RVineStructure::check_upper_tri() const
 
   for (size_t i = 0; i < trunc_lvl_; ++i) {
     for (size_t j = 0; j < d_ - 1 - i; ++j) {
-      if ((struct_array_(i, j) < 1) || (struct_array_(i, j) > d_)) {
+      if ((struct_array_(i, j) < 1) | (struct_array_(i, j) > d_)) {
         throw std::runtime_error("not a valid R-vine array: " + problem);
       }
     }

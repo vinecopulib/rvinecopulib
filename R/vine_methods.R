@@ -268,6 +268,8 @@ eval_one_dpq <- function(x, margin, what = "p") {
                                         q = "p")
     dpq <- do.call(get(paste0(what, margin$distr)), par)
   }
+  if (is.factor(dpq))
+    dpq <- as.data.frame(dpq)
   dpq
 }
 

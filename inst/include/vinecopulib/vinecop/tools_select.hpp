@@ -1,4 +1,4 @@
-// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -96,6 +96,8 @@ public:
                   const RVineStructure& vine_struct,
                   const FitControlsVinecop& controls,
                   std::vector<std::string> var_types);
+
+  virtual ~VinecopSelector() = default;
 
   std::vector<std::vector<Bicop>> get_pair_copulas() const;
 

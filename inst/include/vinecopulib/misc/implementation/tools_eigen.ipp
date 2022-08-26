@@ -1,4 +1,4 @@
-// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -35,7 +35,7 @@ remove_nans(Eigen::MatrixXd& x)
 inline void
 remove_nans(Eigen::MatrixXd& x, Eigen::VectorXd& weights)
 {
-  if ((weights.size() > 0) && (weights.size() != x.rows()))
+  if ((weights.size() > 0) & (weights.size() != x.rows()))
     throw std::runtime_error("sizes of x and weights don't match.");
 
   // if a row has nan or weight is zero, move it to the end
@@ -43,8 +43,8 @@ remove_nans(Eigen::MatrixXd& x, Eigen::VectorXd& weights)
   for (size_t i = 0; i < last + 1; i++) {
     bool row_has_nan = x.row(i).array().isNaN().any();
     if (weights.size() > 0) {
-      row_has_nan = row_has_nan || (boost::math::isnan)(weights(i));
-      row_has_nan = row_has_nan || (weights(i) == 0.0);
+      row_has_nan = row_has_nan | (boost::math::isnan)(weights(i));
+      row_has_nan = row_has_nan | (weights(i) == 0.0);
     }
     if (row_has_nan) {
       if (weights.size() > 0)
@@ -97,7 +97,7 @@ trim(Eigen::VectorXd& x, const double& lower, const double& upper)
 inline bool
 check_if_in_unit_cube(const Eigen::MatrixXd& u)
 {
-  bool any_outside = (u.array() < 0.0).any() || (u.array() > 1.0).any();
+  bool any_outside = (u.array() < 0.0).any() | (u.array() > 1.0).any();
   if (any_outside) {
     throw std::runtime_error("all data must be contained in [0, 1]^d.");
   }

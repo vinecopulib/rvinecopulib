@@ -45,11 +45,13 @@ path), respectively (see \emph{Examples}).
 \details{
 The R-vine structure is essentially a lower-triangular matrix/triangular
 array, with a notation that differs from the one in the VineCopula package.
-An example array is\preformatted{4 4 4 4
+An example array is
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{4 4 4 4
 3 3 3
 2 2
 1
-}
+}\if{html}{\out{</div>}}
 
 which encodes the following pair-copulas:
 
@@ -65,11 +67,13 @@ tree \tab  edge \tab pair-copulas   \cr
 
 An R-vine structure can be converted to an R-vine matrix using
 \code{\link[=as_rvine_matrix]{as_rvine_matrix()}}, which encodes the same model with a square matrix filled
-with zeros. For instance, the matrix corresponding to the structure above is:\preformatted{4 4 4 4
+with zeros. For instance, the matrix corresponding to the structure above is:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{4 4 4 4
 3 3 3 0
 2 2 0 0
 1 0 0 0
-}
+}\if{html}{\out{</div>}}
 
 Similarly, an R-vine matrix can be converted to an R-vine structure using
 \code{\link[=as_rvine_structure]{as_rvine_structure()}}.
@@ -86,17 +90,21 @@ variable).
 
 Internally, the diagonal is stored separately from the off-diagonal elements,
 which are stored as a triangular array. For instance, the off-diagonal
-elements off the structure above are stored as\preformatted{4 4 4
+elements off the structure above are stored as
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{4 4 4
 3 3
 2
-}
+}\if{html}{\out{</div>}}
 
 for the structure above. The reason is that it allows for parsimonious
 representations of truncated models. For instance, the 2-truncated model is
 represented by the same diagonal and the following truncated triangular
-array:\preformatted{4 4 4
+array:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{4 4 4
 3 3
-}
+}\if{html}{\out{</div>}}
 
 A valid R-vine structure or matrix must satisfy several conditions which are
 checked when \code{\link[=rvine_structure]{rvine_structure()}}, \code{\link[=rvine_matrix]{rvine_matrix()}}, or some coercion methods

@@ -1,4 +1,4 @@
-// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -109,7 +109,7 @@ bool
 is_same_set(const std::vector<T>& x, const std::vector<T>& y)
 {
   auto z = intersect(x, y);
-  return ((z.size() == x.size()) && (z.size() == y.size()));
+  return ((z.size() == x.size()) & (z.size() == y.size()));
 }
 
 template<class T>

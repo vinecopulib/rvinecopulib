@@ -34,6 +34,11 @@
 #'
 #' @details
 #'
+#' ## Missing data
+#' If there are missing data (i.e., `NA` entries), incomplete observations are
+#' discarded before fitting a pair-copula. This is done on a pair-by-pair basis
+#' so that the maximal available information is used.
+#'
 #' ## Discrete variables
 #' The dependence measures used to select trees (default: Kendall's tau) are
 #' corrected for ties (see [wdm::wdm]).

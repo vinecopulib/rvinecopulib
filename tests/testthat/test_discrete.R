@@ -93,7 +93,8 @@ test_that("vine works", {
 
   fit <- vine(x)
   sim <- rvine(n * 10, fit)
-  expect_eql(sort(unique(sim[, 2])), 1:5)
+  expect_true(is.data.frame(sim))
+  expect_eql(sort(unique(sim[, 2])), ordered(1:5))
 
   summary(fit)
   expect_identical(fit$copula$var_types, c("c", "d", "c"))

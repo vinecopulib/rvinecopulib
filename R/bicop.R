@@ -36,6 +36,9 @@
 #'
 #' @details
 #'
+#' If there are missing data (i.e., `NA` entries), incomplete observations are
+#' discarded before fitting the copula.
+#'
 #' ## Discrete variables
 #'
 #' When at least one variable is discrete, more than two columns are required

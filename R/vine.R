@@ -3,7 +3,8 @@
 #' Automated fitting or creation of custom vine copula models
 #'
 #' @aliases vine_dist
-#' @param data a matrix or data.frame.
+#' @param data a matrix or data.frame. Discrete variables have to be declared as
+#' `ordered()`.
 #' @param margins_controls a list with arguments to be passed to
 #' [kde1d::kde1d()]. Currently, there can be
 #'   * `mult` numeric vector of length one or d; all bandwidths for marginal
@@ -79,6 +80,13 @@
 #' # estimate a vine copula model
 #' fit <- vine(x, copula_controls = list(family_set = "par"))
 #' summary(fit)
+#'
+#' ## model for discrete data
+#' x <- as.data.frame(x)
+#' x[, 1] <- ordered(round(x[, 1]), levels = seq.int(-5, 5))
+#' fit_disc <- vine(x, copula_controls = list(family_set = "par"))
+#' summary(fit_disc)
+#'
 #' @importFrom kde1d dkde1d pkde1d qkde1d
 #' @export
 vine <- function(data,

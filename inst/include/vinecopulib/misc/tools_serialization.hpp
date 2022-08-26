@@ -1,4 +1,4 @@
-// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -28,10 +28,10 @@ matrix_to_json(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& matrix)
   nlohmann::json output;
   output["shape"] = { matrix.rows(), matrix.cols() };
   nlohmann::json json_data;
-  auto it = matrix.data();
-  auto last = matrix.data() + matrix.size();
-  for (; it != last; ++it) {
-    json_data.push_back(*it);
+  for (long col = 0; col < matrix.cols(); col++) {
+    for (long row = 0; row < matrix.rows(); row++) {
+      json_data.push_back(matrix(row, col));
+    }
   }
   output["data"] = json_data;
 
@@ -88,11 +88,14 @@ json_to_matrix(const nlohmann::json& input)
 
   size_t rows = input["shape"][0];
   size_t cols = input["shape"][1];
-  std::vector<double> vec = input["data"];
 
   Eigen::MatrixXd matrix;
-  matrix = Eigen::MatrixXd::Map(&vec[0], rows, cols);
-
+  if (!input["data"].is_null()) {
+    std::vector<double> vec = input["data"];
+    matrix = Eigen::MatrixXd::Map(&vec[0], rows, cols);
+  } else {
+    matrix = Eigen::MatrixXd();
+  }
   return matrix.cast<T>();
 }
 

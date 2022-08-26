@@ -1,4 +1,4 @@
-// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -88,16 +88,15 @@ Bicop::operator=(Bicop other)
 //! @param input The nlohmann::json object to convert from
 //! (see `to_json()` for the structure of the input).
 inline Bicop::Bicop(const nlohmann::json& input)
-  : Bicop(get_family_enum(input["family"]),
-          static_cast<int>(input["rotation"]),
-          tools_serialization::json_to_matrix<double>(input["parameters"]))
+  : Bicop(get_family_enum(input["fam"]),
+          static_cast<int>(input["rot"]),
+          tools_serialization::json_to_matrix<double>(input["par"]))
 {
   // try block for backwards compatibility
   try {
-    var_types_ =
-      tools_serialization::json_to_vector<std::string>(input["var_types"]);
-    nobs_ = static_cast<size_t>(input["nobs_"]);
-    bicop_->set_loglik(input["loglik"]);
+    var_types_ = tools_serialization::json_to_vector<std::string>(input["vt"]);
+    nobs_ = static_cast<size_t>(input["nobs"]);
+    bicop_->set_loglik(input["ll"]);
     bicop_->set_npars(input["npars"]);
   } catch (...) {
   }
@@ -106,7 +105,7 @@ inline Bicop::Bicop(const nlohmann::json& input)
 //! @brief Instantiates from a JSON file.
 //!
 //! The input file contains four attributes:
-//! `"family"`, `"rotation"`, `"parameters"`, `"var_types"` respectively a
+//! `"fam"`, `"rot"`, `"par"`, `"vt"` respectively a
 //! string for the family name, an integer for the rotation, and a numeric
 //! matrix for the parameters, and a list of two strings for the variable
 //! types.
@@ -119,7 +118,7 @@ inline Bicop::Bicop(const std::string& filename)
 //! @brief Convert the copula into a nlohmann::json object.
 //!
 //! The nlohmann::json is contains of three values named
-//! `"family"`, `"rotation"`, `"parameters"`, `"var_types"`,
+//! `"fam"`, `"rot"`, `"par"`, `"vt"`,
 //! respectively a string for the family name, an integer for the rotation,
 //! a numeric matrix for the parameters and a list of two strings for the
 //! variables types.
@@ -129,12 +128,12 @@ inline nlohmann::json
 Bicop::to_json() const
 {
   nlohmann::json output;
-  output["family"] = get_family_name();
-  output["rotation"] = rotation_;
-  output["parameters"] = tools_serialization::matrix_to_json(get_parameters());
-  output["var_types"] = tools_serialization::vector_to_json(var_types_);
-  output["nobs_"] = nobs_;
-  output["loglik"] = bicop_->get_loglik();
+  output["fam"] = get_family_name();
+  output["rot"] = rotation_;
+  output["par"] = tools_serialization::matrix_to_json(get_parameters());
+  output["vt"] = tools_serialization::vector_to_json(var_types_);
+  output["nobs"] = nobs_;
+  output["ll"] = bicop_->get_loglik();
   output["npars"] = bicop_->get_npars();
 
   return output;
@@ -143,10 +142,13 @@ Bicop::to_json() const
 //! @brief Write the copula object into a JSON file.
 //!
 //! The written file contains four attributes:
-//! `"family"`, `"rotation"`, `"parameters"`, `"var_types"` respectively a
-//! string for the family name, an integer for the rotation, and a numeric
-//! matrix for the parameters, and a list of two strings for the variable
-//! types.
+//! `"fam"`, `"rot"`, `"par"`, `"vt"`, `"nobs"`, `"ll"`, `"npars"`
+//! respectively a string for the family name, an integer for the rotation, and
+//! a numeric matrix for the parameters, a list of two strings for the
+//! variable types, an integer for the number of observations (if fitted),
+//! a double for the log-likelihood (if fitted), and a double
+//! for the number of parameters (can be non-integer in nonparametric
+//! models).
 //!
 //! @param filename The name of the file to write.
 inline void
@@ -613,7 +615,9 @@ Bicop::flip_abstract_var_types()
 inline void
 Bicop::set_parameters(const Eigen::MatrixXd& parameters)
 {
-  bicop_->set_parameters(parameters);
+  if (bicop_->get_family_name() != "Independence") {
+    bicop_->set_parameters(parameters);
+  }
   bicop_->set_loglik();
 }
 
@@ -735,6 +739,10 @@ Bicop::as_continuous() const
 //! left-sided limit of the cdf. For continuous variables the left limit and the
 //! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
 //! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
+//! 
+//! Incomplete observations (i.e., ones with a NaN value) are discarded.
+//!
+//! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
 //! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
@@ -778,6 +786,10 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 //! left-sided limit of the cdf. For continuous variables the left limit and the
 //! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
 //! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
+//! 
+//! Incomplete observations (i.e., ones with a NaN value) are discarded.
+//!
+//! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
 //! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
@@ -858,6 +870,7 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
 
     tools_thread::ThreadPool pool(controls.get_num_threads());
     pool.map(fit_and_compare, bicops);
+    pool.wait();
   }
 }
 
@@ -961,7 +974,7 @@ inline void
 Bicop::check_weights_size(const Eigen::VectorXd& weights,
                           const Eigen::MatrixXd& data) const
 {
-  if ((weights.size() > 0) && (weights.size() != data.rows())) {
+  if ((weights.size() > 0) & (weights.size() != data.rows())) {
     throw std::runtime_error("sizes of weights and data don't match.");
   }
 }

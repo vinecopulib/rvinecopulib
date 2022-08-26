@@ -23,8 +23,9 @@
 #'   U_1= F(V_1), U_{2} = F(V_{2}|V_1), \ldots, U_d =F(V_d|V_1,\ldots,V_{d-1}),
 #' }
 #' where \eqn{F(v_k|v_1,\ldots,v_{k-1})} is the conditional distribution of
-#' \eqn{V_k} given \eqn{V_1 \ldots, V_{k-1}, k = 2,\ldots,d}. The vector \eqn{U}
-#' are then independent standard uniform variables. The inverse operation
+#' \eqn{V_k} given \eqn{V_1 \ldots, V_{k-1}, k = 2,\ldots,d}. The vector
+#' \eqn{U  = (U_1, \dots, U_d)} then contains independent standard uniform
+#' variables. The inverse operation
 #' \deqn{
 #'   V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots,
 #'   V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}),
@@ -32,6 +33,18 @@
 #' can be used to simulate from a distribution. For any copula \eqn{F}, if
 #' \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has
 #' distribution \eqn{F}.
+#'
+#' The formulas above assume a vine copula model with order \eqn{d, \dots, 1}.
+#' More generally, `rosenblatt()` returns the variables
+#' \deqn{
+#'   U_{M[d + 1- j, j]}= F(V_{M[d + 1- j, j]} | V_{M[d - j, j - 1]}, \dots, V_{M[1, 1]}),
+#' }
+#' where \eqn{M} is the structure matrix. Similarly, `inverse_rosenblatt()`
+#' returns
+#' \deqn{
+#'   V_{M[d + 1- j, j]}= F^{-1}(U_{M[d + 1- j, j]} | U_{M[d - j, j - 1]}, \dots, U_{M[1, 1]}).
+#' }
+#'
 #'
 #' @examples
 #' # simulate data with some dependence
