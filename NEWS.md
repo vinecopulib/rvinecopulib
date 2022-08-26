@@ -1,3 +1,14 @@
+# rvinecopulib 0.6.2.1.0 (August 26, 2021)
+
+Release following the updates of vinecopulib to 0.6.2, see 
+https://github.com/vinecopulib/vinecopulib/releases. The most 
+relevant changes are summarized below.
+
+* improved documentation (discrete and missing dat, Rosenblatt transforms)
+
+* better parallelization when there is a small number of edges (#555)
+
+
 # rvinecopulib 0.6.1.1.3 (March 17, 2022)
 
 - avoid bitwise operations on Boolean variables.
