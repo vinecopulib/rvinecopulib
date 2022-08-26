@@ -1,4 +1,4 @@
-// Copyright © 2016-2021 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -739,6 +739,8 @@ Bicop::as_continuous() const
 //! left-sided limit of the cdf. For continuous variables the left limit and the
 //! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
 //! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
+//! 
+//! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
@@ -784,6 +786,8 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 //! left-sided limit of the cdf. For continuous variables the left limit and the
 //! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
 //! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
+//! 
+//! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
