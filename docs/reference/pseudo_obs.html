@@ -98,22 +98,22 @@ problems with density evaluation at the boundaries.</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># pseudo-observations for a vector</span></span>
 <span class="r-in"><span class="fu">pseudo_obs</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.09090909 0.36363636 0.45454545 0.72727273 0.27272727 0.18181818</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.63636364 0.54545455 0.81818182 0.90909091</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.09090909 0.72727273 0.18181818 0.27272727 0.36363636 0.54545455</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.45454545 0.63636364 0.81818182 0.90909091</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># pseudo-observations for a matrix</span></span>
 <span class="r-in"><span class="fu">pseudo_obs</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]       [,2]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.18181818 0.63636364</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.81818182 0.45454545</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.90909091 0.27272727</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.63636364 0.36363636</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.54545455 0.90909091</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.27272727 0.09090909</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.09090909 0.72727273</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.72727273 0.54545455</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.36363636 0.81818182</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.45454545 0.18181818</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.27272727 0.18181818</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.18181818 0.81818182</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.90909091 0.72727273</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.45454545 0.54545455</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.09090909 0.09090909</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.72727273 0.27272727</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.63636364 0.45454545</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.36363636 0.36363636</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.54545455 0.90909091</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.81818182 0.63636364</span>
 </code></pre></div>
     </div>
   </div>

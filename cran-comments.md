@@ -1,3 +1,5 @@
+Fixes warnings issued by clang-14's -Wbitwise-instead-of-logical.
+
 ## Test environments
 
 * CRAN win builder (devel)
