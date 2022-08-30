@@ -35,7 +35,7 @@ Eigen::VectorXd
 binaryExpr_or_nan(const Eigen::MatrixXd& u, const T& func)
 {
   auto func_or_nan = [&func](const double& u1, const double& u2) {
-    if ((boost::math::isnan)(u1) | (boost::math::isnan)(u2)) {
+    if ((boost::math::isnan)(u1) || (boost::math::isnan)(u2)) {
       return std::numeric_limits<double>::quiet_NaN();
     } else {
       return func(u1, u2);

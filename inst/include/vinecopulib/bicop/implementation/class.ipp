@@ -742,8 +742,6 @@ Bicop::as_continuous() const
 //! 
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
-//! Incomplete observations (i.e., ones with a NaN value) are discarded.
-//!
 //! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
 //! @param controls The controls (see FitControlsBicop).
@@ -787,8 +785,6 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 //! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
 //! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
 //! 
-//! Incomplete observations (i.e., ones with a NaN value) are discarded.
-//!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
 //! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
@@ -974,7 +970,7 @@ inline void
 Bicop::check_weights_size(const Eigen::VectorXd& weights,
                           const Eigen::MatrixXd& data) const
 {
-  if ((weights.size() > 0) & (weights.size() != data.rows())) {
+  if ((weights.size() > 0) && (weights.size() != data.rows())) {
     throw std::runtime_error("sizes of weights and data don't match.");
   }
 }

@@ -163,7 +163,7 @@ template<typename T>
 bool
 TriangularArray<T>::operator==(const TriangularArray<T>& rhs) const
 {
-  if ((d_ != rhs.get_dim()) | (trunc_lvl_ != rhs.get_trunc_lvl()))
+  if ((d_ != rhs.get_dim()) || (trunc_lvl_ != rhs.get_trunc_lvl()))
     return false;
 
   for (size_t i = 0; i < trunc_lvl_; i++) {
