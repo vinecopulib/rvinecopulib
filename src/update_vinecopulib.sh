@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git clone --depth 1 git@github.com:vinecopulib/vinecopulib.git -b bitwise-boolean  --single-branch
+git clone --depth 1 git@github.com:vinecopulib/vinecopulib.git -b for-cran  --single-branch
 
 rm -rf ../inst/include/vinecopulib/*
 mv ./vinecopulib/include/* ../inst/include
