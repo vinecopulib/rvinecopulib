@@ -19,7 +19,7 @@ of Dissmann et al. (2013)."><!-- mathjax --><script src="https://cdnjs.cloudflar
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.2</span>
       </span>
     </div>
 
@@ -85,13 +85,19 @@ of Dissmann et al. (2013).</p>
 (pseudo-)observations for the two variables (copula data should have
 approximately uniform margins). More columns are required for discrete
 models, see <em>Details</em>.</p></dd>
+
+
 <dt>var_types</dt>
 <dd><p>variable types, a length d vector; e.g., <code>c("c", "c")</code> for
 two continuous variables, or <code>c("c", "d")</code> for first variable continuous
 and second discrete.</p></dd>
+
+
 <dt>family_set</dt>
 <dd><p>a character vector of families; see <code><a href="bicop.html">bicop()</a></code> for
 additional options.</p></dd>
+
+
 <dt>structure</dt>
 <dd><p>an <code>rvine_structure</code> object, namely a compressed
 representation of the vine structure, or an object that can be coerced into
@@ -99,56 +105,85 @@ one (see <code><a href="rvine_structure.html">rvine_structure()</a></code> and <
 must be <code>length(pair_copulas[[1]]) + 1</code>; <code>structure = NA</code> performs
 automatic selection based on Dissman's algorithm. See <em>Details</em> for partial
 selection of the structure.</p></dd>
+
+
 <dt>par_method</dt>
 <dd><p>the estimation method for parametric models, either <code>"mle"</code>
 for maximum likelihood or <code>"itau"</code> for inversion of Kendall's tau (only
 available for one-parameter families and <code>"t"</code>.</p></dd>
+
+
 <dt>nonpar_method</dt>
 <dd><p>the estimation method for nonparametric models, either
 <code>"constant"</code> for the standard transformation estimator, or
 <code>"linear"</code>/<code>"quadratic"</code> for the local-likelihood approximations of order
 one/two.</p></dd>
+
+
 <dt>mult</dt>
 <dd><p>multiplier for the smoothing parameters of nonparametric
 families. Values larger than 1 make the estimate more smooth, values less
 than 1 less smooth.</p></dd>
+
+
 <dt>selcrit</dt>
 <dd><p>criterion for family selection, either <code>"loglik"</code>, <code>"aic"</code>,
 <code>"bic"</code>, <code>"mbic"</code>. For <code>vinecop()</code> there is the additional option
 <code>"mbicv"</code>.</p></dd>
+
+
 <dt>weights</dt>
 <dd><p>optional vector of weights for each observation.</p></dd>
+
+
 <dt>psi0</dt>
 <dd><p>prior probability of a non-independence copula (only used for
 <code>selcrit = "mbic"</code> and <code>selcrit = "mbicv"</code>).</p></dd>
+
+
 <dt>presel</dt>
 <dd><p>whether the family set should be thinned out according to
 symmetry characteristics of the data.</p></dd>
+
+
 <dt>trunc_lvl</dt>
 <dd><p>the truncation level of the vine copula; <code>Inf</code> means no
 truncation, <code>NA</code> indicates that the truncation level should be selected
 automatically by <code><a href="mBICV.html">mBICV()</a></code>.</p></dd>
+
+
 <dt>tree_crit</dt>
 <dd><p>the criterion for tree selection, one of <code>"tau"</code>, <code>"rho"</code>,
 <code>"hoeffd"</code>, <code>"mcor"</code>, or <code>"joe"</code> for Kendall's \(\tau\), Spearman's
 \(\rho\), Hoeffding's \(D\), maximum correlation, or logarithm of
 the partial correlation, respectively.</p></dd>
+
+
 <dt>threshold</dt>
 <dd><p>for thresholded vine copulas; <code>NA</code> indicates that the
 threshold should be selected automatically by <code><a href="mBICV.html">mBICV()</a></code>.</p></dd>
+
+
 <dt>keep_data</dt>
 <dd><p>whether the data should be stored (necessary for using
 <code><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted()</a></code>).</p></dd>
+
+
 <dt>show_trace</dt>
 <dd><p>logical; whether a trace of the fitting progress should be
 printed.</p></dd>
+
+
 <dt>cores</dt>
 <dd><p>number of cores to use; if more than 1, estimation of pair
 copulas within a tree is done in parallel.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Objects inheriting from <code>vinecop</code> and <code>vinecop_dist</code> for <code>vinecop()</code>. In
+    
+
+<p>Objects inheriting from <code>vinecop</code> and <code>vinecop_dist</code> for <code>vinecop()</code>. In
 addition to the entries provided by <code><a href="vinecop_dist.html">vinecop_dist()</a></code>, there are:</p><ul><li><p><code>threshold</code>, the (set or estimated) threshold used for thresholding the
 vine.</p></li>
 <li><p><code>data</code> (optionally, if <code>keep_data = TRUE</code> was used), the dataset that was
@@ -220,26 +255,26 @@ financial returns.</em> Computational Statistics &amp; Data Analysis, 59 (1),
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> # A data.frame: 10 x 11 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  tree edge conditioned conditioning var_types   family rotation parameters df</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    1        2, 4                    c,c    frank        0        9.7  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    2        4, 1                    c,c gaussian        0       0.88  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    3        1, 3                    c,c   gumbel      180        2.8  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    4        3, 5                    c,c    frank        0         10  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     2    1        2, 1            4       c,c    indep        0             0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     2    2        4, 3            1       c,c    indep        0             0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     2    3        1, 5            3       c,c    indep        0             0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     3    1        2, 3         1, 4       c,c gaussian        0       0.33  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     3    2        4, 5         3, 1       c,c      joe      180        1.5  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     4    1        2, 5      3, 1, 4       c,c    indep        0             0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    1        1, 3                    c,c   gumbel        0        2.7  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    2        2, 3                    c,c      bb8        0 6.89, 0.72  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    3        3, 4                    c,c gaussian        0       0.89  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    4        4, 5                    c,c    frank        0         11  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     2    1        1, 2            3       c,c  clayton      180        0.7  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     2    2        2, 4            3       c,c    indep        0             0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     2    3        3, 5            4       c,c gaussian        0       0.43  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     3    1        1, 4         2, 3       c,c    indep        0             0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     3    2        2, 5         4, 3       c,c    indep        0             0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     4    1        1, 5      4, 2, 3       c,c    indep        0             0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   tau loglik</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.66   17.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.69   20.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.64   17.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.67   17.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.63   16.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.58   13.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.70   20.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.69   19.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.26    3.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.00    0.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.28    2.8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0.00    0.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0.00    0.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.00    0.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.21    1.5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.22    3.9</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0.00    0.0</span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="vinecop-1.png" alt="" width="700" height="433"></span>
@@ -251,27 +286,27 @@ financial returns.</em> Computational Statistics &amp; Data Analysis, 59 (1),
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> # A data.frame: 10 x 11 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  tree edge conditioned conditioning var_types   family rotation parameters df</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    1        2, 4                    c,c    frank        0        9.7  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    2        4, 1                    c,c gaussian        0       0.88  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    3        1, 3                    c,c   gumbel      180        2.8  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    4        3, 5                    c,c    frank        0         10  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     2    1        2, 1            4       c,c   gumbel        0        1.1  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     2    2        4, 3            1       c,c gaussian        0       0.25  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     2    3        1, 5            3       c,c gaussian        0       0.21  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     3    1        2, 3         1, 4       c,c  clayton      180       0.84  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     3    2        4, 5         3, 1       c,c  clayton        0       0.81  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     4    1        2, 5      3, 1, 4       c,c    frank        0        1.6  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   tau loglik</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.66  17.31</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.69  20.43</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.64  17.33</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.67  17.95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.11   0.38</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.16   0.91</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.14   0.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.30   3.64</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.29   5.28</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.17   1.04</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    1        2, 3                    c,c   gumbel        0        2.3  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    2        1, 3                    c,c   gumbel        0        2.7  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    3        3, 4                    c,c gaussian        0       0.89  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    4        4, 5                    c,c    frank        0         11  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     2    1        2, 1            3       c,c  clayton      180       0.64  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     2    2        1, 4            3       c,c   gumbel      180        1.1  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     2    3        3, 5            4       c,c gaussian        0       0.43  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     3    1        2, 4         1, 3       c,c  clayton       90      0.091  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     3    2        1, 5         4, 3       c,c  clayton        0       0.18  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     4    1        2, 5      4, 1, 3       c,c  clayton        0       0.13  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     tau loglik</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.561  12.51</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.632  16.85</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.696  20.85</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.687  19.43</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.244   3.09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.109   0.33</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.283   2.83</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.043   0.08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.081   0.37</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.059   0.15</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co">## Gaussian D-vine</span></span>
 <span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">vinecop</span><span class="op">(</span><span class="va">u</span>, structure <span class="op">=</span> <span class="fu"><a href="rvine_structure.html">dvine_structure</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span>, family <span class="op">=</span> <span class="st">"gauss"</span><span class="op">)</span></span>
@@ -323,7 +358,7 @@ financial returns.</em> Computational Statistics &amp; Data Analysis, 59 (1),
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

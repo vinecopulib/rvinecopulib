@@ -18,7 +18,7 @@ inverses) for the bivariate copula distribution."><!-- mathjax --><script src="h
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.2</span>
       </span>
     </div>
 
@@ -77,37 +77,60 @@ inverses) for the bivariate copula distribution.</p>
     <dl><dt>u</dt>
 <dd><p>evaluation points, a matrix with at least two columns, see
 <em>Details</em>.</p></dd>
+
+
 <dt>family</dt>
 <dd><p>the copula family, a string containing the family name (see
 <code><a href="bicop.html">bicop</a></code> for all possible families).</p></dd>
+
+
 <dt>rotation</dt>
 <dd><p>the rotation of the copula, one of <code>0</code>, <code>90</code>, <code>180</code>, <code>270</code>.</p></dd>
+
+
 <dt>parameters</dt>
 <dd><p>a vector or matrix of copula parameters.</p></dd>
+
+
 <dt>var_types</dt>
 <dd><p>variable types, a length 2 vector; e.g., <code>c("c", "c")</code> for
 both continuous (default), or <code>c("c", "d")</code> for first variable continuous
 and second discrete.</p></dd>
+
+
 <dt>n</dt>
 <dd><p>number of observations. If `length(n) &gt; 1``, the length is taken to
 be the number required.</p></dd>
+
+
 <dt>qrng</dt>
 <dd><p>if <code>TRUE</code>, generates quasi-random numbers using the bivariate
 Generalized Halton sequence (default <code>qrng = FALSE</code>).</p></dd>
+
+
 <dt>cond_var</dt>
 <dd><p>either <code>1</code> or <code>2</code>; <code>cond_var = 1</code> conditions on the first
 variable, <code>cond_var = 2</code> on the second.</p></dd>
+
+
 <dt>inverse</dt>
 <dd><p>whether to compute the h-function or its inverse.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p><code>dbicop()</code> gives the density, <code>pbicop()</code> gives the distribution function,
+    
+
+<p><code>dbicop()</code> gives the density, <code>pbicop()</code> gives the distribution function,
 <code>rbicop()</code> generates random deviates, and <code>hbicop()</code> gives the h-functions
-(and their inverses).
-The length of the result is determined by <code>n</code> for <code>rbicop()</code>, and
-the number of rows in <code>u</code> for the other functions.
-The numerical arguments other than <code>n</code> are recycled to the length of the
+(and their inverses).</p>
+
+
+<p>The length of the result is determined by <code>n</code> for <code>rbicop()</code>, and
+the number of rows in <code>u</code> for the other functions.</p>
+
+
+<p>The numerical arguments other than <code>n</code> are recycled to the length of the
 result.</p>
     </div>
     <div id="details">
@@ -175,8 +198,8 @@ second block.</p>
 <span class="r-in"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">u</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">pnorm</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">-</span> <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu">pbicop</span><span class="op">(</span><span class="va">u</span>, <span class="st">"clay"</span>, <span class="fl">90</span>, <span class="fl">3</span>, var_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"d"</span>, <span class="st">"c"</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.30665697 0.97490747 0.12833462 0.64023095 0.24502426 0.09732979</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.42156506 0.70773028 0.01219158 0.63750103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.133984969 0.847999538 0.024478827 0.029370594 0.485948637 0.008715831</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.341880911 0.278719911 0.572585389 0.634626161</span>
 <span class="r-in"></span>
 </code></pre></div>
     </div>
@@ -192,7 +215,7 @@ second block.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

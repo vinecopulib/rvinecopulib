@@ -1,8 +1,12 @@
-# rvinecopulib 0.6.2.1.1(August 30, 2021)
+# rvinecopulib 0.6.2.1.1 (October 16, 2022)
+
+- fix warning about C++17 attribute extension 'nodiscard' (#255)
+
+# rvinecopulib 0.6.2.1.1 (August 30, 2022)
 
 - replace bitwise operations on Boolean variables.
 
-# rvinecopulib 0.6.2.1.0 (August 26, 2021)
+# rvinecopulib 0.6.2.1.0 (August 26, 2022)
 
 Release following the updates of vinecopulib to 0.6.2, see 
 https://github.com/vinecopulib/vinecopulib/releases. The most 

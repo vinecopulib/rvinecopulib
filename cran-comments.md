@@ -1,4 +1,4 @@
-Fixes warnings issued by clang-14's -Wbitwise-instead-of-logical.
+Fixes warnings issued by clang-14's -Wc++17-attribute-extensions.
 
 ## Test environments
 
@@ -12,11 +12,3 @@ Fixes warnings issued by clang-14's -Wbitwise-instead-of-logical.
 There were no ERRORs or WARNINGs. 
 
 ## Reverse dependencies
-
-## revdepcheck results
-
-We checked 5 reverse dependencies, comparing R CMD check results across CRAN 
-and dev versions of this package.
-
- * We saw 0 new problems
- * We failed to check 0 packages

@@ -21,7 +21,7 @@ pair-copula. contour.vinecop_dist produces a matrix of contour plots
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.2</span>
       </span>
     </div>
 
@@ -78,26 +78,37 @@ pair-copula. <code>contour.vinecop_dist</code> produces a matrix of contour plot
     <h2>Arguments</h2>
     <dl><dt>x</dt>
 <dd><p><code>vinecop_dist</code> object.</p></dd>
+
+
 <dt>tree</dt>
 <dd><p><code>"ALL"</code> or integer vector; specifies which trees are
 plotted.</p></dd>
+
+
 <dt>var_names</dt>
 <dd><p>integer; specifies how to make use of variable names:</p><ul><li><p>`"ignore"`` = variable names are ignored,</p></li>
 <li><p>`"use"`` = variable names are used to annotate vertices,</p></li>
 <li><p>`"legend"`` = uses numbers in plot and adds a legend for variable names,</p></li>
 <li><p>`"hide"`` = no numbers or names, just the node.</p></li>
 </ul></dd>
+
+
 <dt>edge_labels</dt>
 <dd><p>character; options are:</p><ul><li><p><code>"family"</code> = pair-copula family (see <code>[bicop_dist()]</code>),</p></li>
 <li><p>`"tau"`` = pair-copula Kendall's tau</p></li>
 <li><p>`"family_tau"`` = pair-copula family and Kendall's tau,</p></li>
 <li><p>`"pair"`` = the name of the involved variables.</p></li>
 </ul></dd>
+
+
 <dt>...</dt>
 <dd><p>Unused for <code>plot</code> and passed to
 <code><a href="plot.bicop_dist.html">contour.bicop</a></code> for <code>contour</code>.</p></dd>
+
+
 <dt>cex.nums</dt>
 <dd><p>numeric; expansion factor for font of the numbers.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -133,10 +144,10 @@ be <code>1.25/length(tree)*(d - min(tree))</code> times the plot width.</p>
 <span class="r-plt img"><img src="plot.vinecop_dist-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span class="va">igr_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/get.html" class="external-link">get</a></span><span class="op">(</span><span class="st">"g"</span>, <span class="va">plt</span><span class="op">$</span><span class="va">plot_env</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span class="r-in"><span class="va">igr_obj</span>  <span class="co"># print object</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 52fab0a UN-- 10 9 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 935e596 UN-- 10 9 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), name (e/c)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from 52fab0a (vertex names):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3--6  4--6  1--7  9--2  8--7  7--6  6--2  2--5  5--10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from 935e596 (vertex names):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 9--2  4--5  6--2  7--2  5--2  3--2  2--1  8--1  1--10</span>
 <span class="r-in"><span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/E.html" class="external-link">E</a></span><span class="op">(</span><span class="va">igr_obj</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>  <span class="co"># extract edge labels</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "indep(0)" "indep(0)" "indep(0)" "indep(0)" "indep(0)" "indep(0)" "indep(0)"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [8] "indep(0)" "indep(0)"</span>
@@ -164,7 +175,7 @@ be <code>1.25/length(tree)*(d - min(tree))</code> times the plot width.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

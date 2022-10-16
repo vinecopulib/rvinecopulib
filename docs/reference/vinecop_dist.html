@@ -18,7 +18,7 @@ and variable types."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/a
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.2</span>
       </span>
     </div>
 
@@ -64,6 +64,8 @@ and variable types.</p>
 <dd><p>A nested list of '<code><a href="bicop_dist.html">bicop_dist()</a></code>' objects, where
 <code>pair_copulas[[t]][[e]]</code> corresponds to the pair-copula at edge <code>e</code> in
 tree <code>t</code>.</p></dd>
+
+
 <dt>structure</dt>
 <dd><p>an <code>rvine_structure</code> object, namely a compressed
 representation of the vine structure, or an object that can be coerced into
@@ -71,14 +73,19 @@ one (see <code><a href="rvine_structure.html">rvine_structure()</a></code> and <
 must be <code>length(pair_copulas[[1]]) + 1</code>; <code>structure = NA</code> performs
 automatic selection based on Dissman's algorithm. See <em>Details</em> for partial
 selection of the structure.</p></dd>
+
+
 <dt>var_types</dt>
 <dd><p>variable types, a length d vector; e.g., <code>c("c", "c")</code> for
 two continuous variables, or <code>c("c", "d")</code> for first variable continuous
 and second discrete.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Object of class <code>vinecop_dist</code>, i.e., a list containing:</p><ul><li><p><code>pair_copulas</code>, a list of lists. Each element of <code>pair_copulas</code> corresponds
+    
+
+<p>Object of class <code>vinecop_dist</code>, i.e., a list containing:</p><ul><li><p><code>pair_copulas</code>, a list of lists. Each element of <code>pair_copulas</code> corresponds
 to a tree, which is itself a list of <code><a href="bicop_dist.html">bicop_dist()</a></code> objects.</p></li>
 <li><p><code>structure</code>, a compressed representation of the vine structure, or an
 object that can be coerced into one (see <code><a href="rvine_structure.html">rvine_structure()</a></code> and
@@ -131,7 +138,7 @@ object that can be coerced into one (see <code><a href="rvine_structure.html">rv
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

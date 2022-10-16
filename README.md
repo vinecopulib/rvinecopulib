@@ -61,7 +61,7 @@ You can install:
 -   the latest development version:
 
     ``` r
-    devtools::install_github("vinecopulib/rvinecopulib")
+    remotes::install_github("vinecopulib/rvinecopulib")
     ```
 
 ------------------------------------------------------------------------
