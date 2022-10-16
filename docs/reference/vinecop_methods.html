@@ -18,7 +18,7 @@ distribution."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/li
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.2</span>
       </span>
     </div>
 
@@ -68,27 +68,44 @@ distribution.</p>
 <dd><p>matrix of evaluation points; must contain at least d columns, where
 d is the number of variables in the vine. More columns are required for
 discrete models, see <em>Details</em>.</p></dd>
+
+
 <dt>vinecop</dt>
 <dd><p>an object of class <code>"vinecop_dist"</code>.</p></dd>
+
+
 <dt>cores</dt>
 <dd><p>number of cores to use; if larger than one, computations are
 done in parallel on <code>cores</code> batches .</p></dd>
+
+
 <dt>n_mc</dt>
 <dd><p>number of samples used for quasi Monte Carlo integration.</p></dd>
+
+
 <dt>n</dt>
 <dd><p>number of observations.</p></dd>
+
+
 <dt>qrng</dt>
 <dd><p>if <code>TRUE</code>, generates quasi-random numbers using the multivariate
 Generalized Halton sequence up to dimension 300 and the Generalized Sobol
 sequence in higher dimensions (default <code>qrng = FALSE</code>).</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p><code>dvinecop()</code> gives the density, <code>pvinecop()</code> gives the distribution function,
-and <code>rvinecop()</code> generates random deviates.
-The length of the result is determined by <code>n</code> for <code>rvinecop()</code>, and
-the number of rows in <code>u</code> for the other functions.
-The <code>vinecop</code> object is recycled to the length of the
+    
+
+<p><code>dvinecop()</code> gives the density, <code>pvinecop()</code> gives the distribution function,
+and <code>rvinecop()</code> generates random deviates.</p>
+
+
+<p>The length of the result is determined by <code>n</code> for <code>rvinecop()</code>, and
+the number of rows in <code>u</code> for the other functions.</p>
+
+
+<p>The <code>vinecop</code> object is recycled to the length of the
 result.</p>
     </div>
     <div id="details">
@@ -132,9 +149,9 @@ second block.</p>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># evaluate the density and cdf</span></span>
 <span class="r-in"><span class="fu">dvinecop</span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4.055794</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 7.852839</span>
 <span class="r-in"><span class="fu">pvinecop</span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.2572</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3199</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co">## Discrete models</span></span>
 <span class="r-in"><span class="va">vc</span><span class="op">$</span><span class="va">var_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"d"</span>, <span class="fl">5</span><span class="op">)</span>  <span class="co"># convert model to discrete</span></span>
@@ -144,9 +161,9 @@ second block.</p>
 <span class="r-in"><span class="va">u_disc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="fu">dvinecop</span><span class="op">(</span><span class="va">u_disc</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  1.777059 19.878012  3.632081 19.878012  3.369472</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  6.040969  3.686326 23.046362  4.272786 83.059018</span>
 <span class="r-in"><span class="fu">pvinecop</span><span class="op">(</span><span class="va">u_disc</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3437 0.1427 0.2288 0.1427 0.3351</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.5076 0.1885 0.1743 0.3094 0.6164</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># simulated data always has uniform margins</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs</a></span><span class="op">(</span><span class="fu">rvinecop</span><span class="op">(</span><span class="fl">200</span>, <span class="va">vc</span><span class="op">)</span><span class="op">)</span></span>
@@ -165,7 +182,7 @@ second block.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>
