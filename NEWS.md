@@ -1,3 +1,7 @@
+# rvinecopulib 0.6.2.1.1(August 30, 2021)
+
+- replace bitwise operations on Boolean variables.
+
 # rvinecopulib 0.6.2.1.0 (August 26, 2021)
 
 Release following the updates of vinecopulib to 0.6.2, see 

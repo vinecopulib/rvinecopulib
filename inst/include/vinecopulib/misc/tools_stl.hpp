@@ -109,7 +109,7 @@ bool
 is_same_set(const std::vector<T>& x, const std::vector<T>& y)
 {
   auto z = intersect(x, y);
-  return ((z.size() == x.size()) & (z.size() == y.size()));
+  return ((z.size() == x.size()) && (z.size() == y.size()));
 }
 
 template<class T>
