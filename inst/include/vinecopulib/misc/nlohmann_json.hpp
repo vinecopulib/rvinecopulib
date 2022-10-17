@@ -1115,38 +1115,11 @@ defined(__TI_COMPILER_VERSION__) &&                 \
 #if defined(JSON_HEDLEY_WARN_UNUSED_RESULT_MSG)
 #undef JSON_HEDLEY_WARN_UNUSED_RESULT_MSG
 #endif
-#if (JSON_HEDLEY_HAS_CPP_ATTRIBUTE(nodiscard) >= 201907L)
-#define JSON_HEDLEY_WARN_UNUSED_RESULT JSON_HEDLEY_DIAGNOSTIC_DISABLE_CPP98_COMPAT_WRAP_([[nodiscard]])
-#define JSON_HEDLEY_WARN_UNUSED_RESULT_MSG(msg) JSON_HEDLEY_DIAGNOSTIC_DISABLE_CPP98_COMPAT_WRAP_([[nodiscard(msg)]])
-#elif JSON_HEDLEY_HAS_CPP_ATTRIBUTE(nodiscard)
-#define JSON_HEDLEY_WARN_UNUSED_RESULT JSON_HEDLEY_DIAGNOSTIC_DISABLE_CPP98_COMPAT_WRAP_([[nodiscard]])
-#define JSON_HEDLEY_WARN_UNUSED_RESULT_MSG(msg) JSON_HEDLEY_DIAGNOSTIC_DISABLE_CPP98_COMPAT_WRAP_([[nodiscard]])
-#elif                                                                                                       \
-                 JSON_HEDLEY_HAS_ATTRIBUTE(warn_unused_result) ||                                           \
-                   JSON_HEDLEY_GCC_VERSION_CHECK(3,4,0) ||                                                  \
-                   JSON_HEDLEY_INTEL_VERSION_CHECK(13,0,0) ||                                               \
-                   JSON_HEDLEY_TI_VERSION_CHECK(15,12,0) ||                                                 \
-                   (JSON_HEDLEY_TI_ARMCL_VERSION_CHECK(4,8,0) && defined(__TI_GNU_ATTRIBUTE_SUPPORT__)) ||  \
-                   JSON_HEDLEY_TI_ARMCL_VERSION_CHECK(5,2,0) ||                                             \
-                   (JSON_HEDLEY_TI_CL2000_VERSION_CHECK(6,0,0) && defined(__TI_GNU_ATTRIBUTE_SUPPORT__)) || \
-                   JSON_HEDLEY_TI_CL2000_VERSION_CHECK(6,4,0) ||                                            \
-                   (JSON_HEDLEY_TI_CL430_VERSION_CHECK(4,0,0) && defined(__TI_GNU_ATTRIBUTE_SUPPORT__)) ||  \
-                   JSON_HEDLEY_TI_CL430_VERSION_CHECK(4,3,0) ||                                             \
-                   (JSON_HEDLEY_TI_CL6X_VERSION_CHECK(7,2,0) && defined(__TI_GNU_ATTRIBUTE_SUPPORT__)) ||   \
-                   JSON_HEDLEY_TI_CL6X_VERSION_CHECK(7,5,0) ||                                              \
-                   JSON_HEDLEY_TI_CL7X_VERSION_CHECK(1,2,0) ||                                              \
-                   JSON_HEDLEY_TI_CLPRU_VERSION_CHECK(2,1,0) ||                                             \
-                   (JSON_HEDLEY_SUNPRO_VERSION_CHECK(5,15,0) && defined(__cplusplus)) ||                    \
-                   JSON_HEDLEY_PGI_VERSION_CHECK(17,10,0)
-#define JSON_HEDLEY_WARN_UNUSED_RESULT __attribute__((__warn_unused_result__))
-#define JSON_HEDLEY_WARN_UNUSED_RESULT_MSG(msg) __attribute__((__warn_unused_result__))
-#elif defined(_Check_return_) /* SAL */
-#define JSON_HEDLEY_WARN_UNUSED_RESULT _Check_return_
-#define JSON_HEDLEY_WARN_UNUSED_RESULT_MSG(msg) _Check_return_
-#else
+
+
 #define JSON_HEDLEY_WARN_UNUSED_RESULT
 #define JSON_HEDLEY_WARN_UNUSED_RESULT_MSG(msg)
-#endif
+
 
 #if defined(JSON_HEDLEY_SENTINEL)
 #undef JSON_HEDLEY_SENTINEL

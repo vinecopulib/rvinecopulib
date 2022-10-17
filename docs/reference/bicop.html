@@ -18,7 +18,7 @@ can be selected automatically from a vector of options."><!-- mathjax --><script
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.2</span>
       </span>
     </div>
 
@@ -78,47 +78,72 @@ can be selected automatically from a vector of options.</p>
 (pseudo-)observations for the two variables (copula data should have
 approximately uniform margins). More columns are required for discrete
 models, see <em>Details</em>.</p></dd>
+
+
 <dt>var_types</dt>
 <dd><p>variable types, a length 2 vector; e.g., <code>c("c", "c")</code> for
 both continuous (default), or <code>c("c", "d")</code> for first variable continuous
 and second discrete.</p></dd>
+
+
 <dt>family_set</dt>
 <dd><p>a character vector of families; see <em>Details</em> for
 additional options.</p></dd>
+
+
 <dt>par_method</dt>
 <dd><p>the estimation method for parametric models, either <code>"mle"</code>
 for maximum likelihood or <code>"itau"</code> for inversion of Kendall's tau (only
 available for one-parameter families and <code>"t"</code>.</p></dd>
+
+
 <dt>nonpar_method</dt>
 <dd><p>the estimation method for nonparametric models, either
 <code>"constant"</code> for the standard transformation estimator, or
 <code>"linear"</code>/<code>"quadratic"</code> for the local-likelihood approximations of order
 one/two.</p></dd>
+
+
 <dt>mult</dt>
 <dd><p>multiplier for the smoothing parameters of nonparametric
 families. Values larger than 1 make the estimate more smooth, values less
 than 1 less smooth.</p></dd>
+
+
 <dt>selcrit</dt>
 <dd><p>criterion for family selection, either <code>"loglik"</code>, <code>"aic"</code>,
 <code>"bic"</code>, <code>"mbic"</code>. For <code><a href="vinecop.html">vinecop()</a></code> there is the additional option
 <code>"mbicv"</code>.</p></dd>
+
+
 <dt>weights</dt>
 <dd><p>optional vector of weights for each observation.</p></dd>
+
+
 <dt>psi0</dt>
 <dd><p>see <code><a href="mBICV.html">mBICV()</a></code>.</p></dd>
+
+
 <dt>presel</dt>
 <dd><p>whether the family set should be thinned out according to
 symmetry characteristics of the data.</p></dd>
+
+
 <dt>keep_data</dt>
 <dd><p>whether the data should be stored (necessary for using
 <code><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted()</a></code>).</p></dd>
+
+
 <dt>cores</dt>
 <dd><p>number of cores to use; if more than 1, estimation for multiple
 families is done in parallel.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>An object inheriting from classes <code>bicop</code> and  <code>bicop_dist</code> . In addition to
+    
+
+<p>An object inheriting from classes <code>bicop</code> and  <code>bicop_dist</code> . In addition to
 the entries contained in <code><a href="bicop_dist.html">bicop_dist()</a></code>, objects from the <code>bicop</code> class
 contain:</p><ul><li><p><code>data</code> (optionally, if <code>keep_data = TRUE</code> was used), the dataset that was
 passed to <code>bicop()</code>.</p></li>
@@ -178,8 +203,8 @@ available (<code>"indep"</code>,<code>"gaussian"</code>, <code>"t"</code>,<code>
 <span class="r-in"><span class="va">u</span> <span class="op">&lt;-</span> <span class="fu"><a href="bicop_methods.html">rbicop</a></span><span class="op">(</span><span class="fl">100</span>, <span class="st">"clayton"</span>, <span class="fl">90</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">bicop</span><span class="op">(</span><span class="va">u</span>, family_set <span class="op">=</span> <span class="st">"par"</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bivariate copula fit ('bicop'): family = gumbel, rotation = 270, parameters = 3.65, var_types = c,c</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> nobs = 100   logLik = 83.46   npars = 1   AIC = -164.93   BIC = -162.32   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bivariate copula fit ('bicop'): family = bb7, rotation = 270, parameters = 3.6, 0.7, var_types = c,c</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> nobs = 100   logLik = 57.41   npars = 2   AIC = -110.81   BIC = -105.6   </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co">## compare fit with true model</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/contour.html" class="external-link">contour</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -193,8 +218,8 @@ available (<code>"indep"</code>,<code>"gaussian"</code>, <code>"t"</code>,<code>
 <span class="r-in"><span class="va">udisc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x_disc</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x_disc</span> <span class="op">-</span> <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">fit_disc</span> <span class="op">&lt;-</span> <span class="fu">bicop</span><span class="op">(</span><span class="va">udisc</span>, var_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"d"</span>, <span class="st">"d"</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_disc</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bivariate copula fit ('bicop'): family = joe, rotation = 270, parameters = 5.78, var_types = d,d</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> nobs = 100   logLik = 42.13   npars = 1   AIC = -82.26   BIC = -79.65   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bivariate copula fit ('bicop'): family = joe, rotation = 270, parameters = 3.74, var_types = d,d</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> nobs = 100   logLik = 28.34   npars = 1   AIC = -54.67   BIC = -52.07   </span>
 </code></pre></div>
     </div>
   </div>
@@ -209,7 +234,7 @@ available (<code>"indep"</code>,<code>"gaussian"</code>, <code>"t"</code>,<code>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

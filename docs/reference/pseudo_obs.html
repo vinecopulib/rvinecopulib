@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.2</span>
       </span>
     </div>
 
@@ -61,17 +61,24 @@
     <dl><dt>x</dt>
 <dd><p>vector or matrix random variates to be converted (column wise) to
 pseudo-observations.</p></dd>
+
+
 <dt>ties_method</dt>
 <dd><p>similar to <code>ties.method</code> of <code><a href="https://rdrr.io/r/base/rank.html" class="external-link">rank()</a></code> (only <code>"average"</code>,
 <code>"first"</code> and <code>"random"</code> currently available).</p></dd>
+
+
 <dt>lower_tail</dt>
 <dd><p><code>logical</code> which, if `FALSE``, returns the
 pseudo-observations when applying the empirical marginal survival
 functions.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>a vector of matrix of the same dimension as the input containing the
+    
+
+<p>a vector of matrix of the same dimension as the input containing the
 pseudo-observations.</p>
     </div>
     <div id="details">
@@ -98,22 +105,22 @@ problems with density evaluation at the boundaries.</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># pseudo-observations for a vector</span></span>
 <span class="r-in"><span class="fu">pseudo_obs</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.09090909 0.72727273 0.18181818 0.27272727 0.36363636 0.54545455</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.45454545 0.63636364 0.81818182 0.90909091</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.72727273 0.36363636 0.18181818 0.90909091 0.09090909 0.81818182</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.27272727 0.54545455 0.63636364 0.45454545</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># pseudo-observations for a matrix</span></span>
 <span class="r-in"><span class="fu">pseudo_obs</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]       [,2]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.27272727 0.18181818</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.18181818 0.81818182</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.90909091 0.72727273</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.45454545 0.54545455</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.09090909 0.09090909</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.72727273 0.27272727</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.63636364 0.45454545</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.36363636 0.36363636</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.54545455 0.90909091</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.81818182 0.63636364</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.09090909 0.90909091</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.63636364 0.63636364</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.36363636 0.36363636</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.72727273 0.27272727</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.27272727 0.81818182</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.81818182 0.18181818</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.45454545 0.72727273</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.18181818 0.09090909</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.54545455 0.54545455</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.90909091 0.45454545</span>
 </code></pre></div>
     </div>
   </div>
@@ -128,7 +135,7 @@ problems with density evaluation at the boundaries.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>
