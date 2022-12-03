@@ -18,7 +18,7 @@ can be selected automatically from a vector of options."><!-- mathjax --><script
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.3</span>
       </span>
     </div>
 
@@ -203,8 +203,8 @@ available (<code>"indep"</code>,<code>"gaussian"</code>, <code>"t"</code>,<code>
 <span class="r-in"><span class="va">u</span> <span class="op">&lt;-</span> <span class="fu"><a href="bicop_methods.html">rbicop</a></span><span class="op">(</span><span class="fl">100</span>, <span class="st">"clayton"</span>, <span class="fl">90</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">bicop</span><span class="op">(</span><span class="va">u</span>, family_set <span class="op">=</span> <span class="st">"par"</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bivariate copula fit ('bicop'): family = bb7, rotation = 270, parameters = 3.6, 0.7, var_types = c,c</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> nobs = 100   logLik = 57.41   npars = 2   AIC = -110.81   BIC = -105.6   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bivariate copula fit ('bicop'): family = clayton, rotation = 90, parameters = 2.59, var_types = c,c</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> nobs = 100   logLik = 51.92   npars = 1   AIC = -101.83   BIC = -99.23   </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co">## compare fit with true model</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/contour.html" class="external-link">contour</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -218,8 +218,8 @@ available (<code>"indep"</code>,<code>"gaussian"</code>, <code>"t"</code>,<code>
 <span class="r-in"><span class="va">udisc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x_disc</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x_disc</span> <span class="op">-</span> <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">fit_disc</span> <span class="op">&lt;-</span> <span class="fu">bicop</span><span class="op">(</span><span class="va">udisc</span>, var_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"d"</span>, <span class="st">"d"</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_disc</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bivariate copula fit ('bicop'): family = joe, rotation = 270, parameters = 3.74, var_types = d,d</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> nobs = 100   logLik = 28.34   npars = 1   AIC = -54.67   BIC = -52.07   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bivariate copula fit ('bicop'): family = clayton, rotation = 90, parameters = 2.52, var_types = d,d</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> nobs = 100   logLik = 27.32   npars = 1   AIC = -52.63   BIC = -50.03   </span>
 </code></pre></div>
     </div>
   </div>

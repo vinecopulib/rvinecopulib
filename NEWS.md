@@ -1,4 +1,8 @@
-# rvinecopulib 0.6.2.1.1 (October 16, 2022)
+# rvinecopulib 0.6.2.1.3 (December 3, 2022)
+
+- fix marginal PIT for discrete variables (see issue #257, thanks @rplzzz)
+
+# rvinecopulib 0.6.2.1.2 (October 16, 2022)
 
 - fix warning about C++17 attribute extension 'nodiscard' (#255)
 
