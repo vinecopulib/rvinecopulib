@@ -15,8 +15,8 @@
 #define BOOST_MATH_PROMOTE_DOUBLE_POLICY false
 #endif
 
-
 #include <RcppEigen.h>
+#include "vinecopulib/misc/tools_interface.hpp"
 #include "vinecopulib.hpp"
 
 namespace vinecopulib {
