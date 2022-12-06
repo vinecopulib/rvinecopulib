@@ -15,7 +15,7 @@
 #define sprintf _sprintf_do_nothing
 namespace std
 {
-constexpr int _sprintf_do_nothing(char* s, const char* format, ...) { return 0; }
+constexpr int _sprintf_do_nothing(char*, const char*, ...) { return 0; }
 }
 #include <boost/numeric/odeint.hpp>
 #undef sprintf
