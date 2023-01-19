@@ -135,6 +135,14 @@ to_pseudo_obs_1d(Eigen::VectorXd x, const std::string& ties_method)
     throw std::runtime_error(msg.str().c_str());
   }
 
+  // NaN-handling
+  for (size_t i = 0; i < xvec.size(); i++) {
+    if (std::isnan(xvec[i])) {
+      x[i] = NAN;
+      n--;
+    }
+  }
+
   return x / (static_cast<double>(x.size()) + 1.0);
 }
 
