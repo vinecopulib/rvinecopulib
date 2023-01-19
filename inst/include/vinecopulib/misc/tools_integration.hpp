@@ -6,8 +6,22 @@
 
 #pragma once
 
+// replace std::sprintf by void function
+// - this is necessary because `sprintf()` is now flagged as potential security
+//   risk and deprecated in macOS 13.
+// - in our case, `boost/odeint` makes (safe) use of the function, but we don't
+//   really need it.
+// - we can remove this hack if and when updates odeint (PR open).
+#define sprintf _sprintf_do_nothing
+namespace std
+{
+constexpr int _sprintf_do_nothing(char*, const char*, ...) { return 0; }
+}
 #include <boost/numeric/odeint.hpp>
+#undef sprintf
+
 #include <functional>
+
 
 namespace vinecopulib {
 

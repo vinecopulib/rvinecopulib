@@ -175,7 +175,7 @@ compute_pseudo_obs <- function(data, vine) {
         lv <- as.numeric(data[, k]) - 1
         lv0 <- which(lv == 0)
         lv[lv0] <- 1
-        xlv <- factor(levels(data[, k])[lv], levels = levels(data[, k]))
+        xlv <- ordered(levels(data[, k])[lv], levels = levels(data[, k]))
         u_sub[, k] <- eval_one_dpq(xlv, vine$margins[[k]])
         u_sub[lv0, k] <- 0
       }
