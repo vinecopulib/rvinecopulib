@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.3</span>
       </span>
     </div>
 
@@ -95,9 +95,9 @@ sparse high-dimensional vine copulas with application to portfolio risk.
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">u</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="vinecop.html">vinecop</a></span><span class="op">(</span><span class="va">u</span>, family <span class="op">=</span> <span class="st">"par"</span>, keep_data <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu">mBICV</span><span class="op">(</span><span class="va">fit</span>, <span class="fl">0.9</span><span class="op">)</span> <span class="co"># with a 0.9 prior probability of a non-independence copula</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 15.33116</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 8.095992</span>
 <span class="r-in"><span class="fu">mBICV</span><span class="op">(</span><span class="va">fit</span>, <span class="fl">0.1</span><span class="op">)</span> <span class="co"># with a 0.1 prior probability of a non-independence copula</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 85.64234</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 83.89471</span>
 </code></pre></div>
     </div>
   </div>

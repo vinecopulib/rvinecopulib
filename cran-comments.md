@@ -1,5 +1,3 @@
-Fixes warnings issued by clang-14's -Wc++17-attribute-extensions.
-
 ## Test environments
 
 * CRAN win builder (devel)
@@ -7,8 +5,8 @@ Fixes warnings issued by clang-14's -Wc++17-attribute-extensions.
 * macOS (release)
 * ubuntu 20.04 (release, oldrel, devel)
 
-## R CMD check results
+## Check status summary
 
-There were no ERRORs or WARNINGs. 
-
-## Reverse dependencies
+                NOTE OK
+Source packages    1  0
+Reverse depends    5  4
