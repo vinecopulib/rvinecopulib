@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.3.1.0</span>
       </span>
     </div>
 
@@ -208,20 +208,20 @@ with the same parameters as <code><a href="vinecop.html">vinecop()</a></code> (e
 <span class="r-out co"><span class="r-pr">#&gt;</span> $margins</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> # A data.frame: 3 x 6 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  margin name nobs  bw loglik d.f.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1   V1   50 1.1    -63  2.9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       2   V2   50 1.3    -68  2.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       3   V3   50 1.1    -62  2.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1   V1   50 1.3    -69  3.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       2   V2   50 1.6    -68  4.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       3   V3   50 1.0    -70  4.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $copula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> # A data.frame: 3 x 11 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  tree edge conditioned conditioning var_types  family rotation parameters df</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    1        2, 1                    c,c clayton       90        8.4  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    2        1, 3                    c,c     bb7      270   2.3, 8.2  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     2    1        2, 3            1       c,c     bb8       90 7.22, 0.92  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    tau loglik</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.81     65</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.77     58</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.72     44</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree edge conditioned conditioning var_types   family rotation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    1        2, 1                    c,c   gumbel      270</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    2        1, 3                    c,c      bb7       90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     2    1        2, 3            1       c,c gaussian        0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        parameters df   tau loglik</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               4.6  1 -0.78     54</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5.6e+00, 1.0e-06  2 -0.71    224</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             -0.95  1 -0.79     55</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co">## model for discrete data</span></span>
@@ -232,20 +232,20 @@ with the same parameters as <code><a href="vinecop.html">vinecop()</a></code> (e
 <span class="r-out co"><span class="r-pr">#&gt;</span> $margins</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> # A data.frame: 3 x 6 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  margin name nobs  bw loglik d.f.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1   V1   50 1.1    -61  2.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       2   V2   50 1.3    -68  2.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       3   V3   50 1.1    -62  2.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1   V1   50 1.9    -72  1.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       2   V2   50 1.6    -68  4.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       3   V3   50 1.0    -70  4.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $copula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> # A data.frame: 3 x 11 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  tree edge conditioned conditioning var_types  family rotation parameters df</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    1        2, 1                    c,d clayton       90        8.6  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     1    2        1, 3                    d,c clayton      270          9  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     2    1        2, 3            1       c,c clayton      270       0.27  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    1        2, 1                    c,d  gumbel      270        3.7  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1    2        1, 3                    d,c     bb7      270  2.6, 19.0  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     2    1        2, 3            1       c,c clayton       90       0.46  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    tau loglik</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.81   42.5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.82   42.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.12    1.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.73   36.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.85   49.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.19    5.7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"></span>
 </code></pre></div>
@@ -262,7 +262,7 @@ with the same parameters as <code><a href="vinecop.html">vinecop()</a></code> (e
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>
