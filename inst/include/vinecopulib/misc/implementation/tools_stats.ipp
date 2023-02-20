@@ -1,4 +1,4 @@
-// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -135,7 +135,15 @@ to_pseudo_obs_1d(Eigen::VectorXd x, const std::string& ties_method)
     throw std::runtime_error(msg.str().c_str());
   }
 
-  return x / (static_cast<double>(x.size()) + 1.0);
+  // NaN-handling
+  for (size_t i = 0; i < xvec.size(); i++) {
+    if (std::isnan(xvec[i])) {
+      x[i] = NAN;
+      n--;
+    }
+  }
+
+  return x / (static_cast<double>(n) + 1.0);
 }
 
 //! window smoother
@@ -307,7 +315,8 @@ pairwise_mcor(const Eigen::MatrixXd& x, const Eigen::VectorXd& weights)
 //!
 //! @param n Number of observations.
 //! @param d Dimension.
-//! @param seeds Seeds to scramble the quasi-random numbers; if empty (default),
+//! @param seeds Seeds to scramble the quasi-random numbers; if empty
+//! (default),
 //!   the quasi-random number generator is seeded randomly.
 //!
 //! @return An \f$ n \times d \f$ matrix of quasi-random
@@ -368,7 +377,8 @@ ghalton(const size_t& n, const size_t& d, const std::vector<int>& seeds)
 //!
 //! @param n Number of observations.
 //! @param d Dimension.
-//! @param seeds Seeds to scramble the quasi-random numbers; if empty (default),
+//! @param seeds Seeds to scramble the quasi-random numbers; if empty
+//! (default),
 //!   the quasi-random number generator is seeded randomly.
 //!
 //! @return An \f$ n \times d \f$ matrix of quasi-random

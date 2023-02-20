@@ -1,4 +1,4 @@
-// Copyright © 2016-2022 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -21,7 +21,6 @@ constexpr int _sprintf_do_nothing(char*, const char*, ...) { return 0; }
 #undef sprintf
 
 #include <functional>
-
 
 namespace vinecopulib {
 
