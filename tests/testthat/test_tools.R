@@ -27,3 +27,15 @@ test_that("'pseudo_obs' works", {
   expect_error(pseudo_obs("something"))
   expect_error(pseudo_obs(x, "something"))
 })
+
+test_that("'emp_cdf' works", {
+  x <- 1:10
+  cdf <- emp_cdf(x)
+
+  expect_eql(pseudo_obs(x), cdf(x))
+  expect_eql(cdf(c(0, 11)), c(1, 10) / 11)
+
+  expect_is(cdf(x), "numeric")
+  expect_is(cdf, "function")
+  expect_error(cdf(data.frame(x = 1:10)))
+})

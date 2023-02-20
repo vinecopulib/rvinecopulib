@@ -341,6 +341,37 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
   x
 }
 
+#' Corrected Empirical CDF
+#'
+#' The empirical CDF with tail correction, ensuring that its output is never
+#' 0 or 1.
+#'
+#' @details The corrected empirical CDF is defined as
+#' \deqn{
+#' F_n(x) = \frac{1}{n + 1} \min\biggl\{1, \sum_{i = 1}^n 1(X_i \le x)\biggr\}
+#' }
+#'
+#' @param x numeric vector of observations
+#'
+#' @return A function with signature `function(x)` that returns \eqn{F_n(x)}.
+#'
+#' @importFrom stats ecdf
+#' @export
+#' @examples
+#' # fit ECDF on simulated data
+#' x <- rnorm(100)
+#' cdf <- emp_cdf(x)
+#'
+#' # output is bounded away from 0 and 1
+#' cdf(-50)
+#' cdf(50)
+emp_cdf <- function(x) {
+  assert_that(is.numeric(x))
+  n <- length(x)
+  Fn <- ecdf(x)
+  function(xx) pmax(n * Fn(xx), 1) / (n + 1)
+}
+
 #' Truncates output of model data frames.
 #'
 #' @param x a `data.frame` whose print output should be truncated.
