@@ -1,7 +1,7 @@
 Package: rvinecopulib
 Type: Package
 Title: High Performance Algorithms for Vine Copula Modeling
-Version: 0.6.2.1.3
+Version: 0.6.3.1.0
 Authors@R: c(
         person("Thomas", "Nagler",, "info@vinecopulib.org", role = c("aut", "cre")),
         person("Thibault", "Vatter",, "info@vinecopulib.org", role = c("aut"))
@@ -44,5 +44,4 @@ LinkingTo:
     kde1d
 BugReports: https://github.com/vinecopulib/rvinecopulib/issues
 Roxygen: list(markdown = TRUE)
-SystemRequirements: C++11
 RoxygenNote: 7.2.0
