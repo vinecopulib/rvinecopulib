@@ -4,7 +4,6 @@
 
 - add `emp_cdf()` for the tail corrected empirical cdf (#261) 
 
-
 # rvinecopulib 0.6.2.1.3 (December 3, 2022)
 
 - fix marginal PIT for discrete variables (see issue #257, thanks @rplzzz)

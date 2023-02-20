@@ -355,6 +355,7 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
 #'
 #' @return A function with signature `function(x)` that returns \eqn{F_n(x)}.
 #'
+#' @export
 #' @examples
 #' # fit ECDF on simulated data
 #' x <- rnorm(100)
