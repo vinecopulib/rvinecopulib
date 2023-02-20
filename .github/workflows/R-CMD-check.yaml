@@ -68,6 +68,11 @@ jobs:
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
 
+      - name: Update Rcpp
+        if: runner.os == 'macOS'
+        run: install.packages("Rcpp")
+        shell: Rscript {0}
+
       - name: Session info
         run: |
           options(width = 100)
