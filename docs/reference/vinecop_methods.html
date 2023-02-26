@@ -18,7 +18,7 @@ distribution."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/li
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rvinecopulib</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.3.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.3.1.1</span>
       </span>
     </div>
 
@@ -149,9 +149,9 @@ second block.</p>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># evaluate the density and cdf</span></span>
 <span class="r-in"><span class="fu">dvinecop</span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 7.369023</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 20.64086</span>
 <span class="r-in"><span class="fu">pvinecop</span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.0029</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.2649</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co">## Discrete models</span></span>
 <span class="r-in"><span class="va">vc</span><span class="op">$</span><span class="va">var_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"d"</span>, <span class="fl">5</span><span class="op">)</span>  <span class="co"># convert model to discrete</span></span>
@@ -161,9 +161,9 @@ second block.</p>
 <span class="r-in"><span class="va">u_disc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="fu">dvinecop</span><span class="op">(</span><span class="va">u_disc</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 18.0322243  3.7693524  0.9464270  0.9687843  3.1136261</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1]   5.5188884   0.3896189   0.2291369 843.8487776   4.1130262</span>
 <span class="r-in"><span class="fu">pvinecop</span><span class="op">(</span><span class="va">u_disc</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.1237 0.1821 0.3502 0.1624 0.5379</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3255 0.2066 0.1583 0.8773 0.4692</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># simulated data always has uniform margins</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs</a></span><span class="op">(</span><span class="fu">rvinecop</span><span class="op">(</span><span class="fl">200</span>, <span class="va">vc</span><span class="op">)</span><span class="op">)</span></span>
