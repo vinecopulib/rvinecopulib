@@ -1,3 +1,7 @@
+# rvinecopulib 0.6.3.1.1
+
+- add `-D_HAS_AUTO_PTR_ETC=0` flag to disable deprecated features used in boost.
+
 # rvinecopulib 0.6.3.1.0
 
 - fix `NA` handling in `to_pseudo_obs()` (#260) 
