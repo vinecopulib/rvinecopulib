@@ -81,6 +81,7 @@ rosenblatt <- function(x, model, cores = 1) {
     x <- cbind(x[, 1], bicop_hfunc1_cpp(x, model))
   } else if (inherits(model, "vinecop_dist")) {
     assert_that(all((x > 0) & (x < 1)))
+    x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
     x <- vinecop_rosenblatt_cpp(x, model, cores)
   } else {
     # prepare marginals if only one is specified
@@ -88,6 +89,7 @@ rosenblatt <- function(x, model, cores = 1) {
       model$margins <- replicate(dim(model)[1], model$margins, simplify = FALSE)
     }
     x <- dpq_marg(x, model, "p")
+    x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
     x <- vinecop_rosenblatt_cpp(x, model$copula, cores)
   }
   colnames(x) <- col_names
