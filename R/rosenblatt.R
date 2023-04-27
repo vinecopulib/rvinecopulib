@@ -37,12 +37,12 @@
 #' The formulas above assume a vine copula model with order \eqn{d, \dots, 1}.
 #' More generally, `rosenblatt()` returns the variables
 #' \deqn{
-#'   U_{M[d + 1- j, j]}= F(V_{M[d + 1- j, j]} | V_{M[d - j, j - 1]}, \dots, V_{M[1, 1]}),
+#'   U_{M[d + 1- j, j]}= F(V_{M[d - j + 1, j]} | V_{M[d - j, j]}, \dots, V_{M[1, j]}),
 #' }
 #' where \eqn{M} is the structure matrix. Similarly, `inverse_rosenblatt()`
 #' returns
 #' \deqn{
-#'   V_{M[d + 1- j, j]}= F^{-1}(U_{M[d + 1- j, j]} | U_{M[d - j, j - 1]}, \dots, U_{M[1, 1]}).
+#'   V_{M[d + 1- j, j]}= F^{-1}(U_{M[d - j + 1, j]} | U_{M[d - j, j]}, \dots, U_{M[1, j]}).
 #' }
 #'
 #'
