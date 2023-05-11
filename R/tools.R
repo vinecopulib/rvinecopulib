@@ -246,12 +246,12 @@ check_margin_controls <- function(data, ctrl) {
       }
     }
     if (!is.nan(ctrl$xmin[k])) {
-      if (any(data[, k] < ctrl$xmin[k])) {
+      if (any(data[, k] < ctrl$xmin[k], na.rm = TRUE)) {
         stop(msg_var, "not all data are larger than xmin.")
       }
     }
     if (!is.nan(ctrl$xmax[k])) {
-      if (any(data[, k] > ctrl$xmax[k])) {
+      if (any(data[, k] > ctrl$xmax[k], na.rm = TRUE)) {
         stop(msg_var, "not all data are samller than xmax.")
       }
     }
