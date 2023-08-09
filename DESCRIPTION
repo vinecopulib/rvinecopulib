@@ -40,7 +40,7 @@ LinkingTo:
     Rcpp,
     RcppEigen,
     RcppThread (>= 2.1.2),
-    wdm,
+    wdm (>= 0.2.4),
     kde1d
 BugReports: https://github.com/vinecopulib/rvinecopulib/issues
 Roxygen: list(markdown = TRUE)

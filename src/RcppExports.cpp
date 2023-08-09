@@ -13,14 +13,15 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // pseudo_obs_cpp
-Eigen::MatrixXd pseudo_obs_cpp(Eigen::MatrixXd x, std::string ties_method);
-RcppExport SEXP _rvinecopulib_pseudo_obs_cpp(SEXP xSEXP, SEXP ties_methodSEXP) {
+Eigen::MatrixXd pseudo_obs_cpp(Eigen::MatrixXd x, std::string ties_method, const Eigen::VectorXd& weights);
+RcppExport SEXP _rvinecopulib_pseudo_obs_cpp(SEXP xSEXP, SEXP ties_methodSEXP, SEXP weightsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type x(xSEXP);
     Rcpp::traits::input_parameter< std::string >::type ties_method(ties_methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(pseudo_obs_cpp(x, ties_method));
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type weights(weightsSEXP);
+    rcpp_result_gen = Rcpp::wrap(pseudo_obs_cpp(x, ties_method, weights));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -378,7 +379,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_rvinecopulib_pseudo_obs_cpp", (DL_FUNC) &_rvinecopulib_pseudo_obs_cpp, 2},
+    {"_rvinecopulib_pseudo_obs_cpp", (DL_FUNC) &_rvinecopulib_pseudo_obs_cpp, 3},
     {"_rvinecopulib_bicop_check_cpp", (DL_FUNC) &_rvinecopulib_bicop_check_cpp, 1},
     {"_rvinecopulib_bicop_select_cpp", (DL_FUNC) &_rvinecopulib_bicop_select_cpp, 11},
     {"_rvinecopulib_bicop_pdf_cpp", (DL_FUNC) &_rvinecopulib_bicop_pdf_cpp, 2},

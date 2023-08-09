@@ -6,9 +6,10 @@ using namespace vinecopulib;
 // tools exports -------------------------------------------
 
 // [[Rcpp::export]]
-Eigen::MatrixXd pseudo_obs_cpp(Eigen::MatrixXd x, std::string ties_method)
+Eigen::MatrixXd pseudo_obs_cpp(Eigen::MatrixXd x, std::string ties_method,
+                               const Eigen::VectorXd& weights)
 {
-  return vinecopulib::tools_stats::to_pseudo_obs(x, ties_method);
+  return vinecopulib::tools_stats::to_pseudo_obs(x, ties_method, weights);
 }
 
 // bicop exports -------------------------------------------

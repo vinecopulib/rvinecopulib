@@ -10,6 +10,7 @@
 #include <vinecopulib/misc/tools_stats_sobol.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
 #include <wdm/eigen.hpp>
+#include <wdm/ranks.hpp>
 
 namespace vinecopulib {
 
@@ -71,14 +72,17 @@ simulate_uniform(const size_t& n,
 //! @param x A matrix of real numbers.
 //! @param ties_method Indicates how to treat ties; same as in R, see
 //! https://stat.ethz.ch/R-manual/R-devel/library/base/html/rank.html.
+//! @param weights Vector of weights for the observations.
 //! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$
 //! (column-wise).
 inline Eigen::MatrixXd
-to_pseudo_obs(Eigen::MatrixXd x, const std::string& ties_method)
+to_pseudo_obs(Eigen::MatrixXd x,
+              const std::string& ties_method,
+              const Eigen::VectorXd& weights)
 {
   for (int j = 0; j < x.cols(); ++j)
-    x.col(j) =
-      to_pseudo_obs_1d(static_cast<Eigen::VectorXd>(x.col(j)), ties_method);
+    x.col(j) = to_pseudo_obs_1d(
+      static_cast<Eigen::VectorXd>(x.col(j)), ties_method, weights);
 
   return x;
 }
@@ -92,58 +96,29 @@ to_pseudo_obs(Eigen::MatrixXd x, const std::string& ties_method)
 //! @param x A vector of real numbers.
 //! @param ties_method Indicates how to treat ties; same as in R, see
 //! https://stat.ethz.ch/R-manual/R-devel/library/base/html/rank.html.
+//! @param weights Vector of weights for the observations.
 //! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$.
 inline Eigen::VectorXd
-to_pseudo_obs_1d(Eigen::VectorXd x, const std::string& ties_method)
+to_pseudo_obs_1d(Eigen::VectorXd x,
+                 const std::string& ties_method,
+                 const Eigen::VectorXd& weights)
 {
   size_t n = x.size();
-  std::vector<double> xvec(x.data(), x.data() + n);
-  auto order = tools_stl::get_order(xvec);
-  if (ties_method == "first") {
-    for (auto i : order)
-      x[order[i]] = static_cast<double>(i + 1);
-  } else if (ties_method == "average") {
-    for (size_t i = 0, reps; i < n; i += reps) {
-      // find replications
-      reps = 1;
-      while ((i + reps < n) && (x[order[i]] == x[order[i + reps]]))
-        ++reps;
-      // assign average rank of the tied values
-      for (size_t k = 0; k < reps; ++k)
-        x[order[i + k]] = static_cast<double>(i) + 1.0 +
-                          (static_cast<double>(reps) - 1.0) / 2.0;
-    }
-  } else if (ties_method == "random") {
-    // set up random number generator
-    std::random_device rd;
-    std::default_random_engine gen(rd());
-    for (size_t i = 0, reps; i < n; i += reps) {
-      // find replications
-      reps = 1;
-      while ((i + reps < n) && (x[order[i]] == x[order[i + reps]]))
-        ++reps;
-      // assign random rank between ties
-      std::vector<size_t> rvals(reps);
-      std::iota(rvals.begin(), rvals.end(), 0); // 0, 1, 2, ...
-      std::shuffle(rvals.begin(), rvals.end(), gen);
-      for (size_t k = 0; k < reps; ++k)
-        x[order[i + k]] = static_cast<double>(i + 1 + rvals[k]);
-    }
-  } else {
-    std::stringstream msg;
-    msg << "unknown ties method (" << ties_method << ")";
-    throw std::runtime_error(msg.str().c_str());
-  }
+  auto xvec = wdm::utils::convert_vec(x);
+  auto res =
+    wdm::impl::rank(xvec, wdm::utils::convert_vec(weights), ties_method);
+  x = Eigen::Map<Eigen::VectorXd>(res.data(), res.size());
 
-  // NaN-handling
-  for (size_t i = 0; i < xvec.size(); i++) {
-    if (std::isnan(xvec[i])) {
-      x[i] = NAN;
-      n--;
+  // correction for NaNs
+  if (wdm::utils::any_nan(xvec)) {
+    for (size_t i = 0; i < xvec.size(); i++) {
+      if (std::isnan(xvec[i])) {
+        n--;
+      }
     }
   }
 
-  return x / (static_cast<double>(n) + 1.0);
+  return x.array() / (static_cast<double>(n) + 1.0);
 }
 
 //! window smoother

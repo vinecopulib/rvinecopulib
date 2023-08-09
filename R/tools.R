@@ -328,13 +328,13 @@ on_failure(correct_var_types) <- function(call, env) {
 #' # pseudo-observations for a matrix
 #' pseudo_obs(cbind(rnorm(10), rnorm(10)))
 #' @export
-pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
+pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE, weights = numeric()) {
   assert_that(is.scalar(lower_tail) && is.logical(lower_tail))
   assert_that(is.character(ties_method) && is.scalar(ties_method))
   assert_that(in_set(ties_method, c("average", "first", "random")))
   assert_that(is.numeric(x) || is.matrix(x) || is.data.frame(x))
 
-  x[] <- pseudo_obs_cpp(if_vec_to_matrix(x, TRUE), ties_method)
+  x[] <- pseudo_obs_cpp(if_vec_to_matrix(x, TRUE), ties_method, weights)
   if (!lower_tail) {
     x <- 1 - x
   }
