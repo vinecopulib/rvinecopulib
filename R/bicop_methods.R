@@ -17,8 +17,10 @@
 #'   both continuous (default), or `c("c", "d")` for first variable continuous
 #'   and second discrete.
 #'
-#' @note The functions can optionally be used with a [bicop_dist] object, e.g.,
-#'   `dbicop(c(0.1, 0.5), bicop_dist("indep"))`.
+#' @note The functions can optionally be used with a [bicop_dist] object in place
+#' of the `family` argument, e.g.,
+#'   `dbicop(c(0.1, 0.5), bicop_dist("indep"))` or
+#'   `hbicop(c(0.1, 0.5), 2, bicop_dist("indep"))`.
 #'
 #' @details
 #' See [bicop] for the various implemented copula families.

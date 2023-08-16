@@ -95,8 +95,10 @@ second block.
 }
 }
 \note{
-The functions can optionally be used with a \link{bicop_dist} object, e.g.,
-\code{dbicop(c(0.1, 0.5), bicop_dist("indep"))}.
+The functions can optionally be used with a \link{bicop_dist} object in place
+of the \code{family} argument, e.g.,
+\code{dbicop(c(0.1, 0.5), bicop_dist("indep"))} or
+\code{hbicop(c(0.1, 0.5), 2, bicop_dist("indep"))}.
 }
 \examples{
 ## evaluate the copula density
