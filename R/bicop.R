@@ -247,7 +247,12 @@ bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0),
   assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
   assert_that(correct_var_types(var_types))
   if (family %in% setdiff(family_set_nonparametric, "indep")) {
-    stop("bicop_dist should not be used directly with nonparametric families.")
+    if (length(parameters) > 0 &&
+        abs(range(c(rowMeans(parameters), colMeans(parameters))) - 1) > 0.5) {
+      warning("margins implied by 'parameters' deviate strongly from the standard uniform distribution.")
+    } else {
+      parameters <- matrix(1, 30, 30)
+    }
   }
 
   family <- family_set_all[pmatch(family, family_set_all)]
