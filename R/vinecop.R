@@ -190,7 +190,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
   ## make all pair-copulas bicop objects
   vinecop$pair_copulas <- lapply(
     vinecop$pair_copulas,
-    function(tree) lapply(tree, as.bicop)
+    function(tree) lapply(tree, as.bicop, check = FALSE)
   )
 
   ## add information about the fit

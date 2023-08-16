@@ -169,12 +169,31 @@ bicop <- function(data, var_types = c("c", "c"), family_set = "all",
   )
   bicop$nobs <- nrow(data)
 
-  as.bicop(bicop)
+  as.bicop(bicop, check = FALSE)
 }
 
-as.bicop <- function(object) {
+#' Convert list to bicop object
+#'
+#' @param object a list containing entries for `"family"`, `"rotation"`,
+#' `"parameters"`, and `"npars"`.
+#' @param check whether to check for validity of the family/parameter
+#'  specification.
+#'
+#' @return A bicop object corresponding to the specification in `object`.
+#' @export
+#'
+#' @examples
+#' as.bicop(list(family = "gumbel", rotation = 90, parameters = 2, npars = 1))
+as.bicop <- function(object, check = TRUE) {
   if (!all(c("family", "rotation", "parameters", "npars") %in% names(object))) {
     stop("object cannot be coerced to class 'bicop'")
+  }
+  object$parameters <- as.matrix(object$parameters)
+  if (is.null(object$var_types)) {
+    object$var_types <- c("c", "c")
+  }
+  if (check) {
+    bicop_check_cpp(object)
   }
   structure(object, class = c("bicop", "bicop_dist"))
 }
