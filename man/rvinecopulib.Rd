@@ -3,6 +3,7 @@
 \docType{package}
 \name{rvinecopulib}
 \alias{rvinecopulib}
+\alias{rvinecopulib-package}
 \title{High Performance Algorithms for Vine Copula Modeling}
 \description{
 Provides an interface to 'vinecopulib', a C++ library for vine copula
@@ -54,6 +55,13 @@ summary(vc)
 x <- sapply(1:3, function(i) rnorm(50))
 vc <- vine(x, copula_controls = list(family_set = "par"))
 summary(vc)
+}
+\seealso{
+Useful links:
+\itemize{
+  \item Report bugs at \url{https://github.com/vinecopulib/rvinecopulib/issues}
+}
+
 }
 \author{
 Thomas Nagler, Thibault Vatter
