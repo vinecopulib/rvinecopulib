@@ -169,12 +169,31 @@ bicop <- function(data, var_types = c("c", "c"), family_set = "all",
   )
   bicop$nobs <- nrow(data)
 
-  as.bicop(bicop)
+  as.bicop(bicop, check = FALSE)
 }
 
-as.bicop <- function(object) {
+#' Convert list to bicop object
+#'
+#' @param object a list containing entries for `"family"`, `"rotation"`,
+#' `"parameters"`, and `"npars"`.
+#' @param check whether to check for validity of the family/parameter
+#'  specification.
+#'
+#' @return A bicop object corresponding to the specification in `object`.
+#' @export
+#'
+#' @examples
+#' as.bicop(list(family = "gumbel", rotation = 90, parameters = 2, npars = 1))
+as.bicop <- function(object, check = TRUE) {
   if (!all(c("family", "rotation", "parameters", "npars") %in% names(object))) {
     stop("object cannot be coerced to class 'bicop'")
+  }
+  object$parameters <- as.matrix(object$parameters)
+  if (is.null(object$var_types)) {
+    object$var_types <- c("c", "c")
+  }
+  if (check) {
+    bicop_check_cpp(object)
   }
   structure(object, class = c("bicop", "bicop_dist"))
 }
@@ -247,7 +266,12 @@ bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0),
   assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
   assert_that(correct_var_types(var_types))
   if (family %in% setdiff(family_set_nonparametric, "indep")) {
-    stop("bicop_dist should not be used directly with nonparametric families.")
+    if (length(parameters) > 0 &&
+        abs(range(c(rowMeans(parameters), colMeans(parameters))) - 1) > 0.5) {
+      warning("margins implied by 'parameters' deviate strongly from the standard uniform distribution.")
+    } else {
+      parameters <- matrix(1, 30, 30)
+    }
   }
 
   family <- family_set_all[pmatch(family, family_set_all)]
