@@ -849,6 +849,256 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
   return pdf;
 }
 
+
+//! @brief Evaluates the score function.
+//!
+//! The score function is defined as the gradient of the log-likelihood 
+//! with respect to the parameters.
+//!
+//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//!   evaluation points, where \f$ k \f$ is the number of discrete variables
+//!   (see `select()`).
+//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`, 
+//!   score function of the step-wise MLE (gradients computed per pair-copula).
+//! @param num_threads The number of threads to use for computations; if greater
+//!   than 1, the function will be applied concurrently to `num_threads` batches
+//!   of `u`.
+inline Eigen::MatrixXd
+Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
+{
+  check_data(u);
+  u = collapse_data(u);
+
+  // info about the vine structure (reverse rows (!) for more natural indexing)
+  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  auto order = rvine_structure_.get_order();
+  auto disc_cols = tools_select::get_disc_cols(var_types_);
+
+  Eigen::MatrixXd scores(u.rows(), static_cast<size_t>(this->get_npars()));
+  scores.setZero();
+
+  if (!step_wise) {
+    size_t ipar = 0;
+    for (size_t t = 0; t < trunc_lvl; t++) {
+      for (size_t e = 0; e < d_ - 1 - t; e++) {
+        auto pars = pair_copulas_[t][e].get_parameters();
+        for (size_t p = 0; p < pars.size(); p++) {
+          auto pars_tmp = pars;
+
+          pars_tmp(p) = pars(p) + 1e-2;
+          pair_copulas_[t][e].set_parameters(pars_tmp);
+          Eigen::VectorXd f1 =
+            this->pdf(u, num_threads).array().max(1e-20).log();
+
+          pars_tmp(p) = pars(p) - 1e-2;
+          pair_copulas_[t][e].set_parameters(pars_tmp);
+          Eigen::VectorXd f2 =
+            this->pdf(u, num_threads).array().max(1e-20).log();
+
+          scores.col(ipar++) = (f1 - f2) / 2e-2;
+          pair_copulas_[t][e].set_parameters(pars);
+        }
+      }
+    }
+
+    return scores;
+  }
+
+  auto do_batch = [&](const tools_batch::Batch& b) {
+    // temporary storage objects (all data must be in (0, 1))
+    Eigen::MatrixXd hfunc1, hfunc2, u_e, hfunc1_sub, hfunc2_sub, u_e_sub;
+    hfunc1 = Eigen::MatrixXd::Zero(b.size, d_);
+    hfunc2 = Eigen::MatrixXd::Zero(b.size, d_);
+    if (get_n_discrete() > 0) {
+      hfunc1_sub = hfunc1;
+      hfunc2_sub = hfunc2;
+    }
+
+    // fill first row of hfunc2 matrix with evaluation points;
+    // points have to be reordered to correspond to natural order
+    for (size_t j = 0; j < d_; ++j) {
+      hfunc2.col(j) = u.block(b.begin, order[j] - 1, b.size, 1);
+      if (var_types_[order[j] - 1] == "d") {
+        hfunc2_sub.col(j) =
+          u.block(b.begin, d_ + disc_cols[order[j] - 1], b.size, 1);
+      }
+    }
+
+    size_t ipar = 0;
+    for (size_t tree = 0; tree < trunc_lvl; ++tree) {
+      tools_interface::check_user_interrupt(
+        static_cast<double>(u.rows()) * static_cast<double>(d_) > 1e3);
+      for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
+        tools_interface::check_user_interrupt(edge % 100 == 0);
+        // extract evaluation point from hfunction matrices (have been
+        // computed in previous tree level)
+        Bicop edge_copula = get_pair_copula(tree, edge);
+        auto var_types = edge_copula.get_var_types();
+        size_t m = rvine_structure_.min_array(tree, edge);
+
+        u_e = Eigen::MatrixXd(b.size, 2);
+        u_e.col(0) = hfunc2.col(edge);
+        if (m == rvine_structure_.struct_array(tree, edge, true)) {
+          u_e.col(1) = hfunc2.col(m - 1);
+        } else {
+          u_e.col(1) = hfunc1.col(m - 1);
+        }
+
+        if ((var_types[0] == "d") | (var_types[1] == "d")) {
+          u_e.conservativeResize(b.size, 4);
+          u_e.col(2) = hfunc2_sub.col(edge);
+          if (m == rvine_structure_.struct_array(tree, edge, true)) {
+            u_e.col(3) = hfunc2_sub.col(m - 1);
+          } else {
+            u_e.col(3) = hfunc1_sub.col(m - 1);
+          }
+        }
+
+        auto pars = edge_copula.get_parameters();
+        for (size_t p = 0; p < pars.size(); p++) {
+          auto pars_tmp = pars;
+
+          pars_tmp(p) = pars(p) + 1e-3;
+          edge_copula.set_parameters(pars_tmp);
+          Eigen::VectorXd f1 = edge_copula.pdf(u_e).array().max(1e-20).log();
+
+          pars_tmp(p) = pars(p) - 1e-3;
+          edge_copula.set_parameters(pars_tmp);
+          Eigen::VectorXd f2 = edge_copula.pdf(u_e).array().max(1e-20).log();
+
+          scores.col(ipar++).segment(b.begin, b.size) = (f1 - f2) / 2e-3;
+          edge_copula.set_parameters(pars);
+        }
+
+        // h-functions are only evaluated if needed in next step
+        if (rvine_structure_.needed_hfunc1(tree, edge)) {
+          hfunc1.col(edge) = edge_copula.hfunc1(u_e);
+          if (var_types[1] == "d") {
+            u_e_sub = u_e;
+            u_e_sub.col(1) = u_e.col(3);
+            hfunc1_sub.col(edge) = edge_copula.hfunc1(u_e_sub);
+          }
+        }
+        if (rvine_structure_.needed_hfunc2(tree, edge)) {
+          hfunc2.col(edge) = edge_copula.hfunc2(u_e);
+          if (var_types[0] == "d") {
+            u_e_sub = u_e;
+            u_e_sub.col(0) = u_e.col(2);
+            hfunc2_sub.col(edge) = edge_copula.hfunc2(u_e_sub);
+          }
+        }
+      }
+    }
+  };
+
+  if (trunc_lvl > 0) {
+    tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
+    pool.map(do_batch, tools_batch::create_batches(u.rows(), num_threads));
+    pool.join();
+  }
+
+  return scores;
+}
+
+//! @brief Evaluates the hessian per observation.
+//!
+//! Hessian is meant losely as "gradients of each component of the score function".
+//! 
+//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//!   evaluation points, where \f$ k \f$ is the number of discrete variables
+//!   (see `select()`).
+//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`, 
+//!   score function of the step-wise MLE (gradients computed per pair-copula).
+//! @param num_threads The number of threads to use for computations; if greater
+//!   than 1, the function will be applied concurrently to `num_threads` batches
+//!   of `u`.
+inline TriangularArray<std::vector<Eigen::MatrixXd>>
+Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
+{
+  check_data(u);
+  u = collapse_data(u);
+
+  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  TriangularArray<std::vector<Eigen::MatrixXd>> hess(d_);
+  for (size_t t = 0; t < trunc_lvl; t++) {
+    for (size_t e = 0; e < d_ - 1 - t; e++) {
+      auto pars = pair_copulas_[t][e].get_parameters();
+      hess(t, e).resize(pars.size());
+      for (size_t p = 0; p < pars.size(); p++) {
+        auto pars_tmp = pars;
+
+        pars_tmp(p) = pars(p) + 1e-2;
+        pair_copulas_[t][e].set_parameters(pars_tmp);
+        Eigen::MatrixXd f1 = this->scores(u, step_wise, num_threads);
+
+        pars_tmp(p) = pars(p) - 1e-2;
+        pair_copulas_[t][e].set_parameters(pars_tmp);
+        Eigen::MatrixXd f2 = this->scores(u, step_wise, num_threads);
+
+        hess(t, e)[p] = (f1 - f2) / 2e-2;
+        pair_copulas_[t][e].set_parameters(pars);
+      }
+    }
+  }
+
+  return hess;
+}
+
+//! @brief Evaluates the average hessian.
+//!
+//! Hessian is meant losely as "gradients of each component of the score function".
+//! The Hessian is averaged over all samples in `u`.
+//! 
+//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//!   evaluation points, where \f$ k \f$ is the number of discrete variables
+//!   (see `select()`).
+//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`, 
+//!   score function of the step-wise MLE (gradients computed per pair-copula).
+//! @param num_threads The number of threads to use for computations; if greater
+//!   than 1, the function will be applied concurrently to `num_threads` batches
+//!   of `u`.
+inline Eigen::MatrixXd
+Vinecop::hessian_avg(Eigen::MatrixXd u,
+                     bool step_wise,
+                     const size_t num_threads)
+{
+  auto hess = this->hessian(u, step_wise, num_threads);
+  size_t npars = this->get_npars();
+  Eigen::MatrixXd H(npars, npars);
+
+  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  size_t ipar = 0;
+  for (size_t t = 0; t < trunc_lvl; t++) {
+    for (size_t e = 0; e < d_ - 1 - t; e++) {
+      for (size_t p = 0; p < pair_copulas_[t][e].get_parameters().size(); p++) {
+        H.row(ipar++) = hess(t, e)[p].colwise().mean();
+      }
+    }
+  }
+
+  return H;
+}
+
+//! @brief Computes the covariance matrix of scores.
+//!
+//! 
+//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//!   evaluation points, where \f$ k \f$ is the number of discrete variables
+//!   (see `select()`).
+//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`, 
+//!   score function of the step-wise MLE (gradients computed per pair-copula).
+//! @param num_threads The number of threads to use for computations; if greater
+//!   than 1, the function will be applied concurrently to `num_threads` batches
+//!   of `u`.
+inline Eigen::MatrixXd
+Vinecop::scores_cov(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
+{
+  auto s = this->scores(u, step_wise, num_threads);
+  auto sc = s.rowwise() - s.colwise().mean();
+  return (sc.adjoint() * sc) / static_cast<double>(s.rows());
+}
+
+
 //! @brief Evaluates the copula distribution.
 //!
 //! Because no closed-form expression is available, the distribution is

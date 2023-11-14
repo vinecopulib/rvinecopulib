@@ -230,6 +230,53 @@ double vinecop_mbicv_cpp(const Eigen::MatrixXd& u,
   return vinecop_wrap(vinecop_r).mbicv(u, psi0, cores);
 }
 
+
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd
+vinecop_scores_cpp(const Eigen::MatrixXd& u,
+                   const Rcpp::List& svinecop_r,
+                   bool step_wise = true,
+                   const size_t num_threads = 1)
+{
+  return vinecop_wrap(svinecop_r).scores(u, step_wise, num_threads);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd
+vinecop_hessian_avg_cpp(const Eigen::MatrixXd& u,
+                        const Rcpp::List& svinecop_r,
+                        bool step_wise = true,
+                        const size_t num_threads = 1)
+{
+  return vinecop_wrap(svinecop_r).hessian_avg(u, step_wise, num_threads);
+}
+
+
+// [[Rcpp::export()]]
+Rcpp::List
+vinecop_hessian_cpp(const Eigen::MatrixXd& u,
+                    const Rcpp::List& svinecop_r,
+                    bool step_wise = true,
+                    const size_t num_threads = 1)
+{
+  auto H = vinecop_wrap(svinecop_r).hessian(u, step_wise, num_threads);
+
+  size_t d = H.get_dim();
+  size_t trunc_lvl = H.get_trunc_lvl();
+  Rcpp::List array_r(trunc_lvl);
+  for (size_t i = 0; i < trunc_lvl; i++) {
+    std::vector<std::vector<Eigen::MatrixXd>> derivs(d - 1 - i);
+    for (size_t j = 0; j < d - 1 - i; j++) {
+      derivs[j] = H(i, j);
+    }
+    array_r[i] = derivs;
+  }
+
+  return array_r;
+}
+
+
 // [[Rcpp::export()]]
 Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
                               Rcpp::List& structure,

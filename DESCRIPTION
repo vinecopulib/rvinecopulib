@@ -44,4 +44,4 @@ LinkingTo:
     kde1d
 BugReports: https://github.com/vinecopulib/rvinecopulib/issues
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.3

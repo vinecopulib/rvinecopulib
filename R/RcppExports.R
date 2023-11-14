@@ -101,6 +101,18 @@ vinecop_mbicv_cpp <- function(u, vinecop_r, psi0, cores) {
     .Call(`_rvinecopulib_vinecop_mbicv_cpp`, u, vinecop_r, psi0, cores)
 }
 
+vinecop_scores_cpp <- function(u, svinecop_r, step_wise = TRUE, num_threads = 1L) {
+    .Call(`_rvinecopulib_vinecop_scores_cpp`, u, svinecop_r, step_wise, num_threads)
+}
+
+vinecop_hessian_avg_cpp <- function(u, svinecop_r, step_wise = TRUE, num_threads = 1L) {
+    .Call(`_rvinecopulib_vinecop_hessian_avg_cpp`, u, svinecop_r, step_wise, num_threads)
+}
+
+vinecop_hessian_cpp <- function(u, svinecop_r, step_wise = TRUE, num_threads = 1L) {
+    .Call(`_rvinecopulib_vinecop_hessian_cpp`, u, svinecop_r, step_wise, num_threads)
+}
+
 vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types) {
     .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types)
 }

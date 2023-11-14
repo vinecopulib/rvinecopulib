@@ -314,3 +314,34 @@ summary.vinecop <- function(object, trees = seq_len(dim(object)["trunc_lvl"]), .
 dim.vinecop_dist <- function(x) {
   dim(x$structure)
 }
+
+
+#' @export
+vinecop_scores <- function(u, model, step_wise = TRUE) {
+  vinecop_scores_cpp(u, model, step_wise)
+}
+
+
+#' @export
+vinecop_hessian <- function(u, model, step_wise = TRUE) {
+  H <- rvinecopulib:::vinecop_hessian_cpp(u, model, step_wise)
+  p <- NCOL(H[[1]][[1]][[1]])
+  out <- array(NA, dim = c(p, p, nrow(u)))
+  ipar <- 1
+  for (t in seq_along(H)) {
+    for (e in seq_along(H[[t]])) {
+      for (p in seq_along(H[[t]][[e]])) {
+        out[ipar, , ] <- t(H[[t]][[e]][[p]])
+        ipar <- ipar + 1
+      }
+    }
+  }
+  out
+}
+
+
+#' @export
+vinecop_hessian_avg <- function(u, model, step_wise = TRUE) {
+  vinecop_hessian_avg_cpp(u, model, step_wise)
+}
+
