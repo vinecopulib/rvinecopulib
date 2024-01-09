@@ -882,20 +882,25 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
     for (size_t t = 0; t < trunc_lvl; t++) {
       for (size_t e = 0; e < d_ - 1 - t; e++) {
         auto pars = pair_copulas_[t][e].get_parameters();
+        auto ub = pair_copulas_[t][e].get_parameters_upper_bounds();
+        auto lb = pair_copulas_[t][e].get_parameters_lower_bounds();
         for (size_t p = 0; p < pars.size(); p++) {
           auto pars_tmp = pars;
+          double eps = 0;
 
-          pars_tmp(p) = pars(p) + 1e-2;
+          pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
+          eps += pars_tmp(p) - pars(p);
           pair_copulas_[t][e].set_parameters(pars_tmp);
           Eigen::VectorXd f1 =
             this->pdf(u, num_threads).array().max(1e-20).log();
 
-          pars_tmp(p) = pars(p) - 1e-2;
+          pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
+          eps -= pars_tmp(p) - pars(p);
           pair_copulas_[t][e].set_parameters(pars_tmp);
           Eigen::VectorXd f2 =
             this->pdf(u, num_threads).array().max(1e-20).log();
 
-          scores.col(ipar++) = (f1 - f2) / 2e-2;
+          scores.col(ipar++) = (f1 - f2) / eps;
           pair_copulas_[t][e].set_parameters(pars);
         }
       }
@@ -955,18 +960,23 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
         }
 
         auto pars = edge_copula.get_parameters();
+        auto ub = edge_copula.get_parameters_upper_bounds();
+        auto lb = edge_copula.get_parameters_lower_bounds();
         for (size_t p = 0; p < pars.size(); p++) {
           auto pars_tmp = pars;
+          double eps = 0;
 
-          pars_tmp(p) = pars(p) + 1e-3;
+          pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
+          eps += pars_tmp(p) - pars(p);
           edge_copula.set_parameters(pars_tmp);
           Eigen::VectorXd f1 = edge_copula.pdf(u_e).array().max(1e-20).log();
 
-          pars_tmp(p) = pars(p) - 1e-3;
+          pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
+          eps -= pars_tmp(p) - pars(p);
           edge_copula.set_parameters(pars_tmp);
           Eigen::VectorXd f2 = edge_copula.pdf(u_e).array().max(1e-20).log();
 
-          scores.col(ipar++).segment(b.begin, b.size) = (f1 - f2) / 2e-3;
+          scores.col(ipar++).segment(b.begin, b.size) = (f1 - f2) / eps;
           edge_copula.set_parameters(pars);
         }
 
@@ -1023,19 +1033,24 @@ Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
   for (size_t t = 0; t < trunc_lvl; t++) {
     for (size_t e = 0; e < d_ - 1 - t; e++) {
       auto pars = pair_copulas_[t][e].get_parameters();
+      auto ub = pair_copulas_[t][e].get_parameters_upper_bounds();
+      auto lb = pair_copulas_[t][e].get_parameters_lower_bounds();
       hess(t, e).resize(pars.size());
       for (size_t p = 0; p < pars.size(); p++) {
         auto pars_tmp = pars;
+        double eps = 0;
 
-        pars_tmp(p) = pars(p) + 1e-2;
+        pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
+        eps += pars_tmp(p) - pars(p);
         pair_copulas_[t][e].set_parameters(pars_tmp);
         Eigen::MatrixXd f1 = this->scores(u, step_wise, num_threads);
 
-        pars_tmp(p) = pars(p) - 1e-2;
+        pars_tmp(p) = std::min(pars(p) - 1e-3, lb(p));
+        eps -= pars_tmp(p) - pars(p);
         pair_copulas_[t][e].set_parameters(pars_tmp);
         Eigen::MatrixXd f2 = this->scores(u, step_wise, num_threads);
 
-        hess(t, e)[p] = (f1 - f2) / 2e-2;
+        hess(t, e)[p] = (f1 - f2) / eps;
         pair_copulas_[t][e].set_parameters(pars);
       }
     }
