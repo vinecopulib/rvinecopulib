@@ -278,10 +278,10 @@ Vinecop::make_pair_copula_store(const size_t d, const size_t trunc_lvl)
 //! holds \f$ F_Y(Y^-) = F_Y(Y - 1) \f$. Continuous variables in the second
 //! block can be omitted.
 //!
-//! If there are missing data (i.e., NaN entries), incomplete observations are 
+//! If there are missing data (i.e., NaN entries), incomplete observations are
 //! discarded before fitting a pair-copula. This is done on a pair-by-pair basis
 //! so that the maximal available information is used.
-//! 
+//!
 //!
 //! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   observations, where \f$ k \f$ is the number of discrete variables.
@@ -348,7 +348,7 @@ Vinecop::select_all(const Eigen::MatrixXd& data,
 //! F_Y(Y^-) = F_Y(Y - 1) \f$. Continuous variables in the second block can
 //! be omitted.
 //!
-//! If there are missing data (i.e., NaN entries), incomplete observations are 
+//! If there are missing data (i.e., NaN entries), incomplete observations are
 //! discarded before fitting a pair-copula. This is done on a pair-by-pair basis
 //! so that the maximal available information is used.
 //!
@@ -852,13 +852,13 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
 
 //! @brief Evaluates the score function.
 //!
-//! The score function is defined as the gradient of the log-likelihood 
+//! The score function is defined as the gradient of the log-likelihood
 //! with respect to the parameters.
 //!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
-//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`, 
+//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
 //!   score function of the step-wise MLE (gradients computed per pair-copula).
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
@@ -888,13 +888,13 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
           auto pars_tmp = pars;
           double eps = 0;
 
-          pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
+          pars_tmp(p) = std::min(pars(p) + 2e-2, ub(p));
           eps += pars_tmp(p) - pars(p);
           pair_copulas_[t][e].set_parameters(pars_tmp);
           Eigen::VectorXd f1 =
             this->pdf(u, num_threads).array().max(1e-20).log();
 
-          pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
+          pars_tmp(p) = std::max(pars(p) - 2e-2, lb(p));
           eps -= pars_tmp(p) - pars(p);
           pair_copulas_[t][e].set_parameters(pars_tmp);
           Eigen::VectorXd f2 =
@@ -966,12 +966,12 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
           auto pars_tmp = pars;
           double eps = 0;
 
-          pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
+          pars_tmp(p) = std::min(pars(p) + 2e-2, ub(p));
           eps += pars_tmp(p) - pars(p);
           edge_copula.set_parameters(pars_tmp);
           Eigen::VectorXd f1 = edge_copula.pdf(u_e).array().max(1e-20).log();
 
-          pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
+          pars_tmp(p) = std::max(pars(p) - 2e-2, lb(p));
           eps -= pars_tmp(p) - pars(p);
           edge_copula.set_parameters(pars_tmp);
           Eigen::VectorXd f2 = edge_copula.pdf(u_e).array().max(1e-20).log();
@@ -1013,11 +1013,11 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 //! @brief Evaluates the hessian per observation.
 //!
 //! Hessian is meant losely as "gradients of each component of the score function".
-//! 
+//!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
-//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`, 
+//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
 //!   score function of the step-wise MLE (gradients computed per pair-copula).
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
@@ -1040,12 +1040,12 @@ Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
         auto pars_tmp = pars;
         double eps = 0;
 
-        pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
+        pars_tmp(p) = std::min(pars(p) + 2e-2, ub(p));
         eps += pars_tmp(p) - pars(p);
         pair_copulas_[t][e].set_parameters(pars_tmp);
         Eigen::MatrixXd f1 = this->scores(u, step_wise, num_threads);
 
-        pars_tmp(p) = std::min(pars(p) - 1e-3, lb(p));
+        pars_tmp(p) = std::min(pars(p) - 2e-2, lb(p));
         eps -= pars_tmp(p) - pars(p);
         pair_copulas_[t][e].set_parameters(pars_tmp);
         Eigen::MatrixXd f2 = this->scores(u, step_wise, num_threads);
@@ -1063,11 +1063,11 @@ Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 //!
 //! Hessian is meant losely as "gradients of each component of the score function".
 //! The Hessian is averaged over all samples in `u`.
-//! 
+//!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
-//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`, 
+//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
 //!   score function of the step-wise MLE (gradients computed per pair-copula).
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
@@ -1096,11 +1096,11 @@ Vinecop::hessian_avg(Eigen::MatrixXd u,
 
 //! @brief Computes the covariance matrix of scores.
 //!
-//! 
+//!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
-//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`, 
+//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
 //!   score function of the step-wise MLE (gradients computed per pair-copula).
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
@@ -1309,18 +1309,18 @@ Vinecop::get_npars() const
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
-//! 
-//! @details 
-//! The Rosenblatt transform (Rosenblatt, 1952) \f$ U = T(V) \f$ of a random 
+//!
+//! @details
+//! The Rosenblatt transform (Rosenblatt, 1952) \f$ U = T(V) \f$ of a random
 //! vector \f$ V = (V_1,\ldots,V_d) ~ F \f$ is defined as
 //! \f[ U_1= F(V_1), U_{2} = F(V_{2}|V_1), \ldots, U_d =F(V_d|V_1,\ldots,V_{d-1}), \f]
 //! where \f$ F(v_k|v_1,\ldots,v_{k-1}) \f$ is the conditional distribution of
-//! \f$ V_k \f$ given  \f$ V_1 \ldots, V_{k-1}, k = 2,\ldots,d \f$. The vector 
-//! \f$ U = (U_1, \dots, U_d) \f$ then contains independent standard uniform 
+//! \f$ V_k \f$ given  \f$ V_1 \ldots, V_{k-1}, k = 2,\ldots,d \f$. The vector
+//! \f$ U = (U_1, \dots, U_d) \f$ then contains independent standard uniform
 //! variables. The inverse operation
 //! \f[V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}) \f]
 //! can be used to simulate from a distribution. For any copula \f$ F \f$, if
-//! \f$ U\f$ is a vector of independent random variables, \f$ V = T^{-1}(U) \f$ 
+//! \f$ U\f$ is a vector of independent random variables, \f$ V = T^{-1}(U) \f$
 //! has distribution \f$ F \f$.
 //!
 //! The formulas above assume a vine copula model with order \f$ d, \dots, 1 \f$.
@@ -1412,18 +1412,18 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
-//! 
-//! @details 
-//! The Rosenblatt transform (Rosenblatt, 1952) \f$ U = T(V) \f$ of a random 
+//!
+//! @details
+//! The Rosenblatt transform (Rosenblatt, 1952) \f$ U = T(V) \f$ of a random
 //! vector \f$ V = (V_1,\ldots,V_d) ~ F \f$ is defined as
 //! \f[ U_1= F(V_1), U_{2} = F(V_{2}|V_1), \ldots, U_d =F(V_d|V_1,\ldots,V_{d-1}), \f]
 //! where \f$ F(v_k|v_1,\ldots,v_{k-1}) \f$ is the conditional distribution of
-//! \f$ V_k \f$ given  \f$ V_1 \ldots, V_{k-1}, k = 2,\ldots,d \f$. The vector 
-//! \f$ U = (U_1, \dots, U_d) \f$ then contains independent standard uniform 
+//! \f$ V_k \f$ given  \f$ V_1 \ldots, V_{k-1}, k = 2,\ldots,d \f$. The vector
+//! \f$ U = (U_1, \dots, U_d) \f$ then contains independent standard uniform
 //! variables. The inverse operation
 //! \f[V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}) \f]
 //! can be used to simulate from a distribution. For any copula \f$ F \f$, if
-//! \f$ U\f$ is a vector of independent random variables, \f$ V = T^{-1}(U) \f$ 
+//! \f$ U\f$ is a vector of independent random variables, \f$ V = T^{-1}(U) \f$
 //! has distribution \f$ F \f$.
 //!
 //! The formulas above assume a vine copula model with order \f$ d, \dots, 1 \f$.
