@@ -166,16 +166,20 @@ public:
   std::string str() const;
   Eigen::MatrixXd scores(Eigen::MatrixXd u,
                          bool step_wise = true,
+                         const double step_size = 1e-3,
                          const size_t num_threads = 1);
   TriangularArray<std::vector<Eigen::MatrixXd>> hessian(
     Eigen::MatrixXd u,
     bool step_wise = true,
+    const double step_size = 1e-3,
     const size_t num_threads = 1);
   Eigen::MatrixXd hessian_avg(Eigen::MatrixXd u,
                               bool step_wise = true,
+                              const double step_size = 1e-3,
                               const size_t num_threads = 1);
   Eigen::MatrixXd scores_cov(Eigen::MatrixXd u,
                              bool step_wise = true,
+                             const double step_size = 1e-3,
                              const size_t num_threads = 1);
 
 protected:

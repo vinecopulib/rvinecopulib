@@ -860,11 +860,16 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
 //!   score function of the step-wise MLE (gradients computed per pair-copula).
+//! @param step_size step size for the finite difference approximation of the
+//!   derivative.
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
 inline Eigen::MatrixXd
-Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
+Vinecop::scores(Eigen::MatrixXd u,
+                bool step_wise,
+                const double step_size,
+                const size_t num_threads)
 {
   check_data(u);
   u = collapse_data(u);
@@ -888,13 +893,13 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
           auto pars_tmp = pars;
           double eps = 0;
 
-          pars_tmp(p) = std::min(pars(p) + 2e-2, ub(p));
+          pars_tmp(p) = std::min(pars(p) + step_size, ub(p));
           eps += pars_tmp(p) - pars(p);
           pair_copulas_[t][e].set_parameters(pars_tmp);
           Eigen::VectorXd f1 =
             this->pdf(u, num_threads).array().max(1e-20).log();
 
-          pars_tmp(p) = std::max(pars(p) - 2e-2, lb(p));
+          pars_tmp(p) = std::max(pars(p) - step_size, lb(p));
           eps -= pars_tmp(p) - pars(p);
           pair_copulas_[t][e].set_parameters(pars_tmp);
           Eigen::VectorXd f2 =
@@ -966,12 +971,12 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
           auto pars_tmp = pars;
           double eps = 0;
 
-          pars_tmp(p) = std::min(pars(p) + 2e-2, ub(p));
+          pars_tmp(p) = std::min(pars(p) + step_size, ub(p));
           eps += pars_tmp(p) - pars(p);
           edge_copula.set_parameters(pars_tmp);
           Eigen::VectorXd f1 = edge_copula.pdf(u_e).array().max(1e-20).log();
 
-          pars_tmp(p) = std::max(pars(p) - 2e-2, lb(p));
+          pars_tmp(p) = std::max(pars(p) - step_size, lb(p));
           eps -= pars_tmp(p) - pars(p);
           edge_copula.set_parameters(pars_tmp);
           Eigen::VectorXd f2 = edge_copula.pdf(u_e).array().max(1e-20).log();
@@ -1019,11 +1024,16 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
 //!   score function of the step-wise MLE (gradients computed per pair-copula).
+//! @param step_size step size for the finite difference approximation of the
+//!   derivative.
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
 inline TriangularArray<std::vector<Eigen::MatrixXd>>
-Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
+Vinecop::hessian(Eigen::MatrixXd u,
+                 bool step_wise,
+                 const double step_size,
+                 const size_t num_threads)
 {
   check_data(u);
   u = collapse_data(u);
@@ -1040,15 +1050,15 @@ Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
         auto pars_tmp = pars;
         double eps = 0;
 
-        pars_tmp(p) = std::min(pars(p) + 2e-2, ub(p));
+        pars_tmp(p) = std::min(pars(p) + step_size, ub(p));
         eps += pars_tmp(p) - pars(p);
         pair_copulas_[t][e].set_parameters(pars_tmp);
-        Eigen::MatrixXd f1 = this->scores(u, step_wise, num_threads);
+        Eigen::MatrixXd f1 = this->scores(u, step_wise, step_size, num_threads);
 
-        pars_tmp(p) = std::max(pars(p) - 2e-2, lb(p));
+        pars_tmp(p) = std::max(pars(p) - step_size, lb(p));
         eps -= pars_tmp(p) - pars(p);
         pair_copulas_[t][e].set_parameters(pars_tmp);
-        Eigen::MatrixXd f2 = this->scores(u, step_wise, num_threads);
+        Eigen::MatrixXd f2 = this->scores(u, step_wise, step_size, num_threads);
 
         hess(t, e)[p] = (f1 - f2) / eps;
         pair_copulas_[t][e].set_parameters(pars);
@@ -1069,15 +1079,18 @@ Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
 //!   score function of the step-wise MLE (gradients computed per pair-copula).
+//! @param step_size step size for the finite difference approximation of the
+//!   derivative.
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
 inline Eigen::MatrixXd
 Vinecop::hessian_avg(Eigen::MatrixXd u,
                      bool step_wise,
+                     const double step_size,
                      const size_t num_threads)
 {
-  auto hess = this->hessian(u, step_wise, num_threads);
+  auto hess = this->hessian(u, step_wise, step_size, num_threads);
   size_t npars = this->get_npars();
   Eigen::MatrixXd H(npars, npars);
 
@@ -1102,13 +1115,18 @@ Vinecop::hessian_avg(Eigen::MatrixXd u,
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
 //!   score function of the step-wise MLE (gradients computed per pair-copula).
+//! @param step_size step size for the finite difference approximation of the
+//!   derivative.
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
 inline Eigen::MatrixXd
-Vinecop::scores_cov(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
+Vinecop::scores_cov(Eigen::MatrixXd u,
+                    bool step_wise,
+                    const double step_size,
+                    const size_t num_threads)
 {
-  auto s = this->scores(u, step_wise, num_threads);
+  auto s = this->scores(u, step_wise, step_size, num_threads);
   auto sc = s.rowwise() - s.colwise().mean();
   return (sc.adjoint() * sc) / static_cast<double>(s.rows());
 }

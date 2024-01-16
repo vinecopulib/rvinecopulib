@@ -237,9 +237,10 @@ Eigen::MatrixXd
 vinecop_scores_cpp(const Eigen::MatrixXd& u,
                    const Rcpp::List& svinecop_r,
                    bool step_wise = true,
+                   const double step_size = 1e-3,
                    const size_t num_threads = 1)
 {
-  return vinecop_wrap(svinecop_r).scores(u, step_wise, num_threads);
+  return vinecop_wrap(svinecop_r).scores(u, step_wise, step_size, num_threads);
 }
 
 // [[Rcpp::export()]]
@@ -247,9 +248,10 @@ Eigen::MatrixXd
 vinecop_hessian_avg_cpp(const Eigen::MatrixXd& u,
                         const Rcpp::List& svinecop_r,
                         bool step_wise = true,
+                        const double step_size = 1e-3,
                         const size_t num_threads = 1)
 {
-  return vinecop_wrap(svinecop_r).hessian_avg(u, step_wise, num_threads);
+  return vinecop_wrap(svinecop_r).hessian_avg(u, step_wise, step_size, num_threads);
 }
 
 
@@ -258,9 +260,10 @@ Rcpp::List
 vinecop_hessian_cpp(const Eigen::MatrixXd& u,
                     const Rcpp::List& svinecop_r,
                     bool step_wise = true,
+                    const double step_size = 1e-3,
                     const size_t num_threads = 1)
 {
-  auto H = vinecop_wrap(svinecop_r).hessian(u, step_wise, num_threads);
+  auto H = vinecop_wrap(svinecop_r).hessian(u, step_wise, step_size, num_threads);
 
   size_t d = H.get_dim();
   size_t trunc_lvl = H.get_trunc_lvl();

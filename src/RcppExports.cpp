@@ -330,44 +330,47 @@ BEGIN_RCPP
 END_RCPP
 }
 // vinecop_scores_cpp
-Eigen::MatrixXd vinecop_scores_cpp(const Eigen::MatrixXd& u, const Rcpp::List& svinecop_r, bool step_wise, const size_t num_threads);
-RcppExport SEXP _rvinecopulib_vinecop_scores_cpp(SEXP uSEXP, SEXP svinecop_rSEXP, SEXP step_wiseSEXP, SEXP num_threadsSEXP) {
+Eigen::MatrixXd vinecop_scores_cpp(const Eigen::MatrixXd& u, const Rcpp::List& svinecop_r, bool step_wise, const double step_size, const size_t num_threads);
+RcppExport SEXP _rvinecopulib_vinecop_scores_cpp(SEXP uSEXP, SEXP svinecop_rSEXP, SEXP step_wiseSEXP, SEXP step_sizeSEXP, SEXP num_threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type svinecop_r(svinecop_rSEXP);
     Rcpp::traits::input_parameter< bool >::type step_wise(step_wiseSEXP);
+    Rcpp::traits::input_parameter< const double >::type step_size(step_sizeSEXP);
     Rcpp::traits::input_parameter< const size_t >::type num_threads(num_threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_scores_cpp(u, svinecop_r, step_wise, num_threads));
+    rcpp_result_gen = Rcpp::wrap(vinecop_scores_cpp(u, svinecop_r, step_wise, step_size, num_threads));
     return rcpp_result_gen;
 END_RCPP
 }
 // vinecop_hessian_avg_cpp
-Eigen::MatrixXd vinecop_hessian_avg_cpp(const Eigen::MatrixXd& u, const Rcpp::List& svinecop_r, bool step_wise, const size_t num_threads);
-RcppExport SEXP _rvinecopulib_vinecop_hessian_avg_cpp(SEXP uSEXP, SEXP svinecop_rSEXP, SEXP step_wiseSEXP, SEXP num_threadsSEXP) {
+Eigen::MatrixXd vinecop_hessian_avg_cpp(const Eigen::MatrixXd& u, const Rcpp::List& svinecop_r, bool step_wise, const double step_size, const size_t num_threads);
+RcppExport SEXP _rvinecopulib_vinecop_hessian_avg_cpp(SEXP uSEXP, SEXP svinecop_rSEXP, SEXP step_wiseSEXP, SEXP step_sizeSEXP, SEXP num_threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type svinecop_r(svinecop_rSEXP);
     Rcpp::traits::input_parameter< bool >::type step_wise(step_wiseSEXP);
+    Rcpp::traits::input_parameter< const double >::type step_size(step_sizeSEXP);
     Rcpp::traits::input_parameter< const size_t >::type num_threads(num_threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_hessian_avg_cpp(u, svinecop_r, step_wise, num_threads));
+    rcpp_result_gen = Rcpp::wrap(vinecop_hessian_avg_cpp(u, svinecop_r, step_wise, step_size, num_threads));
     return rcpp_result_gen;
 END_RCPP
 }
 // vinecop_hessian_cpp
-Rcpp::List vinecop_hessian_cpp(const Eigen::MatrixXd& u, const Rcpp::List& svinecop_r, bool step_wise, const size_t num_threads);
-RcppExport SEXP _rvinecopulib_vinecop_hessian_cpp(SEXP uSEXP, SEXP svinecop_rSEXP, SEXP step_wiseSEXP, SEXP num_threadsSEXP) {
+Rcpp::List vinecop_hessian_cpp(const Eigen::MatrixXd& u, const Rcpp::List& svinecop_r, bool step_wise, const double step_size, const size_t num_threads);
+RcppExport SEXP _rvinecopulib_vinecop_hessian_cpp(SEXP uSEXP, SEXP svinecop_rSEXP, SEXP step_wiseSEXP, SEXP step_sizeSEXP, SEXP num_threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type svinecop_r(svinecop_rSEXP);
     Rcpp::traits::input_parameter< bool >::type step_wise(step_wiseSEXP);
+    Rcpp::traits::input_parameter< const double >::type step_size(step_sizeSEXP);
     Rcpp::traits::input_parameter< const size_t >::type num_threads(num_threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_hessian_cpp(u, svinecop_r, step_wise, num_threads));
+    rcpp_result_gen = Rcpp::wrap(vinecop_hessian_cpp(u, svinecop_r, step_wise, step_size, num_threads));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -445,9 +448,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_cdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_cdf_cpp, 5},
     {"_rvinecopulib_vinecop_loglik_cpp", (DL_FUNC) &_rvinecopulib_vinecop_loglik_cpp, 3},
     {"_rvinecopulib_vinecop_mbicv_cpp", (DL_FUNC) &_rvinecopulib_vinecop_mbicv_cpp, 4},
-    {"_rvinecopulib_vinecop_scores_cpp", (DL_FUNC) &_rvinecopulib_vinecop_scores_cpp, 4},
-    {"_rvinecopulib_vinecop_hessian_avg_cpp", (DL_FUNC) &_rvinecopulib_vinecop_hessian_avg_cpp, 4},
-    {"_rvinecopulib_vinecop_hessian_cpp", (DL_FUNC) &_rvinecopulib_vinecop_hessian_cpp, 4},
+    {"_rvinecopulib_vinecop_scores_cpp", (DL_FUNC) &_rvinecopulib_vinecop_scores_cpp, 5},
+    {"_rvinecopulib_vinecop_hessian_avg_cpp", (DL_FUNC) &_rvinecopulib_vinecop_hessian_avg_cpp, 5},
+    {"_rvinecopulib_vinecop_hessian_cpp", (DL_FUNC) &_rvinecopulib_vinecop_hessian_cpp, 5},
     {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 18},
     {"_rvinecopulib_fit_margins_cpp", (DL_FUNC) &_rvinecopulib_fit_margins_cpp, 9},
     {NULL, NULL, 0}

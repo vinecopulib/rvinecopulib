@@ -317,14 +317,14 @@ dim.vinecop_dist <- function(x) {
 
 
 #' @export
-vinecop_scores <- function(u, model, step_wise = TRUE, cores = 1) {
-  vinecop_scores_cpp(u, model, step_wise, cores)
+vinecop_scores <- function(u, model, step_wise = TRUE, step_size = 1e-3, cores = 1) {
+  vinecop_scores_cpp(u, model, step_wise, step_size, cores)
 }
 
 
 #' @export
-vinecop_hessian <- function(u, model, step_wise = TRUE, cores = 1) {
-  H <- vinecop_hessian_cpp(u, model, step_wise, cores)
+vinecop_hessian <- function(u, model, step_wise = TRUE, step_size = 1e-3, cores = 1) {
+  H <- vinecop_hessian_cpp(u, model, step_wise, step_size, cores)
   p <- NCOL(H[[1]][[1]][[1]])
   out <- array(NA, dim = c(p, p, nrow(u)))
   ipar <- 1
@@ -341,7 +341,7 @@ vinecop_hessian <- function(u, model, step_wise = TRUE, cores = 1) {
 
 
 #' @export
-vinecop_hessian_avg <- function(u, model, step_wise = TRUE, cores = 1) {
-  vinecop_hessian_avg_cpp(u, model, step_wise, cores)
+vinecop_hessian_avg <- function(u, model, step_wise = TRUE, step_size = 1e-3, cores = 1) {
+  vinecop_hessian_avg_cpp(u, model, step_wise, step_size, cores)
 }
 
