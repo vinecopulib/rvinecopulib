@@ -1045,7 +1045,7 @@ Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
         pair_copulas_[t][e].set_parameters(pars_tmp);
         Eigen::MatrixXd f1 = this->scores(u, step_wise, num_threads);
 
-        pars_tmp(p) = std::min(pars(p) - 2e-2, lb(p));
+        pars_tmp(p) = std::max(pars(p) - 2e-2, lb(p));
         eps -= pars_tmp(p) - pars(p);
         pair_copulas_[t][e].set_parameters(pars_tmp);
         Eigen::MatrixXd f2 = this->scores(u, step_wise, num_threads);
