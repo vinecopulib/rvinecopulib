@@ -43,5 +43,6 @@ LinkingTo:
     wdm,
     kde1d
 BugReports: https://github.com/vinecopulib/rvinecopulib/issues
+URL: https://vinecopulib.github.io/rvinecopulib/
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
