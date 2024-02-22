@@ -376,6 +376,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rosenblatt_discrete
+Eigen::MatrixXd rosenblatt_discrete(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, int seed, size_t num_threads);
+RcppExport SEXP _rvinecopulib_rosenblatt_discrete(SEXP uSEXP, SEXP vinecop_rSEXP, SEXP seedSEXP, SEXP num_threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
+    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< size_t >::type num_threads(num_threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(rosenblatt_discrete(u, vinecop_r, seed, num_threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_pseudo_obs_cpp", (DL_FUNC) &_rvinecopulib_pseudo_obs_cpp, 2},
@@ -405,6 +419,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_mbicv_cpp", (DL_FUNC) &_rvinecopulib_vinecop_mbicv_cpp, 4},
     {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 18},
     {"_rvinecopulib_fit_margins_cpp", (DL_FUNC) &_rvinecopulib_fit_margins_cpp, 9},
+    {"_rvinecopulib_rosenblatt_discrete", (DL_FUNC) &_rvinecopulib_rosenblatt_discrete, 4},
     {NULL, NULL, 0}
 };
 

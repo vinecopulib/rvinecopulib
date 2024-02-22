@@ -135,6 +135,9 @@ public:
   Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd& u,
                                      const size_t num_threads = 1) const;
 
+  Eigen::MatrixXd
+  rosenblatt_discrete(Eigen::MatrixXd u, size_t num_threads = 1) const;
+
   void set_all_pair_copulas(
     const std::vector<std::vector<Bicop>>& pair_copulas);
   void set_var_types(const std::vector<std::string>& var_types);

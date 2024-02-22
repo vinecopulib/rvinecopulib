@@ -316,3 +316,19 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   return fits_r;
 }
 
+//' @export
+// [[Rcpp::export]]
+Eigen::MatrixXd rosenblatt_discrete(const Eigen::MatrixXd& u,
+                                    const Rcpp::List& vinecop_r,
+                                    int seed = 5,
+                                    size_t num_threads = 1)
+{
+  auto d = vinecop_wrap(vinecop_r).get_dim();
+  auto R = tools_stats::simulate_uniform(u.rows(), d, true, {seed});
+  auto w = vinecop_wrap(vinecop_r).rosenblatt_discrete(u, num_threads);
+  return w.leftCols(d).array() * R.array() +
+    w.rightCols(d).array() * (1 - R.array());
+}
+
+
+
