@@ -316,7 +316,16 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   return fits_r;
 }
 
+//' Rosenblatt transform for discrete variables
+//'
+//' @param u data
+//' @param vinecop_r model
+//' @param seed seed
+//' @param num_threads cores
+//'
 //' @export
+//' @examples
+//' a <- 1
 // [[Rcpp::export]]
 Eigen::MatrixXd rosenblatt_discrete(const Eigen::MatrixXd& u,
                                     const Rcpp::List& vinecop_r,

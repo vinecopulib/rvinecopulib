@@ -109,7 +109,16 @@ fit_margins_cpp <- function(data, nlevels, mult, xmin, xmax, bw, deg, weights, n
     .Call(`_rvinecopulib_fit_margins_cpp`, data, nlevels, mult, xmin, xmax, bw, deg, weights, num_threads)
 }
 
+#' Rosenblatt transform for discrete variables
+#'
+#' @param u data
+#' @param vinecop_r model
+#' @param seed seed
+#' @param num_threads cores
+#'
 #' @export
+#' @examples
+#' a <- 1
 rosenblatt_discrete <- function(u, vinecop_r, seed = 5L, num_threads = 1L) {
     .Call(`_rvinecopulib_rosenblatt_discrete`, u, vinecop_r, seed, num_threads)
 }
