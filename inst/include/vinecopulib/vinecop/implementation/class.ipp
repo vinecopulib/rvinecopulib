@@ -1072,7 +1072,7 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
     throw std::runtime_error("rosenblatt() only works for continuous models.");
   }
   check_data(u);
-  size_t d = u.cols();
+  size_t d = d_;
   size_t n = u.rows();
 
   // info about the vine structure
