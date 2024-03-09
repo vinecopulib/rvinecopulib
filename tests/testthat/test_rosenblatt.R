@@ -2,7 +2,7 @@
 expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
 expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
 
-context("Inverse Rosenblatt transform")
+context("(Inverse) Rosenblatt transform")
 
 pc <- bicop_dist("bb1", 90, c(3, 2))
 pcs <- list(list(pc, pc), list(pc))
@@ -38,6 +38,10 @@ test_that("rosenblatt_discrete works with vine copulas", {
   v <- inverse_rosenblatt(rosenblatt_discrete(uu, vc), vc_c)
   expect_eql(v, u, tol = 2 * thresh)
   pairs(cbind(v, u))
+
+  for (i in 1:50) {
+    rosenblatt_discrete(uu, vc)
+  }
 })
 
 test_that("rosenblatt works with vine distribution", {
