@@ -1131,10 +1131,10 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
 
 
 inline Eigen::MatrixXd
-Vinecop::rosenblatt_discrete(Eigen::MatrixXd u, const size_t num_threads) const
+Vinecop::rosenblatt_discrete(const Eigen::MatrixXd& u, const size_t num_threads) const
 {
   check_data(u);
-  u = collapse_data(u);
+  auto uu = collapse_data(u);
 
   size_t d = d_;
   size_t n = u.rows();
@@ -1149,8 +1149,8 @@ Vinecop::rosenblatt_discrete(Eigen::MatrixXd u, const size_t num_threads) const
   // points have to be reordered to correspond to natural order
   Eigen::MatrixXd hfunc1(n, d), hfunc2(n, d), hfunc1_sub(n, d), hfunc2_sub(n, d);
   for (size_t j = 0; j < d; ++j) {
-    hfunc2.col(j) = u.col(order[j] - 1);
-    hfunc2_sub.col(j) = u.col(d + disc_cols[order[j] - 1]);
+    hfunc2.col(j) = uu.col(order[j] - 1);
+    hfunc2_sub.col(j) = uu.col(d + disc_cols[order[j] - 1]);
   }
 
   auto do_batch = [&](const tools_batch::Batch& b) {
