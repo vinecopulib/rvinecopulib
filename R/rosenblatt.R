@@ -80,7 +80,7 @@ rosenblatt <- function(x, model, cores = 1) {
     assert_that(ncol(x) == 2, all((x > 0) & (x < 1)))
     x <- cbind(x[, 1], bicop_hfunc1_cpp(x, model))
   } else if (inherits(model, "vinecop_dist")) {
-    assert_that(all((x > 0) & (x < 1)))
+    assert_that(all((x >= 0) & (x <= 1)))
     x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
     x <- vinecop_rosenblatt_cpp(x, model, cores)
   } else {
