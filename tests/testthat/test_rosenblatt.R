@@ -26,22 +26,25 @@ test_that("rosenblatt works with vine copulas", {
 
 test_that("rosenblatt_discrete works with vine copulas", {
   u <- rvinecop(2000, vc)
-  uu <- cbind(u, u)
+  uu <- cbind(u, u[, 2])
 
   thresh <- 0.05
-  uu[, 1:3][u < thresh] <- 1e-10
-  uu[, -(1:3)][u < thresh] <- thresh
+  uu[u[, 2] < thresh, 2] <- 1e-10
+  uu[u[, 2] < thresh, 4] <- thresh
 
-  vc_c <- vc <- vinecop(uu, var_types = rep("d", 3), structure = mat, family = "clay")
+  vc_c <- vc <- vinecop(uu, var_types = c("c", "d", "c"),
+                        structure = mat, family = "clay")
   vc_c$var_types = rep("c", 3)
 
   v <- inverse_rosenblatt(rosenblatt_discrete(uu, vc), vc_c)
   expect_eql(v, u, tol = 2 * thresh)
-  pairs(cbind(v, u))
 
-  for (i in 1:50) {
-    rosenblatt_discrete(uu, vc)
-  }
+  # other format
+  uu <- cbind(u, u)
+  uu[u[, 2] < thresh, 2] <- 1e-10
+  uu[u[, 2] < thresh, 5] <- thresh
+  v <- inverse_rosenblatt(rosenblatt_discrete(uu, vc), vc_c)
+  expect_eql(v, u, tol = 2 * thresh)
 })
 
 test_that("rosenblatt works with vine distribution", {

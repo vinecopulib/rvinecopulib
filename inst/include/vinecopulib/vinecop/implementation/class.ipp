@@ -1166,13 +1166,12 @@ Vinecop::rosenblatt_discrete(const Eigen::MatrixXd& u,
     // fill first row of hfunc2 matrix with evaluation points;
     // points have to be reordered to correspond to natural order
     for (size_t j = 0; j < d_; ++j) {
-      hfunc2.col(j) = u.block(b.begin, order[j] - 1, b.size, 1);
+      hfunc2.col(j) = uu.block(b.begin, order[j] - 1, b.size, 1);
       if (var_types_[order[j] - 1] == "d") {
         hfunc2_sub.col(j) =
-          u.block(b.begin, d_ + disc_cols[order[j] - 1], b.size, 1);
+          uu.block(b.begin, d_ + disc_cols[order[j] - 1], b.size, 1);
       }
     }
-    hfunc1_sub = Eigen::MatrixXd::Zero(b.size, d);
 
     for (size_t tree = 0; tree < trunc_lvl; ++tree) {
       tools_interface::check_user_interrupt(
