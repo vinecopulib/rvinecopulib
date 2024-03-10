@@ -99,7 +99,6 @@ check_if_in_unit_cube(const Eigen::MatrixXd& u)
 {
   bool any_outside = (u.array() < 0.0).any() || (u.array() > 1.0).any();
   if (any_outside) {
-    std::cout << u.cols() << ", " << u.minCoeff() << ", " << u.maxCoeff() << std::endl;
     throw std::runtime_error("all data must be contained in [0, 1]^d.");
   }
   return !any_outside;

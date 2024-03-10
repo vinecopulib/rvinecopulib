@@ -25,7 +25,7 @@ test_that("rosenblatt works with vine copulas", {
 })
 
 test_that("rosenblatt_discrete works with vine copulas", {
-  u <- rvinecop(200, vc)
+  u <- rvinecop(2000, vc)
   uu <- cbind(u, u)
 
   thresh <- 0.05

@@ -19,7 +19,8 @@ namespace vinecopulib {
 //! @param d The dimension (= number of variables) of the model.
 inline Vinecop::Vinecop(const size_t d)
   : Vinecop(RVineStructure(d, static_cast<size_t>(0)))
-{}
+{
+}
 
 //! @brief Instantiates an arbitrary vine copula model.
 //! @param structure An RVineStructure object specifying the vine structure.
@@ -60,7 +61,8 @@ inline Vinecop::Vinecop(
   const std::vector<std::vector<Bicop>>& pair_copulas,
   const std::vector<std::string>& var_types)
   : Vinecop(RVineStructure(matrix), pair_copulas, var_types)
-{}
+{
+}
 
 //! @brief Instantiates from data.
 //!
@@ -119,7 +121,8 @@ inline Vinecop::Vinecop(
   const std::vector<std::string>& var_types,
   const FitControlsVinecop& controls)
   : Vinecop(data, RVineStructure(matrix), var_types, controls)
-{}
+{
+}
 
 //! @brief Instantiates from a nlohmann::json object.
 //! @param input The nlohmann::json object to convert from
@@ -177,7 +180,8 @@ inline Vinecop::Vinecop(const nlohmann::json& input, const bool check)
 //! represents a valid R-vine structure.
 inline Vinecop::Vinecop(const std::string& filename, const bool check)
   : Vinecop(tools_serialization::file_to_json(filename), check)
-{}
+{
+}
 
 //! @brief Converts the copula into a nlohmann::json object.
 //!
@@ -895,6 +899,7 @@ Vinecop::cdf(const Eigen::MatrixXd& u,
   return vine_distribution / static_cast<double>(N);
 }
 
+
 //! @brief Simulates from a vine copula model, see `inverse_rosenblatt()`.
 //!
 //! @details Simulated data is always a continous \f$ n \times d \f$ matrix.
@@ -1048,22 +1053,23 @@ Vinecop::get_npars() const
 //! @details
 //! The Rosenblatt transform (Rosenblatt, 1952) \f$ U = T(V) \f$ of a random
 //! vector \f$ V = (V_1,\ldots,V_d) ~ F \f$ is defined as
-//! \f[ U_1= F(V_1), U_{2} = F(V_{2}|V_1), \ldots, U_d =F(V_d|V_1,\ldots,V_{d-1}), \f]
-//! where \f$ F(v_k|v_1,\ldots,v_{k-1}) \f$ is the conditional distribution of
-//! \f$ V_k \f$ given  \f$ V_1 \ldots, V_{k-1}, k = 2,\ldots,d \f$. The vector
-//! \f$ U = (U_1, \dots, U_d) \f$ then contains independent standard uniform
-//! variables. The inverse operation
-//! \f[V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}) \f]
-//! can be used to simulate from a distribution. For any copula \f$ F \f$, if
-//! \f$ U\f$ is a vector of independent random variables, \f$ V = T^{-1}(U) \f$
-//! has distribution \f$ F \f$.
+//! \f[ U_1= F(V_1), U_{2} = F(V_{2}|V_1), \ldots, U_d
+//! =F(V_d|V_1,\ldots,V_{d-1}), \f] where \f$ F(v_k|v_1,\ldots,v_{k-1}) \f$ is
+//! the conditional distribution of \f$ V_k \f$ given  \f$ V_1 \ldots, V_{k-1},
+//! k = 2,\ldots,d \f$. The vector \f$ U = (U_1, \dots, U_d) \f$ then contains
+//! independent standard uniform variables. The inverse operation \f[V_1 =
+//! F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d
+//! =F^{-1}(U_d|U_1,\ldots,U_{d-1}) \f] can be used to simulate from a
+//! distribution. For any copula \f$ F \f$, if \f$ U\f$ is a vector of
+//! independent random variables, \f$ V = T^{-1}(U) \f$ has distribution \f$ F
+//! \f$.
 //!
-//! The formulas above assume a vine copula model with order \f$ d, \dots, 1 \f$.
-//! More generally, `Vinecop::rosenblatt()` returns the variables
-//! \f[ U_{M[d - j, j]}= F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0, 0]}), \f]
-//! where \f$ M \f$ is the structure matrix. Similarly, `Vinecop::inverse_rosenblatt()`
-//! returns
-//! \f[ V_{M[d - j, j]}= F^{-1}(U_{M[d - j, j]} | U_{M[d - j - 1, j - 1]}, \dots, U_{M[0, 0]}). \f]
+//! The formulas above assume a vine copula model with order \f$ d, \dots, 1
+//! \f$. More generally, `Vinecop::rosenblatt()` returns the variables \f[
+//! U_{M[d - j, j]}= F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0,
+//! 0]}), \f] where \f$ M \f$ is the structure matrix. Similarly,
+//! `Vinecop::inverse_rosenblatt()` returns \f[ V_{M[d - j, j]}= F^{-1}(U_{M[d -
+//! j, j]} | U_{M[d - j - 1, j - 1]}, \dots, U_{M[0, 0]}). \f]
 //!
 inline Eigen::MatrixXd
 Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
@@ -1086,7 +1092,6 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
   Eigen::MatrixXd hfunc2(n, d);
   for (size_t j = 0; j < d; ++j)
     hfunc2.col(j) = u.col(order[j] - 1);
-  hfunc1 = Eigen::MatrixXd::Constant(n, d, -1);
 
   auto do_batch = [&](const tools_batch::Batch& b) {
     Eigen::MatrixXd u_e(b.size, 2);
@@ -1129,7 +1134,6 @@ Vinecop::rosenblatt(const Eigen::MatrixXd& u, const size_t num_threads) const
 
   return U_vine.array().min(1 - 1e-10).max(1e-10);
 }
-
 
 inline Eigen::MatrixXd
 Vinecop::rosenblatt_discrete(const Eigen::MatrixXd& u,
@@ -1237,7 +1241,6 @@ Vinecop::rosenblatt_discrete(const Eigen::MatrixXd& u,
   return U_vine.array().min(1 - 1e-10).max(1e-10);
 }
 
-
 //! @brief Evaluates the inverse Rosenblatt transform.
 //!
 //! The inverse Rosenblatt transform can be used for simulation: the
@@ -1253,29 +1256,31 @@ Vinecop::rosenblatt_discrete(const Eigen::MatrixXd& u,
 //! Only works for continous models.
 //!
 //! @param u An \f$ n \times d \f$ matrix of evaluation points.
-//! @param num_threads The number of threads to use for computations; if greater
-//!   than 1, the function will be applied concurrently to `num_threads` batches
-//!   of `u`.
+//! @param num_threads The number of threads to use for computations; if
+//! greater
+//!   than 1, the function will be applied concurrently to `num_threads`
+//!   batches of `u`.
 //!
 //! @details
 //! The Rosenblatt transform (Rosenblatt, 1952) \f$ U = T(V) \f$ of a random
 //! vector \f$ V = (V_1,\ldots,V_d) ~ F \f$ is defined as
-//! \f[ U_1= F(V_1), U_{2} = F(V_{2}|V_1), \ldots, U_d =F(V_d|V_1,\ldots,V_{d-1}), \f]
-//! where \f$ F(v_k|v_1,\ldots,v_{k-1}) \f$ is the conditional distribution of
-//! \f$ V_k \f$ given  \f$ V_1 \ldots, V_{k-1}, k = 2,\ldots,d \f$. The vector
-//! \f$ U = (U_1, \dots, U_d) \f$ then contains independent standard uniform
-//! variables. The inverse operation
-//! \f[V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}) \f]
-//! can be used to simulate from a distribution. For any copula \f$ F \f$, if
-//! \f$ U\f$ is a vector of independent random variables, \f$ V = T^{-1}(U) \f$
-//! has distribution \f$ F \f$.
+//! \f[ U_1= F(V_1), U_{2} = F(V_{2}|V_1), \ldots, U_d
+//! =F(V_d|V_1,\ldots,V_{d-1}), \f] where \f$ F(v_k|v_1,\ldots,v_{k-1}) \f$ is
+//! the conditional distribution of \f$ V_k \f$ given  \f$ V_1 \ldots,
+//! V_{k-1}, k = 2,\ldots,d \f$. The vector \f$ U = (U_1, \dots, U_d) \f$ then
+//! contains independent standard uniform variables. The inverse operation
+//! \f[V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d
+//! =F^{-1}(U_d|U_1,\ldots,U_{d-1}) \f] can be used to simulate from a
+//! distribution. For any copula \f$ F \f$, if \f$ U\f$ is a vector of
+//! independent random variables, \f$ V = T^{-1}(U) \f$ has distribution \f$ F
+//! \f$.
 //!
-//! The formulas above assume a vine copula model with order \f$ d, \dots, 1 \f$.
-//! More generally, `Vinecop::rosenblatt()` returns the variables
-//! \f[ U_{M[d - j, j]}= F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0, 0]}), \f]
-//! where \f$ M \f$ is the structure matrix. Similarly, `Vinecop::inverse_rosenblatt()`
-//! returns
-//! \f[ V_{M[d - j, j]}= F^{-1}(U_{M[d - j, j]} | U_{M[d - j - 1, j - 1]}, \dots, U_{M[0, 0]}). \f]
+//! The formulas above assume a vine copula model with order \f$ d, \dots, 1
+//! \f$. More generally, `Vinecop::rosenblatt()` returns the variables \f[
+//! U_{M[d - j, j]}= F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots,
+//! V_{M[0, 0]}), \f] where \f$ M \f$ is the structure matrix. Similarly,
+//! `Vinecop::inverse_rosenblatt()` returns \f[ V_{M[d - j, j]}= F^{-1}(U_{M[d
+//! - j, j]} | U_{M[d - j - 1, j - 1]}, \dots, U_{M[0, 0]}). \f]
 //!
 inline Eigen::MatrixXd
 Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
