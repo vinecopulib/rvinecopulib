@@ -161,7 +161,7 @@ depth <- function(this) ifelse(is.list(this), 1L + max(sapply(this, depth)), 0L)
 
 supported_distributions <- c(
   "beta", "cauchy", "chisq", "exp", "f", "gamma",
-  "lnorm", "norm", "t", "unif", "weibull"
+  "logis", "lnorm", "norm", "t", "unif", "weibull"
 )
 
 #' @importFrom stats pbeta qbeta qbeta dcauchy pcauchy qcauchy dchisq pchisq
@@ -209,6 +209,7 @@ get_npars_distr <- function(distr) {
     gamma = 2,
     lnorm = 2,
     norm = 2,
+    logis = 2,
     t = ifelse("ncp" %in% names(distr), 3, 2),
     unif = 2,
     weibull = ifelse("scale" %in% names(distr), 2, 1)
