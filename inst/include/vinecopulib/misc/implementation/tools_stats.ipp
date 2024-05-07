@@ -90,7 +90,7 @@ simulate_normal(const size_t& n,
   // initialize random engine and uniform distribution
   std::seed_seq seq(seeds.begin(), seeds.end());
   std::mt19937 generator(seq);
-  std::normal_distribution<double> distribution;
+  std::normal_distribution<double> distribution(0, 1);
 
   Eigen::MatrixXd x(n, d);
   return x.unaryExpr([&](double) { return distribution(generator); });

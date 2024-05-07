@@ -31,6 +31,18 @@ unaryExpr_or_nan(const Eigen::MatrixXd& x, const T& func)
 }
 
 template<typename T>
+std::vector<size_t> get_order(const T& x)
+{
+  std::vector<size_t> order(x.size());
+  std::iota(order.begin(), order.end(), 0);
+  std::stable_sort(order.begin(), order.end(), [&](size_t i, size_t j) -> bool {
+    return (x[i] < x[j]);
+  });
+  return order;
+}
+
+
+template<typename T>
 Eigen::VectorXd
 binaryExpr_or_nan(const Eigen::MatrixXd& u, const T& func)
 {

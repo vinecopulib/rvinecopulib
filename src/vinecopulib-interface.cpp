@@ -340,29 +340,34 @@ Eigen::MatrixXd rosenblatt_discrete(const Eigen::MatrixXd& u,
 }
 
 
+
 //' asd
-//' @param u data
-//'
-//' @export
-//' @examples
-//' a <- 1
-// [[Rcpp::export]]
-std::vector<int> which_in_box(const Eigen::MatrixXd& vals,
-                              const Eigen::MatrixXd& lower,
-                              const Eigen::MatrixXd& upper) {
-  std::vector<int> indices;
-  indices.reserve(vals.rows());
-  Eigen::VectorXd diff = Eigen::VectorXd::Zero(vals.rows());
-  for (size_t j = 0; j < vals.cols(); j++) {
-    diff = (vals.col(j).array() - lower(j)).min(diff.array());
-    diff = (upper(j) - vals.col(j).array()).min(diff.array());
-  }
-  for (size_t i = 0; i < vals.rows(); i++) {
-    if (diff(i) >= 0)
-      indices.push_back(i);
-  };
-  return indices;
-}
+ //' @param u data
+ //'
+ //' @export
+ //' @examples
+ //' a <- 1
+ // [[Rcpp::export]]
+ std::vector<size_t> which_in_box(const std::vector<size_t>& ord0,
+                                  const std::vector<size_t>& ord1,
+                                  const Eigen::MatrixXd& lower,
+                                  const Eigen::MatrixXd& upper) {
+   auto n = ord1.size();
+   std::vector<size_t> indices;
+   indices.reserve(n + 1);
+
+   auto l0 = static_cast<size_t>(std::ceil(lower(0) * n));
+   auto l1 = static_cast<size_t>(std::ceil(lower(1) * n));
+   auto u0 = static_cast<size_t>(std::floor(upper(0) * n));
+   auto u1 = static_cast<size_t>(std::floor(upper(1) * n));
+
+   for (size_t k = l0; k < std::min(u0, n); k++) {
+     if (l1 <= ord1.at(ord0.at(k)) & ord1.at(ord0.at(k)) <= u1)
+       indices.push_back(ord0.at(k));
+   }
+
+   return indices;
+ }
 
 //' asd
 //' @param u data
@@ -373,40 +378,91 @@ std::vector<int> which_in_box(const Eigen::MatrixXd& vals,
 // [[Rcpp::export]]
 Eigen::MatrixXd find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter = 5)
 {
-  size_t n = u.rows(); // number of observations
+  size_t n = u.rows();
 
   auto w = tools_stats::simulate_uniform(n, 2);
   Eigen::MatrixXd uu = w.array() * u.leftCols(2).array() +
     (1 - w.array()) * u.rightCols(2).array();
-  auto x = tools_stats::qnorm(uu);
-  auto zeros = Eigen::VectorXd::Zero(n);
-  std::vector<int> indices;
+  // auto x = tools_stats::qnorm(uu);
+  // auto xu = tools_stats::safe_qnorm(u.leftCols(2));
+  // auto xl = tools_stats::safe_qnorm(u.rightCols(2));
+  // xu.array() += b;
+  // xl.array() -= b;
 
-  Eigen::MatrixXd norm_sim(n, 2);
+  Eigen::MatrixXd x(n, 2), norm_sim(n, 2);
 
-  std::vector<size_t> ord0, ord1;
+  std::vector<size_t> ord0(n), ord1(n);
 
   for (size_t it = 0; it < niter; it++) {
-
-    ord0 = tools_eigen::get_order(vals.col(0).data());
-    ord1 = tools_eigen::get_order(vals.col(1).data());
-
+    uu = tools_stats::to_pseudo_obs(uu);
+    x = tools_stats::qnorm(uu);
     norm_sim = tools_stats::simulate_normal(n, 2).array() * b;
     w = tools_stats::simulate_uniform(n, 1);
+    ord0 = tools_eigen::get_order(uu.col(0));
+    ord1 = tools_eigen::get_order(uu.col(1));
+
 
     for (size_t i = 0; i < n; i++) {
-      auto indices = which_in_box(uu, u.row(i).rightCols(2), u.row(i).leftCols(2));
+      // indices = which_in_box(ord0, ord1,
+      //                             u.row(i).rightCols(2).array(),
+      //                             u.row(i).leftCols(2).array());
+      std::vector<size_t> indices;
+      indices.reserve(n);
+      for (size_t k = 0; k < n; k++) {
+        if (u(i, 2) <= uu(k, 0) && uu(k, 0) <= u(i, 0) && u(i, 3) <= uu(k, 1) && uu(k, 1) <= u(i, 1))
+          indices.push_back(k);
+      }
       if (indices.size() > 0) {
         int j = indices.at(static_cast<size_t>(w(i) * indices.size()));
         x.row(i) = x.row(j) + norm_sim.row(i);
-        uu.row(i) = tools_stats::pnorm(x.row(i));
       }
     }
-
-    uu = tools_stats::to_pseudo_obs(uu);
   }
 
-  return uu;
+  return tools_stats::to_pseudo_obs(x);
 }
+
+
+//' asd
+ //' @param u data
+ //'
+ //' @export
+ //' @examples
+ //' a <- 1
+ // [[Rcpp::export]]
+ Eigen::MatrixXd find_latent_sample2(const Eigen::MatrixXd& u, double b, size_t niter = 5)
+ {
+   size_t n = u.rows();
+
+   auto w = tools_stats::simulate_uniform(n, 2);
+   Eigen::MatrixXd uu = w.array() * u.leftCols(2).array() +
+     (1 - w.array()) * u.rightCols(2).array();
+
+   auto covering = BoxCovering(uu);
+   std::vector<size_t> indices;
+
+   Eigen::MatrixXd x(n, 2), norm_sim(n, 2);
+
+   for (size_t it = 0; it < niter; it++) {
+     uu = tools_stats::to_pseudo_obs(uu);
+     x = tools_stats::qnorm(uu);
+     norm_sim = tools_stats::simulate_normal(n, 2).array() * b;
+     w = tools_stats::simulate_uniform(n, 1);
+
+     for (size_t i = 0; i < n; i++) {
+       indices = covering.get_box_indices(u.row(i).rightCols(2), u.row(i).leftCols(2));
+       if (indices.size() > 0) {
+         int j = indices.at(static_cast<size_t>(w(i) * indices.size()));
+         x.row(i) = x.row(j) + norm_sim.row(i);
+         uu.row(i) = tools_stats::pnorm(x.row(i));
+         covering.swap_sample(i, uu.row(i));
+       }
+     }
+   }
+
+   return tools_stats::to_pseudo_obs(x);
+ }
+
+
 
 

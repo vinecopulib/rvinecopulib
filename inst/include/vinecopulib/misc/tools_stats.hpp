@@ -52,6 +52,23 @@ qnorm(const Eigen::MatrixXd& x)
   return tools_eigen::unaryExpr_or_nan(x, f);
 }
 
+inline Eigen::MatrixXd
+safe_qnorm(const Eigen::MatrixXd& x)
+{
+  boost::math::normal dist;
+  auto f = [&dist](double y) {
+    if (y == 0) {
+      return -std::numeric_limits<double>::infinity();
+    } else if (y == 1) {
+      return std::numeric_limits<double>::infinity();
+    } else {
+      return boost::math::quantile(dist, y);
+    }
+  };
+
+  return tools_eigen::unaryExpr_or_nan(x, f);
+}
+
 //! @brief Density function of the Student t distribution.
 //!
 //! @param x Evaluation points.

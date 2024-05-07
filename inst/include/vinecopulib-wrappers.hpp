@@ -19,6 +19,88 @@
 #include "vinecopulib/misc/tools_interface.hpp"
 #include "vinecopulib.hpp"
 
+struct Box {
+public:
+  Box(std::vector<double> lower, std::vector<double> upper) :
+  lower_(lower), upper_(upper)
+  {}
+
+  std::vector<double> lower_;
+  std::vector<double> upper_;
+  std::set<size_t> indices_;
+};
+
+class BoxCovering {
+public:
+  BoxCovering(const Eigen::MatrixXd& u, size_t K = 30) : u_(u), K_(K) {
+    boxes_.resize(K);
+    for (size_t k = 0; k < K; k++) {
+      boxes_[k].resize(K);
+      for (size_t j = 0; j < K; j++) {
+        boxes_[k][j] = std::make_unique<Box>(
+          std::vector<double> {static_cast<double>(k) / K, static_cast<double>(j) / K},
+          std::vector<double> {static_cast<double>(k + 1) / K, static_cast<double>(j + 1) / K}
+        );
+      }
+    }
+
+    size_t k, j;
+    n_ = u.rows();
+    for (size_t i = 0; i < n_; i++) {
+      k = std::floor(u(i, 0) * K);
+      j = std::floor(u(i, 1) * K);
+      boxes_[k][j]->indices_.insert(i);
+    }
+  }
+
+  std::vector<size_t> get_box_indices(const Eigen::VectorXd& lower,
+                                      const Eigen::VectorXd& upper)
+  {
+    std::vector<size_t> indices;
+    indices.reserve(n_);
+    auto l0 = std::floor(lower(0) * K_);
+    auto l1 = std::floor(lower(1) * K_);
+    auto u0 = std::ceil(upper(0) * K_);
+    auto u1 = std::ceil(upper(1) * K_);
+
+    for (size_t k = l0; k < u0; k++) {
+      for (size_t j = l1; j < u1; j++) {
+        for (auto& i : boxes_[k][j]->indices_) {
+          if (k == l0 | k == u0 - 1) {
+            if (u_(i, 0) < lower(0) | u_(i, 0) > upper(0))
+              continue;
+          }
+          if (j == l1 | j == u1 - 1) {
+            if (u_(i, 1) < lower(1) | u_(i, 1) > upper(1))
+              continue;
+          }
+          indices.push_back(i);
+        }
+      }
+    }
+
+    return indices;
+  }
+
+  void swap_sample(size_t i, const Eigen::VectorXd& new_sample)
+  {
+    auto k = std::floor(u_(i, 0) * K_);
+    auto j = std::floor(u_(i, 1) * K_);
+    boxes_[k][j]->indices_.erase(i);
+
+    u_.row(i) = new_sample;
+    k = std::floor(new_sample(0) * K_);
+    j = std::floor(new_sample(1) * K_);
+    boxes_[k][j]->indices_.insert(i);
+  }
+
+  size_t n_;
+  size_t K_;
+  Eigen::MatrixXd u_;
+  std::vector<std::vector<std::unique_ptr<Box>>> boxes_;
+
+};
+
 namespace vinecopulib {
 
 // bicop wrapppers -----------------------------------
