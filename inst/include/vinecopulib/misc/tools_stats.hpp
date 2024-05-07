@@ -100,6 +100,11 @@ simulate_uniform(const size_t& n,
                  bool qrng = false,
                  std::vector<int> seeds = std::vector<int>());
 
+Eigen::MatrixXd
+simulate_normal(const size_t& n,
+                const size_t& d,
+                std::vector<int> seeds = std::vector<int>());
+
 Eigen::VectorXd
 to_pseudo_obs_1d(Eigen::VectorXd x, const std::string& ties_method = "average");
 

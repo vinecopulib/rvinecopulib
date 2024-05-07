@@ -62,6 +62,40 @@ simulate_uniform(const size_t& n,
   return u.unaryExpr([&](double) { return distribution(generator); });
 }
 
+//! @brief Simulates from independendent normals.
+//!
+//! @param n Number of observations.
+//! @param d Dimension.
+//! @param seeds Seeds of the random number generator; if empty (default),
+//!   the random number generator is seeded randomly.
+//!//!
+//! @return An \f$ n \times d \f$ matrix of independent
+//! \f$ \mathrm{N}(0, 1) \f$ random variables.
+inline Eigen::MatrixXd
+simulate_normal(const size_t& n,
+                 const size_t& d,
+                 std::vector<int> seeds)
+{
+  if ((n < 1) || (d < 1)) {
+    throw std::runtime_error("n and d must be at least 1.");
+  }
+  if (seeds.size() == 0) {
+    // no seeds provided, seed randomly
+    std::random_device rd{};
+    seeds = std::vector<int>(5);
+    std::generate(
+      seeds.begin(), seeds.end(), [&]() { return static_cast<int>(rd()); });
+  }
+
+  // initialize random engine and uniform distribution
+  std::seed_seq seq(seeds.begin(), seeds.end());
+  std::mt19937 generator(seq);
+  std::normal_distribution<double> distribution;
+
+  Eigen::MatrixXd x(n, d);
+  return x.unaryExpr([&](double) { return distribution(generator); });
+}
+
 //! @brief Applies the empirical probability integral transform to a data
 //! matrix.
 //!

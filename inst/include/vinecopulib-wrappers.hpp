@@ -259,4 +259,5 @@ inline Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp,
   return vc;
 }
 
+
 }

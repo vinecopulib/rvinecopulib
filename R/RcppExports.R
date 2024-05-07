@@ -123,3 +123,23 @@ rosenblatt_discrete <- function(u, vinecop_r, seed = 5L, num_threads = 1L) {
     .Call(`_rvinecopulib_rosenblatt_discrete`, u, vinecop_r, seed, num_threads)
 }
 
+#' asd
+#' @param u data
+#'
+#' @export
+#' @examples
+#' a <- 1
+which_in_box <- function(vals, lower, upper) {
+    .Call(`_rvinecopulib_which_in_box`, vals, lower, upper)
+}
+
+#' asd
+#' @param u data
+#'
+#' @export
+#' @examples
+#' a <- 1
+find_latent_sample <- function(u, b, niter = 5L) {
+    .Call(`_rvinecopulib_find_latent_sample`, u, b, niter)
+}
+

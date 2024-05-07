@@ -390,6 +390,32 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// which_in_box
+std::vector<int> which_in_box(const Eigen::MatrixXd& vals, const Eigen::MatrixXd& lower, const Eigen::MatrixXd& upper);
+RcppExport SEXP _rvinecopulib_which_in_box(SEXP valsSEXP, SEXP lowerSEXP, SEXP upperSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type vals(valsSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type lower(lowerSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type upper(upperSEXP);
+    rcpp_result_gen = Rcpp::wrap(which_in_box(vals, lower, upper));
+    return rcpp_result_gen;
+END_RCPP
+}
+// find_latent_sample
+Eigen::MatrixXd find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter);
+RcppExport SEXP _rvinecopulib_find_latent_sample(SEXP uSEXP, SEXP bSEXP, SEXP niterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< size_t >::type niter(niterSEXP);
+    rcpp_result_gen = Rcpp::wrap(find_latent_sample(u, b, niter));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_pseudo_obs_cpp", (DL_FUNC) &_rvinecopulib_pseudo_obs_cpp, 2},
@@ -420,6 +446,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 18},
     {"_rvinecopulib_fit_margins_cpp", (DL_FUNC) &_rvinecopulib_fit_margins_cpp, 9},
     {"_rvinecopulib_rosenblatt_discrete", (DL_FUNC) &_rvinecopulib_rosenblatt_discrete, 4},
+    {"_rvinecopulib_which_in_box", (DL_FUNC) &_rvinecopulib_which_in_box, 3},
+    {"_rvinecopulib_find_latent_sample", (DL_FUNC) &_rvinecopulib_find_latent_sample, 3},
     {NULL, NULL, 0}
 };
 

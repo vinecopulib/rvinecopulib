@@ -340,4 +340,73 @@ Eigen::MatrixXd rosenblatt_discrete(const Eigen::MatrixXd& u,
 }
 
 
+//' asd
+//' @param u data
+//'
+//' @export
+//' @examples
+//' a <- 1
+// [[Rcpp::export]]
+std::vector<int> which_in_box(const Eigen::MatrixXd& vals,
+                              const Eigen::MatrixXd& lower,
+                              const Eigen::MatrixXd& upper) {
+  std::vector<int> indices;
+  indices.reserve(vals.rows());
+  Eigen::VectorXd diff = Eigen::VectorXd::Zero(vals.rows());
+  for (size_t j = 0; j < vals.cols(); j++) {
+    diff = (vals.col(j).array() - lower(j)).min(diff.array());
+    diff = (upper(j) - vals.col(j).array()).min(diff.array());
+  }
+  for (size_t i = 0; i < vals.rows(); i++) {
+    if (diff(i) >= 0)
+      indices.push_back(i);
+  };
+  return indices;
+}
+
+//' asd
+//' @param u data
+//'
+//' @export
+//' @examples
+//' a <- 1
+// [[Rcpp::export]]
+Eigen::MatrixXd find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter = 5)
+{
+  size_t n = u.rows(); // number of observations
+
+  auto w = tools_stats::simulate_uniform(n, 2);
+  Eigen::MatrixXd uu = w.array() * u.leftCols(2).array() +
+    (1 - w.array()) * u.rightCols(2).array();
+  auto x = tools_stats::qnorm(uu);
+  auto zeros = Eigen::VectorXd::Zero(n);
+  std::vector<int> indices;
+
+  Eigen::MatrixXd norm_sim(n, 2);
+
+  std::vector<size_t> ord0, ord1;
+
+  for (size_t it = 0; it < niter; it++) {
+
+    ord0 = tools_eigen::get_order(vals.col(0).data());
+    ord1 = tools_eigen::get_order(vals.col(1).data());
+
+    norm_sim = tools_stats::simulate_normal(n, 2).array() * b;
+    w = tools_stats::simulate_uniform(n, 1);
+
+    for (size_t i = 0; i < n; i++) {
+      auto indices = which_in_box(uu, u.row(i).rightCols(2), u.row(i).leftCols(2));
+      if (indices.size() > 0) {
+        int j = indices.at(static_cast<size_t>(w(i) * indices.size()));
+        x.row(i) = x.row(j) + norm_sim.row(i);
+        uu.row(i) = tools_stats::pnorm(x.row(i));
+      }
+    }
+
+    uu = tools_stats::to_pseudo_obs(uu);
+  }
+
+  return uu;
+}
+
 
