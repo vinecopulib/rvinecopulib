@@ -9,6 +9,49 @@
 #include <wdm/eigen.hpp>
 
 namespace vinecopulib {
+
+
+ inline
+ Eigen::MatrixXd find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter)
+ {
+  using namespace tools_stats;
+   size_t n = u.rows();
+
+   auto w = simulate_uniform(n, 2);
+   Eigen::MatrixXd uu = w.array() * u.leftCols(2).array() +
+     (1 - w.array()) * u.rightCols(2).array();
+
+   auto covering = BoxCovering(uu);
+   std::vector<size_t> indices;
+
+   Eigen::MatrixXd lb = safe_qnorm(u.rightCols(2));
+   Eigen::MatrixXd ub = safe_qnorm(u.leftCols(2));
+   lb = safe_pnorm(lb.array() - b);
+   ub = safe_pnorm(ub.array() + b);
+
+   Eigen::MatrixXd x(n, 2), norm_sim(n, 2);
+
+   for (size_t it = 0; it < niter; it++) {
+     uu = to_pseudo_obs(uu);
+     x = qnorm(uu);
+     norm_sim = simulate_normal(n, 2).array() * b;
+     w = simulate_uniform(n, 1);
+
+     for (size_t i = 0; i < n; i++) {
+       indices = covering.get_box_indices(lb.row(i), ub.row(i));
+       if (indices.size() > 0) {
+         int j = indices.at(static_cast<size_t>(w(i) * indices.size()));
+         x.row(i) = x.row(j) + norm_sim.row(i);
+         uu.row(i) = pnorm(x.row(i));
+         covering.swap_sample(i, uu.row(i));
+       }
+     }
+   }
+
+   return to_pseudo_obs(x);
+ }
+
+
 inline KernelBicop::KernelBicop()
 {
   // construct default grid (equally spaced on Gaussian scale)

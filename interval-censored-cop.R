@@ -12,14 +12,14 @@ plot(u)
 
 x <- cbind(
   qbinom(u[, 1], k, pnorm(z)),
-  qbinom(u[, 2], k, pnorm(0.5 * z))
-  # u[, 2]
+  # qbinom(u[, 2], k, pnorm(0.5 * z))
+  u[, 2]
 )
 
 ut1 <- cbind(
   pbinom(x[, 1], k, pnorm(z)),
-  pbinom(x[, 2], k, pnorm(0.5 * z))
-  # u[, 2]
+  # pbinom(x[, 2], k, pnorm(0.5 * z))
+  u[, 2]
 )
 
 # plot(ut1)
@@ -27,8 +27,8 @@ ut1 <- cbind(
 
 ut2 <- cbind(
   pbinom(x[, 1] - 1, k, pnorm(z)),
-  pbinom(x[, 2] - 1, k, pnorm(0.5 * z))
-  # u[, 2]
+  # pbinom(x[, 2] - 1, k, pnorm(0.5 * z))
+  u[, 2]
 )
 
 w <- runif(n)
@@ -37,15 +37,12 @@ ut[, 1] <- w * ut1[, 1] + (1 - w) * ut2[, 1]
 w <- runif(n)
 ut[, 2] <- w * ut1[, 2] + (1 - w) * ut2[, 2]
 
-uu <- rvinecopulib:::find_latent_sample(cbind(ut1, ut2), 0.1, 5)
+
+uu <- rvinecopulib:::find_latent_sample_cpp(cbind(ut1, ut2), 0.1, 10)
 plot(qnorm(uu))
 points(qnorm(u), col = 3)
-# points(qnorm(ut), col = 2)
 
-
-uu <- rvinecopulib:::find_latent_sample2(cbind(ut1, ut2), 0.1, 3)
-plot(qnorm(uu))
-points(qnorm(u), col = 3)
+bicop(cbind(ut1, ut2), var_types = c("d", "d"), family = "tll")
 
 
 plot(ut)

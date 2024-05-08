@@ -57,12 +57,29 @@ safe_qnorm(const Eigen::MatrixXd& x)
 {
   boost::math::normal dist;
   auto f = [&dist](double y) {
-    if (y == 0) {
+    if (y <= 0) {
       return -std::numeric_limits<double>::infinity();
-    } else if (y == 1) {
+    } else if (y >= 1) {
       return std::numeric_limits<double>::infinity();
     } else {
       return boost::math::quantile(dist, y);
+    }
+  };
+
+  return tools_eigen::unaryExpr_or_nan(x, f);
+}
+
+inline Eigen::MatrixXd
+safe_pnorm(const Eigen::MatrixXd& x)
+{
+  boost::math::normal dist;
+  auto f = [&dist](double y) {
+    if (y >= std::numeric_limits<double>::max()) {
+      return 1.0;
+    } else if (y <= -std::numeric_limits<double>::max()) {
+      return 0.0;
+    } else {
+      return boost::math::cdf(dist, y);
     }
   };
 

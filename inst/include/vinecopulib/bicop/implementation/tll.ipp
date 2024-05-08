@@ -243,6 +243,11 @@ TllBicop::fit(const Eigen::MatrixXd& data,
   Eigen::Matrix2d B = select_bandwidth(z_data, method, weights);
   B *= mult;
 
+  // find latent sample in case observations are discrete
+  if (var_types_[0] == "d" | var_types_[1] == "d" ) {
+    psobs = find_latent_sample(data, std::pow(B(0, 0) * B(1, 1), 0.25));
+  }
+
   // compute the density estimator (first column estimate, second influence)
   Eigen::MatrixXd ll_fit = fit_local_likelihood(z, z_data, B, method, weights);
 
@@ -265,15 +270,7 @@ TllBicop::fit(const Eigen::MatrixXd& data,
   infl = Eigen::Map<Eigen::MatrixXd>(infl_vec.data(), m, m).transpose();
   // don't normalize margins of the EDF! (norm_times = 0)
   auto infl_grid = InterpolationGrid(grid_points, infl, 0);
-  if ((var_types_[0] == "d") || (var_types_[1] == "d")) {
-    // for discrete, use mid ranks to compute EDF and log-likelihood
-    // (this is closer to "observations" than jittered or "upper" pseudo data)
-    psobs = 0.5 * (data.leftCols(2) + data.rightCols(2)).array();
-    npars_ = tools_eigen::unique(infl_grid.interpolate(psobs)).sum();
-    npars_ = std::max(npars_, 1.0);
-  } else {
-    npars_ = std::max(infl_grid.interpolate(data).sum(), 1.0);
-  }
+  npars_ = std::max(infl_grid.interpolate(data).sum(), 1.0);
   set_loglik(pdf(data).array().log().sum());
 }
 }
