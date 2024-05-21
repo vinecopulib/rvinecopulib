@@ -55,7 +55,7 @@ test_that("truncation works", {
 test_that("margins_controls works", {
   fit_mult <- vine(u, margins_controls = list(mult = 2))
   expect_eql(
-    sapply(fit$margins, "[[", "mult"),
+    sapply(fit_mult$margins, "[[", "mult"),
     rep(2, ncol(u))
   )
 

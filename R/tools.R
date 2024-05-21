@@ -215,53 +215,6 @@ get_npars_distr <- function(distr) {
   )
 }
 
-#' @param data the data (after expand_factors() was called).
-#' @param ctrl the margin controls object (after expand_margin_controls() was
-#'   called).
-#' @noRd
-check_margin_controls <- function(data, ctrl) {
-  nms <- colnames(data)
-  if (is.null(nms)) {
-    nms <- as.character(seq_len(ncol(data)))
-  }
-  lapply(seq_len(NCOL(data)), function(k) {
-    msg_var <- paste0("Problem with margin_controls for variable ", nms[k], ": ")
-    tryCatch(
-      assert_that(
-        is.numeric(ctrl$mult[k]), ctrl$mult[k] > 0,
-        is.numeric(ctrl$xmin[k]), is.numeric(ctrl$xmax[k]),
-        is.na(ctrl$bw[k]) | (is.numeric(ctrl$bw[k]) & (ctrl$bw[k] > 0)),
-        is.numeric(ctrl$deg[k])
-      ),
-      error = function(e) stop(msg_var, e$message)
-    )
-
-    if (is.ordered(data[, k]) & (!is.nan(ctrl$xmin[k]) | !is.nan(ctrl$xmax[k]))) {
-      stop(msg_var, "xmin and xmax are not meaningful for x of type ordered.")
-    }
-
-    if (!is.nan(ctrl$xmax[k]) & !is.nan(ctrl$xmin[k])) {
-      if (ctrl$xmin[k] > ctrl$xmax[k]) {
-        stop(msg_var, "xmin is larger than xmax.")
-      }
-    }
-    if (!is.nan(ctrl$xmin[k])) {
-      if (any(data[, k] < ctrl$xmin[k])) {
-        stop(msg_var, "not all data are larger than xmin.")
-      }
-    }
-    if (!is.nan(ctrl$xmax[k])) {
-      if (any(data[, k] > ctrl$xmax[k])) {
-        stop(msg_var, "not all data are samller than xmax.")
-      }
-    }
-    if (!(ctrl$deg[k] %in% 0:2)) {
-      stop(msg_var, "deg must be either 0, 1, or 2.")
-    }
-  })
-}
-
-
 #' @noRd
 #' @importFrom assertthat assert_that on_failure<-
 #' @importFrom assertthat is.number is.string is.flag is.scalar

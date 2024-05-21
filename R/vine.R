@@ -135,8 +135,11 @@ vine <- function(data,
 
   ## expand the required arguments and compute default mult if needed
   margins_controls <- expand_margin_controls(margins_controls, d, data)
-  margins_controls$type[sapply(data, is.ordered)] <- "d"
-  check_margin_controls(data, margins_controls)
+  for (k in which(sapply(data, is.ordered))) {
+    margins_controls$type[k] <- "d"
+    margins_controls$xmin[k] <- 0
+    margins_controls$xmax[k] <- nlevels(data[[k]]) - 1
+  }
 
   ## estimation of the marginals
   vine <- list()
