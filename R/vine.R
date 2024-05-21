@@ -139,10 +139,10 @@ vine <- function(data,
   ## estimation of the marginals
   vine <- list()
   vine$margins <- fit_margins_cpp(prep_for_margins(data),
-                                  sapply(data, nlevels),
-                                  mult = margins_controls$mult,
                                   xmin = margins_controls$xmin,
                                   xmax = margins_controls$xmax,
+                                  margins_controls$type,
+                                  mult = margins_controls$mult,
                                   bw = margins_controls$bw,
                                   deg = margins_controls$deg,
                                   weights = weights,
@@ -255,7 +255,8 @@ vine_dist <- function(margins, pair_copulas, structure) {
 }
 
 expand_margin_controls <- function(controls, d, data) {
-  default_controls <- list(mult = NULL, xmin = NaN, xmax = NaN, bw = NA, deg = 2)
+  default_controls <-
+    list(xmin = NaN, xmax = NaN, type = "c", mult = NULL, bw = NA, deg = 2)
   controls <- modifyList(default_controls, controls)
   if (is.null(controls[["mult"]])) {
     controls[["mult"]] <- log(1 + d)

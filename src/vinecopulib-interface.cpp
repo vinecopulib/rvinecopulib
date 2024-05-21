@@ -282,10 +282,10 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
 
 // [[Rcpp::export()]]
 std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
-                                        const Eigen::VectorXi& nlevels,
-                                        const Eigen::VectorXd& mult,
                                         const Eigen::VectorXd& xmin,
                                         const Eigen::VectorXd& xmax,
+                                        const std::vector<std::string>& type,
+                                        const Eigen::VectorXd& mult,
                                         const Eigen::VectorXd& bw,
                                         const Eigen::VectorXi& deg,
                                         const Eigen::VectorXd& weights,
@@ -297,14 +297,15 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   RcppThread::parallelFor(0,
                           d,
                           [&](const size_t& k) {
-                            fits_cpp[k] = kde1d::Kde1d(data.col(k),
-                                                       nlevels(k),
-                                                       bw(k),
-                                                       mult(k),
-                                                       xmin(k),
-                                                       xmax(k),
-                                                       deg(k),
-                                                       weights);
+                            fits_cpp[k] = kde1d::Kde1d(
+                              xmin(k),
+                              xmax(k),
+                              type.at(k),
+                              mult(k),
+                              bw(k),
+                              deg(k)
+                            );
+                            fits_cpp[k].fit(data.col(k), weights);
                           },
                           num_threads);
 

@@ -1,7 +1,7 @@
 library(rvinecopulib)
 library(truncnorm)
 
-n <- 4000
+n <- 2000
 
 u <- rbicop(n, "clayton", 0, 3)
 z <- rnorm(n)
@@ -12,14 +12,14 @@ plot(u)
 
 x <- cbind(
   qbinom(u[, 1], k, pnorm(z)),
-  # qbinom(u[, 2], k, pnorm(0.5 * z))
-  u[, 2]
+  qbinom(u[, 2], k, pnorm(0.5 * z))
+  # u[, 2]
 )
 
 ut1 <- cbind(
   pbinom(x[, 1], k, pnorm(z)),
-  # pbinom(x[, 2], k, pnorm(0.5 * z))
-  u[, 2]
+  pbinom(x[, 2], k, pnorm(0.5 * z))
+  # u[, 2]
 )
 
 # plot(ut1)
@@ -27,8 +27,8 @@ ut1 <- cbind(
 
 ut2 <- cbind(
   pbinom(x[, 1] - 1, k, pnorm(z)),
-  # pbinom(x[, 2] - 1, k, pnorm(0.5 * z))
-  u[, 2]
+  pbinom(x[, 2] - 1, k, pnorm(0.5 * z))
+  # u[, 2]
 )
 
 w <- runif(n)
@@ -42,10 +42,12 @@ uu <- rvinecopulib:::find_latent_sample_cpp(cbind(ut1, ut2), 0.1, 10)
 plot(qnorm(uu))
 points(qnorm(u), col = 3)
 
+plot(uu)
+plot(u)
+plot(ut)
+
 bicop(cbind(ut1, ut2), var_types = c("d", "d"), family = "tll")
 
-
-plot(ut)
 
 contour(bicop(ut, family = "tll"))
 contour(bicop(u, family = "tll"))
