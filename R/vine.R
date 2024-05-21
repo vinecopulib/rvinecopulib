@@ -124,8 +124,9 @@ vine <- function(data,
   var_types[sapply(data, is.ordered)] <- "d"
 
   assert_that(is.list(margins_controls))
-  allowed_margins_controls <- c("mult", "xmin", "xmax", "bw", "deg")
+  allowed_margins_controls <- c("xmin", "xmax", "type", "mult", "bw", "deg")
   assert_that(in_set(names(margins_controls), allowed_margins_controls))
+
   assert_that(is.list(copula_controls))
   if (is.null(copula_controls$keep_data)) {
     copula_controls$keep_data <- TRUE
@@ -134,6 +135,7 @@ vine <- function(data,
 
   ## expand the required arguments and compute default mult if needed
   margins_controls <- expand_margin_controls(margins_controls, d, data)
+  margins_controls$type[sapply(data, is.ordered)] <- "d"
   check_margin_controls(data, margins_controls)
 
   ## estimation of the marginals
@@ -141,7 +143,7 @@ vine <- function(data,
   vine$margins <- fit_margins_cpp(prep_for_margins(data),
                                   xmin = margins_controls$xmin,
                                   xmax = margins_controls$xmax,
-                                  margins_controls$type,
+                                  type = margins_controls$type,
                                   mult = margins_controls$mult,
                                   bw = margins_controls$bw,
                                   deg = margins_controls$deg,
@@ -152,7 +154,7 @@ vine <- function(data,
 
   ## estimation of the R-vine copula --------------
   copula_controls$data <- compute_pseudo_obs(data, vine)
-  copula_controls$var_types <- var_types
+  copula_controls$var_types <- simplify_var_types(margins_controls$type)
   copula_controls$weights <- weights
   vine$copula <- do.call(vinecop, copula_controls)
   vine$copula_controls <- copula_controls[-which(names(copula_controls) == "data")]
@@ -306,4 +308,10 @@ finalize_vine <- function(vine, data, weights, keep_data) {
 
   ## create and return object
   structure(vine, class = c("vine", "vine_dist"))
+}
+
+simplify_var_types <- function(x) {
+  x[x %in% c("cont", "continuous")] <- "c"
+  x[x %in% c("disc", "discrete", "zinf", "zero-inflated")] <- "d"
+  x
 }
