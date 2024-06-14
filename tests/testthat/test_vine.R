@@ -55,8 +55,8 @@ test_that("truncation works", {
 test_that("margins_controls works", {
   fit_mult <- vine(u, margins_controls = list(mult = 2))
   expect_eql(
-    sapply(fit_mult$margins, "[[", "bw"),
-    2 / log(6) * sapply(fit$margins, "[[", "bw")
+    sapply(fit_mult$margins, "[[", "mult"),
+    rep(2, ncol(u))
   )
 
   fit_xmin <- vine(abs(u), margins_controls = list(xmin = 0, deg = 1, mult = 1:5))
@@ -67,7 +67,7 @@ test_that("margins_controls works", {
 test_that("weights work", {
   w <- rexp(nrow(u))
   fit_weights <- vine(u, copula_controls = list(family_set = "nonpar"),
-                     weights = w, keep_data = TRUE)
+                      weights = w, keep_data = TRUE)
   expect_eql(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
 })

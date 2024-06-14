@@ -282,10 +282,10 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
 
 // [[Rcpp::export()]]
 std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
-                                        const Eigen::VectorXi& nlevels,
-                                        const Eigen::VectorXd& mult,
                                         const Eigen::VectorXd& xmin,
                                         const Eigen::VectorXd& xmax,
+                                        const std::vector<std::string>& type,
+                                        const Eigen::VectorXd& mult,
                                         const Eigen::VectorXd& bw,
                                         const Eigen::VectorXi& deg,
                                         const Eigen::VectorXd& weights,
@@ -297,14 +297,15 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   RcppThread::parallelFor(0,
                           d,
                           [&](const size_t& k) {
-                            fits_cpp[k] = kde1d::Kde1d(data.col(k),
-                                                       nlevels(k),
-                                                       bw(k),
-                                                       mult(k),
-                                                       xmin(k),
-                                                       xmax(k),
-                                                       deg(k),
-                                                       weights);
+                            fits_cpp[k] = kde1d::Kde1d(
+                              xmin(k),
+                              xmax(k),
+                              type.at(k),
+                              mult(k),
+                              bw(k),
+                              deg(k)
+                            );
+                            fits_cpp[k].fit(data.col(k), weights);
                           },
                           num_threads);
 
@@ -317,32 +318,33 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
 }
 
 //' Rosenblatt transform for discrete variables
-//'
-//' @param u data
-//' @param vinecop_r model
-//' @param seed seed
-//' @param num_threads cores
-//'
-//' @export
-//' @examples
-//' a <- 1
-// [[Rcpp::export]]
-Eigen::MatrixXd rosenblatt_discrete(const Eigen::MatrixXd& u,
-                                    const Rcpp::List& vinecop_r,
-                                    int seed = 5,
-                                    size_t num_threads = 1)
-{
-  auto d = vinecop_wrap(vinecop_r).get_dim();
-  auto R = tools_stats::simulate_uniform(u.rows(), d, true, {seed});
-  auto w = vinecop_wrap(vinecop_r).rosenblatt_discrete(u, num_threads);
-  return w.leftCols(d).array() * R.array() +
-    w.rightCols(d).array() * (1 - R.array());
-}
+ //'
+ //' @param u data
+ //' @param vinecop_r model
+ //' @param seed seed
+ //' @param num_threads cores
+ //'
+ //' @export
+ //' @examples
+ //' a <- 1
+ // [[Rcpp::export]]
+ Eigen::MatrixXd rosenblatt_discrete(const Eigen::MatrixXd& u,
+                                     const Rcpp::List& vinecop_r,
+                                     int seed = 5,
+                                     size_t num_threads = 1)
+ {
+   auto d = vinecop_wrap(vinecop_r).get_dim();
+   auto R = tools_stats::simulate_uniform(u.rows(), d, true, {seed});
+   auto w = vinecop_wrap(vinecop_r).rosenblatt_discrete(u, num_threads);
+   return w.leftCols(d).array() * R.array() +
+     w.rightCols(d).array() * (1 - R.array());
+ }
 
 // [[Rcpp::export]]
-Eigen::MatrixXd find_latent_sample_cpp(const Eigen::MatrixXd& u, double b, size_t niter = 3)
+Eigen::MatrixXd find_latent_sample_cpp(const Eigen::MatrixXd& u, double b, size_t niter = 3,
+                                       const std::vector<int>& seeds = std::vector<int>())
 {
-  return find_latent_sample(u, b, niter);
+  return find_latent_sample(u, b, niter, seeds);
 }
 
 

@@ -55,10 +55,10 @@ process_family_set <- function(family_set, par_method) {
   if (par_method == "itau") {
     if (any(!(family_set %in% family_set_itau))) {
       warning("Only families (",
-        paste(family_set_itau, collapse = ", "),
-        ") can be used with ", "'par_method = ", '"itau"', "'; ",
-        "reducing family set.",
-        call. = FALSE
+              paste(family_set_itau, collapse = ", "),
+              ") can be used with ", "'par_method = ", '"itau"', "'; ",
+              "reducing family set.",
+              call. = FALSE
       )
       family_set <- intersect(family_set, family_set_itau)
     }
@@ -124,7 +124,7 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
     # ncol: Number of columns of plots
     # nrow: Number of rows needed, calculated from # of cols
     layout <- matrix(seq(1, cols * ceiling(numPlots / cols)),
-      ncol = cols, nrow = ceiling(numPlots / cols)
+                     ncol = cols, nrow = ceiling(numPlots / cols)
     )
   }
 
@@ -147,10 +147,10 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
       matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
 
       print(plots[[i]],
-        vp = grid::viewport(
-          layout.pos.row = matchidx$row,
-          layout.pos.col = matchidx$col
-        )
+            vp = grid::viewport(
+              layout.pos.row = matchidx$row,
+              layout.pos.col = matchidx$col
+            )
       )
     }
   }
@@ -201,66 +201,19 @@ check_distr <- function(distr) {
 
 get_npars_distr <- function(distr) {
   switch(distr$distr,
-    beta = 2,
-    cauchy = 2,
-    chisq = ifelse("ncp" %in% names(distr), 2, 1),
-    exp = 1,
-    f = 3,
-    gamma = 2,
-    lnorm = 2,
-    norm = 2,
-    t = ifelse("ncp" %in% names(distr), 3, 2),
-    unif = 2,
-    weibull = ifelse("scale" %in% names(distr), 2, 1)
+         beta = 2,
+         cauchy = 2,
+         chisq = ifelse("ncp" %in% names(distr), 2, 1),
+         exp = 1,
+         f = 3,
+         gamma = 2,
+         lnorm = 2,
+         norm = 2,
+         t = ifelse("ncp" %in% names(distr), 3, 2),
+         unif = 2,
+         weibull = ifelse("scale" %in% names(distr), 2, 1)
   )
 }
-
-#' @param data the data (after expand_factors() was called).
-#' @param ctrl the margin controls object (after expand_margin_controls() was
-#'   called).
-#' @noRd
-check_margin_controls <- function(data, ctrl) {
-  nms <- colnames(data)
-  if (is.null(nms)) {
-    nms <- as.character(seq_len(ncol(data)))
-  }
-  lapply(seq_len(NCOL(data)), function(k) {
-    msg_var <- paste0("Problem with margin_controls for variable ", nms[k], ": ")
-    tryCatch(
-      assert_that(
-        is.numeric(ctrl$mult[k]), ctrl$mult[k] > 0,
-        is.numeric(ctrl$xmin[k]), is.numeric(ctrl$xmax[k]),
-        is.na(ctrl$bw[k]) | (is.numeric(ctrl$bw[k]) & (ctrl$bw[k] > 0)),
-        is.numeric(ctrl$deg[k])
-      ),
-      error = function(e) stop(msg_var, e$message)
-    )
-
-    if (is.ordered(data[, k]) & (!is.nan(ctrl$xmin[k]) | !is.nan(ctrl$xmax[k]))) {
-      stop(msg_var, "xmin and xmax are not meaningful for x of type ordered.")
-    }
-
-    if (!is.nan(ctrl$xmax[k]) & !is.nan(ctrl$xmin[k])) {
-      if (ctrl$xmin[k] > ctrl$xmax[k]) {
-        stop(msg_var, "xmin is larger than xmax.")
-      }
-    }
-    if (!is.nan(ctrl$xmin[k])) {
-      if (any(data[, k] < ctrl$xmin[k])) {
-        stop(msg_var, "not all data are larger than xmin.")
-      }
-    }
-    if (!is.nan(ctrl$xmax[k])) {
-      if (any(data[, k] > ctrl$xmax[k])) {
-        stop(msg_var, "not all data are samller than xmax.")
-      }
-    }
-    if (!(ctrl$deg[k] %in% 0:2)) {
-      stop(msg_var, "deg must be either 0, 1, or 2.")
-    }
-  })
-}
-
 
 #' @noRd
 #' @importFrom assertthat assert_that on_failure<-
