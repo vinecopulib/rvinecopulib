@@ -97,7 +97,8 @@ private:
 
 };
 
-Eigen::MatrixXd find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter = 3);
+Eigen::MatrixXd find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter = 3,
+                                   const std::vector<int>& seeds = std::vector<int>());
 
 
 //! @brief An abstract class for kernel copulas.

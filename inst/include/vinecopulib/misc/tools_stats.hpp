@@ -6,12 +6,40 @@
 
 #pragma once
 
+#include <boost/random.hpp>
+#include <random>
 #include <boost/math/distributions.hpp>
 #include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
 
 namespace tools_stats {
+
+class SeedState {
+public:
+  SeedState(std::vector<int> seeds = {}) {
+    if (seeds.size() == 0) {
+      // no seeds provided, seed randomly
+      std::random_device rd{};
+      seeds = std::vector<int>(5);
+      std::generate(
+        seeds.begin(), seeds.end(), [&]() { return static_cast<int>(rd()); });
+    }
+    boost::random::seed_seq seq(seeds.begin(), seeds.end());
+    engine_ = boost::mt19937(seq);
+  }
+
+  std::vector<int> next() {
+    std::vector<int> seeds(5);
+    std::generate(
+      seeds.begin(), seeds.end(), [&]() { return static_cast<int>(engine_()); });
+    return seeds;
+  }
+
+private:
+  boost::mt19937 engine_;
+};
+
 
 //! @brief Density function of the Standard normal distribution.
 //!

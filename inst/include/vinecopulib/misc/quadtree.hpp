@@ -36,15 +36,15 @@ public:
     }
   }
 
-  const Point& sample() const
+  const Point& sample(std::mt19937* rng_ptr_) const
   {
     auto n = vector_.size();
     if (n == 0) {
       throw std::runtime_error("Cannot sample from empty set.");
     }
-    std::mt19937 rng(std::random_device{}());
+
     auto distribution = std::uniform_int_distribution<std::size_t>(0, n - 1);
-    return vector_[distribution(rng) % vector_.size()];
+    return vector_[distribution(*rng_ptr_) % vector_.size()];
   }
 
 private:
@@ -118,9 +118,10 @@ private:
   std::vector<Node> nodes_;
   std::vector<Node*> terminal_nodes_;
   uint16_t depth_;
+  std::mt19937 rng_;
 
 public:
-  QuadTree(const BoundingBox& boundary, int depth)
+  QuadTree(const BoundingBox& boundary, int depth, std::vector<int> seeds = {})
     : depth_(depth)
   {
     // geometric series sum formula 4^0 + 4^1 + ... + 4^depth
@@ -131,6 +132,9 @@ public:
     nodes_.emplace_back(boundary);
     int node_idx = 1;
     construct_children(&nodes_[0], 0, node_idx);
+
+    auto seq = std::seed_seq(seeds.begin(), seeds.end());
+    rng_ = std::mt19937(seq);
   }
 
   void insert(const Point& point)
@@ -163,9 +167,12 @@ public:
     }
 
     // If the node is fully contained in the range, all its points are
-    // If at deepest level, return the node even though it only intersects
-    if (range.contains(node->boundary) || (depth == depth_)) {
+    if (range.contains(node->boundary)) {
       terminal_nodes_.push_back(node);
+      return;
+    }
+
+    if (depth == depth_) {
       return;
     }
 
@@ -190,13 +197,11 @@ public:
       throw std::runtime_error("No points in the specified range.");
     }
 
-    // Select a child node based on the counts
     std::uniform_int_distribution<int> dist(0, total_points_in_range - 1);
-    std::mt19937 rng(std::random_device{}());
-    int r = dist(rng);
+    int r = dist(rng_);
 
     Node* sampled_node;
-    for (auto node : terminal_nodes_) {
+    for (auto& node : terminal_nodes_) {
       if (r < node->points.size()) {
         sampled_node = node;
         break;
@@ -204,7 +209,7 @@ public:
       r -= node->points.size();
     }
 
-    return sampled_node->points.sample();
+    return sampled_node->points.sample(&rng_);
   }
 };
 

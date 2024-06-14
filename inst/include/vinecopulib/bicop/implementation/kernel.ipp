@@ -11,20 +11,26 @@
 
 namespace vinecopulib {
 
-
  inline
- Eigen::MatrixXd find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter)
+ Eigen::MatrixXd find_latent_sample(
+  const Eigen::MatrixXd& u, double b, size_t niter,
+  const std::vector<int>& seeds)
  {
    using namespace tools_stats;
-   size_t n = u.rows();
 
-   auto w = simulate_uniform(n, 2);
+   size_t n = u.rows();
+   auto seed_state = SeedState(seeds);
+
+   auto w = simulate_uniform(n, 2, false, seed_state.next());
    Eigen::MatrixXd uu = w.array() * u.leftCols(2).array() +
      (1 - w.array()) * u.rightCols(2).array();
 
-   auto x = qnorm(uu);
-   auto depth = std::ceil(std::log2(8 / b));
-   QuadTree quadtree(BoundingBox(-4, -4, 4, 4), depth);
+   Eigen::MatrixXd x = qnorm(uu);
+   auto depth = std::ceil(std::log2(10 / b));
+   QuadTree quadtree(BoundingBox(-4.5, -4.5, 4.5, 4.5), depth, seeds);
+   for (size_t i = 0; i < n; i++) {
+     quadtree.insert(Point{x(i, 0), x(i, 1)});
+   }
 
    Eigen::MatrixXd lb = safe_qnorm(u.rightCols(2)).array() - b;
    Eigen::MatrixXd ub = safe_qnorm(u.leftCols(2)).array() + b;
@@ -33,20 +39,24 @@ namespace vinecopulib {
    Point new_sample, old_sample;
 
    for (size_t it = 0; it < niter; it++) {
-     norm_sim = simulate_normal(n, 2).array() * b;
-     w = simulate_uniform(n, 1);
+     // x = qnorm(to_pseudo_obs(x));
+     norm_sim = simulate_normal(n, 2, seed_state.next()).array() * b;
 
      for (size_t i = 0; i < n; i++) {
        try {
          new_sample = quadtree.sample(
            BoundingBox(lb(i, 0), lb(i, 1), ub(i, 0), ub(i, 1))
          );
-         old_sample.x = x(i, 0);
-         old_sample.y = x(i, 1);
-         quadtree.remove(old_sample);
-         x(i, 0) = new_sample.x;
-         x(i, 1) = new_sample.y;
-         quadtree.insert(new_sample);
+
+        old_sample.x = x(i, 0);
+        old_sample.y = x(i, 1);
+        quadtree.remove(old_sample);
+
+        new_sample.x += norm_sim(i, 0);
+        new_sample.y += norm_sim(i, 1);
+        x(i, 0) = new_sample.x;
+        x(i, 1) = new_sample.y;
+        quadtree.insert(new_sample);
        } catch (std::runtime_error& e) {
          // if we can't find a new sample, we just keep the old one
        }
