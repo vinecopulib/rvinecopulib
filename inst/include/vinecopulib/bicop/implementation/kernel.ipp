@@ -18,42 +18,44 @@ namespace vinecopulib {
  {
    using namespace tools_stats;
 
+   // for better cache behavior
+   using MatrixXd = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
    size_t n = u.rows();
    auto seed_state = SeedState(seeds);
 
    auto w = simulate_uniform(n, 2, false, seed_state.next());
-   Eigen::MatrixXd uu = w.array() * u.leftCols(2).array() +
+   MatrixXd uu = w.array() * u.leftCols(2).array() +
      (1 - w.array()) * u.rightCols(2).array();
 
-   Eigen::MatrixXd x = qnorm(uu);
+   MatrixXd x = qnorm(uu);
    auto depth = std::ceil(std::log2(10 / b));
-   QuadTree quadtree(BoundingBox(-4.5, -4.5, 4.5, 4.5), depth, seeds);
-   for (size_t i = 0; i < n; i++) {
-     quadtree.insert(Point{x(i, 0), x(i, 1)});
-   }
 
-   Eigen::MatrixXd lb = safe_qnorm(u.rightCols(2)).array() - b;
-   Eigen::MatrixXd ub = safe_qnorm(u.leftCols(2)).array() + b;
+   MatrixXd lb = safe_qnorm(u.rightCols(2)).array() - b;
+   MatrixXd ub = safe_qnorm(u.leftCols(2)).array() + b;
 
-   Eigen::MatrixXd norm_sim(n, 2);
+   MatrixXd norm_sim(n, 2);
    Point new_sample, old_sample;
 
+   QuadTree quadtree(BoundingBox(-4.5, -4.5, 4.5, 4.5), depth, seed_state.next());
+   for (size_t i = 0; i < n; i++) {
+     quadtree.insert(Point{x(i, 0), x(i, 1), i});
+   }
+
    for (size_t it = 0; it < niter; it++) {
-     // x = qnorm(to_pseudo_obs(x));
+
      norm_sim = simulate_normal(n, 2, seed_state.next()).array() * b;
 
      for (size_t i = 0; i < n; i++) {
        try {
-         new_sample = quadtree.sample(
-           BoundingBox(lb(i, 0), lb(i, 1), ub(i, 0), ub(i, 1))
-         );
-
-        old_sample.x = x(i, 0);
-        old_sample.y = x(i, 1);
-        quadtree.remove(old_sample);
+        new_sample = quadtree.sample(
+          BoundingBox(lb(i, 0), lb(i, 1), ub(i, 0), ub(i, 1))
+        );
+        quadtree.remove(Point{x(i, 0), x(i, 1), i});
 
         new_sample.x += norm_sim(i, 0);
         new_sample.y += norm_sim(i, 1);
+        new_sample.index = i;
         x(i, 0) = new_sample.x;
         x(i, 1) = new_sample.y;
         quadtree.insert(new_sample);
