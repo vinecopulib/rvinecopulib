@@ -106,25 +106,22 @@ private:
     BoundingBox boundary;
     PointSet points;
     size_t point_count = 0;
-    Node* parent_ptr = nullptr;
 
     std::array<Node*, 4> children;
-    Node(const BoundingBox& boundary, Node* parent_ptr = nullptr) :
-      boundary(boundary), parent_ptr(parent_ptr) {}
+    Node(const BoundingBox& boundary) : boundary(boundary) {}
   };
 
   void construct_children(Node* node, uint16_t depth, int& node_idx) {
     if (depth >= depth_) return;
 
     const auto& b = node->boundary;
-    nodes_.emplace_back(BoundingBox{b.x_min, b.y_min, b.x_mid, b.y_mid}, node);
-    nodes_.emplace_back(BoundingBox{b.x_mid, b.y_min, b.x_max, b.y_mid}, node);
-    nodes_.emplace_back(BoundingBox{b.x_min, b.y_mid, b.x_mid, b.y_max}, node);
-    nodes_.emplace_back(BoundingBox{b.x_mid, b.y_mid, b.x_max, b.y_max}, node);
+    nodes_.emplace_back(BoundingBox{b.x_min, b.y_min, b.x_mid, b.y_mid});
+    nodes_.emplace_back(BoundingBox{b.x_mid, b.y_min, b.x_max, b.y_mid});
+    nodes_.emplace_back(BoundingBox{b.x_min, b.y_mid, b.x_mid, b.y_max});
+    nodes_.emplace_back(BoundingBox{b.x_mid, b.y_mid, b.x_max, b.y_max});
 
     for (int i = 0; i < 4; ++i) {
-      node->children[i] = &nodes_[node_idx++];
-      auto c = node->children[i];
+      node->children[i] = &nodes_[++node_idx];
     }
 
     for (auto& child : node->children) {
@@ -160,7 +157,7 @@ public:
     terminal_nodes_.reserve(num_nodes);
 
     nodes_.emplace_back(boundary);
-    int node_idx = 1;
+    int node_idx = 0;
     construct_children(&nodes_[0], 0, node_idx);
 
     auto seq = std::seed_seq(seeds.begin(), seeds.end());
@@ -189,30 +186,29 @@ public:
   }
 
   // Helper function to recursively calculate points within the range
-  void find_terminal_nodes(Node* node, const BoundingBox& range, int depth)
+  void find_terminal_nodes(const BoundingBox& range)
   {
-    if (depth == 0) {
-      terminal_nodes_.clear(); // starting new search
-    }
+    terminal_nodes_.clear(); // starting new search
+    find_terminal_nodes_(&nodes_[0], range, 0);
+  };
 
+  // Helper function to recursively calculate points within the range
+  void find_terminal_nodes_(Node* node, const BoundingBox& range, int depth)
+  {
     // If the node is outside the range, no points are within the range
     if (!range.intersects(node->boundary)) {
       return;
     }
 
     // If the node is fully contained in the range, all its points are
-    if (range.contains(node->boundary) || depth == depth_) {
+    if (depth == depth_ || range.contains(node->boundary)) {
       terminal_nodes_.push_back(node);
-      return;
-    }
-
-    if (depth == depth_) {
       return;
     }
 
     // Otherwise, check each child node
     for (auto& child : node->children) {
-      find_terminal_nodes(child, range, depth + 1);
+      find_terminal_nodes_(child, range, depth + 1);
     }
 
   };
@@ -220,11 +216,10 @@ public:
   Point sample(const BoundingBox& range) {
     // Find nodes at highest possible level fully contained in the range,
     // starting at root
-    find_terminal_nodes(&nodes_[0], range, 0);
+    find_terminal_nodes(range);
 
     int total_points_in_range = 0;
     for (auto node : terminal_nodes_) {
-      auto c = node;
       total_points_in_range += node->point_count;
     }
     if (total_points_in_range == 0) {
@@ -244,11 +239,7 @@ public:
     }
 
     while (sampled_node->points.size() == 0) {
-      size_t total_child_count = 0;
-      for (auto& child : sampled_node->children) {
-        total_child_count += child->point_count;
-      }
-      std::uniform_int_distribution<int> dist(0, total_child_count - 1);
+      std::uniform_int_distribution<int> dist(0, sampled_node->point_count - 1);
       r = dist(rng_);
 
       for (auto& child : sampled_node->children) {
