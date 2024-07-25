@@ -306,9 +306,12 @@ summary.vinecop <- function(object, trees = seq_len(dim(object)["trunc_lvl"]), .
       k <- k + 1
     }
   }
-
+  if (length(object$names) != 0) {
+    attr(mdf, "var_names") <- object$names
+  }
   mdf
 }
+
 
 #' @export
 dim.vinecop_dist <- function(x) {
