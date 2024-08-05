@@ -50,6 +50,8 @@ inline BicopFamily to_cpp_family(const std::string& fam)
     bicop_fam = BicopFamily::bb8;
   } else if (fam == "tll") {
     bicop_fam = BicopFamily::tll;
+  } else if (fam == "tawn") {
+    bicop_fam = BicopFamily::tawn;
   } else {
     throw std::runtime_error("family not implemented");
   }
@@ -84,6 +86,8 @@ inline std::string to_r_family(const BicopFamily& fam)
     bicop_fam = "bb8";
   } else if (fam == BicopFamily::tll) {
     bicop_fam = "tll";
+  } else if (fam == BicopFamily::tawn) {
+    bicop_fam = "tawn";
   } else {
     throw std::runtime_error("family not implemented");
   }

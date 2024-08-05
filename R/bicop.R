@@ -66,12 +66,17 @@
 #'
 #' (`"gaussian"`, `"clayton"`, `"gumbel"`, `"frank"`, and `"joe"`),
 #'
-#' * `"twopar"` contains the parametric families with two parameters
+#' * `"twopar"` contains the parametric families with two parameters,
 #' (`"t"`, `"bb1"`, `"bb6"`, `"bb7"`, and `"bb8"`),
+#'
+#' * `"threepar"` contains the paramtric families with three parameters,
+#' (`"tawn"`),
 #'
 #' * `"elliptical"` contains the elliptical families,
 #'
 #' * `"archimedean"` contains the archimedean families,
+#'
+#' * `"ev"` contains the extreme-value families,
 #'
 #' * `"BB"` contains the BB families,
 #'
@@ -199,6 +204,7 @@ as.bicop <- function(object) {
 #' | "             | Joe-Gumbel (BB6)      | "bb6"         |
 #' | "             | Joe-Clayton (BB7)     | "bb7"         |
 #' | "             | Joe-Frank (BB8)       | "bb8"         |
+#' | Extreme-value | Tawn                  | "tawn"        |
 #' | Nonparametric | Transformation kernel | "tll"         |
 #'
 #' @return

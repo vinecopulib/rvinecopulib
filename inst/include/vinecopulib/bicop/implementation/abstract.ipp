@@ -18,6 +18,7 @@
 #include <vinecopulib/bicop/joe.hpp>
 #include <vinecopulib/bicop/student.hpp>
 #include <vinecopulib/bicop/tll.hpp>
+#include <vinecopulib/bicop/tawn.hpp>
 #include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
@@ -57,6 +58,9 @@ AbstractBicop::create(BicopFamily family, const Eigen::MatrixXd& parameters)
       break;
     case BicopFamily::joe:
       new_bicop = BicopPtr(new JoeBicop());
+      break;
+    case BicopFamily::tawn:
+      new_bicop = BicopPtr(new TawnBicop());
       break;
     case BicopFamily::bb1:
       new_bicop = BicopPtr(new Bb1Bicop());
