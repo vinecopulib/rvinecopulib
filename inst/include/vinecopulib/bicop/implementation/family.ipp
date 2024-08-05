@@ -18,18 +18,19 @@ const family_bimap family_names = boost::assign::list_of<
              "Clayton")(BicopFamily::gumbel,
                         "Gumbel")(BicopFamily::frank,
                                   "Frank")(BicopFamily::joe,
-                                           "Joe")(BicopFamily::bb1,
-                                                  "BB1")(BicopFamily::bb6,
-                                                         "BB6")(BicopFamily::
-                                                                  bb7,
-                                                                "BB"
-                                                                "7")(BicopFamily::
-                                                                       bb8,
-                                                                     "BB"
-                                                                     "8")(BicopFamily::
-                                                                            tll,
-                                                                          "TL"
-                                                                          "L");
+                                           "Joe")(BicopFamily::tawn,
+                                                  "Tawn")(BicopFamily::bb1,
+                                                          "BB1")(BicopFamily::bb6,
+                                                                 "BB6")(BicopFamily::
+                                                                        bb7,
+                                                                        "BB"
+                                                                        "7")(BicopFamily::
+                                                                             bb8,
+                                                                             "BB"
+                                                                             "8")(BicopFamily::
+                                                                                  tll,
+                                                                                  "TL"
+                                                                                  "L");
 
 //! @brief Converts a BicopFamily into a string with its name.
 //! @param family The family.

@@ -2,6 +2,7 @@
 % Please edit documentation in R/rvinecopulib.R
 \docType{package}
 \name{rvinecopulib}
+\alias{rvinecopulib-package}
 \alias{rvinecopulib}
 \alias{rvinecopulib-package}
 \title{High Performance Algorithms for Vine Copula Modeling}

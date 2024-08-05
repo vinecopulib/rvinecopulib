@@ -45,4 +45,4 @@ LinkingTo:
 BugReports: https://github.com/vinecopulib/rvinecopulib/issues
 URL: https://vinecopulib.github.io/rvinecopulib/
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.3.1

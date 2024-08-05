@@ -21,6 +21,7 @@ enum class BicopFamily
   gumbel,   ///< Gumbel copula
   frank,    ///< Frank copula
   joe,      ///< Joe copula
+  tawn,     ///< Tawn copula
   bb1,      ///< BB1 copula
   bb6,      ///< BB6 copula
   bb7,      ///< BB7 copula
@@ -41,16 +42,17 @@ namespace bicop_families {
 const std::vector<BicopFamily> all = {
   BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
-  BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
-  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tll
+  BicopFamily::joe,     BicopFamily::tawn,     BicopFamily::bb1,      
+  BicopFamily::bb6,     BicopFamily::bb7,      BicopFamily::bb8,      
+  BicopFamily::tll
 };
 
 //! All parametric families
 const std::vector<BicopFamily> parametric = {
   BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
-  BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
-  BicopFamily::bb7,     BicopFamily::bb8
+  BicopFamily::joe,     BicopFamily::tawn,     BicopFamily::bb1,      
+  BicopFamily::bb6,     BicopFamily::bb7,      BicopFamily::bb8
 };
 
 //! All nonparametric families
@@ -70,6 +72,11 @@ const std::vector<BicopFamily> two_par = { BicopFamily::student,
                                            BicopFamily::bb7,
                                            BicopFamily::bb8 };
 
+//! All three-parameter families
+const std::vector<BicopFamily> three_par = {
+  BicopFamily::tawn
+};
+
 //! All elliptical copulas
 const std::vector<BicopFamily> elliptical = { BicopFamily::gaussian,
                                               BicopFamily::student };
@@ -79,6 +86,11 @@ const std::vector<BicopFamily> archimedean = {
   BicopFamily::clayton, BicopFamily::gumbel, BicopFamily::frank,
   BicopFamily::joe,     BicopFamily::bb1,    BicopFamily::bb6,
   BicopFamily::bb7,     BicopFamily::bb8
+};
+
+//! All Extreme-value copulas
+const std::vector<BicopFamily> ev = {
+  BicopFamily::tawn, BicopFamily::gumbel
 };
 
 //! All BB copulas
@@ -104,7 +116,8 @@ const std::vector<BicopFamily> lt = { BicopFamily::clayton,
 //! Families with stronger dependence in the upper tail
 const std::vector<BicopFamily> ut = { BicopFamily::gumbel, BicopFamily::joe,
                                       BicopFamily::bb1,    BicopFamily::bb6,
-                                      BicopFamily::bb7,    BicopFamily::bb8 };
+                                      BicopFamily::bb7,    BicopFamily::bb8,
+                                      BicopFamily::tawn };
 
 //! Families for which `method = "itau"` is available in Bicop::fit()
 const std::vector<BicopFamily> itau = {
@@ -117,7 +130,7 @@ const std::vector<BicopFamily> itau = {
 const std::vector<BicopFamily> flip_by_rotation = {
   BicopFamily::clayton, BicopFamily::gumbel, BicopFamily::frank,
   BicopFamily::joe,     BicopFamily::bb1,    BicopFamily::bb6,
-  BicopFamily::bb7,     BicopFamily::bb8
+  BicopFamily::bb7,     BicopFamily::bb8,    BicopFamily::tawn
 };
 
 } // end of namespace BicopFamilies

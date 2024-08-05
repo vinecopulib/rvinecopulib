@@ -109,10 +109,13 @@ following convenience definitions:
 
 (\code{"gaussian"}, \code{"clayton"}, \code{"gumbel"}, \code{"frank"}, and \code{"joe"}),
 \itemize{
-\item \code{"twopar"} contains the parametric families with two parameters
+\item \code{"twopar"} contains the parametric families with two parameters,
 (\code{"t"}, \code{"bb1"}, \code{"bb6"}, \code{"bb7"}, and \code{"bb8"}),
+\item \code{"threepar"} contains the paramtric families with three parameters,
+(\code{"tawn"}),
 \item \code{"elliptical"} contains the elliptical families,
 \item \code{"archimedean"} contains the archimedean families,
+\item \code{"ev"} contains the extreme-value families,
 \item \code{"BB"} contains the BB families,
 \item \code{"itau"} families for which estimation by Kendall's tau inversion is
 available (\code{"indep"},\code{"gaussian"}, \code{"t"},\code{"clayton"}, \code{"gumbel"},

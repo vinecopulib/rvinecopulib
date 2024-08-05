@@ -112,7 +112,7 @@ ParBicop::fit(const Eigen::MatrixXd& data,
       return this->loglik(data, weights);
     };
   }
-
+  
   tools_optimization::Optimizer optimizer;
   auto newpars = optimizer.optimize(initial_parameters, lb, ub, objective);
 
