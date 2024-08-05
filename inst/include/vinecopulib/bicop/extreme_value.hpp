@@ -41,6 +41,9 @@ private:
   virtual double pickands_derivative2(const double& t) = 0;
 
   Eigen::VectorXd get_start_parameters(const double tau);
+
+  // link between Kendall's tau and the par_bicop parameter
+  double parameters_to_tau(const Eigen::MatrixXd& par);
 };
 }
 

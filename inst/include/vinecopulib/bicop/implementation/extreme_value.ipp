@@ -92,4 +92,15 @@ ExtremeValueBicop::get_start_parameters(const double)
   Eigen::VectorXd parameters = lb + Eigen::VectorXd::Constant(3, 0.5);
   return parameters;
 }
+
+inline double
+ExtremeValueBicop::parameters_to_tau(const Eigen::MatrixXd& par)
+{
+  auto f = [this](const double t) {
+    double p = pickands(t);
+    double p2 = pickands_derivative2(t);
+    return t * (1 - t) * p2 / p;
+  };
+  return tools_integration::integrate_zero_to_one(f);
+}
 }

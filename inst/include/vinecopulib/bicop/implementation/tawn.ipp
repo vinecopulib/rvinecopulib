@@ -22,9 +22,9 @@ inline TawnBicop::TawnBicop()
 inline double
 TawnBicop::pickands(const double& t)
 {
-  double psi1 = double(this->parameters_(0));
-  double psi2 = double(this->parameters_(1));
-  double theta = double(this->parameters_(2));
+  double psi1 = this->parameters_(0);
+  double psi2 = this->parameters_(1);
+  double theta = this->parameters_(2);
 
   double temp = std::pow(psi2 * t, theta) + 
                   std::pow(psi1 * (1 - t), theta);
@@ -35,9 +35,9 @@ TawnBicop::pickands(const double& t)
 inline double 
 TawnBicop::pickands_derivative(const double& t)
 {
-  double psi1 = double(this->parameters_(0));
-  double psi2 = double(this->parameters_(1));
-  double theta = double(this->parameters_(2));
+  double psi1 = this->parameters_(0);
+  double psi2 = this->parameters_(1);
+  double theta = this->parameters_(2);
 
   double temp = std::pow(psi2 * t, theta) + 
                   std::pow(psi1 * (1 - t), theta);
@@ -49,9 +49,9 @@ TawnBicop::pickands_derivative(const double& t)
 inline double
 TawnBicop::pickands_derivative2(const double& t)
 {
-  double psi1 = double(this->parameters_(0));
-  double psi2 = double(this->parameters_(1));
-  double theta = double(this->parameters_(2));
+  double psi1 = this->parameters_(0);
+  double psi2 = this->parameters_(1);
+  double theta = this->parameters_(2);
 
   double temp = std::pow(psi2 * t, theta) + 
                   std::pow(psi1 * (1 - t), theta);
@@ -61,30 +61,6 @@ TawnBicop::pickands_derivative2(const double& t)
                   std::pow(psi1, 2) * std::pow(psi1 * (1 - t), theta - 2);
   return (1 - theta) * std::pow(temp, 1 / theta - 2) * std::pow(temp2, 2) + 
           std::pow(temp, 1 / theta - 1) * (theta - 1) * temp3;
-}
-
-inline double
-TawnBicop::parameters_to_tau(const Eigen::MatrixXd& par)
-{
-  double psi1 = par(0);
-  double psi2 = par(1);
-  double theta = par(2);
-
-  auto f = [psi1, psi2, theta](const double t) {
-    double t2 = std::pow(psi2 * t, theta) + 
-                  std::pow(psi1 * (1 - t), theta);
-    double p = (1 - psi1) * (1 - t) + (1 - psi2) * t + 
-                std::pow(t2, 1 / theta);
-    double t3 = psi2 * std::pow(psi2 * t, theta - 1) - 
-                  psi1 * std::pow(psi1 * (1 - t), theta - 1);
-    double t4 = std::pow(psi2, 2) * std::pow(psi2 * t, theta - 2) + 
-                  std::pow(psi1, 2) * std::pow(psi1 * (1 - t), theta - 2);
-    double p2 = (1 - theta) * std::pow(t2, 1 / theta - 2) * std::pow(t3, 2) + 
-                  std::pow(t2, 1 / theta - 1) * (theta - 1) * t4;
-
-    return t * (1 - t) * p2 / p;
-  };
-  return tools_integration::integrate_zero_to_one(f);
 }
 
 inline Eigen::MatrixXd

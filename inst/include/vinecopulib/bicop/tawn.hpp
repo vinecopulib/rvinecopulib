@@ -31,9 +31,6 @@ private:
 
   double pickands_derivative2(const double& t);
 
-  // link between Kendall's tau and the par_bicop parameter
-  double parameters_to_tau(const Eigen::MatrixXd& par);
-
   Eigen::MatrixXd tau_to_parameters(const double& tau);
 };
 }
