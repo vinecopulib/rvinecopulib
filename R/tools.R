@@ -389,6 +389,7 @@ print.summary_df <- function(x, ..., rows = 1:10) {
   if (nrow(x) > length(rows)) {
     cat("# ... with", nrow(x) - length(rows), "more rows\n")
   }
+  print_varname_legend(x)
   invisible(x)
 }
 
@@ -411,6 +412,36 @@ print_fit_info <- function(x) {
   cat("AIC =", round(-2 * ll[1] + 2 * attr(ll, "df"), 2), "  ")
   cat("BIC =", round(-2 * ll[1] + log(x$nobs) * attr(ll, "df"), 2), "  ")
   cat("\n")
+}
+
+#' internal function
+#' @noRd
+print_varname_legend <- function(object) {
+  # show names if provided
+  var_names <- attr(object, "var_names")
+  d <- length(var_names)
+  if ((d > 0) && any(var_names != paste0("V", 1:d))) {
+    linelen <- 80
+    d <- length(var_names)
+    cat("\n")
+    cat("---\n")
+    txt <- paste0(1, " <-> ", var_names[1])
+    for (i in 2:(d - 1)) {
+      if (nchar(txt) > linelen) {
+        cat(txt, ",\n", sep = "")
+        txt <- paste0(i, " <-> ", var_names[i])
+      } else {
+        txt <- paste0(txt, ",   ", i, " <-> ", var_names[i])
+      }
+    }
+    if (nchar(txt) > linelen) {
+      cat(txt, ",\n", sep = "")
+      txt <- paste0(d, " <-> ", var_names[d])
+    } else {
+      txt <- paste0(txt, ",   ", d, " <-> ", var_names[d])
+    }
+    cat(txt, "\n")
+  }
 }
 
 #' internal function : synchronize C++ random number generators with R
