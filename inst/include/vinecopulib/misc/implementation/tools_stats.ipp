@@ -18,15 +18,14 @@ namespace tools_stats {
 
 //! @brief Simulates from the multivariate uniform distribution.
 //!
+//! If `qrng = TRUE`, generalized Halton sequences (see `ghalton()`) are used
+//! for \f$ d \leq 300 \f$ and Sobol sequences otherwise (see `sobol()`).
+//!
 //! @param n Number of observations.
 //! @param d Dimension.
 //! @param qrng If true, quasi-numbers are generated.
 //! @param seeds Seeds of the random number generator; if empty (default),
 //!   the random number generator is seeded randomly.
-//!
-//! If `qrng = TRUE`, generalized Halton sequences (see `ghalton()`) are used
-//! for \f$ d \leq 300 \f$ and Sobol sequences otherwise (see `sobol()`).
-//!
 //! @return An \f$ n \times d \f$ matrix of independent
 //! \f$ \mathrm{U}[0, 1] \f$ random variables.
 inline Eigen::MatrixXd

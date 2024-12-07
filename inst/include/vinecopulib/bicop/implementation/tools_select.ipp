@@ -10,7 +10,7 @@
 
 namespace vinecopulib {
 namespace tools_select {
-//! returns only those rotations that yield the appropriate
+//! @brief Gets only those rotations that yield the appropriate
 //! association direction.
 //! @param data Captured by reference to avoid data copies;
 //!     should NOT be modified though.

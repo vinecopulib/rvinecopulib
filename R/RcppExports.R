@@ -101,11 +101,25 @@ vinecop_mbicv_cpp <- function(u, vinecop_r, psi0, cores) {
     .Call(`_rvinecopulib_vinecop_mbicv_cpp`, u, vinecop_r, psi0, cores)
 }
 
-vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types) {
-    .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types)
+vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, show_trace, num_threads, var_types) {
+    .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, show_trace, num_threads, var_types)
 }
 
-fit_margins_cpp <- function(data, nlevels, mult, xmin, xmax, bw, deg, weights, num_threads) {
-    .Call(`_rvinecopulib_fit_margins_cpp`, data, nlevels, mult, xmin, xmax, bw, deg, weights, num_threads)
+fit_margins_cpp <- function(data, xmin, xmax, type, mult, bw, deg, weights, num_threads) {
+    .Call(`_rvinecopulib_fit_margins_cpp`, data, xmin, xmax, type, mult, bw, deg, weights, num_threads)
+}
+
+#' Rosenblatt transform for discrete variables
+#'
+#' @param u data
+#' @param vinecop_r model
+#' @param seed seed
+#' @param num_threads cores
+#'
+#' @export
+#' @examples
+#' a <- 1
+rosenblatt_discrete <- function(u, vinecop_r, seed = 5L, num_threads = 1L) {
+    .Call(`_rvinecopulib_rosenblatt_discrete`, u, vinecop_r, seed, num_threads)
 }
 

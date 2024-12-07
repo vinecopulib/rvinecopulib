@@ -129,7 +129,6 @@ rvine <- function(n, vine, qrng = FALSE, cores = 1) {
   if (!inherits(vine, "vine") & depth(vine$margins) == 1) {
     vine$margins <- replicate(dim(vine)[1], vine$margins, simplify = FALSE)
   }
-
   # use quantile transformation for marginals
   X <- dpq_marg(U, vine, "q")
   colnames(X) <- vine$names

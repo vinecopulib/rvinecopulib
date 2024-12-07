@@ -19,6 +19,7 @@
 #include "vinecopulib/misc/tools_interface.hpp"
 #include "vinecopulib.hpp"
 
+
 namespace vinecopulib {
 
 // bicop wrapppers -----------------------------------
@@ -262,5 +263,7 @@ inline Rcpp::List vinecop_wrap(const Vinecop& vinecop_cpp,
   vc.attr("class") = Rcpp::CharacterVector{"vinecop", "vinecop_dist"};
   return vc;
 }
+
+
 
 }

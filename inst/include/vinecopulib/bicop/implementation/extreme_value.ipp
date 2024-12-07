@@ -5,6 +5,7 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <vinecopulib/misc/tools_eigen.hpp>
+#include <vinecopulib/misc/tools_integration.hpp>
 
 namespace vinecopulib {
 inline Eigen::VectorXd ExtremeValueBicop::cdf(

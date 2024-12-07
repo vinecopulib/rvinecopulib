@@ -124,8 +124,9 @@ vine <- function(data,
   var_types[sapply(data, is.ordered)] <- "d"
 
   assert_that(is.list(margins_controls))
-  allowed_margins_controls <- c("mult", "xmin", "xmax", "bw", "deg")
+  allowed_margins_controls <- c("xmin", "xmax", "type", "mult", "bw", "deg")
   assert_that(in_set(names(margins_controls), allowed_margins_controls))
+
   assert_that(is.list(copula_controls))
   if (is.null(copula_controls$keep_data)) {
     copula_controls$keep_data <- TRUE
@@ -134,15 +135,19 @@ vine <- function(data,
 
   ## expand the required arguments and compute default mult if needed
   margins_controls <- expand_margin_controls(margins_controls, d, data)
-  check_margin_controls(data, margins_controls)
+  for (k in which(sapply(data, is.ordered))) {
+    margins_controls$type[k] <- "d"
+    margins_controls$xmin[k] <- 0
+    margins_controls$xmax[k] <- nlevels(data[[k]]) - 1
+  }
 
   ## estimation of the marginals
   vine <- list()
   vine$margins <- fit_margins_cpp(prep_for_margins(data),
-                                  sapply(data, nlevels),
-                                  mult = margins_controls$mult,
                                   xmin = margins_controls$xmin,
                                   xmax = margins_controls$xmax,
+                                  type = margins_controls$type,
+                                  mult = margins_controls$mult,
                                   bw = margins_controls$bw,
                                   deg = margins_controls$deg,
                                   weights = weights,
@@ -152,7 +157,7 @@ vine <- function(data,
 
   ## estimation of the R-vine copula --------------
   copula_controls$data <- compute_pseudo_obs(data, vine)
-  copula_controls$var_types <- var_types
+  copula_controls$var_types <- simplify_var_types(margins_controls$type)
   copula_controls$weights <- weights
   vine$copula <- do.call(vinecop, copula_controls)
   vine$copula_controls <- copula_controls[-which(names(copula_controls) == "data")]
@@ -255,7 +260,8 @@ vine_dist <- function(margins, pair_copulas, structure) {
 }
 
 expand_margin_controls <- function(controls, d, data) {
-  default_controls <- list(mult = NULL, xmin = NaN, xmax = NaN, bw = NA, deg = 2)
+  default_controls <-
+    list(xmin = NaN, xmax = NaN, type = "c", mult = NULL, bw = NA, deg = 2)
   controls <- modifyList(default_controls, controls)
   if (is.null(controls[["mult"]])) {
     controls[["mult"]] <- log(1 + d)
@@ -305,4 +311,10 @@ finalize_vine <- function(vine, data, weights, keep_data) {
 
   ## create and return object
   structure(vine, class = c("vine", "vine_dist"))
+}
+
+simplify_var_types <- function(x) {
+  x[x %in% c("cont", "continuous")] <- "c"
+  x[x %in% c("disc", "discrete", "zinf", "zero-inflated")] <- "d"
+  x
 }
