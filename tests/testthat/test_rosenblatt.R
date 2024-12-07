@@ -24,7 +24,7 @@ test_that("rosenblatt works with vine copulas", {
   expect_eql(inverse_rosenblatt(rosenblatt(u, vc), vc), u)
 })
 
-test_that("rosenblatt_discrete works with vine copulas", {
+test_that("discrete rosenblatt works with vine copulas", {
   u <- rvinecop(2000, vc)
   uu <- cbind(u, u[, 2])
 
@@ -36,14 +36,14 @@ test_that("rosenblatt_discrete works with vine copulas", {
                         structure = mat, family = "clay")
   vc_c$var_types = rep("c", 3)
 
-  v <- inverse_rosenblatt(rosenblatt_discrete(uu, vc), vc_c)
+  v <- inverse_rosenblatt(rosenblatt(uu, vc), vc_c)
   expect_eql(v, u, tol = 2 * thresh)
 
   # other format
   uu <- cbind(u, u)
   uu[u[, 2] < thresh, 2] <- 1e-10
   uu[u[, 2] < thresh, 5] <- thresh
-  v <- inverse_rosenblatt(rosenblatt_discrete(uu, vc), vc_c)
+  v <- inverse_rosenblatt(rosenblatt(uu, vc), vc_c)
   expect_eql(v, u, tol = 2 * thresh)
 })
 

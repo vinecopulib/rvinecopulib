@@ -77,8 +77,8 @@ vinecop_inverse_rosenblatt_cpp <- function(U, vinecop_r, cores) {
     .Call(`_rvinecopulib_vinecop_inverse_rosenblatt_cpp`, U, vinecop_r, cores)
 }
 
-vinecop_rosenblatt_cpp <- function(U, vinecop_r, cores) {
-    .Call(`_rvinecopulib_vinecop_rosenblatt_cpp`, U, vinecop_r, cores)
+vinecop_rosenblatt_cpp <- function(U, vinecop_r, cores, randomize_discrete, seeds) {
+    .Call(`_rvinecopulib_vinecop_rosenblatt_cpp`, U, vinecop_r, cores, randomize_discrete, seeds)
 }
 
 vinecop_sim_cpp <- function(vinecop_r, n, qrng, cores, seeds) {
@@ -107,19 +107,5 @@ vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_m
 
 fit_margins_cpp <- function(data, xmin, xmax, type, mult, bw, deg, weights, num_threads) {
     .Call(`_rvinecopulib_fit_margins_cpp`, data, xmin, xmax, type, mult, bw, deg, weights, num_threads)
-}
-
-#' Rosenblatt transform for discrete variables
-#'
-#' @param u data
-#' @param vinecop_r model
-#' @param seed seed
-#' @param num_threads cores
-#'
-#' @export
-#' @examples
-#' a <- 1
-rosenblatt_discrete <- function(u, vinecop_r, seed = 5L, num_threads = 1L) {
-    .Call(`_rvinecopulib_rosenblatt_discrete`, u, vinecop_r, seed, num_threads)
 }
 

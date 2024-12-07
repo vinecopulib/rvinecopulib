@@ -180,9 +180,11 @@ Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U,
                                        const Rcpp::List& vinecop_r,
-                                       size_t cores)
+                                       size_t cores,
+                                       bool randomize_discrete,
+                                       std::vector<int> seeds)
 {
-  return vinecop_wrap(vinecop_r).rosenblatt(U, cores);
+  return vinecop_wrap(vinecop_r).rosenblatt(U, cores, randomize_discrete, seeds);
 }
 
 // [[Rcpp::export()]]
@@ -320,35 +322,6 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   return fits_r;
 }
 
-//' Rosenblatt transform for discrete variables
-//'
-//' @param u data
-//' @param vinecop_r model
-//' @param seed seed
-//' @param num_threads cores
-//'
-//' @export
-//' @examples
-//' a <- 1
-// [[Rcpp::export]]
-Eigen::MatrixXd rosenblatt_discrete(const Eigen::MatrixXd& u,
-                                    const Rcpp::List& vinecop_r,
-                                    int seed = 5,
-                                    size_t num_threads = 1)
-{
-  auto d = vinecop_wrap(vinecop_r).get_dim();
-  auto R = tools_stats::simulate_uniform(u.rows(), d, true, {seed});
-  auto w = vinecop_wrap(vinecop_r).rosenblatt(u, num_threads);
-  return w.leftCols(d).array() * R.array() +
-    w.rightCols(d).array() * (1 - R.array());
-}
-//
-// // [[Rcpp::export]]
-// Eigen::MatrixXd find_latent_sample_cpp(const Eigen::MatrixXd& u, double b, size_t niter = 3)
-// {
-//   return find_latent_sample(u, b, niter);
-// }
-//
 
 
 

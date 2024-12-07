@@ -5,7 +5,7 @@
 \alias{inverse_rosenblatt}
 \title{(Inverse) Rosenblatt transform}
 \usage{
-rosenblatt(x, model, cores = 1)
+rosenblatt(x, model, cores = 1, randomize_discrete = TRUE)
 
 inverse_rosenblatt(u, model, cores = 1)
 }
@@ -18,6 +18,9 @@ models.}
 
 \item{cores}{if \verb{>1}, computation is parallelized over \code{cores} batches (rows
 of \code{u}).}
+
+\item{randomize_discrete}{Whether to randomize the transform for discrete
+variables; see Details.}
 
 \item{u}{matrix of evaluation points; must be in \eqn{(0, 1)^d}.}
 }
@@ -55,6 +58,23 @@ returns
 \deqn{
   V_{M[d + 1- j, j]}= F^{-1}(U_{M[d - j + 1, j]} | U_{M[d - j, j]}, \dots, U_{M[1, j]}).
 }
+
+If some variables have atoms, Brockwell (10.1016/j.spl.2007.02.008) proposed
+a simple randomization scheme to ensure that output is still independent
+uniform if the model is correct. The transformation reads
+\deqn{ U_{M[d - j,
+j]}= W_{d - j} F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0,
+0]}) + (1 - W_{d - j}) F^-(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots,
+V_{M[0, 0]}), \f] where \f$ F^-
+}
+is the left limit of the conditional cdf
+and \eqn{W_1, \dots, W_d} are are independent standard uniform random
+variables. This is used by default. If you are interested in the conditional
+probabilities
+\deqn{
+ F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0, 0]}),
+}
+set \code{randomize_discrete = FALSE}.
 }
 \examples{
 # simulate data with some dependence
