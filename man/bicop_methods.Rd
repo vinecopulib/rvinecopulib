@@ -87,7 +87,7 @@ other variable, that is \code{v} when \code{cond_var = 1} and \code{u} when \cod
 When at least one variable is discrete, more than two columns are required
 for \code{u}: the first \eqn{n \times 2} block contains realizations of
 \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
-realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+realizations of \eqn{F_{X_1}(x_1^-), F_{X_2}(x_2^-)}. The minus indicates a
 left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
 limit and the cdf itself coincide. Respective columns can be omitted in the

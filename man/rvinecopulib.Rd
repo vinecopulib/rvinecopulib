@@ -4,7 +4,6 @@
 \name{rvinecopulib}
 \alias{rvinecopulib-package}
 \alias{rvinecopulib}
-\alias{rvinecopulib-package}
 \title{High Performance Algorithms for Vine Copula Modeling}
 \description{
 Provides an interface to 'vinecopulib', a C++ library for vine copula
@@ -60,6 +59,7 @@ summary(vc)
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://vinecopulib.github.io/rvinecopulib/}
   \item Report bugs at \url{https://github.com/vinecopulib/rvinecopulib/issues}
 }
 
