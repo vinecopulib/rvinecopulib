@@ -25,7 +25,7 @@ Imports:
     assertthat,
     graphics,
     grDevices,
-    kde1d (>= 1.0.2),
+    kde1d (>= 1.1.0),
     lattice,
     Rcpp (>= 0.12.12),
     stats,
