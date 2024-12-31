@@ -49,6 +49,6 @@ private:
 }
 
 double
-qcondgum(double* q, double* u, double* de);
+qcondgum(const double& q, const double& u, const double& de);
 
 #include <vinecopulib/bicop/implementation/gumbel.ipp>

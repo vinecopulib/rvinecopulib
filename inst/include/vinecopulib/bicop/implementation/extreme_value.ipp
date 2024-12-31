@@ -86,22 +86,18 @@ ExtremeValueBicop::hinv2_raw(const Eigen::MatrixXd& u)
   return hinv;
 }
 
-inline Eigen::VectorXd
-ExtremeValueBicop::get_start_parameters(const double)
-{
-  Eigen::MatrixXd lb = this->get_parameters_lower_bounds();
-  Eigen::VectorXd parameters = lb + Eigen::VectorXd::Constant(3, 0.5);
-  return parameters;
-}
-
 inline double
 ExtremeValueBicop::parameters_to_tau(const Eigen::MatrixXd& par)
 {
+  auto old_par = this->parameters_;
+  this->set_parameters(par);
   auto f = [this](const double t) {
-    double p = pickands(t);
-    double p2 = pickands_derivative2(t);
-    return t * (1 - t) * p2 / p;
+    double A = pickands(t);
+    double A2 = pickands_derivative2(t);
+    return t * (1 - t) * A2 / A;
   };
-  return tools_integration::integrate_zero_to_one(f);
+  double tau = tools_integration::integrate_zero_to_one(f);
+  this->parameters_ = old_par;
+  return tau;
 }
 }

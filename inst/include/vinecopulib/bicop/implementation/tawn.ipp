@@ -14,9 +14,9 @@ inline TawnBicop::TawnBicop()
   parameters_ = Eigen::VectorXd(3);
   parameters_lower_bounds_ = Eigen::VectorXd(3);
   parameters_upper_bounds_ = Eigen::VectorXd(3);
-  parameters_ << 0.5, 0.5, 6;
-  parameters_lower_bounds_ << 1e-10, 1e-10, 1 + 1e-10;
-  parameters_upper_bounds_ << 1 - 1e-10, 1 - 1e-10, 60;
+  parameters_ << 1, 1, 1; // independence copula, gumbel for parameters_(2) != 1
+  parameters_lower_bounds_ << 0, 0, 1;
+  parameters_upper_bounds_ << 1, 1, 60;
 }
 
 inline double
@@ -62,6 +62,15 @@ TawnBicop::pickands_derivative2(const double& t)
   return (1 - theta) * std::pow(temp, 1 / theta - 2) * std::pow(temp2, 2) + 
           std::pow(temp, 1 / theta - 1) * (theta - 1) * temp3;
 }
+
+inline Eigen::VectorXd
+TawnBicop::get_start_parameters(const double)
+{
+  Eigen::MatrixXd lb = this->get_parameters_lower_bounds();
+  Eigen::VectorXd parameters = lb + Eigen::VectorXd::Constant(3, 0.5);
+  return parameters;
+}
+
 
 inline Eigen::MatrixXd
 TawnBicop::tau_to_parameters(const double& tau)

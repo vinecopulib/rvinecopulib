@@ -19,7 +19,6 @@
 #include <vinecopulib/bicop/student.hpp>
 #include <vinecopulib/bicop/tawn.hpp>
 #include <vinecopulib/bicop/tll.hpp>
-#include <vinecopulib/bicop/tawn.hpp>
 #include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {

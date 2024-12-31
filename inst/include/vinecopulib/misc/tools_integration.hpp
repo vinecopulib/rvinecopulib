@@ -17,9 +17,6 @@ namespace std
 {
 constexpr int _sprintf_do_nothing(char*, const char*, ...) { return 0; }
 }
-
-// boost/functional uses removed unary_funcion otherwise
-#define _HAS_AUTO_PTR_ETC 0
 #include <boost/numeric/odeint.hpp>
 #undef sprintf
 
