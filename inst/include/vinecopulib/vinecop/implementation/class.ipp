@@ -1262,6 +1262,7 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
   for (size_t j = 0; j < d; ++j) {
     hfunc2.col(j) = u.col(order[j] - 1);
   }
+  hfunc1 = hfunc2; // just ensure data is in [0, 1]^d
   if (is_discrete()) {
     hfunc1_sub = hfunc1;
     hfunc2_sub = hfunc2;
@@ -1348,7 +1349,7 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
                                           : hfunc2.col(inverse_order[j]);
     }
     // randomize by weighting left and right limits with independent uniforms
-    auto R = tools_stats::simulate_uniform(u.rows(), d, true, seeds);
+    auto R = tools_stats::simulate_uniform(u.rows(), d, false, seeds);
     U.leftCols(d) = U.leftCols(d).array() * R.array() +
                     U.rightCols(d).array() * (1 - R.array());
   }

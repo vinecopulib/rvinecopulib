@@ -4,8 +4,10 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <boost/random.hpp>
+#include <boost/random/random_device.hpp>
+#include <boost/random/seed_seq.hpp>
 #include <memory>
-#include <random>
 #include <unsupported/Eigen/FFT>
 #include <vinecopulib/misc/tools_stats_ghalton.hpp>
 #include <vinecopulib/misc/tools_stats_sobol.hpp>
@@ -55,9 +57,9 @@ simulate_uniform(const size_t& n,
   }
 
   // initialize random engine and uniform distribution
-  std::seed_seq seq(seeds.begin(), seeds.end());
-  std::mt19937 generator(seq);
-  std::uniform_real_distribution<double> distribution(0.0, 1.0);
+  boost::random::seed_seq seq(seeds.begin(), seeds.end());
+  boost::random::mt19937 generator(seq);
+  boost::random::uniform_real_distribution<double> distribution(0.0, 1.0);
 
   Eigen::MatrixXd u(n, d);
   return u.unaryExpr([&](double) { return distribution(generator); });
@@ -97,11 +99,12 @@ simulate_normal(const size_t& n,
 inline Eigen::MatrixXd
 to_pseudo_obs(Eigen::MatrixXd x,
               const std::string& ties_method,
-              const Eigen::VectorXd& weights)
+              const Eigen::VectorXd& weights,
+              std::vector<int> seeds)
 {
   for (int j = 0; j < x.cols(); ++j)
     x.col(j) = to_pseudo_obs_1d(
-      static_cast<Eigen::VectorXd>(x.col(j)), ties_method, weights);
+      static_cast<Eigen::VectorXd>(x.col(j)), ties_method, weights, seeds);
 
   return x;
 }
@@ -120,12 +123,13 @@ to_pseudo_obs(Eigen::MatrixXd x,
 inline Eigen::VectorXd
 to_pseudo_obs_1d(Eigen::VectorXd x,
                  const std::string& ties_method,
-                 const Eigen::VectorXd& weights)
+                 const Eigen::VectorXd& weights,
+                 std::vector<int> seeds)
 {
   size_t n = x.size();
   auto xvec = wdm::utils::convert_vec(x);
   auto res =
-    wdm::impl::rank(xvec, wdm::utils::convert_vec(weights), ties_method);
+    wdm::impl::rank(xvec, wdm::utils::convert_vec(weights), ties_method, seeds);
   x = Eigen::Map<Eigen::VectorXd>(res.data(), res.size());
 
   // correction for NaNs
@@ -237,7 +241,7 @@ find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter)
     throw std::runtime_error("u must have four columns.");
   }
 
-  auto w = simulate_uniform(n, 2);
+  auto w = simulate_uniform(n, 2, true, { 5 });
   Eigen::MatrixXd uu = w.array() * u.leftCols(2).array() +
                        (1 - w.array()) * u.rightCols(2).array();
 
@@ -251,11 +255,11 @@ find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter)
 
   Eigen::MatrixXd x(n, 2), norm_sim(n, 2);
 
-  for (size_t it = 0; it < niter; it++) {
+  for (uint16_t it = 0; it < niter; it++) {
     uu = to_pseudo_obs(uu);
     x = qnorm(uu);
-    norm_sim = simulate_normal(n, 2).array() * b;
-    w = simulate_uniform(n, 1);
+    norm_sim = simulate_normal(n, 2, true, { it, 5 }).array() * b;
+    w = simulate_uniform(n, 1, true, { it, 55 });
 
     for (size_t i = 0; i < n; i++) {
       indices = covering.get_box_indices(lb.row(i), ub.row(i));

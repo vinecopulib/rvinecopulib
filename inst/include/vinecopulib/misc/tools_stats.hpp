@@ -108,12 +108,14 @@ simulate_normal(const size_t& n,
 Eigen::VectorXd
 to_pseudo_obs_1d(Eigen::VectorXd x,
                  const std::string& ties_method = "average",
-                 const Eigen::VectorXd& weights = Eigen::VectorXd());
+                 const Eigen::VectorXd& weights = Eigen::VectorXd(),
+                 std::vector<int> seeds = std::vector<int>());
 
 Eigen::MatrixXd
 to_pseudo_obs(Eigen::MatrixXd x,
               const std::string& ties_method = "average",
-              const Eigen::VectorXd& weights = Eigen::VectorXd());
+              const Eigen::VectorXd& weights = Eigen::VectorXd(),
+              std::vector<int> seeds = std::vector<int>());
 
 // Covers the unit hypercube with boxes and assigns each sample to a box.
 // Used internally for recovering the latent sample of a discrete copula.
