@@ -256,7 +256,7 @@ logLik.vinecop <- function(object, ...) {
 #' @references Nagler, T., Bumann, C., Czado, C. (2019). Model selection for
 #'   sparse high-dimensional vine copulas with application to portfolio risk.
 #'   *Journal of Multivariate Analysis, in press*
-#'   (\url{https://arxiv.org/pdf/1801.09739.pdf})
+#'   (\url{http://arxiv.org/pdf/1801.09739})
 #'
 #' @export mBICV
 #' @examples

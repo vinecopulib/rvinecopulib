@@ -30,7 +30,7 @@ flipped exponential margins. Default is \code{"norm"} for \code{type =
 default is 100.}
 
 \item{\dots}{optional arguments passed to \code{\link{contour}} or
-\code{\link{wireframe}}.}
+\code{\link{lattice::wireframe}}.}
 }
 \description{
 There are several options for plotting bicop_dist objects. The density of a
@@ -49,6 +49,6 @@ contour(obj) # contour plot with standard normal margins
 contour(obj, margins = "unif") # contour plot of copula density
 }
 \seealso{
-\code{\link[=bicop_dist]{bicop_dist()}}, \code{\link[graphics:contour]{graphics::contour()}}, \code{\link[=wireframe]{wireframe()}}
+\code{\link[=bicop_dist]{bicop_dist()}}, \code{\link[graphics:contour]{graphics::contour()}}, \code{\link[lattice:cloud]{lattice::wireframe()}}
 }
 \keyword{plot}

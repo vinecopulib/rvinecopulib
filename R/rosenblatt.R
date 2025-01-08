@@ -53,8 +53,9 @@
 #' \deqn{ U_{M[d - j,
 #' j]}= W_{d - j} F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0,
 #' 0]}) + (1 - W_{d - j}) F^-(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots,
-#' V_{M[0, 0]}), \f] where \f$ F^-
+#' V_{M[0, 0]}),
 #' }
+#' where \eqn{F^-}
 #' is the left limit of the conditional cdf
 #' and \eqn{W_1, \dots, W_d} are are independent standard uniform random
 #' variables. This is used by default. If you are interested in the conditional

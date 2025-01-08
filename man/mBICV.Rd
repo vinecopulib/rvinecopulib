@@ -39,5 +39,5 @@ mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 Nagler, T., Bumann, C., Czado, C. (2019). Model selection for
 sparse high-dimensional vine copulas with application to portfolio risk.
 \emph{Journal of Multivariate Analysis, in press}
-(\url{https://arxiv.org/pdf/1801.09739.pdf})
+(\url{http://arxiv.org/pdf/1801.09739})
 }
