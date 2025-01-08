@@ -29,8 +29,8 @@ flipped exponential margins. Default is \code{"norm"} for \code{type =
 \item{size}{integer; the plot is based on values on a \verb{size x size} grid,
 default is 100.}
 
-\item{\dots}{optional arguments passed to \code{\link{contour}} or
-\code{\link{lattice::wireframe}}.}
+\item{\dots}{optional arguments passed to \code{\link[graphics:contour]{graphics::contour()}} or
+\code{\link[lattice:cloud]{lattice::wireframe()}}.}
 }
 \description{
 There are several options for plotting bicop_dist objects. The density of a
