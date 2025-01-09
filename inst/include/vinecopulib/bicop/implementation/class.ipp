@@ -41,11 +41,11 @@ inline Bicop::Bicop(const BicopFamily family,
 
 //! @brief Instantiates from data.
 //!
-//! Equivalent to creating a default `Bicop()` and then selecting the model
-//! using `select()`.
+//! @details Equivalent to creating a default `Bicop()` and then selecting
+//!  the model using `Bicop::select()`.
 //!
-//! @param data See `select()`.
-//! @param controls See `select()`.
+//! @param data See `Bicop::select()`.
+//! @param controls See `Bicop::select()`.
 //! @param var_types Two strings specifying the types of the variables,
 //!   e.g., `("c", "d")` means first variable continuous, second discrete.
 inline Bicop::Bicop(const Eigen::MatrixXd& data,
@@ -84,8 +84,8 @@ Bicop::operator=(Bicop other)
   return *this;
 }
 
-//! @brief Instantiates from a nlohmann::json object.
-//! @param input The nlohmann::json object to convert from
+//! @brief Instantiates from a `nlohmann::json` object.
+//! @param input The `nlohmann::json` object to convert from
 //! (see `to_json()` for the structure of the input).
 inline Bicop::Bicop(const nlohmann::json& input)
   : Bicop(get_family_enum(input["fam"]),
@@ -104,7 +104,7 @@ inline Bicop::Bicop(const nlohmann::json& input)
 
 //! @brief Instantiates from a JSON file.
 //!
-//! The input file contains four attributes:
+//! @details The input file contains four attributes:
 //! `"fam"`, `"rot"`, `"par"`, `"vt"` respectively a
 //! string for the family name, an integer for the rotation, and a numeric
 //! matrix for the parameters, and a list of two strings for the variable
@@ -117,13 +117,13 @@ inline Bicop::Bicop(const std::string& filename)
 
 //! @brief Convert the copula into a nlohmann::json object.
 //!
-//! The nlohmann::json is contains of three values named
+//! @details The `nlohmann::json` is contains of three values named
 //! `"fam"`, `"rot"`, `"par"`, `"vt"`,
 //! respectively a string for the family name, an integer for the rotation,
 //! a numeric matrix for the parameters and a list of two strings for the
 //! variables types.
 //!
-//! @return the nlohmann::json object containing the copula.
+//! @return The `nlohmann::json` object containing the copula.
 inline nlohmann::json
 Bicop::to_json() const
 {
@@ -141,7 +141,7 @@ Bicop::to_json() const
 
 //! @brief Write the copula object into a JSON file.
 //!
-//! The written file contains four attributes:
+//! @details The written file contains four attributes:
 //! `"fam"`, `"rot"`, `"par"`, `"vt"`, `"nobs"`, `"ll"`, `"npars"`
 //! respectively a string for the family name, an integer for the rotation, and
 //! a numeric matrix for the parameters, a list of two strings for the
@@ -159,12 +159,21 @@ Bicop::to_file(const std::string& filename) const
 
 //! @brief Evaluates the copula density.
 //!
-//! The copula density is defined as joint density divided by marginal
+//! @details The copula density is defined as joint density divided by marginal
 //! densities, irrespective of variable types.
+//! 
+//! When at least one variable is discrete, more than two columns are required
+//! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
+//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
+//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
+//! limit and the cdf itself coincide. Respective columns can be omitted in the
+//! second block.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
-//! @return The copula density evaluated at \c u.
+//! @return A length n vector of copula densities evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::pdf(const Eigen::MatrixXd& u) const
 {
@@ -173,10 +182,20 @@ Bicop::pdf(const Eigen::MatrixXd& u) const
 }
 
 //! @brief Evaluates the copula distribution.
+//! 
+//! @details When at least one variable is discrete, more than two 
+//! columns are required
+//! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
+//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
+//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
+//! limit and the cdf itself coincide. Respective columns can be omitted in the
+//! second block.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
-//! @return The copula distribution evaluated at \c u.
+//! @return A length n vector of copula probabilities evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::cdf(const Eigen::MatrixXd& u) const
 {
@@ -199,10 +218,21 @@ Bicop::cdf(const Eigen::MatrixXd& u) const
 
 //! @brief Evaluates the first h-function.
 //!
-//! The first h-function is
+//! @details The first h-function is
 //! \f$ h_1(u_1, u_2) = P(U_2 \le u_2 | U_1 = u_1) \f$.
+//! 
+//! When at least one variable is discrete, more than two columns are required
+//! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
+//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
+//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
+//! limit and the cdf itself coincide. Respective columns can be omitted in the
+//! second block.
+//!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @return A length n vector of the first h-function evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::hfunc1(const Eigen::MatrixXd& u) const
 {
@@ -231,10 +261,21 @@ Bicop::hfunc1(const Eigen::MatrixXd& u) const
 
 //! @brief Evaluates the second h-function.
 //!
-//! The second h-function is
+//! @details The second h-function is
 //! \f$ h_2(u_1, u_2) = P(U_1 \le u_1 | U_2 = u_2)  \f$.
+//! 
+//! When at least one variable is discrete, more than two columns are required
+//! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
+//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
+//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
+//! limit and the cdf itself coincide. Respective columns can be omitted in the
+//! second block.
+//!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @return A length n vector of the second h-function evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::hfunc2(const Eigen::MatrixXd& u) const
 {
@@ -263,11 +304,23 @@ Bicop::hfunc2(const Eigen::MatrixXd& u) const
 
 //! @brief Evaluates the inverse of the first h-function.
 //!
-//! The first h-function is
+//! @details The first h-function is
 //! \f$ h_1(u_1, u_2) = P(U_2 \le u_2 | U_1 = u_1) \f$.
 //! The inverse is calulated w.r.t. the second argument.
+//! 
+//! When at least one variable is discrete, more than two columns are required
+//! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
+//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
+//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
+//! limit and the cdf itself coincide. Respective columns can be omitted in the
+//! second block.
+//!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @return A length n vector of the inverse of the first h-function evaluated
+//! at \c u.
 inline Eigen::VectorXd
 Bicop::hinv1(const Eigen::MatrixXd& u) const
 {
@@ -296,11 +349,23 @@ Bicop::hinv1(const Eigen::MatrixXd& u) const
 
 //! @brief Evaluates the inverse of the second h-function.
 //!
-//! The second h-function is
+//! @details The second h-function is
 //! \f$ h_2(u_1, u_2) = P(U_1 \le u_1 | U_2 = u_2)  \f$.
 //! The inverse is calculated w.r.t. the first argument.
+//! 
+//! When at least one variable is discrete, more than two columns are required
+//! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
+//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
+//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
+//! limit and the cdf itself coincide. Respective columns can be omitted in the
+//! second block.
+//!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @return A length n vector of the inverse of the second h-function evaluated
+//! at \c u.
 inline Eigen::VectorXd
 Bicop::hinv2(const Eigen::MatrixXd& u) const
 {
@@ -330,7 +395,7 @@ Bicop::hinv2(const Eigen::MatrixXd& u) const
 
 //! @brief Simulates from a bivariate copula.
 //!
-//! If `qrng = TRUE`, generalized Halton sequences are used.
+//! @details If `qrng = TRUE`, generalized Halton sequences are used.
 //! For more information on Generalized Halton sequences, see
 //! Faure, H., Lemieux, C. (2009). Generalized Halton Sequences in 2008:
 //! A Comparative Study. ACM-TOMACS 19(4), Article 15.
@@ -354,12 +419,22 @@ Bicop::simulate(const size_t& n,
 
 //! @brief Evaluates the log-likelihood.
 //!
-//! The log-likelihood is defined as
+//! @details The log-likelihood is defined as
 //! \f[ \mathrm{loglik} = \sum_{i = 1}^n \log c(U_{1, i}, U_{2, i}), \f]
 //! where \f$ c \f$ is the copula density, see `Bicop::pdf()`.
+//! 
+//! When at least one variable is discrete, more than two columns are required
+//! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
+//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
+//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
+//! limit and the cdf itself coincide. Respective columns can be omitted in the
+//! second block.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @return The log-likelihood evaluated at \c u.
 inline double
 Bicop::loglik(const Eigen::MatrixXd& u) const
 {
@@ -373,15 +448,16 @@ Bicop::loglik(const Eigen::MatrixXd& u) const
 
 //! @brief Evaluates the Akaike information criterion (AIC).
 //!
-//! The AIC is defined as
+//! @details The AIC is defined as
 //! \f[ \mathrm{AIC} = -2\, \mathrm{loglik} + 2 p, \f]
-//! where \f$ \mathrm{loglik} \f$ is the log-liklihood (see `loglik()`)
+//! where \f$ \mathrm{loglik} \f$ is the log-liklihood (see `Bicop::loglik()`)
 //! and \f$ p \f$ is the (effective) number of parameters of the model.
 //! The AIC is a consistent model selection criterion even
 //! for nonparametric models.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @return The AIC evaluated at \c u.
 inline double
 Bicop::aic(const Eigen::MatrixXd& u) const
 {
@@ -392,13 +468,14 @@ Bicop::aic(const Eigen::MatrixXd& u) const
 //!
 //! The BIC is defined as
 //! \f[ \mathrm{BIC} = -2\, \mathrm{loglik} +  \log(n) p, \f]
-//! where \f$ \mathrm{loglik} \f$ is the log-liklihood (see `loglik()`)
+//! where \f$ \mathrm{loglik} \f$ is the log-liklihood (see `Bicop::loglik()`)
 //! and \f$ p \f$ is the (effective) number of parameters of the model.
 //! The BIC is a consistent model selection criterion
 //! for parametric models.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @return The BIC evaluated at \c u.
 inline double
 Bicop::bic(const Eigen::MatrixXd& u) const
 {
@@ -414,10 +491,10 @@ Bicop::bic(const Eigen::MatrixXd& u) const
 // clang-format off
 //! @brief Evaluates the modified Bayesian information criterion (mBIC).
 //!
-//! The mBIC is defined as
+//! @details The mBIC is defined as
 //! \f[ \mathrm{BIC} = -2\, \mathrm{loglik} +  p \log(n) - 2 (I \log(\psi_0) + (1 - I) \log(1 - \psi_0), \f]
 //! where \f$ \mathrm{loglik} \f$ is the \log-liklihood
-//! (see `loglik()`), \f$ p \f$ is the (effective) number of parameters of the
+//! (see `Bicop::loglik()`), \f$ p \f$ is the (effective) number of parameters of the
 //! model, and \f$ \psi_0 \f$ is the prior probability of having a
 //! non-independence copula and \f$ I \f$ is an indicator for the family being
 //! non-independence.
@@ -425,6 +502,7 @@ Bicop::bic(const Eigen::MatrixXd& u) const
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
 //! @param psi0 Prior probability of a non-independence copula.
+//! @return The mBIC evaluated at \c u.
 // clang-format on
 inline double
 Bicop::mbic(const Eigen::MatrixXd& u, const double psi0) const
@@ -441,8 +519,9 @@ Bicop::mbic(const Eigen::MatrixXd& u, const double psi0) const
   return -2 * this->loglik(u_no_nan) + std::log(n) * npars - 2 * log_prior;
 }
 
-//! @brief Returns the actual number of parameters for parameteric families.
+//! @brief The number of parameters of the copula model.
 //!
+//! @details Returns the actual number of parameters for parameteric families.
 //! For nonparametric families, there is a conceptually similar definition in
 //! the sense that it can be used in the calculation of fit statistics.
 inline double
@@ -451,9 +530,8 @@ Bicop::get_npars() const
   return bicop_->get_npars();
 }
 
-//! @brief Converts a Kendall's \f$ \tau \f$ into copula parameters.
-//!
-//! It only works for one-parameter families.
+//! @brief Converts a Kendall's \f$ \tau \f$ into copula parameters
+//! for one-parameter families.
 //! @param tau A value in \f$ (-1, 1) \f$.
 inline Eigen::MatrixXd
 Bicop::tau_to_parameters(const double& tau) const
@@ -676,14 +754,15 @@ inline std::string
 Bicop::str() const
 {
   std::stringstream bicop_str;
-  bicop_str << get_family_name();
-  if (get_rotation() != 0) {
-    bicop_str << " " << get_rotation() << "°";
-  }
+  bicop_str << std::setprecision(2); // set precision to 2 decimal places
+  bicop_str << "Bivariate copula: \n";
+  bicop_str << "  family = " << get_family_name() << "\n";
+  bicop_str << "  rotation = " << get_rotation() << "\n";
+  bicop_str << "  var_types = " << var_types_[0] << "," << var_types_[1] << "\n";
   if (get_family() == BicopFamily::tll) {
-    bicop_str << ", parameters = [30x30 grid]";
+    bicop_str << "  parameters = [30x30 grid] with " << get_npars() << " d.f.\n";
   } else if (get_family() != BicopFamily::indep) {
-    bicop_str << ", parameters = " << get_parameters();
+    bicop_str << "  parameters = " << get_parameters() << "\n";
   }
   return bicop_str.str().c_str();
 }
@@ -721,17 +800,17 @@ Bicop::as_continuous() const
   return bc_new;
 }
 
-//! Fits a bivariate copula (with fixed family) to data.
+//! @brief Fits a bivariate copula (with fixed family) to data.
 //!
-//! For parametric models, two different methods are available. `"mle"` fits
-//! the parameters by maximum-likelihood. `"itau"` uses inversion of
+//! @details For parametric models, two different methods are available. `"mle"`
+//! fits the parameters by maximum-likelihood. `"itau"` uses inversion of
 //! Kendall's \f$ \tau \f$, but is only available for one-parameter families
 //! and the Student t copula. For the latter, there is a one-to-one
 //! transformation for the first parameter, the second is found by profile
 //! likelihood optimization (with accuracy of at least 0.5). Nonparametric
 //! families have specialized methods, no specification is required.
 //!
-//! @details When at least one variable is discrete, two types of "observations"
+//! When at least one variable is discrete, two types of "observations"
 //! are required: the first \f$ n \times 2 \f$ block contains realizations of
 //! \f$ F_{X_1}(X_1), F_{X_2}(X_2) \f$. Let \f$ k \f$ denote the number of
 //! discrete variables (either one or two). Then the second \f$ n \times k \f$
@@ -744,7 +823,7 @@ Bicop::as_continuous() const
 //!
 //! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
-//! @param controls The controls (see FitControlsBicop).
+//! @param controls The controls (see `FitControlsBicop`).
 inline void
 Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 {
@@ -772,11 +851,11 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 
 //! @brief Selects the best fitting model.
 //!
-//! The function calls `fit()` for all families in
+//! @details The function calls `Bicop::fit()` for all families in
 //! `family_set` and selecting the best fitting model by either BIC or AIC,
-//! see `bic()` and `aic()`.
+//! see `Bicop::bic()` and `Bicop::aic()`.
 //!
-//! @details When at least one variable is discrete, two types of "observations"
+//! When at least one variable is discrete, two types of "observations"
 //! are required: the first \f$ n \times 2 \f$ block contains realizations of
 //! \f$ F_{X_1}(X_1), F_{X_2}(X_2) \f$. Let \f$ k \f$ denote the number of
 //! discrete variables (either one or two). Then the second \f$ n \times k \f$
@@ -789,7 +868,7 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 //!
 //! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
-//! @param controls The controls (see FitControlsBicop).
+//! @param controls The controls (see `FitControlsBicop`).
 inline void
 Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
 {
@@ -979,7 +1058,7 @@ Bicop::check_weights_size(const Eigen::VectorXd& weights,
 inline void
 Bicop::check_fitted() const
 {
-  if ((boost::math::isnan)(bicop_->get_loglik())) {
+  if ((std::isnan)(bicop_->get_loglik())) {
     throw std::runtime_error("copula has not been fitted from data or its "
                              "parameters have been modified manually");
   }

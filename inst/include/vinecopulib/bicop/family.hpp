@@ -21,11 +21,11 @@ enum class BicopFamily
   gumbel,   ///< Gumbel copula
   frank,    ///< Frank copula
   joe,      ///< Joe copula
-  tawn,     ///< Tawn copula
   bb1,      ///< BB1 copula
   bb6,      ///< BB6 copula
   bb7,      ///< BB7 copula
   bb8,      ///< BB8 copula
+  tawn,     ///< Tawn copula
   tll       ///< Transformation local likelihood kernel estimator
 };
 
@@ -42,8 +42,8 @@ namespace bicop_families {
 const std::vector<BicopFamily> all = {
   BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
-  BicopFamily::joe,     BicopFamily::tawn,     BicopFamily::bb1,      
-  BicopFamily::bb6,     BicopFamily::bb7,      BicopFamily::bb8,      
+  BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
+  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn, 
   BicopFamily::tll
 };
 
@@ -51,8 +51,8 @@ const std::vector<BicopFamily> all = {
 const std::vector<BicopFamily> parametric = {
   BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
-  BicopFamily::joe,     BicopFamily::tawn,     BicopFamily::bb1,      
-  BicopFamily::bb6,     BicopFamily::bb7,      BicopFamily::bb8
+  BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
+  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn
 };
 
 //! All nonparametric families
@@ -89,7 +89,7 @@ const std::vector<BicopFamily> archimedean = {
 };
 
 //! All Extreme-value copulas
-const std::vector<BicopFamily> ev = {
+const std::vector<BicopFamily> extreme_value = {
   BicopFamily::tawn, BicopFamily::gumbel
 };
 
@@ -111,7 +111,8 @@ const std::vector<BicopFamily> rotationless = { BicopFamily::indep,
 //! Families with stronger dependence in the lower tail
 const std::vector<BicopFamily> lt = { BicopFamily::clayton,
                                       BicopFamily::bb1,
-                                      BicopFamily::bb7 };
+                                      BicopFamily::bb7,
+                                      BicopFamily::tawn };
 
 //! Families with stronger dependence in the upper tail
 const std::vector<BicopFamily> ut = { BicopFamily::gumbel, BicopFamily::joe,

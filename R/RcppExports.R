@@ -77,8 +77,8 @@ vinecop_inverse_rosenblatt_cpp <- function(U, vinecop_r, cores) {
     .Call(`_rvinecopulib_vinecop_inverse_rosenblatt_cpp`, U, vinecop_r, cores)
 }
 
-vinecop_rosenblatt_cpp <- function(U, vinecop_r, cores) {
-    .Call(`_rvinecopulib_vinecop_rosenblatt_cpp`, U, vinecop_r, cores)
+vinecop_rosenblatt_cpp <- function(U, vinecop_r, cores, randomize_discrete, seeds) {
+    .Call(`_rvinecopulib_vinecop_rosenblatt_cpp`, U, vinecop_r, cores, randomize_discrete, seeds)
 }
 
 vinecop_sim_cpp <- function(vinecop_r, n, qrng, cores, seeds) {
@@ -101,11 +101,11 @@ vinecop_mbicv_cpp <- function(u, vinecop_r, psi0, cores) {
     .Call(`_rvinecopulib_vinecop_mbicv_cpp`, u, vinecop_r, psi0, cores)
 }
 
-vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types) {
-    .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, show_trace, num_threads, var_types)
+vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, show_trace, num_threads, var_types) {
+    .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, show_trace, num_threads, var_types)
 }
 
-fit_margins_cpp <- function(data, nlevels, mult, xmin, xmax, bw, deg, weights, num_threads) {
-    .Call(`_rvinecopulib_fit_margins_cpp`, data, nlevels, mult, xmin, xmax, bw, deg, weights, num_threads)
+fit_margins_cpp <- function(data, xmin, xmax, type, mult, bw, deg, weights, num_threads) {
+    .Call(`_rvinecopulib_fit_margins_cpp`, data, xmin, xmax, type, mult, bw, deg, weights, num_threads)
 }
 

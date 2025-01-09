@@ -182,6 +182,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     threshold = threshold,
     select_truncation_level = is.na(trunc_lvl),
     select_threshold = is.na(threshold),
+    select_families = TRUE,
     show_trace = show_trace,
     num_threads = cores,
     var_types = var_types

@@ -180,9 +180,11 @@ Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U,
                                        const Rcpp::List& vinecop_r,
-                                       size_t cores)
+                                       size_t cores,
+                                       bool randomize_discrete,
+                                       std::vector<int> seeds)
 {
-  return vinecop_wrap(vinecop_r).rosenblatt(U, cores);
+  return vinecop_wrap(vinecop_r).rosenblatt(U, cores, randomize_discrete, seeds);
 }
 
 // [[Rcpp::export()]]
@@ -246,6 +248,7 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
                               bool select_truncation_level,
                               bool select_threshold,
                               bool preselect_families,
+                              bool select_families,
                               bool show_trace,
                               size_t num_threads,
                               std::vector<std::string> var_types)
@@ -269,9 +272,11 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
       preselect_families,
       select_truncation_level,
       select_threshold,
+      select_families,
       show_trace,
-      num_threads
-  );
+      num_threads,
+      "prim"
+    );
 
   Vinecop vinecop_cpp(rvine_structure_wrap(structure, false));
   vinecop_cpp.set_var_types(var_types);
@@ -282,10 +287,10 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
 
 // [[Rcpp::export()]]
 std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
-                                        const Eigen::VectorXi& nlevels,
-                                        const Eigen::VectorXd& mult,
                                         const Eigen::VectorXd& xmin,
                                         const Eigen::VectorXd& xmax,
+                                        const std::vector<std::string>& type,
+                                        const Eigen::VectorXd& mult,
                                         const Eigen::VectorXd& bw,
                                         const Eigen::VectorXi& deg,
                                         const Eigen::VectorXd& weights,
@@ -297,14 +302,15 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   RcppThread::parallelFor(0,
                           d,
                           [&](const size_t& k) {
-                            fits_cpp[k] = kde1d::Kde1d(data.col(k),
-                                                       nlevels(k),
-                                                       bw(k),
-                                                       mult(k),
-                                                       xmin(k),
-                                                       xmax(k),
-                                                       deg(k),
-                                                       weights);
+                            fits_cpp[k] = kde1d::Kde1d(
+                              xmin(k),
+                              xmax(k),
+                              type.at(k),
+                              mult(k),
+                              bw(k),
+                              deg(k)
+                            );
+                            fits_cpp[k].fit(data.col(k), weights);
                           },
                           num_threads);
 
@@ -315,4 +321,7 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   }
   return fits_r;
 }
+
+
+
 

@@ -32,6 +32,8 @@ private:
   double pickands_derivative2(const double& t);
 
   Eigen::MatrixXd tau_to_parameters(const double& tau);
+
+  Eigen::VectorXd get_start_parameters(const double);
 };
 }
 

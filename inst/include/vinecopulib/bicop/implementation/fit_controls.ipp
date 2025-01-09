@@ -24,7 +24,7 @@ namespace vinecopulib {
 //! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`
 //!     or `"bic"`).
 //! @param weights A vector of weights for the observations.
-//! @param psi0 Only for `selection_criterion = "mbic", the prior probability of
+//! @param psi0 Only for `selection_criterion = "mbic"`, the prior probability of
 //!     non-independence.
 //! @param preselect_families Whether to exclude families before fitting
 //!     based on symmetry properties of the data.
@@ -127,35 +127,35 @@ FitControlsBicop::check_psi0(double psi0)
 //! @name Getters and setters.
 //! @{
 
-//! returns the family set.
+//! @brief Gets the family set.
 inline std::vector<BicopFamily>
 FitControlsBicop::get_family_set() const
 {
   return family_set_;
 }
 
-//! returns the parametric method.
+//! @brief Gets the parametric method.
 inline std::string
 FitControlsBicop::get_parametric_method() const
 {
   return parametric_method_;
 }
 
-//! returns the nonparametric method.
+//! @brief Gets the nonparametric method.
 inline std::string
 FitControlsBicop::get_nonparametric_method() const
 {
   return nonparametric_method_;
 }
 
-//! returns the nonparametric bandwidth multiplier.
+//! @brief Gets the nonparametric bandwidth multiplier.
 inline double
 FitControlsBicop::get_nonparametric_mult() const
 {
   return nonparametric_mult_;
 }
 
-//! returns the number of threads.
+//! @brief Gets the number of threads.
 inline size_t
 FitControlsBicop::get_num_threads() const
 {
@@ -168,35 +168,35 @@ FitControlsBicop::get_selection_criterion() const
   return selection_criterion_;
 }
 
-//! returns the observation weights.
+//! @brief Gets the observation weights.
 inline Eigen::VectorXd
 FitControlsBicop::get_weights() const
 {
   return weights_;
 }
 
-//! returns whether to preselect families.
+//! @brief Gets whether to preselect families.
 inline bool
 FitControlsBicop::get_preselect_families() const
 {
   return preselect_families_;
 }
 
-//! returns the baseline probability for mBIC selection.
+//! @brief Gets the baseline probability for mBIC selection.
 inline double
 FitControlsBicop::get_psi0() const
 {
   return psi0_;
 }
 
-//! Sets the family set.
+//! @brief Sets the family set.
 inline void
 FitControlsBicop::set_family_set(std::vector<BicopFamily> family_set)
 {
   family_set_ = family_set;
 }
 
-//! Sets the parametric method.
+//! @brief Sets the parametric method.
 inline void
 FitControlsBicop::set_parametric_method(std::string parametric_method)
 {
@@ -204,7 +204,7 @@ FitControlsBicop::set_parametric_method(std::string parametric_method)
   parametric_method_ = parametric_method;
 }
 
-//! Sets the nonparmetric method.
+//! @brief Sets the nonparmetric method.
 inline void
 FitControlsBicop::set_nonparametric_method(std::string nonparametric_method)
 {
@@ -212,7 +212,7 @@ FitControlsBicop::set_nonparametric_method(std::string nonparametric_method)
   nonparametric_method_ = nonparametric_method;
 }
 
-//! Sets the nonparametric multiplier.
+//! @brief Sets the nonparametric multiplier.
 inline void
 FitControlsBicop::set_nonparametric_mult(double nonparametric_mult)
 {
@@ -220,7 +220,7 @@ FitControlsBicop::set_nonparametric_mult(double nonparametric_mult)
   nonparametric_mult_ = nonparametric_mult;
 }
 
-//! Sets the selection criterion.
+//! @brief Sets the selection criterion.
 inline void
 FitControlsBicop::set_selection_criterion(std::string selection_criterion)
 {
@@ -228,7 +228,7 @@ FitControlsBicop::set_selection_criterion(std::string selection_criterion)
   selection_criterion_ = selection_criterion;
 }
 
-//! Sets the observation weights.
+//! @brief Sets the observation weights.
 inline void
 FitControlsBicop::set_weights(const Eigen::VectorXd& weights)
 {
@@ -236,14 +236,14 @@ FitControlsBicop::set_weights(const Eigen::VectorXd& weights)
   weights_ = weights / weights.sum() * weights.size();
 }
 
-//! Sets whether to preselect the families.
+//! @brief Sets whether to preselect the families.
 inline void
 FitControlsBicop::set_preselect_families(bool preselect_families)
 {
   preselect_families_ = preselect_families;
 }
 
-//! Sets the prior probability for mBIC.
+//! @brief Sets the prior probability for mBIC.
 inline void
 FitControlsBicop::set_psi0(double psi0)
 {
@@ -251,7 +251,7 @@ FitControlsBicop::set_psi0(double psi0)
   psi0_ = psi0;
 }
 
-//! Sets the number of threads.
+//! @brief Sets the number of threads.
 inline void
 FitControlsBicop::set_num_threads(size_t num_threads)
 {

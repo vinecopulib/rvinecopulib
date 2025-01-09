@@ -214,7 +214,7 @@ as.bicop <- function(object, check = TRUE) {
 #' |---------------|-----------------------|---------------|
 #' | -             | Independence          | "indep"       |
 #' | Elliptical    | Gaussian              | "gaussian"    |
-#' | "             | Student t             | "student"     |
+#' | "             | Student t             | "t"           |
 #' | Archimedean   | Clayton               | "clayton"     |
 #' | "             | Gumbel                | "gumbel"      |
 #' | "             | Frank                 | "frank"       |

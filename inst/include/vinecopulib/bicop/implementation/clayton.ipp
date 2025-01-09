@@ -4,7 +4,6 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <boost/math/special_functions/log1p.hpp>
 #include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
@@ -56,7 +55,7 @@ ClaytonBicop::pdf_raw(const Eigen::MatrixXd& u)
   }
 
   auto f = [theta](const double& u1, const double& u2) {
-    double temp = boost::math::log1p(theta) - (1.0 + theta) * std::log(u1 * u2);
+    double temp = std::log1p(theta) - (1.0 + theta) * std::log(u1 * u2);
     temp = temp - (2.0 + 1.0 / (theta)) *
                     std::log(std::pow(u1, -theta) + std::pow(u2, -theta) - 1.0);
     return std::exp(temp);

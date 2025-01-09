@@ -49,6 +49,6 @@ private:
 }
 
 double
-qcondjoe(double* q, double* u, double* de);
+qcondjoe(const double& q, const double& u, const double& de);
 
 #include <vinecopulib/bicop/implementation/joe.ipp>
