@@ -43,7 +43,7 @@ parameters, and variable types.
    type \tab name \tab name in R \cr
    - \tab Independence \tab "indep" \cr
    Elliptical \tab Gaussian \tab "gaussian" \cr
-   " \tab Student t \tab "student" \cr
+   " \tab Student t \tab "t" \cr
    Archimedean \tab Clayton \tab "clayton" \cr
    " \tab Gumbel \tab "gumbel" \cr
    " \tab Frank \tab "frank" \cr

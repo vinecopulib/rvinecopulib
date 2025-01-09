@@ -181,7 +181,7 @@ Note that several convenience vectors of families are included:
 * `"archimedean"` contains the archimedean families
 * `"BB"` contains the BB families
 * `"itau"` families for which estimation by Kendall's tau inversion is available
-(`"indep"`,`"gaussian"`, `"student"`,`"clayton"`, `"gumbel"`, `"frank"`, `"joe"`)
+(`"indep"`,`"gaussian"`, `"t"`,`"clayton"`, `"gumbel"`, `"frank"`, `"joe"`)
 
 The following table shows the parameter ranges of bivariate copula families with 
 one or two parameters:
