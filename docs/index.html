@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="High Performance Algorithms for Vine Copula Modeling">
-<meta name="description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 0.6.2). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
-<meta property="og:description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 0.6.2). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
+<meta name="description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 0.7.0). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
+<meta property="og:description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 0.7.0). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -49,7 +49,7 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="rvinecopulib">rvinecopulib<a class="anchor" aria-label="anchor" href="#rvinecopulib"></a>
 </h1></div>
-<p><a href="https://github.com/vinecopulib/rvinecopulib" class="external-link"><img src="https://github.com/vinecopulib/rvinecopulib/workflows/R-CMD-check/badge.svg" alt="R build status"></a> <a href="https://codecov.io/github/vinecopulib/rvinecopulib?branch=master" class="external-link"><img src="https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/master.svg" alt="Coverage Status"></a> <a href="https://cran.r-project.org/package=rvinecopulib" class="external-link"><img src="http://www.r-pkg.org/badges/version/rvinecopulib" alt="CRAN version"></a> <a href="https://cran.r-project.org/package=rvinecopulib" class="external-link"><img src="http://cranlogs.r-pkg.org/badges/rvinecopulib" alt="CRAN downloads"></a></p>
+<p><a href="https://github.com/vinecopulib/rvinecopulib" class="external-link"><img src="https://github.com/vinecopulib/rvinecopulib/workflows/R-CMD-check/badge.svg" alt="R build status"></a> <a href="https://app.codecov.io/github/vinecopulib/rvinecopulib?branch=main" class="external-link"><img src="https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/master.svg" alt="Coverage Status"></a> <a href="https://cran.r-project.org/package=rvinecopulib" class="external-link"><img src="http://www.r-pkg.org/badges/version/rvinecopulib" alt="CRAN version"></a> <a href="https://cran.r-project.org/package=rvinecopulib" class="external-link"><img src="http://cranlogs.r-pkg.org/badges/rvinecopulib" alt="CRAN downloads"></a></p>
 <p>Vine copulas are a flexible class of dependence models consisting of bivariate building blocks (see e.g., Aas et al., 2009). You can find a comprehensive list of publications and other materials on <a href="https://www.math.cit.tum.de/math/forschung/gruppen/statistics/vine-copula-models/" class="external-link">vine-copula.org</a>.</p>
 <p>This package is the <a href="https://cran.r-project.org/" class="external-link">R</a> API to the C++ library <a href="https://github.com/vinecopulib/vinecopulib" class="external-link">vinecopulib</a>, a header-only C++ library for vine copula models based on <a href="https://www.boost.org/" class="external-link">Boost</a> and <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page" class="external-link">Eigen</a>.</p>
 <p>It provides high-performance implementations of the core features of the popular <a href="https://github.com/tnagler/VineCopula" class="external-link">VineCopula R library</a>, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are<br>
@@ -58,15 +58,12 @@
 <div class="section level2">
 <h2 id="table-of-contents">Table of contents<a class="anchor" aria-label="anchor" href="#table-of-contents"></a>
 </h2>
-<ul>
-<li>
-<a href="#rvinecopulib">rvinecopulib</a>
-<ul>
+<ul><li>
+<a href="#rvinecopulib">rvinecopulib</a><ul>
 <li><a href="#table-of-contents">Table of contents</a></li>
 <li><a href="#how-to-install">How to install</a></li>
 <li>
-<a href="#package-overview">Package overview</a>
-<ul>
+<a href="#package-overview">Package overview</a><ul>
 <li><a href="#bivariate-copula-modeling-bicopdist-and-bicop">Bivariate copula modeling: bicop_dist and bicop</a></li>
 <li><a href="#vine-copula-modeling-vinecopdist-and-vinecop">Vine copula modeling: vinecop_dist and vinecop</a></li>
 <li><a href="#bivariate-copula-families">Bivariate copula families</a></li>
@@ -74,8 +71,7 @@
 </li>
 <li><a href="#references">References</a></li>
 </ul>
-</li>
-</ul>
+</li></ul>
 <hr>
 </div>
 <div class="section level2">
@@ -166,7 +162,7 @@
 <td>“gaussian”</td>
 </tr>
 <tr class="odd">
-<td>”</td>
+<td>"</td>
 <td>Student t</td>
 <td>“t”</td>
 </tr>
@@ -176,37 +172,37 @@
 <td>“clayton”</td>
 </tr>
 <tr class="odd">
-<td>”</td>
+<td>"</td>
 <td>Gumbel</td>
 <td>“gumbel”</td>
 </tr>
 <tr class="even">
-<td>”</td>
+<td>"</td>
 <td>Frank</td>
 <td>“frank”</td>
 </tr>
 <tr class="odd">
-<td>”</td>
+<td>"</td>
 <td>Joe</td>
 <td>“joe”</td>
 </tr>
 <tr class="even">
-<td>”</td>
+<td>"</td>
 <td>Clayton-Gumbel (BB1)</td>
 <td>“bb1”</td>
 </tr>
 <tr class="odd">
-<td>”</td>
+<td>"</td>
 <td>Joe-Gumbel (BB6)</td>
 <td>“bb6”</td>
 </tr>
 <tr class="even">
-<td>”</td>
+<td>"</td>
 <td>Joe-Clayton (BB7)</td>
 <td>“bb7”</td>
 </tr>
 <tr class="odd">
-<td>”</td>
+<td>"</td>
 <td>Joe-Frank (BB8)</td>
 <td>“bb8”</td>
 </tr>
@@ -217,7 +213,7 @@
 </tr>
 </tbody>
 </table>
-<p>Note that several convenience vectors of families are included: * <code>"all"</code> contains all the families * <code>"parametric"</code> contains the parametric families (all except <code>"tll"</code>) * <code>"nonparametric"</code> contains the nonparametric families (<code>"indep"</code> and <code>"tll"</code>) * <code>"one_par"</code> contains the parametric families with a single parameter (<code>"gaussian"</code>, <code>"clayton"</code>, <code>"gumbel"</code>, <code>"frank"</code>, and <code>"joe"</code>) * <code>"two_par"</code> contains the parametric families with two parameters (<code>"t"</code>, <code>"bb1"</code>, <code>"bb6"</code>, <code>"bb7"</code>, and <code>"bb8"</code>) * <code>"elliptical"</code> contains the elliptical families * <code>"archimedean"</code> contains the archimedean families * <code>"BB"</code> contains the BB families * <code>"itau"</code> families for which estimation by Kendall’s tau inversion is available (<code>"indep"</code>,<code>"gaussian"</code>, <code>"student"</code>,<code>"clayton"</code>, <code>"gumbel"</code>, <code>"frank"</code>, <code>"joe"</code>)</p>
+<p>Note that several convenience vectors of families are included: * <code>"all"</code> contains all the families * <code>"parametric"</code> contains the parametric families (all except <code>"tll"</code>) * <code>"nonparametric"</code> contains the nonparametric families (<code>"indep"</code> and <code>"tll"</code>) * <code>"one_par"</code> contains the parametric families with a single parameter (<code>"gaussian"</code>, <code>"clayton"</code>, <code>"gumbel"</code>, <code>"frank"</code>, and <code>"joe"</code>) * <code>"two_par"</code> contains the parametric families with two parameters (<code>"t"</code>, <code>"bb1"</code>, <code>"bb6"</code>, <code>"bb7"</code>, and <code>"bb8"</code>) * <code>"elliptical"</code> contains the elliptical families * <code>"archimedean"</code> contains the archimedean families * <code>"BB"</code> contains the BB families * <code>"itau"</code> families for which estimation by Kendall’s tau inversion is available (<code>"indep"</code>,<code>"gaussian"</code>, <code>"t"</code>,<code>"clayton"</code>, <code>"gumbel"</code>, <code>"frank"</code>, <code>"joe"</code>)</p>
 <p>The following table shows the parameter ranges of bivariate copula families with one or two parameters:</p>
 <table class="table">
 <thead><tr class="header">

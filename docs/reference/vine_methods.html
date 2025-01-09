@@ -96,8 +96,8 @@ result.</p>
 Here, the density, distribution function and random generation
 for the vine distributions are standard.</p>
 <p>The functions are based on <code><a href="vinecop_methods.html">dvinecop()</a></code>, <code><a href="vinecop_methods.html">pvinecop()</a></code> and <code><a href="vinecop_methods.html">rvinecop()</a></code> for
-<a href="vinecop.html">vinecop</a> objects, and either <code><a href="https://rdrr.io/pkg/kde1d/man/dkde1d.html" class="external-link">kde1d::dkde1d()</a></code>, <code><a href="https://rdrr.io/pkg/kde1d/man/dkde1d.html" class="external-link">kde1d::pkde1d()</a></code> and
-<code><a href="https://rdrr.io/pkg/kde1d/man/dkde1d.html" class="external-link">kde1d::qkde1d()</a></code> for estimated vines (i.e., output of <code><a href="vine.html">vine()</a></code>), or the
+<a href="vinecop.html">vinecop</a> objects, and either <code><a href="https://tnagler.github.io/kde1d/reference/dkde1d.html" class="external-link">kde1d::dkde1d()</a></code>, <code><a href="https://tnagler.github.io/kde1d/reference/dkde1d.html" class="external-link">kde1d::pkde1d()</a></code> and
+<code><a href="https://tnagler.github.io/kde1d/reference/dkde1d.html" class="external-link">kde1d::qkde1d()</a></code> for estimated vines (i.e., output of <code><a href="vine.html">vine()</a></code>), or the
 standard <em>d/p/q-xxx</em> from <a href="https://rdrr.io/r/stats/Distributions.html" class="external-link">stats::Distributions</a> for custom vines
 (i.e., output of <code><a href="vine.html">vine_dist()</a></code>).</p>
     </div>
@@ -122,7 +122,7 @@ standard <em>d/p/q-xxx</em> from <a href="https://rdrr.io/r/stats/Distributions.
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># evaluate the density and cdf</span></span></span>
 <span class="r-in"><span><span class="fu">dvine</span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3.742352</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.08703183</span>
 <span class="r-in"><span><span class="fu">pvine</span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
 </code></pre></div>
