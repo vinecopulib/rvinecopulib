@@ -4,10 +4,12 @@
 \alias{pairs_copula_data}
 \title{Exploratory pairs plot for copula data}
 \usage{
-pairs_copula_data(data, ...)
+pairs_copula_data(data, main = "", ...)
 }
 \arguments{
 \item{data}{the data (must lie in the unit hypercube).}
+
+\item{main}{an overall title for the plot.}
 
 \item{\dots}{other parameters passed to \code{pairs.default()},
 \code{contour.bicop()}, \code{points.default()}, \code{hist.default()}, or \code{bicop()}.}

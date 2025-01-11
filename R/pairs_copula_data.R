@@ -5,6 +5,7 @@
 #' correlations on the upper panel and histograms on the diagonal panel.
 #'
 #' @param data the data (must lie in the unit hypercube).
+#' @param main an overall title for the plot.
 #' @param \dots other parameters passed to `pairs.default()`,
 #' `contour.bicop()`, `points.default()`, `hist.default()`, or `bicop()`.
 #'
