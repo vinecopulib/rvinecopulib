@@ -93,3 +93,11 @@ test_that("d = 1 works", {
   expect_eql(mBICV(vc), 0)
   expect_eql(dim(summary(vc))[1], 0)
 })
+
+
+test_that("tawn flipping works", {
+  u <- replicate(5, runif(100))
+  vc <- vinecop(u, family = "tawn")
+  vc2 <- vinecop(u, family = "tawn", structure = vc$structure)
+  expect_equal(vc, vc2, tol = 5e-3)
+})

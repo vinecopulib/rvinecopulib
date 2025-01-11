@@ -26,22 +26,22 @@ TawnBicop::pickands(const double& t)
   double psi2 = this->parameters_(1);
   double theta = this->parameters_(2);
 
-  double temp = std::pow(psi2 * t, theta) + 
+  double temp = std::pow(psi2 * t, theta) +
                   std::pow(psi1 * (1 - t), theta);
-  return (1 - psi1) * (1 - t) + (1 - psi2) * t + 
+  return (1 - psi1) * (1 - t) + (1 - psi2) * t +
             std::pow(temp, 1 / theta);
 }
 
-inline double 
+inline double
 TawnBicop::pickands_derivative(const double& t)
 {
   double psi1 = this->parameters_(0);
   double psi2 = this->parameters_(1);
   double theta = this->parameters_(2);
 
-  double temp = std::pow(psi2 * t, theta) + 
+  double temp = std::pow(psi2 * t, theta) +
                   std::pow(psi1 * (1 - t), theta);
-  double temp2 = psi2 * std::pow(psi2 * t, theta - 1) - 
+  double temp2 = psi2 * std::pow(psi2 * t, theta - 1) -
                   psi1 * std::pow(psi1 * (1 - t), theta - 1);
   return psi1 - psi2 + std::pow(temp, 1 / theta - 1) * temp2;
 }
@@ -53,13 +53,13 @@ TawnBicop::pickands_derivative2(const double& t)
   double psi2 = this->parameters_(1);
   double theta = this->parameters_(2);
 
-  double temp = std::pow(psi2 * t, theta) + 
+  double temp = std::pow(psi2 * t, theta) +
                   std::pow(psi1 * (1 - t), theta);
-  double temp2 = psi2 * std::pow(psi2 * t, theta - 1) - 
+  double temp2 = psi2 * std::pow(psi2 * t, theta - 1) -
                   psi1 * std::pow(psi1 * (1 - t), theta - 1);
-  double temp3 = std::pow(psi2, 2) * std::pow(psi2 * t, theta - 2) + 
+  double temp3 = std::pow(psi2, 2) * std::pow(psi2 * t, theta - 2) +
                   std::pow(psi1, 2) * std::pow(psi1 * (1 - t), theta - 2);
-  return (1 - theta) * std::pow(temp, 1 / theta - 2) * std::pow(temp2, 2) + 
+  return (1 - theta) * std::pow(temp, 1 / theta - 2) * std::pow(temp2, 2) +
           std::pow(temp, 1 / theta - 1) * (theta - 1) * temp3;
 }
 
@@ -67,7 +67,7 @@ inline Eigen::VectorXd
 TawnBicop::get_start_parameters(const double)
 {
   Eigen::MatrixXd lb = this->get_parameters_lower_bounds();
-  Eigen::VectorXd parameters = lb + Eigen::VectorXd::Constant(3, 0.5);
+  Eigen::VectorXd parameters = lb + Eigen::VectorXd::Constant(3, 0.7);
   return parameters;
 }
 
@@ -76,5 +76,11 @@ inline Eigen::MatrixXd
 TawnBicop::tau_to_parameters(const double& tau)
 {
   return no_tau_to_parameters(tau);
+}
+
+inline void
+TawnBicop::flip()
+{
+  std::swap(parameters_(0), parameters_(1));
 }
 }

@@ -43,7 +43,7 @@ const std::vector<BicopFamily> all = {
   BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
   BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
-  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn, 
+  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn,
   BicopFamily::tll
 };
 
@@ -131,7 +131,8 @@ const std::vector<BicopFamily> itau = {
 const std::vector<BicopFamily> flip_by_rotation = {
   BicopFamily::clayton, BicopFamily::gumbel, BicopFamily::frank,
   BicopFamily::joe,     BicopFamily::bb1,    BicopFamily::bb6,
-  BicopFamily::bb7,     BicopFamily::bb8,    BicopFamily::tawn
+  BicopFamily::bb7,     BicopFamily::bb8,    BicopFamily::tawn,
+  BicopFamily::tawn
 };
 
 } // end of namespace BicopFamilies

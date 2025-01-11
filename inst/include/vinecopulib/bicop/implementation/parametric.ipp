@@ -189,6 +189,13 @@ ParBicop::adjust_parameters_bounds(Eigen::MatrixXd& lb,
     lb = lb2.cwiseMax(lb);
     ub = ub2.cwiseMin(ub);
   }
+
+  if (family_ == BicopFamily::tawn) {
+    Eigen::VectorXd lb2(3), ub2(3);
+    lb2 << 0.3, 0.3, 1;
+    ub2 << 1, 1, 7;
+    lb = lb2; ub = ub2;
+  }
 }
 
 //! Sanity checks

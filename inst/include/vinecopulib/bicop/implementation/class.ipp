@@ -731,22 +731,20 @@ Bicop::get_var_types() const
 inline void
 Bicop::flip()
 {
-  BicopFamily family = bicop_->get_family();
-  // change internal representation
-  if (tools_stl::is_member(family, bicop_families::flip_by_rotation)) {
-    double loglik = bicop_->get_loglik();
-    if (rotation_ == 90) {
-      set_rotation(270);
-    } else if (rotation_ == 270) {
-      set_rotation(90);
-    }
-    bicop_->set_loglik(loglik);
-  } else {
-    flip_abstract_var_types();
-    bicop_->flip();
-  }
   // change Bicop-level var_types
   std::swap(var_types_[0], var_types_[1]);
+
+  // change internal representation
+  BicopFamily family = bicop_->get_family();
+  if (tools_stl::is_member(family, bicop_families::flip_by_rotation)) {
+    if (rotation_ == 90) {
+      rotation_ = 270;
+    } else if (rotation_ == 270) {
+      rotation_ = 90;
+    }
+  }
+  flip_abstract_var_types();
+  bicop_->flip();
 }
 
 //! @brief Summarizes the model into a string (can be used for printing).

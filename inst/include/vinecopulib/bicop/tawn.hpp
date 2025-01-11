@@ -23,6 +23,8 @@ public:
   // constructor
   TawnBicop();
 
+  void flip() override;
+
 private:
   // pickands dependence functions and its derivatives
   double pickands(const double& t);
