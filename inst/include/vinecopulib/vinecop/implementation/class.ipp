@@ -432,8 +432,14 @@ Vinecop::fit(const Eigen::MatrixXd& data,
     pool.map(fit_edge, tools_stl::seq_int(0, d_ - tree - 1));
     pool.wait();
   }
-
   pool.join();
+
+  loglik_ = 0;
+  for (size_t tree = 0; tree < trunc_lvl; ++tree) {
+    for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
+        loglik_ += pair_copulas_[tree][edge].get_loglik();
+    }
+  }
 }
 
 //! @brief Automatically fits and selects a vine copula model.

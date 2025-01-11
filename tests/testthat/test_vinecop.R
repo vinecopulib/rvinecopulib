@@ -93,3 +93,15 @@ test_that("d = 1 works", {
   expect_eql(mBICV(vc), 0)
   expect_eql(dim(summary(vc))[1], 0)
 })
+
+test_that("fitting only parameters works", {
+  vc <- vinecop(u, family = "onepar")
+  vc2 <- vinecop(u, vinecop_object = vc, show_trace = TRUE)
+  expect_equal(vc[1:6], vc2[1:6])
+
+  vc <- vinecop(u, family = "tll")
+  vc2 <- vinecop(u, vinecop_object = vc, mult = 10)
+  expect_true(TRUE != all.equal(vc$pair_copulas[[1]][[1]]$parameters,
+                                vc2$pair_copulas[[1]][[1]]$parameters))
+})
+

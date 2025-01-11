@@ -24,6 +24,8 @@
 #'   the partial correlation, respectively.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the
 #'   threshold should be selected automatically by [mBICV()].
+#' @param vinecop_object a `vinecop` object to be updated; if provided, only the
+#'   parameters are fit; structure and families are kept the same.
 #' @param show_trace logical; whether a trace of the fitting progress should be
 #'   printed.
 #' @param cores number of cores to use; if more than 1, estimation of pair
@@ -130,7 +132,8 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
                     nonpar_method = "constant", mult = 1, selcrit = "aic",
                     weights = numeric(), psi0 = 0.9, presel = TRUE,
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
-                    keep_data = FALSE, show_trace = FALSE, cores = 1) {
+                    keep_data = FALSE, vinecop_object = NULL,
+                    show_trace = FALSE, cores = 1) {
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||
@@ -151,42 +154,59 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     correct_var_types(var_types)
   )
 
-  # check if families known (w/ partial matching) and expand convenience defs
-  family_set <- process_family_set(family_set, par_method)
-
-  ## pre-process input
-  if (is.scalar(structure) && is.na(structure)) {
-    structure <- rvine_structure(seq_along(var_types))
+  if (!is.null(vinecop_object)) {
+    if (!inherits(vinecop_object, "vinecop")) {
+      stop("'vinecop_object' must be of class 'vinecop'")
+    }
+    vinecop <- vinecop_fit_cpp(
+      data = as.matrix(data),
+      vinecop_r = vinecop_object,
+      par_method = par_method,
+      nonpar_method = nonpar_method,
+      mult = mult,
+      weights = weights,
+      show_trace = show_trace,
+      num_threads = cores
+    )
   } else {
-    structure <- as_rvine_structure(structure)
+    # check if families known (w/ partial matching) and expand convenience defs
+    family_set <- process_family_set(family_set, par_method)
+
+    ## pre-process input
+    if (is.scalar(structure) && is.na(structure)) {
+      structure <- rvine_structure(seq_along(var_types))
+    } else {
+      structure <- as_rvine_structure(structure)
+    }
+
+    ## fit and select copula model
+    vinecop <- vinecop_select_cpp(
+      data = as.matrix(data),
+      structure = structure,
+      family_set = family_set,
+      par_method = par_method,
+      nonpar_method = nonpar_method,
+      mult = mult,
+      selection_criterion = selcrit,
+      weights = weights,
+      psi0 = psi0,
+      preselect_families = presel,
+      truncation_level = ifelse( # Inf cannot be passed to C++
+        is.finite(trunc_lvl),
+        trunc_lvl,
+        .Machine$integer.max
+      ),
+      tree_criterion = tree_crit,
+      threshold = threshold,
+      select_truncation_level = is.na(trunc_lvl),
+      select_threshold = is.na(threshold),
+      select_families = TRUE,
+      show_trace = show_trace,
+      num_threads = cores,
+      var_types = var_types
+    )
   }
 
-  ## fit and select copula model
-  vinecop <- vinecop_select_cpp(
-    data = as.matrix(data),
-    structure = structure,
-    family_set = family_set,
-    par_method = par_method,
-    nonpar_method = nonpar_method,
-    mult = mult,
-    selection_criterion = selcrit,
-    weights = weights,
-    psi0 = psi0,
-    preselect_families = presel,
-    truncation_level = ifelse( # Inf cannot be passed to C++
-      is.finite(trunc_lvl),
-      trunc_lvl,
-      .Machine$integer.max
-    ),
-    tree_criterion = tree_crit,
-    threshold = threshold,
-    select_truncation_level = is.na(trunc_lvl),
-    select_threshold = is.na(threshold),
-    select_families = TRUE,
-    show_trace = show_trace,
-    num_threads = cores,
-    var_types = var_types
-  )
 
   ## make all pair-copulas bicop objects
   vinecop$pair_copulas <- lapply(
