@@ -757,8 +757,7 @@ Bicop::str() const
   bicop_str << "  var_types = " << var_types_[0] << "," << var_types_[1]
             << "\n";
   if (get_family() == BicopFamily::tll) {
-    bicop_str << "  parameters = [30x30 grid] with " << get_npars()
-              << " d.f.\n";
+    bicop_str << "  parameters = [30x30 grid] with " << get_npars() << " d.f.\n";
   } else if (get_family() != BicopFamily::indep) {
     bicop_str << "  parameters = " << get_parameters() << "\n";
   }
