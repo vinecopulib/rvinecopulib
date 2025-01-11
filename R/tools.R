@@ -351,7 +351,7 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
 #'
 #' @details The corrected empirical CDF is defined as
 #' \deqn{
-#' F_n(x) = \frac{1}{n + 1} \min\biggl\{1, \sum_{i = 1}^n 1(X_i \le x)\biggr\}
+#' F_n(x) = \frac{1}{n + 1} \max\biggl\{1, \sum_{i = 1}^n 1(X_i \le x)\biggr\}
 #' }
 #'
 #' @param x numeric vector of observations
