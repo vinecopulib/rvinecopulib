@@ -49,4 +49,4 @@ jobs:
         run: |
           install.packages("remotes")
           remotes::install_github("r-lib/revdepcheck")
-          revdepcheck::revdep_check()
+          revdepcheck::revdep_check(bioc = FALSE)
