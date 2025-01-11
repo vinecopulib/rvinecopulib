@@ -15,6 +15,13 @@
 #define BOOST_MATH_PROMOTE_DOUBLE_POLICY false
 #endif
 
+// silences all the BOOST_CONCEPT warnings bullshit
+// https://stackoverflow.com/questions/13930894/how-to-disable-boost-concept-check
+#include <boost/concept/assert.hpp>
+#undef BOOST_CONCEPT_ASSERT
+#define BOOST_CONCEPT_ASSERT(Model)
+#include <boost/concept_check.hpp>
+
 #include <RcppEigen.h>
 #include "vinecopulib/misc/tools_interface.hpp"
 #include "vinecopulib.hpp"

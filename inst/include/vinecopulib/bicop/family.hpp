@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -43,7 +43,7 @@ const std::vector<BicopFamily> all = {
   BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
   BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
-  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn,
+  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn, 
   BicopFamily::tll
 };
 
@@ -127,13 +127,6 @@ const std::vector<BicopFamily> itau = {
   BicopFamily::joe
 };
 
-//! Families that can be flipped by adjusting the rotation.
-const std::vector<BicopFamily> flip_by_rotation = {
-  BicopFamily::clayton, BicopFamily::gumbel, BicopFamily::frank,
-  BicopFamily::joe,     BicopFamily::bb1,    BicopFamily::bb6,
-  BicopFamily::bb7,     BicopFamily::bb8,    BicopFamily::tawn,
-  BicopFamily::tawn
-};
 
 } // end of namespace BicopFamilies
 } // end of namespace vinecopulib
