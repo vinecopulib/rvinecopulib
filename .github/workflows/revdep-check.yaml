@@ -47,5 +47,6 @@ jobs:
       - name: Reverse dependencey check
         shell: Rscript {0}
         run: |
+          install.packages("remotes")
           remotes::install_github("r-lib/revdepcheck")
           revdepcheck::revdep_check()
