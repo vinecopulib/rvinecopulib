@@ -192,7 +192,7 @@ ParBicop::adjust_parameters_bounds(Eigen::MatrixXd& lb,
 
   if (family_ == BicopFamily::tawn) {
     Eigen::VectorXd lb2(3), ub2(3);
-    lb2 << 0.3, 0.3, 1;
+    lb2 << 0.3, 0.3, 1.5;
     ub2 << 1, 1, 7;
     lb = lb2; ub = ub2;
   }

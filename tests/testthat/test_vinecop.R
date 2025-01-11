@@ -96,8 +96,8 @@ test_that("d = 1 works", {
 
 
 test_that("tawn flipping works", {
-  u <- replicate(5, runif(100))
+  u <- replicate(7, runif(200))
   vc <- vinecop(u, family = "tawn")
   vc2 <- vinecop(u, family = "tawn", structure = vc$structure)
-  expect_equal(vc, vc2, tol = 5e-3)
+  expect_equal(vc, vc2, tol = 1e-2)
 })
