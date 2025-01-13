@@ -5,6 +5,7 @@
 #' correlations on the upper panel and histograms on the diagonal panel.
 #'
 #' @param data the data (must lie in the unit hypercube).
+#' @param main an overall title for the plot.
 #' @param \dots other parameters passed to `pairs.default()`,
 #' `contour.bicop()`, `points.default()`, `hist.default()`, or `bicop()`.
 #'
@@ -15,7 +16,7 @@
 #' @examples
 #' u <- replicate(3, runif(100))
 #' pairs_copula_data(u)
-pairs_copula_data <- function(data, ...) {
+pairs_copula_data <- function(data, main = "", ...) {
   assert_that(is.matrix(data) || is.data.frame(data))
   assert_that(all(data < 1) && all(data > 0))
 
@@ -27,6 +28,7 @@ pairs_copula_data <- function(data, ...) {
     labels <- paste0("var", seq_len(ncol(data)))
   args <- list(x = data,
                labels = labels,
+               main = main,
                lower.panel = function(x, y) lp_pairs_copula_data(x, y, ...),
                diag.panel = function(x) dp_pairs_copula_data(x, ...),
                upper.panel = function(x, y)  up_pairs_copula_data(x, y, ...),
