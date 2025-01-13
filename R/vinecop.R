@@ -158,6 +158,9 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     if (!inherits(vinecop_object, "vinecop")) {
       stop("'vinecop_object' must be of class 'vinecop'")
     }
+    if (!identical(structure, NA) || !identical(family_set, "all")) {
+      warning("'structure' and 'family_set' are ignored when 'vinecop_object' is provided")
+    }
     vinecop <- vinecop_fit_cpp(
       data = as.matrix(data),
       vinecop_r = vinecop_object,
