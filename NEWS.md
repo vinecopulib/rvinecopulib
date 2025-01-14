@@ -1,6 +1,6 @@
-# rvinecopulib 0.7.0.1.0
+# rvinecopulib 0.7.1.1.0
 
-Update following a upgrade of the C++ backend vinecopulib to 0.7.0, see
+Update following a upgrade of the C++ backend vinecopulib to 0.7.1, see
 https://github.com/vinecopulib/vinecopulib/blob/main/NEWS.md.
 
 The main changes on the R end are:
