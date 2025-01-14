@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -113,7 +113,8 @@ inline Bicop::Bicop(const nlohmann::json& input)
 //! @param filename The name of the JSON file to read.
 inline Bicop::Bicop(const std::string& filename)
   : Bicop(tools_serialization::file_to_json(filename))
-{}
+{
+}
 
 //! @brief Convert the copula into a nlohmann::json object.
 //!
@@ -161,15 +162,15 @@ Bicop::to_file(const std::string& filename) const
 //!
 //! @details The copula density is defined as joint density divided by marginal
 //! densities, irrespective of variable types.
-//! 
+//!
 //! When at least one variable is discrete, more than two columns are required
 //! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
-//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
-//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
-//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
-//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
-//! limit and the cdf itself coincide. Respective columns can be omitted in the
-//! second block.
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus
+//! indicates a left-sided limit of the cdf. For, e.g., an integer-valued
+//! variable, it holds \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous
+//! variables the left limit and the cdf itself coincide. Respective columns can
+//! be omitted in the second block.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
@@ -182,16 +183,16 @@ Bicop::pdf(const Eigen::MatrixXd& u) const
 }
 
 //! @brief Evaluates the copula distribution.
-//! 
-//! @details When at least one variable is discrete, more than two 
+//!
+//! @details When at least one variable is discrete, more than two
 //! columns are required
 //! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
-//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
-//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
-//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
-//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
-//! limit and the cdf itself coincide. Respective columns can be omitted in the
-//! second block.
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus
+//! indicates a left-sided limit of the cdf. For, e.g., an integer-valued
+//! variable, it holds \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous
+//! variables the left limit and the cdf itself coincide. Respective columns can
+//! be omitted in the second block.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
@@ -220,15 +221,15 @@ Bicop::cdf(const Eigen::MatrixXd& u) const
 //!
 //! @details The first h-function is
 //! \f$ h_1(u_1, u_2) = P(U_2 \le u_2 | U_1 = u_1) \f$.
-//! 
+//!
 //! When at least one variable is discrete, more than two columns are required
 //! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
-//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
-//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
-//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
-//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
-//! limit and the cdf itself coincide. Respective columns can be omitted in the
-//! second block.
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus
+//! indicates a left-sided limit of the cdf. For, e.g., an integer-valued
+//! variable, it holds \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous
+//! variables the left limit and the cdf itself coincide. Respective columns can
+//! be omitted in the second block.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
@@ -263,15 +264,15 @@ Bicop::hfunc1(const Eigen::MatrixXd& u) const
 //!
 //! @details The second h-function is
 //! \f$ h_2(u_1, u_2) = P(U_1 \le u_1 | U_2 = u_2)  \f$.
-//! 
+//!
 //! When at least one variable is discrete, more than two columns are required
 //! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
-//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
-//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
-//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
-//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
-//! limit and the cdf itself coincide. Respective columns can be omitted in the
-//! second block.
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus
+//! indicates a left-sided limit of the cdf. For, e.g., an integer-valued
+//! variable, it holds \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous
+//! variables the left limit and the cdf itself coincide. Respective columns can
+//! be omitted in the second block.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
@@ -307,15 +308,15 @@ Bicop::hfunc2(const Eigen::MatrixXd& u) const
 //! @details The first h-function is
 //! \f$ h_1(u_1, u_2) = P(U_2 \le u_2 | U_1 = u_1) \f$.
 //! The inverse is calulated w.r.t. the second argument.
-//! 
+//!
 //! When at least one variable is discrete, more than two columns are required
 //! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
-//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
-//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
-//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
-//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
-//! limit and the cdf itself coincide. Respective columns can be omitted in the
-//! second block.
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus
+//! indicates a left-sided limit of the cdf. For, e.g., an integer-valued
+//! variable, it holds \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous
+//! variables the left limit and the cdf itself coincide. Respective columns can
+//! be omitted in the second block.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
@@ -352,15 +353,15 @@ Bicop::hinv1(const Eigen::MatrixXd& u) const
 //! @details The second h-function is
 //! \f$ h_2(u_1, u_2) = P(U_1 \le u_1 | U_2 = u_2)  \f$.
 //! The inverse is calculated w.r.t. the first argument.
-//! 
+//!
 //! When at least one variable is discrete, more than two columns are required
 //! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
-//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
-//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
-//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
-//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
-//! limit and the cdf itself coincide. Respective columns can be omitted in the
-//! second block.
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus
+//! indicates a left-sided limit of the cdf. For, e.g., an integer-valued
+//! variable, it holds \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous
+//! variables the left limit and the cdf itself coincide. Respective columns can
+//! be omitted in the second block.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
@@ -422,15 +423,15 @@ Bicop::simulate(const size_t& n,
 //! @details The log-likelihood is defined as
 //! \f[ \mathrm{loglik} = \sum_{i = 1}^n \log c(U_{1, i}, U_{2, i}), \f]
 //! where \f$ c \f$ is the copula density, see `Bicop::pdf()`.
-//! 
+//!
 //! When at least one variable is discrete, more than two columns are required
 //! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
-//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block contains
-//! realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus indicates a
-//! left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
-//! \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous variables the left
-//! limit and the cdf itself coincide. Respective columns can be omitted in the
-//! second block.
+//! \f$ (F_{X_1}(x_1), F_{X_2}(x_2)) \f$. The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ (F_{X_1}(x_1^-), F_{X_2}(x_2^-)) \f$. The minus
+//! indicates a left-sided limit of the cdf. For, e.g., an integer-valued
+//! variable, it holds \f$ F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1) \f$. For continuous
+//! variables the left limit and the cdf itself coincide. Respective columns can
+//! be omitted in the second block.
 //!
 //! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
 //!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
@@ -731,22 +732,30 @@ Bicop::get_var_types() const
 inline void
 Bicop::flip()
 {
-  BicopFamily family = bicop_->get_family();
-  // change internal representation
-  if (tools_stl::is_member(family, bicop_families::flip_by_rotation)) {
-    double loglik = bicop_->get_loglik();
-    if (rotation_ == 90) {
-      set_rotation(270);
-    } else if (rotation_ == 270) {
-      set_rotation(90);
-    }
-    bicop_->set_loglik(loglik);
-  } else {
-    flip_abstract_var_types();
-    bicop_->flip();
-  }
-  // change Bicop-level var_types
+  // change var_types
+  // ----------------
   std::swap(var_types_[0], var_types_[1]);
+  flip_abstract_var_types();
+
+  // change internal representation
+  // ------------------------------
+  // For families that are exchangeable (most in our library), flipping 0° or
+  // 180° rotated versions does not alter the shape of the copula.
+  //
+  // For 90° and 270° rotations, their definition itself involves exchanging
+  // arguments plus a reflection in one of the arguments (e.g.,
+  // c(u, v) -> c(1 - v, u)). To indicate that the the argument which needs to
+  // be reflected changes, we always switch 90° <-> 270° . For families that are
+  // exchangeable in their 0° variant, this will be the only change this is
+  // needed.
+  if (rotation_ == 90) {
+    rotation_ = 270;
+  } else if (rotation_ == 270) {
+    rotation_ = 90;
+  }
+  // The following implements any changes to the shape beyond the change in 
+  // rotation. Formost of our families, it does nothing.
+  bicop_->flip();
 }
 
 //! @brief Summarizes the model into a string (can be used for printing).
@@ -758,9 +767,11 @@ Bicop::str() const
   bicop_str << "Bivariate copula: \n";
   bicop_str << "  family = " << get_family_name() << "\n";
   bicop_str << "  rotation = " << get_rotation() << "\n";
-  bicop_str << "  var_types = " << var_types_[0] << "," << var_types_[1] << "\n";
+  bicop_str << "  var_types = " << var_types_[0] << "," << var_types_[1]
+            << "\n";
   if (get_family() == BicopFamily::tll) {
-    bicop_str << "  parameters = [30x30 grid] with " << get_npars() << " d.f.\n";
+    bicop_str << "  parameters = [30x30 grid] with " << get_npars()
+              << " d.f.\n";
   } else if (get_family() != BicopFamily::indep) {
     bicop_str << "  parameters = " << get_parameters() << "\n";
   }
@@ -818,7 +829,7 @@ Bicop::as_continuous() const
 //! left-sided limit of the cdf. For continuous variables the left limit and the
 //! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
 //! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
-//! 
+//!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
 //! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
@@ -863,7 +874,7 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 //! left-sided limit of the cdf. For continuous variables the left limit and the
 //! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
 //! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
-//! 
+//!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
 //! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in

@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -434,7 +434,7 @@ Vinecop::fit(const Eigen::MatrixXd& data,
   }
   pool.join();
 
-  loglik_ = 0;
+  loglik_ = 0, nobs_ = n;
   for (size_t tree = 0; tree < trunc_lvl; ++tree) {
     for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
         loglik_ += pair_copulas_[tree][edge].get_loglik();

@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -25,15 +25,17 @@ public:
 
 private:
   // pickands dependence functions and its derivatives
-  double pickands(const double& t);
+  double pickands(const double& t) override;
 
-  double pickands_derivative(const double& t);
+  double pickands_derivative(const double& t) override;
 
-  double pickands_derivative2(const double& t);
+  double pickands_derivative2(const double& t) override;
 
-  Eigen::MatrixXd tau_to_parameters(const double& tau);
+  Eigen::MatrixXd tau_to_parameters(const double& tau) override;
 
-  Eigen::VectorXd get_start_parameters(const double);
+  Eigen::VectorXd get_start_parameters(const double) override;
+
+  void flip() override;
 };
 }
 

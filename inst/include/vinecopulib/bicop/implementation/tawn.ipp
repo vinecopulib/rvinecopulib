@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -77,4 +77,11 @@ TawnBicop::tau_to_parameters(const double& tau)
 {
   return no_tau_to_parameters(tau);
 }
+
+inline void
+TawnBicop::flip()
+{
+  std::swap(parameters_(0), parameters_(1));
+}
+
 }
