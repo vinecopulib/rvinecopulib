@@ -360,6 +360,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// vinecop_fit_cpp
+Rcpp::List vinecop_fit_cpp(const Eigen::MatrixXd& data, Rcpp::List& vinecop_r, std::string par_method, std::string nonpar_method, double mult, const Eigen::VectorXd& weights, bool show_trace, size_t num_threads);
+RcppExport SEXP _rvinecopulib_vinecop_fit_cpp(SEXP dataSEXP, SEXP vinecop_rSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP weightsSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
+    Rcpp::traits::input_parameter< std::string >::type par_method(par_methodSEXP);
+    Rcpp::traits::input_parameter< std::string >::type nonpar_method(nonpar_methodSEXP);
+    Rcpp::traits::input_parameter< double >::type mult(multSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< bool >::type show_trace(show_traceSEXP);
+    Rcpp::traits::input_parameter< size_t >::type num_threads(num_threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(vinecop_fit_cpp(data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fit_margins_cpp
 std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data, const Eigen::VectorXd& xmin, const Eigen::VectorXd& xmax, const std::vector<std::string>& type, const Eigen::VectorXd& mult, const Eigen::VectorXd& bw, const Eigen::VectorXi& deg, const Eigen::VectorXd& weights, size_t num_threads);
 RcppExport SEXP _rvinecopulib_fit_margins_cpp(SEXP dataSEXP, SEXP xminSEXP, SEXP xmaxSEXP, SEXP typeSEXP, SEXP multSEXP, SEXP bwSEXP, SEXP degSEXP, SEXP weightsSEXP, SEXP num_threadsSEXP) {
@@ -407,6 +425,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_loglik_cpp", (DL_FUNC) &_rvinecopulib_vinecop_loglik_cpp, 3},
     {"_rvinecopulib_vinecop_mbicv_cpp", (DL_FUNC) &_rvinecopulib_vinecop_mbicv_cpp, 4},
     {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 19},
+    {"_rvinecopulib_vinecop_fit_cpp", (DL_FUNC) &_rvinecopulib_vinecop_fit_cpp, 8},
     {"_rvinecopulib_fit_margins_cpp", (DL_FUNC) &_rvinecopulib_fit_margins_cpp, 9},
     {NULL, NULL, 0}
 };

@@ -20,6 +20,7 @@ vinecop(
   tree_crit = "tau",
   threshold = 0,
   keep_data = FALSE,
+  vinecop_object = NULL,
   show_trace = FALSE,
   cores = 1
 )
@@ -83,6 +84,9 @@ threshold should be selected automatically by \code{\link[=mBICV]{mBICV()}}.}
 
 \item{keep_data}{whether the data should be stored (necessary for using
 \code{\link[=fitted]{fitted()}}).}
+
+\item{vinecop_object}{a \code{vinecop} object to be updated; if provided, only the
+parameters are fit; structure and families are kept the same.}
 
 \item{show_trace}{logical; whether a trace of the fitting progress should be
 printed.}

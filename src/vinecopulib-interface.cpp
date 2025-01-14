@@ -286,6 +286,30 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
 }
 
 // [[Rcpp::export()]]
+Rcpp::List vinecop_fit_cpp(const Eigen::MatrixXd& data,
+                              Rcpp::List& vinecop_r,
+                              std::string par_method,
+                              std::string nonpar_method,
+                              double mult,
+                              const Eigen::VectorXd& weights,
+                              bool show_trace,
+                              size_t num_threads)
+{
+  FitControlsVinecop fit_controls;
+  fit_controls.set_parametric_method(par_method);
+  fit_controls.set_nonparametric_method(nonpar_method);
+  fit_controls.set_nonparametric_mult(mult);
+  fit_controls.set_weights(weights);
+  fit_controls.set_show_trace(show_trace);
+  fit_controls.set_num_threads(num_threads);
+
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r, false);
+  vinecop_cpp.fit(data, fit_controls);
+
+  return vinecop_wrap(vinecop_cpp, true);
+}
+
+// [[Rcpp::export()]]
 std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
                                         const Eigen::VectorXd& xmin,
                                         const Eigen::VectorXd& xmax,
