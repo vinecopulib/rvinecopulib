@@ -41,7 +41,10 @@ jobs:
       - name: Reverse dependency check
         shell: Rscript {0}
         run: |
-          install.packages("remotes")
-          remotes::install_github("r-lib/revdepcheck")
-          revdepcheck::revdep_check(bioc = FALSE)
-
+          install.packages(c("devtools", "fs"))
+          fs::dir_create("../revdeps")
+          devtools::build(path = "../revdeps/")
+          tools::check_packages_in_dir("../revdeps", reverse = list(which = "all"))
+          tools::summarize_check_packages_in_dir_timings("../revdeps")
+          tools::summarize_check_packages_in_dir_depends("../revdeps")
+          tools::summarize_check_packages_in_dir_results("../revdeps")
