@@ -7,7 +7,7 @@ context("Fitting 'bicop' models")
 set.seed(0)
 dist <- bicop_dist("gumbel", 90, 3)
 u <- rbicop(20, dist)
-fit <- bicop(u, keep_data = TRUE)
+fit <- bicop(u, family = "fgm", keep_data = TRUE)
 
 test_that("returns proper 'bicop' object", {
   expect_s3_class(fit, "bicop")

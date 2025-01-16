@@ -81,7 +81,9 @@ ParBicop::fit(const Eigen::MatrixXd& data,
   // for method itau and one-parameter families we don't need to optimize
   int npars = static_cast<int>(get_npars()) - (method == "itau");
   if (npars == 0) {
-    set_parameters(tau_to_parameters(tau));
+    try {
+      set_parameters(tau_to_parameters(tau));
+    } catch (std::runtime_error&) {}
     set_loglik(loglik(data, weights));
     return;
   }
@@ -178,12 +180,16 @@ ParBicop::adjust_parameters_bounds(Eigen::MatrixXd& lb,
   if (tools_stl::is_member(family_, bicop_families::one_par)) {
     auto lb2 = lb;
     auto ub2 = ub;
-    if (tools_stl::is_member(family_, bicop_families::rotationless)) {
-      lb = tau_to_parameters(std::max(tau - 0.1, -0.99));
-      ub = tau_to_parameters(std::min(tau + 0.1, 0.99));
-    } else {
-      lb = tau_to_parameters(std::max(std::fabs(tau) - 0.1, 1e-10));
-      ub = tau_to_parameters(std::min(std::fabs(tau) + 0.1, 0.95));
+    try {
+      if (tools_stl::is_member(family_, bicop_families::rotationless)) {
+        lb = tau_to_parameters(std::max(tau - 0.1, -0.99));
+        ub = tau_to_parameters(std::min(tau + 0.1, 0.99));
+      } else {
+        lb = tau_to_parameters(std::max(std::fabs(tau) - 0.1, 1e-10));
+        ub = tau_to_parameters(std::min(std::fabs(tau) + 0.1, 0.95));
+      }
+    } catch (std::runtime_error&) {
+      // can't refine the search interval, not a big deal
     }
     // make sure that parameter bounds are respected
     lb = lb2.cwiseMax(lb);

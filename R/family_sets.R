@@ -15,7 +15,7 @@ family_set_bb <- c(
 )
 
 family_set_onepar <- c(
-  "gaussian", family_set_archimedean
+  "gaussian", "fgm", family_set_archimedean
 )
 
 family_set_twopar <- c(
@@ -39,7 +39,7 @@ family_set_itau <- c(
 )
 
 family_set_rotationless <- c(
-  "frank", family_set_elliptical, family_set_nonparametric
+  "frank", "fgm", family_set_elliptical, family_set_nonparametric
 )
 
 family_set_all <- unique(

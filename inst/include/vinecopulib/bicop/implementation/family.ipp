@@ -17,8 +17,9 @@ const family_bimap family_names =
     (BicopFamily::student, "Student")
     (BicopFamily::clayton, "Clayton")
     (BicopFamily::gumbel, "Gumbel")
-    (BicopFamily::frank, "Frank")(
-    BicopFamily::joe, "Joe")
+    (BicopFamily::frank, "Frank")
+    (BicopFamily::fgm, "FGM")
+    (BicopFamily::joe, "Joe")
     (BicopFamily::bb1, "BB1")
     (BicopFamily::bb6, "BB6")
     (BicopFamily::bb7,"BB7")

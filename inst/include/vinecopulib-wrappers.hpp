@@ -24,6 +24,8 @@ inline BicopFamily to_cpp_family(const std::string& fam)
     bicop_fam = BicopFamily::gumbel;
   } else if (fam == "frank") {
     bicop_fam = BicopFamily::frank;
+  } else if (fam == "fgm") {
+    bicop_fam = BicopFamily::fgm;
   } else if (fam == "joe") {
     bicop_fam = BicopFamily::joe;
   } else if (fam == "bb1") {
@@ -60,6 +62,8 @@ inline std::string to_r_family(const BicopFamily& fam)
     bicop_fam = "gumbel";
   } else if (fam == BicopFamily::frank) {
     bicop_fam = "frank";
+  }  else if (fam == BicopFamily::fgm) {
+    bicop_fam = "fgm";
   } else if (fam == BicopFamily::joe) {
     bicop_fam = "joe";
   } else if (fam == BicopFamily::bb1) {

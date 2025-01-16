@@ -12,6 +12,7 @@
 #include <vinecopulib/bicop/bb8.hpp>
 #include <vinecopulib/bicop/clayton.hpp>
 #include <vinecopulib/bicop/frank.hpp>
+#include <vinecopulib/bicop/fgm.hpp>
 #include <vinecopulib/bicop/gaussian.hpp>
 #include <vinecopulib/bicop/gumbel.hpp>
 #include <vinecopulib/bicop/indep.hpp>
@@ -55,6 +56,9 @@ AbstractBicop::create(BicopFamily family, const Eigen::MatrixXd& parameters)
       break;
     case BicopFamily::frank:
       new_bicop = BicopPtr(new FrankBicop());
+      break;
+    case BicopFamily::fgm:
+      new_bicop = BicopPtr(new FGMBicop());
       break;
     case BicopFamily::joe:
       new_bicop = BicopPtr(new JoeBicop());
