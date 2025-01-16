@@ -16,8 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: 'devel'}
-          - {os: ubuntu-latest,   r: 'devel'}
+          - {os: ubuntu-22.04,   r: 'devel'}
+          - {os: windows-latest,   r: 'devel'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -51,11 +51,15 @@ jobs:
         run: |
           fs::dir_create("../revdeps")
           devtools::build(path = "../revdeps/")
-          tools::check_packages_in_dir("../revdeps", reverse = list(which = "all"))
+          tools::check_packages_in_dir(
+            "../revdeps", 
+            reverse = list(which = "all"), 
+            check_args = c("--as-cran", "--no-manual")
+          )
 
       - name: Results
         shell: Rscript {0}
         run: |
-          tools::summarize_check_packages_in_dir_timings("../revdeps")
-          tools::summarize_check_packages_in_dir_depends("../revdeps")
+          tools::summarize_check_packages_in_dir_timings("../revdeps", all = TRUE)
           tools::summarize_check_packages_in_dir_results("../revdeps")
+          tools::check_packages_in_dir_details("../revdeps")
