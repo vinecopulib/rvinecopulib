@@ -30,6 +30,7 @@ Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
                             double psi0,
                             bool presel,
                             size_t num_threads,
+                            bool allow_rotations,
                             std::vector<std::string> var_types)
 {
   std::vector<BicopFamily> fam_set(family_set.size());
@@ -37,15 +38,18 @@ Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
     fam_set[fam] = to_cpp_family(family_set[fam]);
   }
   FitControlsBicop controls(
-      fam_set,
-      par_method,
-      nonpar_method,
-      mult,
-      selcrit,
-      weights,
-      psi0,
-      presel,
-      num_threads
+      FitControlsConfig{
+          .family_set = fam_set,
+          .parametric_method = par_method,
+          .nonparametric_method = nonpar_method,
+          .nonparametric_mult = mult,
+          .selection_criterion = selcrit,
+          .weights = weights,
+          .psi0 = psi0,
+          .preselect_families = presel,
+          .allow_rotations = allow_rotations,
+          .num_threads = num_threads
+      }
   );
   Bicop bicop_cpp;
   bicop_cpp.set_var_types(var_types);
@@ -249,6 +253,7 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
                               bool select_threshold,
                               bool preselect_families,
                               bool select_families,
+                              bool allow_rotations,
                               bool show_trace,
                               size_t num_threads,
                               std::vector<std::string> var_types)
@@ -259,23 +264,26 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
   }
 
   FitControlsVinecop fit_controls(
-      fam_set,
-      par_method,
-      nonpar_method,
-      mult,
-      truncation_level,
-      tree_criterion,
-      threshold,
-      selection_criterion,
-      weights,
-      psi0,
-      preselect_families,
-      select_truncation_level,
-      select_threshold,
-      select_families,
-      show_trace,
-      num_threads,
-      "prim"
+      FitControlsConfig{
+        .family_set = fam_set,
+        .parametric_method = par_method,
+        .nonparametric_method = nonpar_method,
+        .nonparametric_mult = mult,
+        .selection_criterion = selection_criterion,
+        .weights = weights,
+        .psi0 = psi0,
+        .preselect_families = preselect_families,
+        .allow_rotations = allow_rotations,
+        .num_threads = num_threads,
+        .trunc_lvl = truncation_level,
+        .tree_criterion = tree_criterion,
+        .threshold = threshold,
+        .select_threshold = select_threshold,
+        .select_trunc_lvl = select_truncation_level,
+        .select_families = select_families,
+        .show_trace = show_trace,
+        .mst_algorithm = "prim",
+      }
     );
 
   Vinecop vinecop_cpp(rvine_structure_wrap(structure, false));

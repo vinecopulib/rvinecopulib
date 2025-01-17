@@ -35,8 +35,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // bicop_select_cpp
-Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, std::string selcrit, const Eigen::VectorXd& weights, double psi0, bool presel, size_t num_threads, std::vector<std::string> var_types);
-RcppExport SEXP _rvinecopulib_bicop_select_cpp(SEXP dataSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP selcritSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP preselSEXP, SEXP num_threadsSEXP, SEXP var_typesSEXP) {
+Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, std::string selcrit, const Eigen::VectorXd& weights, double psi0, bool presel, size_t num_threads, bool allow_rotations, std::vector<std::string> var_types);
+RcppExport SEXP _rvinecopulib_bicop_select_cpp(SEXP dataSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP selcritSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP preselSEXP, SEXP num_threadsSEXP, SEXP allow_rotationsSEXP, SEXP var_typesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -50,8 +50,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type psi0(psi0SEXP);
     Rcpp::traits::input_parameter< bool >::type presel(preselSEXP);
     Rcpp::traits::input_parameter< size_t >::type num_threads(num_threadsSEXP);
+    Rcpp::traits::input_parameter< bool >::type allow_rotations(allow_rotationsSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type var_types(var_typesSEXP);
-    rcpp_result_gen = Rcpp::wrap(bicop_select_cpp(data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads, var_types));
+    rcpp_result_gen = Rcpp::wrap(bicop_select_cpp(data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads, allow_rotations, var_types));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -332,8 +333,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // vinecop_select_cpp
-Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data, Rcpp::List& structure, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, const Eigen::VectorXd& weights, double psi0, bool select_truncation_level, bool select_threshold, bool preselect_families, bool select_families, bool show_trace, size_t num_threads, std::vector<std::string> var_types);
-RcppExport SEXP _rvinecopulib_vinecop_select_cpp(SEXP dataSEXP, SEXP structureSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP select_truncation_levelSEXP, SEXP select_thresholdSEXP, SEXP preselect_familiesSEXP, SEXP select_familiesSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP, SEXP var_typesSEXP) {
+Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data, Rcpp::List& structure, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, const Eigen::VectorXd& weights, double psi0, bool select_truncation_level, bool select_threshold, bool preselect_families, bool select_families, bool allow_rotations, bool show_trace, size_t num_threads, std::vector<std::string> var_types);
+RcppExport SEXP _rvinecopulib_vinecop_select_cpp(SEXP dataSEXP, SEXP structureSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP select_truncation_levelSEXP, SEXP select_thresholdSEXP, SEXP preselect_familiesSEXP, SEXP select_familiesSEXP, SEXP allow_rotationsSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP, SEXP var_typesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -353,10 +354,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type select_threshold(select_thresholdSEXP);
     Rcpp::traits::input_parameter< bool >::type preselect_families(preselect_familiesSEXP);
     Rcpp::traits::input_parameter< bool >::type select_families(select_familiesSEXP);
+    Rcpp::traits::input_parameter< bool >::type allow_rotations(allow_rotationsSEXP);
     Rcpp::traits::input_parameter< bool >::type show_trace(show_traceSEXP);
     Rcpp::traits::input_parameter< size_t >::type num_threads(num_threadsSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type var_types(var_typesSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_select_cpp(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, show_trace, num_threads, var_types));
+    rcpp_result_gen = Rcpp::wrap(vinecop_select_cpp(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -401,7 +403,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_pseudo_obs_cpp", (DL_FUNC) &_rvinecopulib_pseudo_obs_cpp, 2},
     {"_rvinecopulib_bicop_check_cpp", (DL_FUNC) &_rvinecopulib_bicop_check_cpp, 1},
-    {"_rvinecopulib_bicop_select_cpp", (DL_FUNC) &_rvinecopulib_bicop_select_cpp, 11},
+    {"_rvinecopulib_bicop_select_cpp", (DL_FUNC) &_rvinecopulib_bicop_select_cpp, 12},
     {"_rvinecopulib_bicop_pdf_cpp", (DL_FUNC) &_rvinecopulib_bicop_pdf_cpp, 2},
     {"_rvinecopulib_bicop_cdf_cpp", (DL_FUNC) &_rvinecopulib_bicop_cdf_cpp, 2},
     {"_rvinecopulib_bicop_hfunc1_cpp", (DL_FUNC) &_rvinecopulib_bicop_hfunc1_cpp, 2},
@@ -424,7 +426,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_cdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_cdf_cpp, 5},
     {"_rvinecopulib_vinecop_loglik_cpp", (DL_FUNC) &_rvinecopulib_vinecop_loglik_cpp, 3},
     {"_rvinecopulib_vinecop_mbicv_cpp", (DL_FUNC) &_rvinecopulib_vinecop_mbicv_cpp, 4},
-    {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 19},
+    {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 20},
     {"_rvinecopulib_vinecop_fit_cpp", (DL_FUNC) &_rvinecopulib_vinecop_fit_cpp, 8},
     {"_rvinecopulib_fit_margins_cpp", (DL_FUNC) &_rvinecopulib_fit_margins_cpp, 9},
     {NULL, NULL, 0}

@@ -10,8 +10,8 @@ vine(
   margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN, bw = NA, deg = 2),
   copula_controls = list(family_set = "all", structure = NA, par_method = "mle",
     nonpar_method = "constant", mult = 1, selcrit = "aic", psi0 = 0.9, presel = TRUE,
-    trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data = FALSE, show_trace =
-    FALSE, cores = 1),
+    allow_rotations = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data
+    = FALSE, show_trace = FALSE, cores = 1),
   weights = numeric(),
   keep_data = FALSE,
   cores = 1

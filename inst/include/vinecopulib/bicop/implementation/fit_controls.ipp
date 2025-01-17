@@ -24,10 +24,12 @@ namespace vinecopulib {
 //! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`
 //!     or `"bic"`).
 //! @param weights A vector of weights for the observations.
-//! @param psi0 Only for `selection_criterion = "mbic"`, the prior probability of
-//!     non-independence.
+//! @param psi0 Only for `selection_criterion = "mbic"`, the prior probability 
+//!     of non-independence.
 //! @param preselect_families Whether to exclude families before fitting
 //!     based on symmetry properties of the data.
+//! @param allow_rotations Allow rotations for the families when doing
+//!     model selection (default: true).
 //! @param num_threads Number of concurrent threads to use while fitting
 //!     copulas for different families; never uses more than the number
 //!     of concurrent threads supported by the implementation.
@@ -39,6 +41,7 @@ inline FitControlsBicop::FitControlsBicop(std::vector<BicopFamily> family_set,
                                           const Eigen::VectorXd& weights,
                                           double psi0,
                                           bool preselect_families,
+                                          bool allow_rotations,
                                           size_t num_threads)
 {
   set_family_set(family_set);
@@ -48,6 +51,7 @@ inline FitControlsBicop::FitControlsBicop(std::vector<BicopFamily> family_set,
   set_selection_criterion(selection_criterion);
   set_weights(weights);
   set_preselect_families(preselect_families);
+  set_allow_rotations(allow_rotations);
   set_psi0(psi0);
   set_num_threads(num_threads);
 }
@@ -73,6 +77,43 @@ inline FitControlsBicop::FitControlsBicop(std::string nonparametric_method,
 {
   set_nonparametric_method(nonparametric_method);
   set_nonparametric_mult(nonparametric_mult);
+}
+
+//! @brief Instantiates the controls from a configuration object.
+//! @param config The configuration object.
+inline FitControlsBicop::FitControlsBicop(const FitControlsConfig& config)
+    : FitControlsBicop() // Call default constructor
+{
+    if (optional::has_value(config.family_set)) {
+        set_family_set(optional::value(config.family_set));
+    }
+    if (optional::has_value(config.parametric_method)) {
+        set_parametric_method(optional::value(config.parametric_method));
+    }
+    if (optional::has_value(config.nonparametric_method)) {
+        set_nonparametric_method(optional::value(config.nonparametric_method));
+    }
+    if (optional::has_value(config.nonparametric_mult)) {
+        set_nonparametric_mult(optional::value(config.nonparametric_mult));
+    }
+    if (optional::has_value(config.selection_criterion)) {
+        set_selection_criterion(optional::value(config.selection_criterion));
+    }
+    if (optional::has_value(config.weights)) {
+        set_weights(optional::value(config.weights));
+    }
+    if (optional::has_value(config.psi0)) {
+        set_psi0(optional::value(config.psi0));
+    }
+    if (optional::has_value(config.preselect_families)) {
+        set_preselect_families(optional::value(config.preselect_families));
+    }
+    if (optional::has_value(config.num_threads)) {
+        set_num_threads(optional::value(config.num_threads));
+    }
+    if (optional::has_value(config.allow_rotations)) {
+        set_allow_rotations(optional::value(config.allow_rotations));
+    }
 }
 
 //! @name Sanity checks
@@ -189,6 +230,13 @@ FitControlsBicop::get_psi0() const
   return psi0_;
 }
 
+//! @brief Gets whether to allow rotations.
+inline bool
+FitControlsBicop::get_allow_rotations() const
+{
+  return allow_rotations_;
+}
+
 //! @brief Sets the family set.
 inline void
 FitControlsBicop::set_family_set(std::vector<BicopFamily> family_set)
@@ -256,6 +304,13 @@ inline void
 FitControlsBicop::set_num_threads(size_t num_threads)
 {
   num_threads_ = process_num_threads(num_threads);
+}
+
+//! @brief Sets whether to allow rotations.
+inline void
+FitControlsBicop::set_allow_rotations(bool allow_rotations)
+{
+  allow_rotations_ = allow_rotations;
 }
 
 inline size_t

@@ -101,8 +101,8 @@
 #' fit <- vinecop(u, family_set = "onepar", selcrit = "bic")
 #' summary(fit)
 #'
-#' ## Gaussian D-vine
-#' fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss")
+#' ## 1-truncated, Gaussian D-vine
+#' fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss", trunc_lvl = 1)
 #' plot(fit)
 #' contour(fit)
 #'
@@ -111,10 +111,6 @@
 #' structure
 #' fit <- vinecop(u, structure = structure, family = "gauss")
 #' plot(fit)
-#'
-#' ## 1-truncated model with random structure
-#' fit <- vinecop(u, structure = rvine_structure_sim(5), trunc_lvl = 1)
-#' contour(fit)
 #'
 #' ## Model for discrete data
 #' x <- qpois(u, 1)  # transform to Poisson margins
@@ -131,6 +127,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
                     structure = NA, par_method = "mle",
                     nonpar_method = "constant", mult = 1, selcrit = "aic",
                     weights = numeric(), psi0 = 0.9, presel = TRUE,
+                    allow_rotations = TRUE,
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
                     keep_data = FALSE, vinecop_object = NULL,
                     show_trace = FALSE, cores = 1) {
@@ -146,6 +143,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     is.numeric(weights),
     is.number(psi0), psi0 > 0, psi0 < 1,
     is.flag(presel),
+    is.flag(allow_rotations),
     is.scalar(trunc_lvl),
     is.string(tree_crit),
     is.scalar(threshold),
@@ -204,6 +202,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
       select_truncation_level = is.na(trunc_lvl),
       select_threshold = is.na(threshold),
       select_families = TRUE,
+      allow_rotations = allow_rotations,
       show_trace = show_trace,
       num_threads = cores,
       var_types = var_types
@@ -230,6 +229,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     selcrit = selcrit,
     weights = weights,
     presel = presel,
+    allow_rotations = allow_rotations,
     trunc_lvl = trunc_lvl,
     tree_crit = tree_crit,
     threshold = threshold
