@@ -124,7 +124,8 @@
 bicop <- function(data, var_types = c("c", "c"), family_set = "all",
                   par_method = "mle", nonpar_method = "quadratic", mult = 1,
                   selcrit = "aic", weights = numeric(), psi0 = 0.9,
-                  presel = TRUE, keep_data = FALSE, cores = 1) {
+                  presel = TRUE, allow_rotations = TRUE,
+                  keep_data = FALSE, cores = 1) {
   assert_that(
     is.character(family_set),
     is.string(par_method),
@@ -134,6 +135,7 @@ bicop <- function(data, var_types = c("c", "c"), family_set = "all",
     is.numeric(weights),
     is.number(psi0), psi0 > 0, psi0 < 1,
     is.flag(presel),
+    is.flag(allow_rotations),
     is.flag(keep_data),
     is.number(cores), cores > 0,
     correct_var_types(var_types)
@@ -154,6 +156,7 @@ bicop <- function(data, var_types = c("c", "c"), family_set = "all",
     weights = weights,
     psi0 = psi0,
     presel = presel,
+    allow_rotations = allow_rotations,
     num_threads = cores,
     var_types = var_types
   )
@@ -171,7 +174,8 @@ bicop <- function(data, var_types = c("c", "c"), family_set = "all",
     selcrit = selcrit,
     weights = weights,
     psi0 = psi0,
-    presel = presel
+    presel = presel,
+    allow_rotations = allow_rotations
   )
   bicop$nobs <- nrow(data)
 

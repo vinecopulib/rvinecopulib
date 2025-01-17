@@ -15,6 +15,7 @@ bicop(
   weights = numeric(),
   psi0 = 0.9,
   presel = TRUE,
+  allow_rotations = TRUE,
   keep_data = FALSE,
   cores = 1
 )
@@ -56,13 +57,13 @@ than 1 less smooth.}
 \item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
 
+\item{allow_rotations}{whether to allow rotations of the copula.}
+
 \item{keep_data}{whether the data should be stored (necessary for using
 \code{\link[=fitted]{fitted()}}).}
 
 \item{cores}{number of cores to use; if more than 1, estimation for multiple
 families is done in parallel.}
-
-\item{allow_rotations}{whether to allow rotations of the copula.}
 }
 \value{
 An object inheriting from classes \code{bicop} and  \code{bicop_dist} . In addition to
