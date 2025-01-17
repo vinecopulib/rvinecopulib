@@ -26,6 +26,7 @@
 #' @param psi0 see [mBICV()].
 #' @param presel whether the family set should be thinned out according to
 #'   symmetry characteristics of the data.
+#' @param allow_rotations whether to allow rotations of the copula.
 #' @param keep_data whether the data should be stored (necessary for using
 #'   [fitted()]).
 #' @param cores number of cores to use; if more than 1, estimation for multiple

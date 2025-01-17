@@ -61,6 +61,8 @@ symmetry characteristics of the data.}
 
 \item{cores}{number of cores to use; if more than 1, estimation for multiple
 families is done in parallel.}
+
+\item{allow_rotations}{whether to allow rotations of the copula.}
 }
 \value{
 An object inheriting from classes \code{bicop} and  \code{bicop_dist} . In addition to

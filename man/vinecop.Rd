@@ -16,6 +16,7 @@ vinecop(
   weights = numeric(),
   psi0 = 0.9,
   presel = TRUE,
+  allow_rotations = TRUE,
   trunc_lvl = Inf,
   tree_crit = "tau",
   threshold = 0,
@@ -69,6 +70,8 @@ than 1 less smooth.}
 
 \item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
+
+\item{allow_rotations}{whether to allow rotations of the copula.}
 
 \item{trunc_lvl}{the truncation level of the vine copula; \code{Inf} means no
 truncation, \code{NA} indicates that the truncation level should be selected

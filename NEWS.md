@@ -9,13 +9,15 @@ The main changes on the R end are:
 
 * support for zero-inflated variables,
 
-* added new Tawn copula family
+* added new Tawn copula family,
+
+* new argument `allow_rotations` to disable rotations of copula families,
 
 * added variable names to vinecop summary (#276)
 
 * fixed handling of logistic distribution (#275)
 
-* fix na handling in vine() control checks (#266)
+* fix NA handling in vine() control checks (#266)
 
 * allow bicop_dist() with tll (#268)
 
