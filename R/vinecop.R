@@ -101,8 +101,8 @@
 #' fit <- vinecop(u, family_set = "onepar", selcrit = "bic")
 #' summary(fit)
 #'
-#' ## Gaussian D-vine
-#' fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss")
+#' ## 1-truncated, Gaussian D-vine
+#' fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss", trunc_lvl = 1)
 #' plot(fit)
 #' contour(fit)
 #'
@@ -111,10 +111,6 @@
 #' structure
 #' fit <- vinecop(u, structure = structure, family = "gauss")
 #' plot(fit)
-#'
-#' ## 1-truncated model with random structure
-#' fit <- vinecop(u, structure = rvine_structure_sim(5), trunc_lvl = 1)
-#' contour(fit)
 #'
 #' ## Model for discrete data
 #' x <- qpois(u, 1)  # transform to Poisson margins
