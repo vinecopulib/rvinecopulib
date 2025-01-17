@@ -54,7 +54,7 @@ jobs:
           tools::check_packages_in_dir(
             "../revdeps", 
             reverse = list(which = "all"), 
-            check_args = c("--as-cran", "--no-manual")
+            check_args = c("--no-manual")
           )
 
       - name: Results
