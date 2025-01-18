@@ -9,7 +9,7 @@ can be selected automatically from a vector of options."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">rvinecopulib</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,6 +53,7 @@ can be selected automatically from a vector of options.</p>
 <span>  weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  psi0 <span class="op">=</span> <span class="fl">0.9</span>,</span>
 <span>  presel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  allow_rotations <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  keep_data <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  cores <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -118,6 +119,10 @@ than 1 less smooth.</p></dd>
 symmetry characteristics of the data.</p></dd>
 
 
+<dt id="arg-allow-rotations">allow_rotations<a class="anchor" aria-label="anchor" href="#arg-allow-rotations"></a></dt>
+<dd><p>whether to allow rotations of the copula.</p></dd>
+
+
 <dt id="arg-keep-data">keep_data<a class="anchor" aria-label="anchor" href="#arg-keep-data"></a></dt>
 <dd><p>whether the data should be stored (necessary for using
 <code><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted()</a></code>).</p></dd>
@@ -150,7 +155,7 @@ discarded before fitting the copula.</p><div class="section">
 <p>When at least one variable is discrete, more than two columns are required
 for <code>data</code>: the first \(n \times 2\) block contains realizations of
 \(F_{X_1}(x_1), F_{X_2}(x_2)\). The second \(n \times 2\) block contains
-realizations of \(F_{X_1}(x_1^-), F_{X_1}(x_1^-)\). The minus indicates a
+realizations of \(F_{X_1}(x_1^-), F_{X_2}(x_2^-)\). The minus indicates a
 left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 \(F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)\). For continuous variables the left
 limit and the cdf itself coincide. Respective columns can be omitted in the
@@ -208,8 +213,8 @@ available (<code>"indep"</code>,<code>"gaussian"</code>, <code>"t"</code>,<code>
 <span class="r-in"><span><span class="va">udisc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x_disc</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x_disc</span> <span class="op">-</span> <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit_disc</span> <span class="op">&lt;-</span> <span class="fu">bicop</span><span class="op">(</span><span class="va">udisc</span>, var_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"d"</span>, <span class="st">"d"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_disc</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bivariate copula fit ('bicop'): family = tawn, rotation = 270, parameters = 0.55, 1, 14.17, var_types = d,d</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> nobs = 100   logLik = 36.82   npars = 3   AIC = -67.65   BIC = -59.83   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bivariate copula fit ('bicop'): family = tawn, rotation = 270, parameters = 0.56, 1, 7, var_types = d,d</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> nobs = 100   logLik = 36.43   npars = 3   AIC = -66.86   BIC = -59.05   </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

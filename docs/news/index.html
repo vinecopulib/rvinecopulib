@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rvinecopulib</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,20 +33,22 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.7.0.1.0" id="rvinecopulib-07010">rvinecopulib 0.7.0.1.0<a class="anchor" aria-label="anchor" href="#rvinecopulib-07010"></a></h2>
-<p>Update following a upgrade of the C++ backend vinecopulib to 0.7.0, see <a href="https://github.com/vinecopulib/vinecopulib/blob/main/NEWS.md" class="external-link uri">https://github.com/vinecopulib/vinecopulib/blob/main/NEWS.md</a>.</p>
+<h2 class="pkg-version" data-toc-text="0.7.1.1.0" id="rvinecopulib-07110">rvinecopulib 0.7.1.1.0<a class="anchor" aria-label="anchor" href="#rvinecopulib-07110"></a></h2>
+<p>Update following a upgrade of the C++ backend vinecopulib to 0.7.1, see <a href="https://github.com/vinecopulib/vinecopulib/blob/main/NEWS.md" class="external-link uri">https://github.com/vinecopulib/vinecopulib/blob/main/NEWS.md</a>.</p>
 <p>The main changes on the R end are:</p>
 <ul><li><p>improved documentation,</p></li>
 <li><p>support for zero-inflated variables,</p></li>
-<li><p>added new Tawn copula family</p></li>
+<li><p>added new Tawn copula family,</p></li>
+<li><p>new argument <code>allow_rotations</code> to disable rotations of copula families,</p></li>
 <li><p>added variable names to vinecop summary (<a href="https://github.com/vinecopulib/rvinecopulib/issues/276" class="external-link">#276</a>)</p></li>
 <li><p>fixed handling of logistic distribution (<a href="https://github.com/vinecopulib/rvinecopulib/issues/275" class="external-link">#275</a>)</p></li>
-<li><p>fix na handling in vine() control checks (<a href="https://github.com/vinecopulib/rvinecopulib/issues/266" class="external-link">#266</a>)</p></li>
+<li><p>fix NA handling in vine() control checks (<a href="https://github.com/vinecopulib/rvinecopulib/issues/266" class="external-link">#266</a>)</p></li>
 <li><p>allow bicop_dist() with tll (<a href="https://github.com/vinecopulib/rvinecopulib/issues/268" class="external-link">#268</a>)</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.3.1.1" id="rvinecopulib-06311">rvinecopulib 0.6.3.1.1<a class="anchor" aria-label="anchor" href="#rvinecopulib-06311"></a></h2><p class="text-muted">CRAN release: 2023-02-23</p>
-<ul><li>add <code>-D_HAS_AUTO_PTR_ETC=0</code> flag to disable deprecated features used in boost.</li></ul></div>
+<ul><li>add <code>-D_HAS_AUTO_PTR_ETC=0</code> flag to disable deprecated features used in boost.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.3.1.0" id="rvinecopulib-06310">rvinecopulib 0.6.3.1.0<a class="anchor" aria-label="anchor" href="#rvinecopulib-06310"></a></h2><p class="text-muted">CRAN release: 2023-02-20</p>
 <ul><li><p>fix <code>NA</code> handling in <code>to_pseudo_obs()</code> (<a href="https://github.com/vinecopulib/rvinecopulib/issues/260" class="external-link">#260</a>)</p></li>
@@ -54,13 +56,16 @@
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.2.1.3" id="rvinecopulib-06213-december-3-2022">rvinecopulib 0.6.2.1.3 (December 3, 2022)<a class="anchor" aria-label="anchor" href="#rvinecopulib-06213-december-3-2022"></a></h2><p class="text-muted">CRAN release: 2022-12-06</p>
-<ul><li>fix marginal PIT for discrete variables (see issue <a href="https://github.com/vinecopulib/rvinecopulib/issues/257" class="external-link">#257</a>, thanks <a href="https://github.com/rplzzz" class="external-link">@rplzzz</a>)</li></ul></div>
+<ul><li>fix marginal PIT for discrete variables (see issue <a href="https://github.com/vinecopulib/rvinecopulib/issues/257" class="external-link">#257</a>, thanks <a href="https://github.com/rplzzz" class="external-link">@rplzzz</a>)</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.2.1.2" id="rvinecopulib-06212-october-16-2022">rvinecopulib 0.6.2.1.2 (October 16, 2022)<a class="anchor" aria-label="anchor" href="#rvinecopulib-06212-october-16-2022"></a></h2><p class="text-muted">CRAN release: 2022-10-17</p>
-<ul><li>fix warning about C++17 attribute extension ‘nodiscard’ (<a href="https://github.com/vinecopulib/rvinecopulib/issues/255" class="external-link">#255</a>)</li></ul></div>
+<ul><li>fix warning about C++17 attribute extension ‘nodiscard’ (<a href="https://github.com/vinecopulib/rvinecopulib/issues/255" class="external-link">#255</a>)</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.2.1.1" id="rvinecopulib-06211-august-30-2022">rvinecopulib 0.6.2.1.1 (August 30, 2022)<a class="anchor" aria-label="anchor" href="#rvinecopulib-06211-august-30-2022"></a></h2><p class="text-muted">CRAN release: 2022-09-04</p>
-<ul><li>replace bitwise operations on Boolean variables.</li></ul></div>
+<ul><li>replace bitwise operations on Boolean variables.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.2.1.0" id="rvinecopulib-06210-august-26-2022">rvinecopulib 0.6.2.1.0 (August 26, 2022)<a class="anchor" aria-label="anchor" href="#rvinecopulib-06210-august-26-2022"></a></h2><p class="text-muted">CRAN release: 2022-08-26</p>
 <p>Release following the updates of vinecopulib to 0.6.2, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="external-link uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
@@ -69,10 +74,12 @@
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.1.1.3" id="rvinecopulib-06113-march-17-2022">rvinecopulib 0.6.1.1.3 (March 17, 2022)<a class="anchor" aria-label="anchor" href="#rvinecopulib-06113-march-17-2022"></a></h2><p class="text-muted">CRAN release: 2022-03-18</p>
-<ul><li>avoid bitwise operations on Boolean variables.</li></ul></div>
+<ul><li>avoid bitwise operations on Boolean variables.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.1.1.2" id="rvinecopulib-06112-march-14-2022">rvinecopulib 0.6.1.1.2 (March 14, 2022)<a class="anchor" aria-label="anchor" href="#rvinecopulib-06112-march-14-2022"></a></h2><p class="text-muted">CRAN release: 2022-03-14</p>
-<ul><li>enforce use on recent version of RcppThread for proper handling of linker flags</li></ul></div>
+<ul><li>enforce use on recent version of RcppThread for proper handling of linker flags</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.1.1.1" id="rvinecopulib-06111-october-6-2021">rvinecopulib 0.6.1.1.1 (October 6, 2021)<a class="anchor" aria-label="anchor" href="#rvinecopulib-06111-october-6-2021"></a></h2><p class="text-muted">CRAN release: 2021-10-07</p>
 <div class="section level4">
@@ -150,7 +157,8 @@
 <h2 class="pkg-version" data-toc-text="0.5.1.1.0" id="rvinecopulib-05110-november-25-2019">rvinecopulib 0.5.1.1.0 (November 25, 2019)<a class="anchor" aria-label="anchor" href="#rvinecopulib-05110-november-25-2019"></a></h2><p class="text-muted">CRAN release: 2019-11-26</p>
 <p>Release following the updates of vinecopulib to 0.5.1, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="external-link uri">https://github.com/vinecopulib/vinecopulib/releases</a>.</p>
 <p>BUG FIX</p>
-<ul><li>fix out of range bug for weighted TLL influence when sample size is small.</li></ul></div>
+<ul><li>fix out of range bug for weighted TLL influence when sample size is small.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.0.1.0" id="rvinecopulib-05010-november-25-2019">rvinecopulib 0.5.0.1.0 (November 25, 2019)<a class="anchor" aria-label="anchor" href="#rvinecopulib-05010-november-25-2019"></a></h2><p class="text-muted">CRAN release: 2019-11-25</p>
 <p>Release following the updates of vinecopulib to 0.5.0, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="external-link uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
@@ -163,7 +171,8 @@
 <li><p>add <code>weights</code> argument to <code><a href="../reference/vine.html">vine()</a></code>. (<a href="https://github.com/vinecopulib/rvinecopulib/issues/188" class="external-link">#188</a>)</p></li>
 <li><p>parallelized fitting of margins in <code><a href="../reference/vine.html">vine()</a></code>. (<a href="https://github.com/vinecopulib/rvinecopulib/issues/198" class="external-link">#198</a>)</p></li>
 </ul><p>API BREAK</p>
-<ul><li>The new <code>var_types</code> argument for discrete models has been placed early in <code>bicop()/vinecop()</code> due to its importance. This might break old code calling these functions with unnamed arguments.</li></ul><p>BUG FIXES AND OTHER IMPROVEMENTS</p>
+<ul><li>The new <code>var_types</code> argument for discrete models has been placed early in <code>bicop()/vinecop()</code> due to its importance. This might break old code calling these functions with unnamed arguments.</li>
+</ul><p>BUG FIXES AND OTHER IMPROVEMENTS</p>
 <ul><li><p>better support for 0-truncated structures. (<a href="https://github.com/vinecopulib/rvinecopulib/issues/195" class="external-link">#195</a>)</p></li>
 <li><p>ensure consistency of TLL likelihood during and after fit. (<a href="https://github.com/vinecopulib/rvinecopulib/issues/195" class="external-link">#195</a>)</p></li>
 <li><p>fixed order of ranks in <code>pseudo_obs(.., ties.method = "first")</code>. (<a href="https://github.com/vinecopulib/rvinecopulib/issues/195" class="external-link">#195</a>)</p></li>
@@ -192,7 +201,8 @@
 <li><p>improve selection of truncation level (vinecopulib <a href="https://github.com/vinecopulib/rvinecopulib/issues/373" class="external-link">#373</a>)</p></li>
 <li><p>add truncate methods for <code>TriangularArray</code>, <code>RVineStructure</code> and <code>Vinecop</code> (vinecopulib <a href="https://github.com/vinecopulib/rvinecopulib/issues/372" class="external-link">#372</a>)</p></li>
 </ul><p>BUG FIXES</p>
-<ul><li>don’t strip debug symbols unconditionally on linux (<a href="https://github.com/vinecopulib/rvinecopulib/issues/174" class="external-link">#174</a>)</li></ul></div>
+<ul><li>don’t strip debug symbols unconditionally on linux (<a href="https://github.com/vinecopulib/rvinecopulib/issues/174" class="external-link">#174</a>)</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0.1.1" id="rvinecopulib-03011-august-22-2018">rvinecopulib 0.3.0.1.1 (August 22, 2018)<a class="anchor" aria-label="anchor" href="#rvinecopulib-03011-august-22-2018"></a></h2><p class="text-muted">CRAN release: 2018-08-22</p>
 <p>BUG FIXES</p>
@@ -242,13 +252,16 @@
 <h2 class="pkg-version" data-toc-text="0.2.7.1.0" id="rvinecopulib-02710-march-1-2018">rvinecopulib 0.2.7.1.0 (March 1, 2018)<a class="anchor" aria-label="anchor" href="#rvinecopulib-02710-march-1-2018"></a></h2><p class="text-muted">CRAN release: 2018-03-02</p>
 <p>Release following the updates of vinecopulib to 0.2.7, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="external-link uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
 <p>NEW FEATURES</p>
-<ul><li>new criterion for tree selection <code>"mcor"</code>.</li></ul><p>BUG FIXES</p>
-<ul><li>fix bandwidth scaling for family <code>"tll"</code>.</li></ul></div>
+<ul><li>new criterion for tree selection <code>"mcor"</code>.</li>
+</ul><p>BUG FIXES</p>
+<ul><li>fix bandwidth scaling for family <code>"tll"</code>.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.6.1.1" id="rvinecopulib-02611-february-24-2018">rvinecopulib 0.2.6.1.1 (February 24, 2018)<a class="anchor" aria-label="anchor" href="#rvinecopulib-02611-february-24-2018"></a></h2><p class="text-muted">CRAN release: 2018-02-25</p>
 <p>Patch of rvinecopulib 0.2.6.1.0.</p>
 <p>BUG FIXES</p>
-<ul><li>corrected documentation items.</li></ul></div>
+<ul><li>corrected documentation items.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.6.1.0" id="rvinecopulib-02610-february-23-2018">rvinecopulib 0.2.6.1.0 (February 23, 2018)<a class="anchor" aria-label="anchor" href="#rvinecopulib-02610-february-23-2018"></a></h2>
 <p>Release following the updates of vinecopulib to 0.2.6, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="external-link uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
@@ -257,7 +270,8 @@
 <li><p>improved bandwidth selection for method <code>"tll"</code> by scaling with maximum-correlation coefficient.</p></li>
 <li><p>add mBICV criterion to select the truncation level and threshold along with new function <code><a href="../reference/mBICV.html">mBICV()</a></code>.</p></li>
 </ul><p>BUG FIXES</p>
-<ul><li>fix calculation of Hoeffding’s D.</li></ul></div>
+<ul><li>fix calculation of Hoeffding’s D.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.5.1.0" id="rvinecopulib-02510-january-14-2017">rvinecopulib 0.2.5.1.0 (January 14, 2017)<a class="anchor" aria-label="anchor" href="#rvinecopulib-02510-january-14-2017"></a></h2><p class="text-muted">CRAN release: 2018-01-14</p>
 <p>Release following the updates of vinecopulib to 0.2.4 and 0.2.5, see <a href="https://github.com/vinecopulib/vinecopulib/releases" class="external-link uri">https://github.com/vinecopulib/vinecopulib/releases</a>. The most relevant changes are summarized below.</p>
@@ -275,7 +289,8 @@
 <h2 class="pkg-version" data-toc-text="0.2.3.1.0" id="rvinecopulib-02310-november-18-2017">rvinecopulib 0.2.3.1.0 (November 18, 2017)<a class="anchor" aria-label="anchor" href="#rvinecopulib-02310-november-18-2017"></a></h2><p class="text-muted">CRAN release: 2017-11-18</p>
 <p>Release following the update of vinecopulib to 0.2.3, see <a href="https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.3" class="external-link uri">https://github.com/vinecopulib/vinecopulib/releases/tag/v0.2.3</a>. The most relevant changes are summarized below.</p>
 <p>NEW FEATURES</p>
-<ul><li>faster implementation of Archimedean pdfs.</li></ul><p>BUG FIXES</p>
+<ul><li>faster implementation of Archimedean pdfs.</li>
+</ul><p>BUG FIXES</p>
 <ul><li><p>add safeguards for <code><a href="../reference/bicop.html">bicop()</a></code>/<code><a href="../reference/vinecop.html">vinecop()</a></code> called with insufficient data.</p></li>
 <li><p>fix segfault issue in completing a truncated vine fit.</p></li>
 <li><p>make <code>par_method = "itau"</code> respect the parameter bounds.</p></li>
@@ -315,7 +330,8 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0.1.1" id="rvinecopulib-01011-september-1-2017">rvinecopulib 0.1.0.1.1 (September 1, 2017)<a class="anchor" aria-label="anchor" href="#rvinecopulib-01011-september-1-2017"></a></h2><p class="text-muted">CRAN release: 2017-09-01</p>
 <p>BUG FIXES</p>
-<ul><li>Improve portability when using mathematical functions</li></ul></div>
+<ul><li>Improve portability when using mathematical functions</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0.1.0" id="rvinecopulib-01010-august-29-2017">rvinecopulib 0.1.0.1.0 (August 29, 2017)<a class="anchor" aria-label="anchor" href="#rvinecopulib-01010-august-29-2017"></a></h2><p class="text-muted">CRAN release: 2017-08-30</p>
 <p>Initial release.</p>

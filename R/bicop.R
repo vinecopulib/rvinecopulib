@@ -91,7 +91,7 @@
 #' contain:
 #'
 #' * `data` (optionally, if `keep_data = TRUE` was used), the dataset that was
-#' passed to [bicop()].
+#' passed to [bicop()].allow
 #'
 #' * `controls`, a `list` with the set of fit controls that was passed to
 #' [bicop()].
@@ -174,8 +174,9 @@ bicop <- function(data, var_types = c("c", "c"), family_set = "all",
     selcrit = selcrit,
     weights = weights,
     psi0 = psi0,
-    presel = presel,
-    allow_rotations = allow_rotations
+    presel = presel
+    # temporarily disable to not make vinereg fail again
+    # allow_rotations = allow_rotations
   )
   bicop$nobs <- nrow(data)
 

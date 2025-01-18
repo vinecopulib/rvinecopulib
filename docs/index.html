@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="High Performance Algorithms for Vine Copula Modeling">
-<meta name="description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 0.7.0). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
-<meta property="og:description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 0.7.0). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
+<meta name="description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 0.7.1). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
+<meta property="og:description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 0.7.1). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">rvinecopulib</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,12 +58,15 @@
 <div class="section level2">
 <h2 id="table-of-contents">Table of contents<a class="anchor" aria-label="anchor" href="#table-of-contents"></a>
 </h2>
-<ul><li>
-<a href="#rvinecopulib">rvinecopulib</a><ul>
+<ul>
+<li>
+<a href="#rvinecopulib">rvinecopulib</a>
+<ul>
 <li><a href="#table-of-contents">Table of contents</a></li>
 <li><a href="#how-to-install">How to install</a></li>
 <li>
-<a href="#package-overview">Package overview</a><ul>
+<a href="#package-overview">Package overview</a>
+<ul>
 <li><a href="#bivariate-copula-modeling-bicopdist-and-bicop">Bivariate copula modeling: bicop_dist and bicop</a></li>
 <li><a href="#vine-copula-modeling-vinecopdist-and-vinecop">Vine copula modeling: vinecop_dist and vinecop</a></li>
 <li><a href="#bivariate-copula-families">Bivariate copula families</a></li>
@@ -71,7 +74,8 @@
 </li>
 <li><a href="#references">References</a></li>
 </ul>
-</li></ul>
+</li>
+</ul>
 <hr>
 </div>
 <div class="section level2">
@@ -162,7 +166,7 @@
 <td>“gaussian”</td>
 </tr>
 <tr class="odd">
-<td>"</td>
+<td>”</td>
 <td>Student t</td>
 <td>“t”</td>
 </tr>
@@ -172,37 +176,37 @@
 <td>“clayton”</td>
 </tr>
 <tr class="odd">
-<td>"</td>
+<td>”</td>
 <td>Gumbel</td>
 <td>“gumbel”</td>
 </tr>
 <tr class="even">
-<td>"</td>
+<td>”</td>
 <td>Frank</td>
 <td>“frank”</td>
 </tr>
 <tr class="odd">
-<td>"</td>
+<td>”</td>
 <td>Joe</td>
 <td>“joe”</td>
 </tr>
 <tr class="even">
-<td>"</td>
+<td>”</td>
 <td>Clayton-Gumbel (BB1)</td>
 <td>“bb1”</td>
 </tr>
 <tr class="odd">
-<td>"</td>
+<td>”</td>
 <td>Joe-Gumbel (BB6)</td>
 <td>“bb6”</td>
 </tr>
 <tr class="even">
-<td>"</td>
+<td>”</td>
 <td>Joe-Clayton (BB7)</td>
 <td>“bb7”</td>
 </tr>
 <tr class="odd">
-<td>"</td>
+<td>”</td>
 <td>Joe-Frank (BB8)</td>
 <td>“bb8”</td>
 </tr>

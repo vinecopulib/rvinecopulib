@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rvinecopulib</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -83,9 +83,9 @@ sparse high-dimensional vine copulas with application to portfolio risk.
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">u</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="vinecop.html">vinecop</a></span><span class="op">(</span><span class="va">u</span>, family <span class="op">=</span> <span class="st">"par"</span>, keep_data <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">mBICV</span><span class="op">(</span><span class="va">fit</span>, <span class="fl">0.9</span><span class="op">)</span> <span class="co"># with a 0.9 prior probability of a non-independence copula</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 31.768</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 17.66954</span>
 <span class="r-in"><span><span class="fu">mBICV</span><span class="op">(</span><span class="va">fit</span>, <span class="fl">0.1</span><span class="op">)</span> <span class="co"># with a 0.1 prior probability of a non-independence copula</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 74.19631</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 68.88675</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

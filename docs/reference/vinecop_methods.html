@@ -9,7 +9,7 @@ distribution."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">rvinecopulib</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -132,9 +132,9 @@ second block.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># evaluate the density and cdf</span></span></span>
 <span class="r-in"><span><span class="fu">dvinecop</span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.015659</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 104.7548</span>
 <span class="r-in"><span><span class="fu">pvinecop</span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.0065</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.6646</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Discrete models</span></span></span>
 <span class="r-in"><span><span class="va">vc</span><span class="op">$</span><span class="va">var_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"d"</span>, <span class="fl">5</span><span class="op">)</span>  <span class="co"># convert model to discrete</span></span></span>
@@ -144,9 +144,9 @@ second block.</p>
 <span class="r-in"><span><span class="va">u_disc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">ppois</a></span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">dvinecop</span><span class="op">(</span><span class="va">u_disc</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]   7.165616   7.165616  53.385366 529.032499   2.488291</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 46.60577506  3.40840087  2.14675926  0.05626392  2.16598614</span>
 <span class="r-in"><span><span class="fu">pvinecop</span><span class="op">(</span><span class="va">u_disc</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, <span class="va">vc</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.1599 0.1599 0.8352 0.8926 0.2931</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.7886 0.2459 0.5223 0.2432 0.2142</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># simulated data always has uniform margins</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs</a></span><span class="op">(</span><span class="fu">rvinecop</span><span class="op">(</span><span class="fl">200</span>, <span class="va">vc</span><span class="op">)</span><span class="op">)</span></span></span>

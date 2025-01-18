@@ -9,7 +9,7 @@ inverses) for the bivariate copula distribution."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">rvinecopulib</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -134,7 +134,7 @@ other variable, that is <code>v</code> when <code>cond_var = 1</code> and <code>
 <p>When at least one variable is discrete, more than two columns are required
 for <code>u</code>: the first \(n \times 2\) block contains realizations of
 \(F_{X_1}(x_1), F_{X_2}(x_2)\). The second \(n \times 2\) block contains
-realizations of \(F_{X_1}(x_1^-), F_{X_1}(x_1^-)\). The minus indicates a
+realizations of \(F_{X_1}(x_1^-), F_{X_2}(x_2^-)\). The minus indicates a
 left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 \(F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)\). For continuous variables the left
 limit and the cdf itself coincide. Respective columns can be omitted in the
