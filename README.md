@@ -1,8 +1,8 @@
 rvinecopulib
 ==========
 
-[![R build status](https://github.com/vinecopulib/rvinecopulib/workflows/R-CMD-check/badge.svg)](https://github.com/vinecopulib/rvinecopulib)
-[![Coverage Status](https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/master.svg)](https://app.codecov.io/github/vinecopulib/rvinecopulib?branch=main)
+[![R-CMD-check](https://github.com/vinecopulib/rvinecopulib/actions/workflows/R-CMD-check.yaml/badge.svg?branch=main)](https://github.com/vinecopulib/rvinecopulib/actions/workflows/R-CMD-check.yaml)
+[![Coverage Status](https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/main.svg)](https://app.codecov.io/github/vinecopulib/rvinecopulib?branch=main)
 [![CRAN version](http://www.r-pkg.org/badges/version/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib) 
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib)
 
