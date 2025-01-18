@@ -278,9 +278,12 @@ bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0),
   assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
   assert_that(correct_var_types(var_types))
   if (family %in% setdiff(family_set_nonparametric, "indep")) {
-    if (length(parameters) > 0 &&
-        abs(range(c(rowMeans(parameters), colMeans(parameters))) - 1) > 0.5) {
-      warning("margins implied by 'parameters' deviate strongly from the standard uniform distribution.")
+    if (length(parameters) > 0) {
+      parameters <- as.matrix(parameters)
+      stopifnot(dim(parameters) == c(30, 30))
+      margin_integrals <- c(rowMeans(parameters), colMeans(parameters))
+      if (any(abs(margin_integrals - 1) > 0.5))
+        warning("margins implied by 'parameters' deviate strongly from the standard uniform distribution.")
     } else {
       parameters <- matrix(1, 30, 30)
     }
