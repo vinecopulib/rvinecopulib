@@ -29,6 +29,7 @@ jobs:
       - name: Test coverage
         run: |
           covr::codecov(
+            line_exclusions = list.files("inst/include/", recursive = TRUE),
             quiet = FALSE,
             clean = FALSE,
             install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
