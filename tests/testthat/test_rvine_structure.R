@@ -20,7 +20,7 @@ test_that("constructor and as/is generics work", {
 })
 
 test_that("print/dim generics work", {
-  rvs <- as_rvine_structure(mylist)
+  rvs <- as_rvine_structure(mylist, validate = TRUE)
   rvm <- as_rvine_matrix(mat)
   expect_output(print(rvs))
   expect_output(print(rvm))
