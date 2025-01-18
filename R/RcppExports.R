@@ -41,10 +41,6 @@ bicop_sim_cpp <- function(bicop_r, n, qrng, seeds) {
     .Call(`_rvinecopulib_bicop_sim_cpp`, bicop_r, n, qrng, seeds)
 }
 
-bicop_loglik_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_loglik_cpp`, u, bicop_r)
-}
-
 bicop_par_to_tau_cpp <- function(bicop_r) {
     .Call(`_rvinecopulib_bicop_par_to_tau_cpp`, bicop_r)
 }
@@ -91,14 +87,6 @@ vinecop_pdf_cpp <- function(u, vinecop_r, cores) {
 
 vinecop_cdf_cpp <- function(u, vinecop_r, N, cores, seeds) {
     .Call(`_rvinecopulib_vinecop_cdf_cpp`, u, vinecop_r, N, cores, seeds)
-}
-
-vinecop_loglik_cpp <- function(u, vinecop_r, cores) {
-    .Call(`_rvinecopulib_vinecop_loglik_cpp`, u, vinecop_r, cores)
-}
-
-vinecop_mbicv_cpp <- function(u, vinecop_r, psi0, cores) {
-    .Call(`_rvinecopulib_vinecop_mbicv_cpp`, u, vinecop_r, psi0, cores)
 }
 
 vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types) {
