@@ -20,7 +20,7 @@ test_that("constructor and as/is generics work", {
 })
 
 test_that("print/dim generics work", {
-  rvs <- as_rvine_structure(mylist)
+  rvs <- as_rvine_structure(mylist, validate = TRUE)
   rvm <- as_rvine_matrix(mat)
   expect_output(print(rvs))
   expect_output(print(rvm))
@@ -69,3 +69,12 @@ test_that("d = 1 works", {
   expect_silent(cvine_structure(1))
 })
 
+
+test_that("rvine_structure_sim() works", {
+  struct <- rvine_structure_sim(4)
+  expect_equiv(dim(struct), c(4, 3))
+  expect_equiv(sort(struct$order), 1:4)
+  expect_output(print(struct))
+  expect_no_error(plot(struct))
+  expect_eql(rvine_structure_sim(10, natural_order = TRUE)$order, 1:10)
+})

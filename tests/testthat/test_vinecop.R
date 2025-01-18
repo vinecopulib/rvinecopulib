@@ -59,6 +59,16 @@ test_that("print/summary generics work", {
   expect_output(print(fit))
   expect_s3_class(s <- summary(fit), "summary_df")
   expect_is(s, "data.frame")
+
+  fit$names <- letters[1:3]
+  out <- capture.output(summary(fit))
+  expect_eql(out[length(out)], "1 <-> a,   2 <-> b,   3 <-> c ")
+
+  fit$names <- c("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                 "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                 "cccccccccccccccccccccccccccccccccccccccccccccccc")
+  out <- capture.output(summary(fit))
+  expect_eql(out[length(out)], "3 <-> cccccccccccccccccccccccccccccccccccccccccccccccc ")
 })
 
 test_that("truncation works", {

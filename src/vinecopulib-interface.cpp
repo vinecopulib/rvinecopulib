@@ -110,13 +110,6 @@ Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r,
 }
 
 // [[Rcpp::export()]]
-double bicop_loglik_cpp(Eigen::MatrixXd& u,
-                        const Rcpp::List& bicop_r)
-{
-  return bicop_wrap(bicop_r).loglik(u);
-}
-
-// [[Rcpp::export()]]
 double bicop_par_to_tau_cpp(const Rcpp::List& bicop_r)
 {
   Bicop bicop_cpp = bicop_wrap(bicop_r);
@@ -217,23 +210,6 @@ Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u,
                                 std::vector<int> seeds)
 {
   return vinecop_wrap(vinecop_r).cdf(u, N, cores, seeds);
-}
-
-// [[Rcpp::export()]]
-double vinecop_loglik_cpp(const Eigen::MatrixXd& u,
-                          const Rcpp::List& vinecop_r,
-                          size_t cores)
-{
-  return vinecop_wrap(vinecop_r).loglik(u, cores);
-}
-
-// [[Rcpp::export()]]
-double vinecop_mbicv_cpp(const Eigen::MatrixXd& u,
-                         const Rcpp::List& vinecop_r,
-                         double psi0,
-                         size_t cores)
-{
-  return vinecop_wrap(vinecop_r).mbicv(u, psi0, cores);
 }
 
 // [[Rcpp::export()]]

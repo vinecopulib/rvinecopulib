@@ -47,6 +47,15 @@ test_that("family sets (w/ partial matching)", {
   expect_error(bicop(u, family = "asdf"))
 })
 
+test_that("as.bicop works", {
+  expect_error(as.bicop(list(stupid_argument = 10)))
+  object <- list(family = "t", rotation = 0, parameters = c(0.5, 5), npars = 2)
+  expect_s3_class(as.bicop(object), "bicop_dist")
+  object$var_types <- c("d", "d")
+  expect_eql(unlist(as.bicop(object)), unlist(object))
+})
+
+
 test_that("S3 generics work", {
   expect_eql(predict(fit, u, what = "pdf"), fitted(fit, what = "pdf"))
   expect_eql(predict(fit, u, what = "cdf"), fitted(fit, what = "cdf"))

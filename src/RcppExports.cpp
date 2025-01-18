@@ -142,18 +142,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// bicop_loglik_cpp
-double bicop_loglik_cpp(Eigen::MatrixXd& u, const Rcpp::List& bicop_r);
-RcppExport SEXP _rvinecopulib_bicop_loglik_cpp(SEXP uSEXP, SEXP bicop_rSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type u(uSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type bicop_r(bicop_rSEXP);
-    rcpp_result_gen = Rcpp::wrap(bicop_loglik_cpp(u, bicop_r));
-    return rcpp_result_gen;
-END_RCPP
-}
 // bicop_par_to_tau_cpp
 double bicop_par_to_tau_cpp(const Rcpp::List& bicop_r);
 RcppExport SEXP _rvinecopulib_bicop_par_to_tau_cpp(SEXP bicop_rSEXP) {
@@ -305,33 +293,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// vinecop_loglik_cpp
-double vinecop_loglik_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, size_t cores);
-RcppExport SEXP _rvinecopulib_vinecop_loglik_cpp(SEXP uSEXP, SEXP vinecop_rSEXP, SEXP coresSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
-    Rcpp::traits::input_parameter< size_t >::type cores(coresSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_loglik_cpp(u, vinecop_r, cores));
-    return rcpp_result_gen;
-END_RCPP
-}
-// vinecop_mbicv_cpp
-double vinecop_mbicv_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, double psi0, size_t cores);
-RcppExport SEXP _rvinecopulib_vinecop_mbicv_cpp(SEXP uSEXP, SEXP vinecop_rSEXP, SEXP psi0SEXP, SEXP coresSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
-    Rcpp::traits::input_parameter< double >::type psi0(psi0SEXP);
-    Rcpp::traits::input_parameter< size_t >::type cores(coresSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_mbicv_cpp(u, vinecop_r, psi0, cores));
-    return rcpp_result_gen;
-END_RCPP
-}
 // vinecop_select_cpp
 Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data, Rcpp::List& structure, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, const Eigen::VectorXd& weights, double psi0, bool select_truncation_level, bool select_threshold, bool preselect_families, bool select_families, bool allow_rotations, bool show_trace, size_t num_threads, std::vector<std::string> var_types);
 RcppExport SEXP _rvinecopulib_vinecop_select_cpp(SEXP dataSEXP, SEXP structureSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP select_truncation_levelSEXP, SEXP select_thresholdSEXP, SEXP preselect_familiesSEXP, SEXP select_familiesSEXP, SEXP allow_rotationsSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP, SEXP var_typesSEXP) {
@@ -411,7 +372,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_bicop_hinv1_cpp", (DL_FUNC) &_rvinecopulib_bicop_hinv1_cpp, 2},
     {"_rvinecopulib_bicop_hinv2_cpp", (DL_FUNC) &_rvinecopulib_bicop_hinv2_cpp, 2},
     {"_rvinecopulib_bicop_sim_cpp", (DL_FUNC) &_rvinecopulib_bicop_sim_cpp, 4},
-    {"_rvinecopulib_bicop_loglik_cpp", (DL_FUNC) &_rvinecopulib_bicop_loglik_cpp, 2},
     {"_rvinecopulib_bicop_par_to_tau_cpp", (DL_FUNC) &_rvinecopulib_bicop_par_to_tau_cpp, 1},
     {"_rvinecopulib_bicop_tau_to_par_cpp", (DL_FUNC) &_rvinecopulib_bicop_tau_to_par_cpp, 2},
     {"_rvinecopulib_rvine_structure_cpp", (DL_FUNC) &_rvinecopulib_rvine_structure_cpp, 3},
@@ -424,8 +384,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_sim_cpp", (DL_FUNC) &_rvinecopulib_vinecop_sim_cpp, 5},
     {"_rvinecopulib_vinecop_pdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_pdf_cpp, 3},
     {"_rvinecopulib_vinecop_cdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_cdf_cpp, 5},
-    {"_rvinecopulib_vinecop_loglik_cpp", (DL_FUNC) &_rvinecopulib_vinecop_loglik_cpp, 3},
-    {"_rvinecopulib_vinecop_mbicv_cpp", (DL_FUNC) &_rvinecopulib_vinecop_mbicv_cpp, 4},
     {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 20},
     {"_rvinecopulib_vinecop_fit_cpp", (DL_FUNC) &_rvinecopulib_vinecop_fit_cpp, 8},
     {"_rvinecopulib_fit_margins_cpp", (DL_FUNC) &_rvinecopulib_fit_margins_cpp, 9},

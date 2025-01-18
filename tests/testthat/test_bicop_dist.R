@@ -99,3 +99,10 @@ test_that("getters work", {
   expect_equiv(get_ktau(dist), par_to_ktau(dist))
   expect_equiv(get_family(dist), "gumbel")
 })
+
+test_that("works with TLL family", {
+  par <- matrix(1, 30, 30)
+  expect_eql(bicop_dist("tll", 0, par)$parameters, par)
+  expect_error(bicop_dist("tll", 0, par[-1, ]))
+  expect_warning(bicop_dist("tll", 0, 2 * par))
+})
