@@ -212,7 +212,7 @@ get_npars_distr <- function(distr) {
     lnorm = 2,
     norm = 2,
     logis = 2,
-    t = ifelse("ncp" %in% names(distr), 3, 2),
+    t = ifelse("ncp" %in% names(distr), 2, 1),
     unif = 2,
     weibull = ifelse("scale" %in% names(distr), 2, 1)
   )
