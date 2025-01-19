@@ -91,7 +91,7 @@
 #' contain:
 #'
 #' * `data` (optionally, if `keep_data = TRUE` was used), the dataset that was
-#' passed to [bicop()].allow
+#' passed to [bicop()].
 #'
 #' * `controls`, a `list` with the set of fit controls that was passed to
 #' [bicop()].
