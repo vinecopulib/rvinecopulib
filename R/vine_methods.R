@@ -272,14 +272,6 @@ eval_one_dpq <- function(x, margin, what = "p") {
   dpq
 }
 
-collate_u <- function(x) {
-  if (!all(is.na(x$data))) {
-    u <- dpq_marg(x$data, x)
-    x$copula$data <- u
-  }
-  x
-}
-
 #' @export
 dim.vine_dist <- function(x) {
   dim(x$copula)

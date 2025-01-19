@@ -233,10 +233,10 @@ vine_dist <- function(margins, pair_copulas, structure) {
   stopifnot(is.list(margins))
   if (depth(margins) == 1) {
     check_marg <- check_distr(margins)
-    npars_marg <- ncol(matrix) * get_npars_distr(margins)
+    try(npars_marg <- ncol(matrix) * get_npars_distr(margins), silent = TRUE)
   } else {
     check_marg <- lapply(margins, check_distr)
-    npars_marg <- sum(sapply(margins, get_npars_distr))
+    try(npars_marg <- sum(sapply(margins, get_npars_distr)), silent = TRUE)
   }
   is_ok <- sapply(check_marg, isTRUE)
   if (!all(is_ok)) {
