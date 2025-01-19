@@ -2,9 +2,9 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master, dev]
+    branches: [main, dev]
   pull_request:
-    branches: [main, master, dev]
+    branches: [main, dev]
 
 name: test-coverage
 
@@ -28,18 +28,18 @@ jobs:
 
       - name: Test coverage
         run: |
-          covr::codecov(
-            line_exclusions = list.files("inst/include/", recursive = TRUE),
+          cov <- covr::package_coverage(
+            line_exclusions = list.files("inst", recursive = TRUE, full.names = TRUE),
             quiet = FALSE,
             clean = FALSE,
             install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
           )
+          covr::to_cobertura(cov)
         shell: Rscript {0}
 
-      - uses: codecov/codecov-action@v4
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
         with:
-          # Fail if error if not on PR, or if on PR and token is given
-          fail_ci_if_error: ${{ github.event_name != 'pull_request' || secrets.CODECOV_TOKEN }}
           file: ./cobertura.xml
           plugin: noop
           disable_search: true
