@@ -37,20 +37,18 @@ Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
   for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
     fam_set[fam] = to_cpp_family(family_set[fam]);
   }
-  FitControlsBicop controls(
-      FitControlsConfig{
-          .family_set = fam_set,
-          .parametric_method = par_method,
-          .nonparametric_method = nonpar_method,
-          .nonparametric_mult = mult,
-          .selection_criterion = selcrit,
-          .weights = weights,
-          .psi0 = psi0,
-          .preselect_families = presel,
-          .allow_rotations = allow_rotations,
-          .num_threads = num_threads
-      }
-  );
+  FitControlsBicop controls;
+  controls.set_family_set(fam_set);
+  controls.set_parametric_method(par_method);
+  controls.set_nonparametric_method(nonpar_method);
+  controls.set_nonparametric_mult(mult);
+  controls.set_selection_criterion(selcrit);
+  controls.set_weights(weights);
+  controls.set_psi0(psi0);
+  controls.set_preselect_families(presel);
+  controls.set_allow_rotations(allow_rotations);
+  controls.set_num_threads(num_threads);
+
   Bicop bicop_cpp;
   bicop_cpp.set_var_types(var_types);
   bicop_cpp.select(data, controls);
@@ -239,28 +237,24 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
     fam_set[fam] = to_cpp_family(family_set[fam]);
   }
 
-  FitControlsVinecop fit_controls(
-      FitControlsConfig{
-        .family_set = fam_set,
-        .parametric_method = par_method,
-        .nonparametric_method = nonpar_method,
-        .nonparametric_mult = mult,
-        .selection_criterion = selection_criterion,
-        .weights = weights,
-        .psi0 = psi0,
-        .preselect_families = preselect_families,
-        .allow_rotations = allow_rotations,
-        .num_threads = num_threads,
-        .trunc_lvl = truncation_level,
-        .tree_criterion = tree_criterion,
-        .threshold = threshold,
-        .select_threshold = select_threshold,
-        .select_trunc_lvl = select_truncation_level,
-        .select_families = select_families,
-        .show_trace = show_trace,
-        .mst_algorithm = "prim",
-      }
-    );
+  FitControlsVinecop fit_controls;
+  fit_controls.set_family_set(fam_set);
+  fit_controls.set_parametric_method(par_method);
+  fit_controls.set_nonparametric_method(nonpar_method);
+  fit_controls.set_nonparametric_mult(mult);
+  fit_controls.set_selection_criterion(selection_criterion);
+  fit_controls.set_weights(weights);
+  fit_controls.set_psi0(psi0);
+  fit_controls.set_preselect_families(preselect_families);
+  fit_controls.set_allow_rotations(allow_rotations);
+  fit_controls.set_num_threads(num_threads);
+  fit_controls.set_trunc_lvl(truncation_level);
+  fit_controls.set_tree_criterion(tree_criterion);
+  fit_controls.set_threshold(threshold);
+  fit_controls.set_select_threshold(select_threshold);
+  fit_controls.set_select_trunc_lvl(select_truncation_level);
+  fit_controls.set_select_families(select_families);
+  fit_controls.set_show_trace(show_trace);
 
   Vinecop vinecop_cpp(rvine_structure_wrap(structure, false));
   vinecop_cpp.set_var_types(var_types);
