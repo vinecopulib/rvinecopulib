@@ -24,6 +24,8 @@
 #'   the partial correlation, respectively.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the
 #'   threshold should be selected automatically by [mBICV()].
+#' @param vinecop_object a `vinecop` object to be updated; if provided, only the
+#'   parameters are fit; structure and families are kept the same.
 #' @param show_trace logical; whether a trace of the fitting progress should be
 #'   printed.
 #' @param cores number of cores to use; if more than 1, estimation of pair
@@ -99,8 +101,8 @@
 #' fit <- vinecop(u, family_set = "onepar", selcrit = "bic")
 #' summary(fit)
 #'
-#' ## Gaussian D-vine
-#' fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss")
+#' ## 1-truncated, Gaussian D-vine
+#' fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss", trunc_lvl = 1)
 #' plot(fit)
 #' contour(fit)
 #'
@@ -109,10 +111,6 @@
 #' structure
 #' fit <- vinecop(u, structure = structure, family = "gauss")
 #' plot(fit)
-#'
-#' ## 1-truncated model with random structure
-#' fit <- vinecop(u, structure = rvine_structure_sim(5), trunc_lvl = 1)
-#' contour(fit)
 #'
 #' ## Model for discrete data
 #' x <- qpois(u, 1)  # transform to Poisson margins
@@ -129,8 +127,10 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
                     structure = NA, par_method = "mle",
                     nonpar_method = "constant", mult = 1, selcrit = "aic",
                     weights = numeric(), psi0 = 0.9, presel = TRUE,
+                    allow_rotations = TRUE,
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
-                    keep_data = FALSE, show_trace = FALSE, cores = 1) {
+                    keep_data = FALSE, vinecop_object = NULL,
+                    show_trace = FALSE, cores = 1) {
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||
@@ -143,6 +143,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     is.numeric(weights),
     is.number(psi0), psi0 > 0, psi0 < 1,
     is.flag(presel),
+    is.flag(allow_rotations),
     is.scalar(trunc_lvl),
     is.string(tree_crit),
     is.scalar(threshold),
@@ -151,46 +152,68 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     correct_var_types(var_types)
   )
 
-  # check if families known (w/ partial matching) and expand convenience defs
-  family_set <- process_family_set(family_set, par_method)
-
-  ## pre-process input
-  if (is.scalar(structure) && is.na(structure)) {
-    structure <- rvine_structure(seq_along(var_types))
+  if (!is.null(vinecop_object)) {
+    if (!inherits(vinecop_object, "vinecop")) {
+      stop("'vinecop_object' must be of class 'vinecop'")
+    }
+    if (!identical(structure, NA) || !identical(family_set, "all")) {
+      warning("'structure' and 'family_set' are ignored when 'vinecop_object' is provided")
+    }
+    vinecop <- vinecop_fit_cpp(
+      data = as.matrix(data),
+      vinecop_r = vinecop_object,
+      par_method = par_method,
+      nonpar_method = nonpar_method,
+      mult = mult,
+      weights = weights,
+      show_trace = show_trace,
+      num_threads = cores
+    )
   } else {
-    structure <- as_rvine_structure(structure)
+    # check if families known (w/ partial matching) and expand convenience defs
+    family_set <- process_family_set(family_set, par_method)
+
+    ## pre-process input
+    if (is.scalar(structure) && is.na(structure)) {
+      structure <- rvine_structure(seq_along(var_types))
+    } else {
+      structure <- as_rvine_structure(structure)
+    }
+
+    ## fit and select copula model
+    vinecop <- vinecop_select_cpp(
+      data = as.matrix(data),
+      structure = structure,
+      family_set = family_set,
+      par_method = par_method,
+      nonpar_method = nonpar_method,
+      mult = mult,
+      selection_criterion = selcrit,
+      weights = weights,
+      psi0 = psi0,
+      preselect_families = presel,
+      truncation_level = ifelse( # Inf cannot be passed to C++
+        is.finite(trunc_lvl),
+        trunc_lvl,
+        .Machine$integer.max
+      ),
+      tree_criterion = tree_crit,
+      threshold = threshold,
+      select_truncation_level = is.na(trunc_lvl),
+      select_threshold = is.na(threshold),
+      select_families = TRUE,
+      allow_rotations = allow_rotations,
+      show_trace = show_trace,
+      num_threads = cores,
+      var_types = var_types
+    )
   }
 
-  ## fit and select copula model
-  vinecop <- vinecop_select_cpp(
-    data = as.matrix(data),
-    structure = structure,
-    family_set = family_set,
-    par_method = par_method,
-    nonpar_method = nonpar_method,
-    mult = mult,
-    selection_criterion = selcrit,
-    weights = weights,
-    psi0 = psi0,
-    preselect_families = presel,
-    truncation_level = ifelse( # Inf cannot be passed to C++
-      is.finite(trunc_lvl),
-      trunc_lvl,
-      .Machine$integer.max
-    ),
-    tree_criterion = tree_crit,
-    threshold = threshold,
-    select_truncation_level = is.na(trunc_lvl),
-    select_threshold = is.na(threshold),
-    show_trace = show_trace,
-    num_threads = cores,
-    var_types = var_types
-  )
 
   ## make all pair-copulas bicop objects
   vinecop$pair_copulas <- lapply(
     vinecop$pair_copulas,
-    function(tree) lapply(tree, as.bicop)
+    function(tree) lapply(tree, as.bicop, check = FALSE)
   )
 
   ## add information about the fit
@@ -206,6 +229,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     selcrit = selcrit,
     weights = weights,
     presel = presel,
+    allow_rotations = allow_rotations,
     trunc_lvl = trunc_lvl,
     tree_crit = tree_crit,
     threshold = threshold

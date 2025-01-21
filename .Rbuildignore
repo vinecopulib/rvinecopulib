@@ -17,4 +17,5 @@
 .github/
 
 ^\.github$
+^\.vscode$
 ^CRAN-SUBMISSION$

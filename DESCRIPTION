@@ -1,7 +1,7 @@
 Package: rvinecopulib
 Type: Package
 Title: High Performance Algorithms for Vine Copula Modeling
-Version: 0.6.3.1.1
+Version: 0.7.1.1.0
 Authors@R: c(
         person("Thomas", "Nagler",, "info@vinecopulib.org", role = c("aut", "cre")),
         person("Thibault", "Vatter",, "info@vinecopulib.org", role = c("aut"))
@@ -13,7 +13,7 @@ Description: Provides an interface to 'vinecopulib', a C++ library for vine
  and more modern API, improved performances, especially in high dimensions, 
  nonparametric and multi-parameter families, and the ability to model discrete 
  variables. The 'rvinecopulib' package includes 'vinecopulib' as header-only 
- C++ library (currently version 0.6.2). Thus users do not need to install 
+ C++ library (currently version 0.7.1). Thus users do not need to install 
  'vinecopulib' itself in order to use 'rvinecopulib'. Since their initial 
  releases, 'vinecopulib' is licensed under the MIT License, and 'rvinecopulib' 
  is licensed under the GNU GPL version 3.
@@ -25,7 +25,7 @@ Imports:
     assertthat,
     graphics,
     grDevices,
-    kde1d (>= 1.0.2),
+    kde1d (>= 1.1.0),
     lattice,
     Rcpp (>= 0.12.12),
     stats,
@@ -40,8 +40,9 @@ LinkingTo:
     Rcpp,
     RcppEigen,
     RcppThread (>= 2.1.2),
-    wdm,
-    kde1d
+    wdm (>= 0.2.6),
+    kde1d (>= 1.1.0)
 BugReports: https://github.com/vinecopulib/rvinecopulib/issues
+URL: https://vinecopulib.github.io/rvinecopulib/
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.3.2

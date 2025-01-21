@@ -2,6 +2,7 @@
 % Please edit documentation in R/rvinecopulib.R
 \docType{package}
 \name{rvinecopulib}
+\alias{rvinecopulib-package}
 \alias{rvinecopulib}
 \title{High Performance Algorithms for Vine Copula Modeling}
 \description{
@@ -54,6 +55,14 @@ summary(vc)
 x <- sapply(1:3, function(i) rnorm(50))
 vc <- vine(x, copula_controls = list(family_set = "par"))
 summary(vc)
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://vinecopulib.github.io/rvinecopulib/}
+  \item Report bugs at \url{https://github.com/vinecopulib/rvinecopulib/issues}
+}
+
 }
 \author{
 Thomas Nagler, Thibault Vatter

@@ -1,10 +1,10 @@
 rvinecopulib
 ==========
 
-[![R build status](https://github.com/vinecopulib/rvinecopulib/workflows/R-CMD-check/badge.svg)](https://github.com/vinecopulib/rvinecopulib)
-[![Coverage Status](https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/master.svg)](https://codecov.io/github/vinecopulib/rvinecopulib?branch=master)
-[![CRAN version](http://www.r-pkg.org/badges/version/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib) 
-[![CRAN downloads](http://cranlogs.r-pkg.org/badges/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib)
+[![R-CMD-check](https://github.com/vinecopulib/rvinecopulib/actions/workflows/R-CMD-check.yaml/badge.svg?branch=main)](https://github.com/vinecopulib/rvinecopulib/actions/workflows/R-CMD-check.yaml)
+[![Coverage Status](https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/main.svg)](https://app.codecov.io/github/vinecopulib/rvinecopulib?branch=main)
+[![CRAN version](https://www.r-pkg.org/badges/version/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib) 
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib)
 
 Vine copulas are a flexible class of dependence models consisting of bivariate 
 building blocks (see e.g., Aas et al., 2009). You can find a comprehensive 
@@ -181,7 +181,7 @@ Note that several convenience vectors of families are included:
 * `"archimedean"` contains the archimedean families
 * `"BB"` contains the BB families
 * `"itau"` families for which estimation by Kendall's tau inversion is available
-(`"indep"`,`"gaussian"`, `"student"`,`"clayton"`, `"gumbel"`, `"frank"`, `"joe"`)
+(`"indep"`,`"gaussian"`, `"t"`,`"clayton"`, `"gumbel"`, `"frank"`, `"joe"`)
 
 The following table shows the parameter ranges of bivariate copula families with 
 one or two parameters:

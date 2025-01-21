@@ -55,8 +55,8 @@ test_that("truncation works", {
 test_that("margins_controls works", {
   fit_mult <- vine(u, margins_controls = list(mult = 2))
   expect_eql(
-    sapply(fit_mult$margins, "[[", "bw"),
-    2 / log(6) * sapply(fit$margins, "[[", "bw")
+    sapply(fit_mult$margins, "[[", "mult"),
+    rep(2, ncol(u))
   )
 
   fit_xmin <- vine(abs(u), margins_controls = list(xmin = 0, deg = 1, mult = 1:5))
@@ -77,3 +77,11 @@ test_that("d = 1 works", {
   expect_eql(dim(summary(vc)$margins)[1], 1)
   expect_eql(dim(summary(vc)$copula)[1], 0)
 })
+
+test_that("discrete variables work", {
+  df <- data.frame(ord = as.ordered(sample(1:3, 50, replace = TRUE)),
+                   fac = as.factor(sample(1:3, 50, replace = TRUE)))
+  expect_no_error(fit <- vine(df))
+  expect_equiv(dim(fit$copula)[1], 3)
+})
+

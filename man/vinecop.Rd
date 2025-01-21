@@ -16,10 +16,12 @@ vinecop(
   weights = numeric(),
   psi0 = 0.9,
   presel = TRUE,
+  allow_rotations = TRUE,
   trunc_lvl = Inf,
   tree_crit = "tau",
   threshold = 0,
   keep_data = FALSE,
+  vinecop_object = NULL,
   show_trace = FALSE,
   cores = 1
 )
@@ -69,6 +71,8 @@ than 1 less smooth.}
 \item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
 
+\item{allow_rotations}{whether to allow rotations of the copula.}
+
 \item{trunc_lvl}{the truncation level of the vine copula; \code{Inf} means no
 truncation, \code{NA} indicates that the truncation level should be selected
 automatically by \code{\link[=mBICV]{mBICV()}}.}
@@ -83,6 +87,9 @@ threshold should be selected automatically by \code{\link[=mBICV]{mBICV()}}.}
 
 \item{keep_data}{whether the data should be stored (necessary for using
 \code{\link[=fitted]{fitted()}}).}
+
+\item{vinecop_object}{a \code{vinecop} object to be updated; if provided, only the
+parameters are fit; structure and families are kept the same.}
 
 \item{show_trace}{logical; whether a trace of the fitting progress should be
 printed.}
@@ -154,8 +161,8 @@ contour(fit)
 fit <- vinecop(u, family_set = "onepar", selcrit = "bic")
 summary(fit)
 
-## Gaussian D-vine
-fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss")
+## 1-truncated, Gaussian D-vine
+fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss", trunc_lvl = 1)
 plot(fit)
 contour(fit)
 
@@ -164,10 +171,6 @@ structure <- rvine_structure(order = 1:5, list(rep(5, 4)))
 structure
 fit <- vinecop(u, structure = structure, family = "gauss")
 plot(fit)
-
-## 1-truncated model with random structure
-fit <- vinecop(u, structure = rvine_structure_sim(5), trunc_lvl = 1)
-contour(fit)
 
 ## Model for discrete data
 x <- qpois(u, 1)  # transform to Poisson margins

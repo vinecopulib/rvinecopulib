@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -20,8 +20,8 @@ class VinecopSelector;
 
 //! @brief A class for vine copula models.
 //!
-//! A vine copula model is characterized by its structure (see
-//! `RVineStructure` objects) and the pair-copulas.
+//! @details A vine copula model is characterized by its structure (see
+//! `RVineStructure` objects) and the pair-copulas (see `Bicop` objects).
 class Vinecop
 {
 public:
@@ -64,6 +64,10 @@ public:
   // Methods modifying structure and/or families and parameters
   void select(const Eigen::MatrixXd& data,
               const FitControlsVinecop& controls = FitControlsVinecop());
+
+  void fit(const Eigen::MatrixXd& data,
+           const FitControlsBicop& controls = FitControlsBicop(),
+           const size_t num_threads = 1);
 
   DEPRECATED void select_all(
     const Eigen::MatrixXd& data,
@@ -130,8 +134,10 @@ public:
     const size_t num_threads = 1,
     const std::vector<int>& seeds = std::vector<int>()) const;
 
-  Eigen::MatrixXd rosenblatt(const Eigen::MatrixXd& u,
-                             const size_t num_threads = 1) const;
+  Eigen::MatrixXd rosenblatt(Eigen::MatrixXd u,
+                             const size_t num_threads = 1,
+                             bool randomize_discrete = true,
+                             std::vector<int> seeds = {}) const;
   Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd& u,
                                      const size_t num_threads = 1) const;
 
@@ -163,7 +169,7 @@ public:
     const size_t trunc_lvl = std::numeric_limits<size_t>::max());
   void truncate(size_t trunc_lvl);
 
-  std::string str() const;
+  std::string str(const std::vector<size_t>& trees={}) const;
 
 protected:
   size_t d_;
@@ -189,6 +195,7 @@ protected:
   void set_continuous_var_types() const;
   void set_var_types_internal(const std::vector<std::string>& var_types) const;
   int get_n_discrete() const;
+  bool is_discrete() const;
   Eigen::MatrixXd collapse_data(const Eigen::MatrixXd& u) const;
 };
 }

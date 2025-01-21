@@ -26,6 +26,7 @@
 #' @param psi0 see [mBICV()].
 #' @param presel whether the family set should be thinned out according to
 #'   symmetry characteristics of the data.
+#' @param allow_rotations whether to allow rotations of the copula.
 #' @param keep_data whether the data should be stored (necessary for using
 #'   [fitted()]).
 #' @param cores number of cores to use; if more than 1, estimation for multiple
@@ -44,7 +45,7 @@
 #' When at least one variable is discrete, more than two columns are required
 #' for `data`: the first \eqn{n \times 2} block contains realizations of
 #' \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
-#' realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+#' realizations of \eqn{F_{X_1}(x_1^-), F_{X_2}(x_2^-)}. The minus indicates a
 #' left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 #' \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
 #' limit and the cdf itself coincide. Respective columns can be omitted in the
@@ -66,12 +67,17 @@
 #'
 #' (`"gaussian"`, `"clayton"`, `"gumbel"`, `"frank"`, and `"joe"`),
 #'
-#' * `"twopar"` contains the parametric families with two parameters
+#' * `"twopar"` contains the parametric families with two parameters,
 #' (`"t"`, `"bb1"`, `"bb6"`, `"bb7"`, and `"bb8"`),
+#'
+#' * `"threepar"` contains the paramtric families with three parameters,
+#' (`"tawn"`),
 #'
 #' * `"elliptical"` contains the elliptical families,
 #'
 #' * `"archimedean"` contains the archimedean families,
+#'
+#' * `"ev"` contains the extreme-value families,
 #'
 #' * `"BB"` contains the BB families,
 #'
@@ -118,7 +124,8 @@
 bicop <- function(data, var_types = c("c", "c"), family_set = "all",
                   par_method = "mle", nonpar_method = "quadratic", mult = 1,
                   selcrit = "aic", weights = numeric(), psi0 = 0.9,
-                  presel = TRUE, keep_data = FALSE, cores = 1) {
+                  presel = TRUE, allow_rotations = TRUE,
+                  keep_data = FALSE, cores = 1) {
   assert_that(
     is.character(family_set),
     is.string(par_method),
@@ -128,6 +135,7 @@ bicop <- function(data, var_types = c("c", "c"), family_set = "all",
     is.numeric(weights),
     is.number(psi0), psi0 > 0, psi0 < 1,
     is.flag(presel),
+    is.flag(allow_rotations),
     is.flag(keep_data),
     is.number(cores), cores > 0,
     correct_var_types(var_types)
@@ -148,6 +156,7 @@ bicop <- function(data, var_types = c("c", "c"), family_set = "all",
     weights = weights,
     psi0 = psi0,
     presel = presel,
+    allow_rotations = allow_rotations,
     num_threads = cores,
     var_types = var_types
   )
@@ -166,15 +175,36 @@ bicop <- function(data, var_types = c("c", "c"), family_set = "all",
     weights = weights,
     psi0 = psi0,
     presel = presel
+    # temporarily disable to not make vinereg fail again
+    # allow_rotations = allow_rotations
   )
   bicop$nobs <- nrow(data)
 
-  as.bicop(bicop)
+  as.bicop(bicop, check = FALSE)
 }
 
-as.bicop <- function(object) {
+#' Convert list to bicop object
+#'
+#' @param object a list containing entries for `"family"`, `"rotation"`,
+#' `"parameters"`, and `"npars"`.
+#' @param check whether to check for validity of the family/parameter
+#'  specification.
+#'
+#' @return A bicop object corresponding to the specification in `object`.
+#' @export
+#'
+#' @examples
+#' as.bicop(list(family = "gumbel", rotation = 90, parameters = 2, npars = 1))
+as.bicop <- function(object, check = TRUE) {
   if (!all(c("family", "rotation", "parameters", "npars") %in% names(object))) {
     stop("object cannot be coerced to class 'bicop'")
+  }
+  object$parameters <- as.matrix(object$parameters)
+  if (is.null(object$var_types)) {
+    object$var_types <- c("c", "c")
+  }
+  if (check) {
+    bicop_check_cpp(object)
   }
   structure(object, class = c("bicop", "bicop_dist"))
 }
@@ -190,7 +220,7 @@ as.bicop <- function(object) {
 #' |---------------|-----------------------|---------------|
 #' | -             | Independence          | "indep"       |
 #' | Elliptical    | Gaussian              | "gaussian"    |
-#' | "             | Student t             | "student"     |
+#' | "             | Student t             | "t"           |
 #' | Archimedean   | Clayton               | "clayton"     |
 #' | "             | Gumbel                | "gumbel"      |
 #' | "             | Frank                 | "frank"       |
@@ -199,6 +229,7 @@ as.bicop <- function(object) {
 #' | "             | Joe-Gumbel (BB6)      | "bb6"         |
 #' | "             | Joe-Clayton (BB7)     | "bb7"         |
 #' | "             | Joe-Frank (BB8)       | "bb8"         |
+#' | Extreme-value | Tawn                  | "tawn"        |
 #' | Nonparametric | Transformation kernel | "tll"         |
 #'
 #' @return
@@ -247,7 +278,15 @@ bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0),
   assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
   assert_that(correct_var_types(var_types))
   if (family %in% setdiff(family_set_nonparametric, "indep")) {
-    stop("bicop_dist should not be used directly with nonparametric families.")
+    if (length(parameters) > 0) {
+      parameters <- as.matrix(parameters)
+      stopifnot(dim(parameters) == c(30, 30))
+      margin_integrals <- c(rowMeans(parameters), colMeans(parameters))
+      if (any(abs(margin_integrals - 1) > 0.5))
+        warning("margins implied by 'parameters' deviate strongly from the standard uniform distribution.")
+    } else {
+      parameters <- matrix(1, 30, 30)
+    }
   }
 
   family <- family_set_all[pmatch(family, family_set_all)]

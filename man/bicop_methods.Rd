@@ -87,7 +87,7 @@ other variable, that is \code{v} when \code{cond_var = 1} and \code{u} when \cod
 When at least one variable is discrete, more than two columns are required
 for \code{u}: the first \eqn{n \times 2} block contains realizations of
 \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
-realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+realizations of \eqn{F_{X_1}(x_1^-), F_{X_2}(x_2^-)}. The minus indicates a
 left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
 limit and the cdf itself coincide. Respective columns can be omitted in the
@@ -95,8 +95,10 @@ second block.
 }
 }
 \note{
-The functions can optionally be used with a \link{bicop_dist} object, e.g.,
-\code{dbicop(c(0.1, 0.5), bicop_dist("indep"))}.
+The functions can optionally be used with a \link{bicop_dist} object in place
+of the \code{family} argument, e.g.,
+\code{dbicop(c(0.1, 0.5), bicop_dist("indep"))} or
+\code{hbicop(c(0.1, 0.5), 2, bicop_dist("indep"))}.
 }
 \examples{
 ## evaluate the copula density

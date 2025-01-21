@@ -1,3 +1,26 @@
+# rvinecopulib 0.7.1.1.0
+
+Update following a upgrade of the C++ backend vinecopulib to 0.7.1, see
+https://github.com/vinecopulib/vinecopulib/blob/main/NEWS.md.
+
+The main changes on the R end are:
+
+* improved documentation,
+
+* support for zero-inflated variables,
+
+* added new Tawn copula family,
+
+* new argument `allow_rotations` to disable rotations of copula families,
+
+* added variable names to vinecop summary (#276)
+
+* fixed handling of logistic distribution (#275)
+
+* fix NA handling in vine() control checks (#266)
+
+* allow bicop_dist() with tll (#268)
+
 # rvinecopulib 0.6.3.1.1
 
 - add `-D_HAS_AUTO_PTR_ETC=0` flag to disable deprecated features used in boost.

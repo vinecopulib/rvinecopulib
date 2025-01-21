@@ -129,7 +129,6 @@ rvine <- function(n, vine, qrng = FALSE, cores = 1) {
   if (!inherits(vine, "vine") & depth(vine$margins) == 1) {
     vine$margins <- replicate(dim(vine)[1], vine$margins, simplify = FALSE)
   }
-
   # use quantile transformation for marginals
   X <- dpq_marg(U, vine, "q")
   colnames(X) <- vine$names
@@ -271,14 +270,6 @@ eval_one_dpq <- function(x, margin, what = "p") {
   if (is.factor(dpq))
     dpq <- as.data.frame(dpq)
   dpq
-}
-
-collate_u <- function(x) {
-  if (!all(is.na(x$data))) {
-    u <- dpq_marg(x$data, x)
-    x$copula$data <- u
-  }
-  x
 }
 
 #' @export

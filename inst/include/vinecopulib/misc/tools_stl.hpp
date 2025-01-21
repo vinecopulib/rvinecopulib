@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -11,6 +11,9 @@
 #include <iterator>
 #include <numeric>
 #include <vector>
+#include <iomanip>  // For std::setw
+#include <sstream>
+#include <string>
 
 namespace vinecopulib {
 
@@ -148,6 +151,34 @@ log1p(const double& x)
   } else {
     return std::log1p(x);
   }
+}
+
+// Function to format vectors of strings like a DataFrame and return a stringstream
+inline std::stringstream dataframe_to_string(const std::vector<std::vector<std::string>>& columns) {
+
+    // TODO: Check if all vectors have the same length
+
+    // Determine maximum column width for pretty printing
+    std::vector<size_t> col_widths;
+    for (const auto& col : columns) {
+        size_t max_width = 0;
+        for (const auto& item : col) {
+            max_width = std::max(max_width, item.size());
+        }
+        col_widths.push_back(max_width);
+    }
+
+    std::stringstream ss;
+    // Assuming all columns have the same number of rows
+    size_t num_rows = columns[0].size();
+    for (size_t row = 0; row < num_rows; ++row) {
+        for (size_t col = 0; col < columns.size(); ++col) {
+            ss << std::setw(static_cast<int>(col_widths[col])) << columns[col][row] << " ";
+        }
+        ss << std::endl;
+    }
+
+    return ss;
 }
 }
 }

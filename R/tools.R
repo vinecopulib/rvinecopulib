@@ -78,9 +78,11 @@ expand_family <- function(family) {
     family,
     "archimedean" = family_set_archimedean,
     "elliptical" = family_set_elliptical,
+    "ev" = family_set_extreme_value,
     "bbs" = family_set_bb,
     "oneparametric" = family_set_onepar,
     "twoparametric" = family_set_twopar,
+    "threeparametric" = family_set_threepar,
     "parametric" = family_set_parametric,
     "nonparametric" = family_set_nonparametric,
     "itau" = family_set_itau,
@@ -161,7 +163,7 @@ depth <- function(this) ifelse(is.list(this), 1L + max(sapply(this, depth)), 0L)
 
 supported_distributions <- c(
   "beta", "cauchy", "chisq", "exp", "f", "gamma",
-  "lnorm", "norm", "t", "unif", "weibull"
+  "logis", "lnorm", "norm", "t", "unif", "weibull"
 )
 
 #' @importFrom stats pbeta qbeta qbeta dcauchy pcauchy qcauchy dchisq pchisq
@@ -209,58 +211,12 @@ get_npars_distr <- function(distr) {
     gamma = 2,
     lnorm = 2,
     norm = 2,
-    t = ifelse("ncp" %in% names(distr), 3, 2),
+    logis = 2,
+    t = ifelse("ncp" %in% names(distr), 2, 1),
     unif = 2,
     weibull = ifelse("scale" %in% names(distr), 2, 1)
   )
 }
-
-#' @param data the data (after expand_factors() was called).
-#' @param ctrl the margin controls object (after expand_margin_controls() was
-#'   called).
-#' @noRd
-check_margin_controls <- function(data, ctrl) {
-  nms <- colnames(data)
-  if (is.null(nms)) {
-    nms <- as.character(seq_len(ncol(data)))
-  }
-  lapply(seq_len(NCOL(data)), function(k) {
-    msg_var <- paste0("Problem with margin_controls for variable ", nms[k], ": ")
-    tryCatch(
-      assert_that(
-        is.numeric(ctrl$mult[k]), ctrl$mult[k] > 0,
-        is.numeric(ctrl$xmin[k]), is.numeric(ctrl$xmax[k]),
-        is.na(ctrl$bw[k]) | (is.numeric(ctrl$bw[k]) & (ctrl$bw[k] > 0)),
-        is.numeric(ctrl$deg[k])
-      ),
-      error = function(e) stop(msg_var, e$message)
-    )
-
-    if (is.ordered(data[, k]) & (!is.nan(ctrl$xmin[k]) | !is.nan(ctrl$xmax[k]))) {
-      stop(msg_var, "xmin and xmax are not meaningful for x of type ordered.")
-    }
-
-    if (!is.nan(ctrl$xmax[k]) & !is.nan(ctrl$xmin[k])) {
-      if (ctrl$xmin[k] > ctrl$xmax[k]) {
-        stop(msg_var, "xmin is larger than xmax.")
-      }
-    }
-    if (!is.nan(ctrl$xmin[k])) {
-      if (any(data[, k] < ctrl$xmin[k])) {
-        stop(msg_var, "not all data are larger than xmin.")
-      }
-    }
-    if (!is.nan(ctrl$xmax[k])) {
-      if (any(data[, k] > ctrl$xmax[k])) {
-        stop(msg_var, "not all data are samller than xmax.")
-      }
-    }
-    if (!(ctrl$deg[k] %in% 0:2)) {
-      stop(msg_var, "deg must be either 0, 1, or 2.")
-    }
-  })
-}
-
 
 #' @noRd
 #' @importFrom assertthat assert_that on_failure<-
@@ -348,7 +304,7 @@ pseudo_obs <- function(x, ties_method = "average", lower_tail = TRUE) {
 #'
 #' @details The corrected empirical CDF is defined as
 #' \deqn{
-#' F_n(x) = \frac{1}{n + 1} \min\biggl\{1, \sum_{i = 1}^n 1(X_i \le x)\biggr\}
+#' F_n(x) = \frac{1}{n + 1} \max\biggl\{1, \sum_{i = 1}^n 1(X_i \le x)\biggr\}
 #' }
 #'
 #' @param x numeric vector of observations
@@ -386,6 +342,7 @@ print.summary_df <- function(x, ..., rows = 1:10) {
   if (nrow(x) > length(rows)) {
     cat("# ... with", nrow(x) - length(rows), "more rows\n")
   }
+  print_varname_legend(x)
   invisible(x)
 }
 
@@ -408,6 +365,36 @@ print_fit_info <- function(x) {
   cat("AIC =", round(-2 * ll[1] + 2 * attr(ll, "df"), 2), "  ")
   cat("BIC =", round(-2 * ll[1] + log(x$nobs) * attr(ll, "df"), 2), "  ")
   cat("\n")
+}
+
+#' internal function
+#' @noRd
+print_varname_legend <- function(object) {
+  # show names if provided
+  var_names <- attr(object, "var_names")
+  d <- length(var_names)
+  if ((d > 0) && any(var_names != paste0("V", 1:d))) {
+    linelen <- 80
+    d <- length(var_names)
+    cat("\n")
+    cat("---\n")
+    txt <- paste0(1, " <-> ", var_names[1])
+    for (i in 2:(d - 1)) {
+      if (nchar(txt) > linelen) {
+        cat(txt, ",\n", sep = "")
+        txt <- paste0(i, " <-> ", var_names[i])
+      } else {
+        txt <- paste0(txt, ",   ", i, " <-> ", var_names[i])
+      }
+    }
+    if (nchar(txt) > linelen) {
+      cat(txt, ",\n", sep = "")
+      txt <- paste0(d, " <-> ", var_names[d])
+    } else {
+      txt <- paste0(txt, ",   ", d, " <-> ", var_names[d])
+    }
+    cat(txt, "\n")
+  }
 }
 
 #' internal function : synchronize C++ random number generators with R

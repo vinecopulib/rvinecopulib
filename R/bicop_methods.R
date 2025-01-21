@@ -17,8 +17,10 @@
 #'   both continuous (default), or `c("c", "d")` for first variable continuous
 #'   and second discrete.
 #'
-#' @note The functions can optionally be used with a [bicop_dist] object, e.g.,
-#'   `dbicop(c(0.1, 0.5), bicop_dist("indep"))`.
+#' @note The functions can optionally be used with a [bicop_dist] object in place
+#' of the `family` argument, e.g.,
+#'   `dbicop(c(0.1, 0.5), bicop_dist("indep"))` or
+#'   `hbicop(c(0.1, 0.5), 2, bicop_dist("indep"))`.
 #'
 #' @details
 #' See [bicop] for the various implemented copula families.
@@ -38,7 +40,7 @@
 #' When at least one variable is discrete, more than two columns are required
 #' for `u`: the first \eqn{n \times 2} block contains realizations of
 #' \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
-#' realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+#' realizations of \eqn{F_{X_1}(x_1^-), F_{X_2}(x_2^-)}. The minus indicates a
 #' left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 #' \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
 #' limit and the cdf itself coincide. Respective columns can be omitted in the
@@ -202,7 +204,7 @@ ktau_to_par <- function(family, tau) {
 #' When at least one variable is discrete, more than two columns are required
 #' for `newdata`: the first \eqn{n \times 2} block contains realizations of
 #' \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
-#' realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+#' realizations of \eqn{F_{X_1}(x_1^-), F_{X_2}(x_2^-)}. The minus indicates a
 #' left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 #' \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
 #' limit and the cdf itself coincide. Respective columns can be omitted in the

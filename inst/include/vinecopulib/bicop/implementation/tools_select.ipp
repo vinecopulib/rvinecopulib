@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -10,7 +10,7 @@
 
 namespace vinecopulib {
 namespace tools_select {
-//! returns only those rotations that yield the appropriate
+//! @brief Gets only those rotations that yield the appropriate
 //! association direction.
 //! @param data Captured by reference to avoid data copies;
 //!     should NOT be modified though.
@@ -23,10 +23,12 @@ create_candidate_bicops(const Eigen::MatrixXd& data,
   // check whether dependence is negative or positive
   double tau = wdm::wdm(data.leftCols(2), "tau", controls.get_weights())(0, 1);
   std::vector<int> which_rotations;
-  if (tau > 0) {
-    which_rotations = { 0, 180 };
-  } else {
-    which_rotations = { 90, 270 };
+  if (controls.get_allow_rotations()) {
+    if (tau > 0) {
+      which_rotations = { 0, 180 };
+    } else {
+      which_rotations = { 90, 270 };
+    }
   }
 
   // create Bicop objects for all valid family/rotation combinations
@@ -35,8 +37,12 @@ create_candidate_bicops(const Eigen::MatrixXd& data,
     if (tools_stl::is_member(fam, bicop_families::rotationless)) {
       new_bicops.push_back(Bicop(fam, 0));
     } else {
-      new_bicops.push_back(Bicop(fam, which_rotations[0]));
-      new_bicops.push_back(Bicop(fam, which_rotations[1]));
+      if (controls.get_allow_rotations()) {
+        new_bicops.push_back(Bicop(fam, which_rotations[0]));
+        new_bicops.push_back(Bicop(fam, which_rotations[1]));
+      } else if (tau > 0) {
+        new_bicops.push_back(Bicop(fam, 0));
+      }
     }
   }
 

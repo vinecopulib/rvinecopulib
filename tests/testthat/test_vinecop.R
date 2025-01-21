@@ -59,6 +59,16 @@ test_that("print/summary generics work", {
   expect_output(print(fit))
   expect_s3_class(s <- summary(fit), "summary_df")
   expect_is(s, "data.frame")
+
+  fit$names <- letters[1:3]
+  out <- capture.output(summary(fit))
+  expect_eql(out[length(out)], "1 <-> a,   2 <-> b,   3 <-> c ")
+
+  fit$names <- c("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                 "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                 "cccccccccccccccccccccccccccccccccccccccccccccccc")
+  out <- capture.output(summary(fit))
+  expect_eql(out[length(out)], "3 <-> cccccccccccccccccccccccccccccccccccccccccccccccc ")
 })
 
 test_that("truncation works", {
@@ -93,3 +103,18 @@ test_that("d = 1 works", {
   expect_eql(mBICV(vc), 0)
   expect_eql(dim(summary(vc))[1], 0)
 })
+
+test_that("fitting only parameters works", {
+  vc <- vinecop(u, family = "onepar")
+  vc2 <- vinecop(u, vinecop_object = vc, show_trace = TRUE)
+  expect_equal(vc[1:6], vc2[1:6])
+
+  vc <- vinecop(u, family = "tll")
+  vc2 <- vinecop(u, vinecop_object = vc, mult = 10)
+  expect_true(TRUE != all.equal(vc$pair_copulas[[1]][[1]]$parameters,
+                                vc2$pair_copulas[[1]][[1]]$parameters))
+
+  expect_warning(vinecop(u, structure = dvine_structure(3), vinecop = vc))
+  expect_warning(vinecop(u, family_set = "gauss", vinecop = vc))
+})
+

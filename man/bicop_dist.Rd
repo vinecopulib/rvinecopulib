@@ -43,7 +43,7 @@ parameters, and variable types.
    type \tab name \tab name in R \cr
    - \tab Independence \tab "indep" \cr
    Elliptical \tab Gaussian \tab "gaussian" \cr
-   " \tab Student t \tab "student" \cr
+   " \tab Student t \tab "t" \cr
    Archimedean \tab Clayton \tab "clayton" \cr
    " \tab Gumbel \tab "gumbel" \cr
    " \tab Frank \tab "frank" \cr
@@ -52,6 +52,7 @@ parameters, and variable types.
    " \tab Joe-Gumbel (BB6) \tab "bb6" \cr
    " \tab Joe-Clayton (BB7) \tab "bb7" \cr
    " \tab Joe-Frank (BB8) \tab "bb8" \cr
+   Extreme-value \tab Tawn \tab "tawn" \cr
    Nonparametric \tab Transformation kernel \tab "tll" \cr
 }
 

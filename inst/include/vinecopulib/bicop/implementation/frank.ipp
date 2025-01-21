@@ -1,11 +1,9 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <boost/math/special_functions/expm1.hpp>
-#include <boost/math/special_functions/log1p.hpp>
 #include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
@@ -25,28 +23,28 @@ inline double
 FrankBicop::generator(const double& u)
 {
   double theta = double(this->parameters_(0));
-  return -std::log(boost::math::expm1(-theta * u) / boost::math::expm1(-theta));
+  return -std::log(std::expm1(-theta * u) / std::expm1(-theta));
 }
 
 inline double
 FrankBicop::generator_inv(const double& u)
 {
   double theta = double(this->parameters_(0));
-  return -boost::math::log1p(boost::math::expm1(-theta) * std::exp(-u)) / theta;
+  return -std::log1p(std::expm1(-theta) * std::exp(-u)) / theta;
 }
 
 inline double
 FrankBicop::generator_derivative(const double& u)
 {
   double theta = double(this->parameters_(0));
-  return -theta / boost::math::expm1(theta * u);
+  return -theta / std::expm1(theta * u);
 }
 
 // inline double FrankBicop::generator_derivative2(const double &u)
 //{
 //    double theta = double(this->parameters_(0));
 //    return std::pow(theta, 2) /
-//           std::pow(boost::math::expm1(theta * u) * std::exp(-theta * u / 2),
+//           std::pow(std::expm1(theta * u) * std::exp(-theta * u / 2),
 //           2);
 //}
 

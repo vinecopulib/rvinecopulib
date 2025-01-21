@@ -10,18 +10,30 @@ mylist <- list(order = 1:4, struct_array = list(c(4, 4, 4), c(3, 3), 2))
 test_that("constructor and as/is generics work", {
   expect_silent(rvs <- as_rvine_structure(mylist)) ## calls the constructor
   expect_silent(rvm <- as_rvine_matrix(mylist)) ## true coercion
+
   expect_silent(as_rvine_structure(mat)) ## calls the constructors
+  expect_silent(as_rvine_structure(mat, validate = FALSE))
   expect_silent(as_rvine_matrix(mat)) ## true coercion
-  expect_silent(as_rvine_matrix(as_rvine_matrix(mat)))
+
+  expect_silent(as_rvine_matrix(rvm, validate = FALSE))
+  expect_silent(as_rvine_matrix(rvm, validate = TRUE))
+  expect_silent(as_rvine_structure(rvm, validate = FALSE))
+  expect_silent(as_rvine_structure(rvm, validate = TRUE))
+
+  expect_silent(as_rvine_matrix(rvs, validate = FALSE))
+  expect_silent(as_rvine_matrix(rvs, validate = TRUE))
+  expect_silent(as_rvine_structure(rvs, validate = FALSE))
+  expect_silent(as_rvine_structure(rvs, validate = TRUE))
+
   expect_true(is.rvine_structure(rvs))
   expect_true(is.rvine_matrix(rvm))
   mat[1, 1] <- 0
   expect_silent(as_rvine_matrix(mat, validate = FALSE))
-})
+  })
 
 test_that("print/dim generics work", {
   rvs <- as_rvine_structure(mylist)
-  rvm <- as_rvine_matrix(mat)
+  rvm <- as_rvine_matrix(rvs)
   expect_output(print(rvs))
   expect_output(print(rvm))
   expect_equiv(dim(rvs), c(4, 3))
@@ -69,3 +81,12 @@ test_that("d = 1 works", {
   expect_silent(cvine_structure(1))
 })
 
+
+test_that("rvine_structure_sim() works", {
+  struct <- rvine_structure_sim(4)
+  expect_equiv(dim(struct), c(4, 3))
+  expect_equiv(sort(struct$order), 1:4)
+  expect_output(print(struct))
+  expect_no_error(plot(struct))
+  expect_eql(rvine_structure_sim(10, natural_order = TRUE)$order, 1:10)
+})

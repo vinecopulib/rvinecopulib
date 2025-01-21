@@ -15,6 +15,7 @@ bicop(
   weights = numeric(),
   psi0 = 0.9,
   presel = TRUE,
+  allow_rotations = TRUE,
   keep_data = FALSE,
   cores = 1
 )
@@ -56,6 +57,8 @@ than 1 less smooth.}
 \item{presel}{whether the family set should be thinned out according to
 symmetry characteristics of the data.}
 
+\item{allow_rotations}{whether to allow rotations of the copula.}
+
 \item{keep_data}{whether the data should be stored (necessary for using
 \code{\link[=fitted]{fitted()}}).}
 
@@ -88,7 +91,7 @@ discarded before fitting the copula.
 When at least one variable is discrete, more than two columns are required
 for \code{data}: the first \eqn{n \times 2} block contains realizations of
 \eqn{F_{X_1}(x_1), F_{X_2}(x_2)}. The second \eqn{n \times 2} block contains
-realizations of \eqn{F_{X_1}(x_1^-), F_{X_1}(x_1^-)}. The minus indicates a
+realizations of \eqn{F_{X_1}(x_1^-), F_{X_2}(x_2^-)}. The minus indicates a
 left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 \eqn{F_{X_1}(x_1^-) = F_{X_1}(x_1 - 1)}. For continuous variables the left
 limit and the cdf itself coincide. Respective columns can be omitted in the
@@ -109,10 +112,13 @@ following convenience definitions:
 
 (\code{"gaussian"}, \code{"clayton"}, \code{"gumbel"}, \code{"frank"}, and \code{"joe"}),
 \itemize{
-\item \code{"twopar"} contains the parametric families with two parameters
+\item \code{"twopar"} contains the parametric families with two parameters,
 (\code{"t"}, \code{"bb1"}, \code{"bb6"}, \code{"bb7"}, and \code{"bb8"}),
+\item \code{"threepar"} contains the paramtric families with three parameters,
+(\code{"tawn"}),
 \item \code{"elliptical"} contains the elliptical families,
 \item \code{"archimedean"} contains the archimedean families,
+\item \code{"ev"} contains the extreme-value families,
 \item \code{"BB"} contains the BB families,
 \item \code{"itau"} families for which estimation by Kendall's tau inversion is
 available (\code{"indep"},\code{"gaussian"}, \code{"t"},\code{"clayton"}, \code{"gumbel"},

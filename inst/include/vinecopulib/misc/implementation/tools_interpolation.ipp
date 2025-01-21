@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -89,28 +89,31 @@ InterpolationGrid::normalize_margins(int times)
   }
 }
 
+inline ptrdiff_t
+InterpolationGrid::binary_search(double x)
+{
+  ptrdiff_t low = 0;
+  ptrdiff_t high = grid_points_.size() - 2; // there's one cell less than points
+  ptrdiff_t mid;
+
+  while (low < high) {
+    mid = (low + high + 1) / 2; // Use upper midpoint
+    if (grid_points_(mid) <= x) {
+      low = mid; // Move lower bound up
+    } else {
+      high = mid - 1; // Move upper bound down
+    }
+  }
+
+  return low;
+}
+
 inline Eigen::Matrix<ptrdiff_t, 1, 2>
 InterpolationGrid::get_indices(double x0, double x1)
 {
   Eigen::Matrix<ptrdiff_t, 1, 2> out;
-  out.setZero();
-  bool found_i = false;
-  bool found_j = false;
-  for (ptrdiff_t k = 1; k < (grid_points_.size() - 1); ++k) {
-    if ((x0 >= grid_points_(k))) {
-      out(0) = k;
-    } else {
-      found_i = true;
-    }
-    if ((x1 >= grid_points_(k))) {
-      out(1) = k;
-    } else {
-      found_j = true;
-    }
-    if (found_i & found_j) {
-      break;
-    }
-  }
+  out(0) = this->binary_search(x0);
+  out(1) = this->binary_search(x1);
   return out;
 }
 

@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -7,7 +7,6 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include <boost/math/special_functions/fpclassify.hpp> // isnan
 #include <functional>
 
 namespace vinecopulib {
@@ -22,7 +21,7 @@ Eigen::MatrixXd
 unaryExpr_or_nan(const Eigen::MatrixXd& x, const T& func)
 {
   return x.unaryExpr([&func](const double& y) {
-    if ((boost::math::isnan)(y)) {
+    if ((std::isnan)(y)) {
       return std::numeric_limits<double>::quiet_NaN();
     } else {
       return func(y);
@@ -35,7 +34,7 @@ Eigen::VectorXd
 binaryExpr_or_nan(const Eigen::MatrixXd& u, const T& func)
 {
   auto func_or_nan = [&func](const double& u1, const double& u2) {
-    if ((boost::math::isnan)(u1) || (boost::math::isnan)(u2)) {
+    if ((std::isnan)(u1) || (std::isnan)(u2)) {
       return std::numeric_limits<double>::quiet_NaN();
     } else {
       return func(u1, u2);

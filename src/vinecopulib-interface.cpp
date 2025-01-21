@@ -30,23 +30,25 @@ Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
                             double psi0,
                             bool presel,
                             size_t num_threads,
+                            bool allow_rotations,
                             std::vector<std::string> var_types)
 {
   std::vector<BicopFamily> fam_set(family_set.size());
   for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
     fam_set[fam] = to_cpp_family(family_set[fam]);
   }
-  FitControlsBicop controls(
-      fam_set,
-      par_method,
-      nonpar_method,
-      mult,
-      selcrit,
-      weights,
-      psi0,
-      presel,
-      num_threads
-  );
+  FitControlsBicop controls;
+  controls.set_family_set(fam_set);
+  controls.set_parametric_method(par_method);
+  controls.set_nonparametric_method(nonpar_method);
+  controls.set_nonparametric_mult(mult);
+  controls.set_selection_criterion(selcrit);
+  controls.set_weights(weights);
+  controls.set_psi0(psi0);
+  controls.set_preselect_families(presel);
+  controls.set_allow_rotations(allow_rotations);
+  controls.set_num_threads(num_threads);
+
   Bicop bicop_cpp;
   bicop_cpp.set_var_types(var_types);
   bicop_cpp.select(data, controls);
@@ -103,13 +105,6 @@ Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r,
                               std::vector<int> seeds)
 {
   return bicop_wrap(bicop_r).simulate(n, qrng, seeds);
-}
-
-// [[Rcpp::export()]]
-double bicop_loglik_cpp(Eigen::MatrixXd& u,
-                        const Rcpp::List& bicop_r)
-{
-  return bicop_wrap(bicop_r).loglik(u);
 }
 
 // [[Rcpp::export()]]
@@ -180,9 +175,11 @@ Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U,
                                        const Rcpp::List& vinecop_r,
-                                       size_t cores)
+                                       size_t cores,
+                                       bool randomize_discrete,
+                                       std::vector<int> seeds)
 {
-  return vinecop_wrap(vinecop_r).rosenblatt(U, cores);
+  return vinecop_wrap(vinecop_r).rosenblatt(U, cores, randomize_discrete, seeds);
 }
 
 // [[Rcpp::export()]]
@@ -214,23 +211,6 @@ Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u,
 }
 
 // [[Rcpp::export()]]
-double vinecop_loglik_cpp(const Eigen::MatrixXd& u,
-                          const Rcpp::List& vinecop_r,
-                          size_t cores)
-{
-  return vinecop_wrap(vinecop_r).loglik(u, cores);
-}
-
-// [[Rcpp::export()]]
-double vinecop_mbicv_cpp(const Eigen::MatrixXd& u,
-                         const Rcpp::List& vinecop_r,
-                         double psi0,
-                         size_t cores)
-{
-  return vinecop_wrap(vinecop_r).mbicv(u, psi0, cores);
-}
-
-// [[Rcpp::export()]]
 Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
                               Rcpp::List& structure,
                               std::vector<std::string> family_set,
@@ -246,6 +226,8 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
                               bool select_truncation_level,
                               bool select_threshold,
                               bool preselect_families,
+                              bool select_families,
+                              bool allow_rotations,
                               bool show_trace,
                               size_t num_threads,
                               std::vector<std::string> var_types)
@@ -255,23 +237,24 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
     fam_set[fam] = to_cpp_family(family_set[fam]);
   }
 
-  FitControlsVinecop fit_controls(
-      fam_set,
-      par_method,
-      nonpar_method,
-      mult,
-      truncation_level,
-      tree_criterion,
-      threshold,
-      selection_criterion,
-      weights,
-      psi0,
-      preselect_families,
-      select_truncation_level,
-      select_threshold,
-      show_trace,
-      num_threads
-  );
+  FitControlsVinecop fit_controls;
+  fit_controls.set_family_set(fam_set);
+  fit_controls.set_parametric_method(par_method);
+  fit_controls.set_nonparametric_method(nonpar_method);
+  fit_controls.set_nonparametric_mult(mult);
+  fit_controls.set_selection_criterion(selection_criterion);
+  fit_controls.set_weights(weights);
+  fit_controls.set_psi0(psi0);
+  fit_controls.set_preselect_families(preselect_families);
+  fit_controls.set_allow_rotations(allow_rotations);
+  fit_controls.set_num_threads(num_threads);
+  fit_controls.set_trunc_lvl(truncation_level);
+  fit_controls.set_tree_criterion(tree_criterion);
+  fit_controls.set_threshold(threshold);
+  fit_controls.set_select_threshold(select_threshold);
+  fit_controls.set_select_trunc_lvl(select_truncation_level);
+  fit_controls.set_select_families(select_families);
+  fit_controls.set_show_trace(show_trace);
 
   Vinecop vinecop_cpp(rvine_structure_wrap(structure, false));
   vinecop_cpp.set_var_types(var_types);
@@ -281,11 +264,35 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data,
 }
 
 // [[Rcpp::export()]]
+Rcpp::List vinecop_fit_cpp(const Eigen::MatrixXd& data,
+                              Rcpp::List& vinecop_r,
+                              std::string par_method,
+                              std::string nonpar_method,
+                              double mult,
+                              const Eigen::VectorXd& weights,
+                              bool show_trace,
+                              size_t num_threads)
+{
+  FitControlsVinecop fit_controls;
+  fit_controls.set_parametric_method(par_method);
+  fit_controls.set_nonparametric_method(nonpar_method);
+  fit_controls.set_nonparametric_mult(mult);
+  fit_controls.set_weights(weights);
+  fit_controls.set_show_trace(show_trace);
+  fit_controls.set_num_threads(num_threads);
+
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r, false);
+  vinecop_cpp.fit(data, fit_controls);
+
+  return vinecop_wrap(vinecop_cpp, true);
+}
+
+// [[Rcpp::export()]]
 std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
-                                        const Eigen::VectorXi& nlevels,
-                                        const Eigen::VectorXd& mult,
                                         const Eigen::VectorXd& xmin,
                                         const Eigen::VectorXd& xmax,
+                                        const std::vector<std::string>& type,
+                                        const Eigen::VectorXd& mult,
                                         const Eigen::VectorXd& bw,
                                         const Eigen::VectorXi& deg,
                                         const Eigen::VectorXd& weights,
@@ -297,14 +304,15 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   RcppThread::parallelFor(0,
                           d,
                           [&](const size_t& k) {
-                            fits_cpp[k] = kde1d::Kde1d(data.col(k),
-                                                       nlevels(k),
-                                                       bw(k),
-                                                       mult(k),
-                                                       xmin(k),
-                                                       xmax(k),
-                                                       deg(k),
-                                                       weights);
+                            fits_cpp[k] = kde1d::Kde1d(
+                              xmin(k),
+                              xmax(k),
+                              type.at(k),
+                              mult(k),
+                              bw(k),
+                              deg(k)
+                            );
+                            fits_cpp[k].fit(data.col(k), weights);
                           },
                           num_threads);
 
@@ -315,4 +323,7 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   }
   return fits_r;
 }
+
+
+
 

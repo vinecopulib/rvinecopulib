@@ -1,10 +1,9 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <boost/math/special_functions/fpclassify.hpp>
 #include <fstream>
 #include <iostream>
 #include <vinecopulib/misc/tools_stl.hpp>
@@ -43,7 +42,7 @@ remove_nans(Eigen::MatrixXd& x, Eigen::VectorXd& weights)
   for (size_t i = 0; i < last + 1; i++) {
     bool row_has_nan = x.row(i).array().isNaN().any();
     if (weights.size() > 0) {
-      row_has_nan = row_has_nan || (boost::math::isnan)(weights(i));
+      row_has_nan = row_has_nan || (std::isnan)(weights(i));
       row_has_nan = row_has_nan || (weights(i) == 0.0);
     }
     if (row_has_nan) {
@@ -155,7 +154,7 @@ invert_f(const Eigen::VectorXd& x,
   if (fm.array().isNaN().any()) {
     size_t n = x.size();
     for (size_t j = 0; j < n; j++) {
-      if ((boost::math::isnan)(fm(j))) {
+      if ((std::isnan)(fm(j))) {
         x_tmp(j) = std::numeric_limits<double>::quiet_NaN();
       }
     }

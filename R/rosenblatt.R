@@ -15,6 +15,8 @@
 #'    `bicop_dist()`, `vinecop_dist()`, and `vine_dist()`.
 #' @param cores if `>1`, computation is parallelized over `cores` batches (rows
 #'    of `u`).
+#' @param randomize_discrete Whether to randomize the transform for discrete
+#'   variables; see Details.
 #'
 #' @details
 #' The Rosenblatt transform (Rosenblatt, 1952) \eqn{U = T(V)} of a random vector
@@ -37,14 +39,31 @@
 #' The formulas above assume a vine copula model with order \eqn{d, \dots, 1}.
 #' More generally, `rosenblatt()` returns the variables
 #' \deqn{
-#'   U_{M[d + 1- j, j]}= F(V_{M[d + 1- j, j]} | V_{M[d - j, j - 1]}, \dots, V_{M[1, 1]}),
+#'   U_{M[d + 1- j, j]}= F(V_{M[d - j + 1, j]} | V_{M[d - j, j]}, \dots, V_{M[1, j]}),
 #' }
 #' where \eqn{M} is the structure matrix. Similarly, `inverse_rosenblatt()`
 #' returns
 #' \deqn{
-#'   V_{M[d + 1- j, j]}= F^{-1}(U_{M[d + 1- j, j]} | U_{M[d - j, j - 1]}, \dots, U_{M[1, 1]}).
+#'   V_{M[d + 1- j, j]}= F^{-1}(U_{M[d - j + 1, j]} | U_{M[d - j, j]}, \dots, U_{M[1, j]}).
 #' }
 #'
+#' If some variables have atoms, Brockwell (10.1016/j.spl.2007.02.008) proposed
+#' a simple randomization scheme to ensure that output is still independent
+#' uniform if the model is correct. The transformation reads
+#' \deqn{ U_{M[d - j,
+#' j]}= W_{d - j} F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0,
+#' 0]}) + (1 - W_{d - j}) F^-(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots,
+#' V_{M[0, 0]}),
+#' }
+#' where \eqn{F^-}
+#' is the left limit of the conditional cdf
+#' and \eqn{W_1, \dots, W_d} are are independent standard uniform random
+#' variables. This is used by default. If you are interested in the conditional
+#' probabilities
+#' \deqn{
+#'  F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0, 0]}),
+#' }
+#' set `randomize_discrete = FALSE`.
 #'
 #' @examples
 #' # simulate data with some dependence
@@ -66,7 +85,7 @@
 #' vc <- fit$copula
 #' rosenblatt(pseudo_obs(x), vc)
 #' @export
-rosenblatt <- function(x, model, cores = 1) {
+rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
   assert_that(
     inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist")),
     is.number(cores)
@@ -77,18 +96,25 @@ rosenblatt <- function(x, model, cores = 1) {
   col_names <- colnames(x)
 
   if (inherits(model, "bicop_dist")) {
-    assert_that(ncol(x) == 2, all((x > 0) & (x < 1)))
-    x <- cbind(x[, 1], bicop_hfunc1_cpp(x, model))
-  } else if (inherits(model, "vinecop_dist")) {
-    assert_that(all((x > 0) & (x < 1)))
-    x <- vinecop_rosenblatt_cpp(x, model, cores)
+    model <- vinecop_dist(
+      list(list(model)),
+      cvine_structure(1:2),
+      var_types = model$var_types
+    )
+  }
+
+  if (inherits(model, "vinecop_dist")) {
+    assert_that(all((x >= 0) & (x <= 1)))
+    x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
+    x <- vinecop_rosenblatt_cpp(x, model, cores, randomize_discrete, get_seeds())
   } else {
     # prepare marginals if only one is specified
     if (!inherits(vine, "vine") & depth(model$margins) == 1) {
       model$margins <- replicate(dim(model)[1], model$margins, simplify = FALSE)
     }
     x <- dpq_marg(x, model, "p")
-    x <- vinecop_rosenblatt_cpp(x, model$copula, cores)
+    x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
+    x <- vinecop_rosenblatt_cpp(x, model$copula, cores, randomize_discrete, get_seeds())
   }
   colnames(x) <- col_names
 
@@ -108,10 +134,16 @@ inverse_rosenblatt <- function(u, model, cores = 1) {
   u <- if_vec_to_matrix(u, to_col)
   col_names <- colnames(u)
 
+
   if (inherits(model, "bicop_dist")) {
-    assert_that(ncol(u) == 2)
-    u <- cbind(u[, 1], bicop_hinv1_cpp(u, model))
-  } else if (inherits(model, "vinecop_dist")) {
+    model <- vinecop_dist(
+      list(list(model)),
+      cvine_structure(1:2),
+      var_types = model$var_types
+    )
+  }
+
+  if (inherits(model, "vinecop_dist")) {
     u <- vinecop_inverse_rosenblatt_cpp(u, model, cores)
   } else {
     u <- vinecop_inverse_rosenblatt_cpp(u, model$copula, cores)

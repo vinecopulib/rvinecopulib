@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -175,7 +175,7 @@ TriangularArray<T>::operator==(const TriangularArray<T>& rhs) const
   return true;
 }
 
-//! Get the truncation level of the underlying vine..
+//! @brief Gets the truncation level of the underlying vine..
 template<typename T>
 size_t
 TriangularArray<T>::get_trunc_lvl() const
@@ -183,7 +183,7 @@ TriangularArray<T>::get_trunc_lvl() const
   return trunc_lvl_;
 }
 
-//! Get the dimension of the underlying vine (the matrix has `d-1` columns and.
+//! @brief Gets the dimension of the underlying vine (the matrix has `d-1` columns and.
 //! `min(trunv_lvl, d-1)` rows).
 template<typename T>
 size_t

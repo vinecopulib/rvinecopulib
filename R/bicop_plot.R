@@ -17,9 +17,9 @@
 #'   "contour"}, and \code{"unif"} for \code{type = "surface"}.
 #' @param size integer; the plot is based on values on a `size x size` grid,
 #'   default is 100.
-#' @param \dots optional arguments passed to \code{\link{contour}} or
-#'   \code{\link{wireframe}}.
-#' @seealso [bicop_dist()], [graphics::contour()], [wireframe()]
+#' @param \dots optional arguments passed to [graphics::contour()] or
+#'   [lattice::wireframe()].
+#' @seealso [bicop_dist()], [graphics::contour()], [lattice::wireframe()]
 #' @keywords plot
 #' @examples
 #'

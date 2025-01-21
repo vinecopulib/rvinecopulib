@@ -31,19 +31,33 @@ test_that("d/p/r- functions work", {
 
 test_that("constructor catches wrong input", {
   # missing margin name
-  expect_error(vine_dist(list(stupid = "norm"), cop))
+  expect_error(vine_dist(list(stupid = "norm"), pcs, mat))
 
   # unused margin argument
-  expect_error(vine_dist(list(distr = "norm", stupid = 42), cop))
+  expect_error(vine_dist(list(list(distr = "gamma", stupid = 42)), pcs, mat))
+
+  # same with multiple margins specified
+  margs <- list(list(distr = "chisq", df = 1),
+                list(distr = "exp", scale = 1),  # does not have scale parameter
+                list(distr = "lnorm", meanlog = 0, sdlog = 1))
+  expect_error(vine_dist(margs, pcs, mat))
 
   # missing margin argument
-  expect_error(vine_dist(list(distr = "beta", scale1 = 1), cop))
+  expect_error(vine_dist(list(list(distr = "beta")), pcs, mat)) # shape1 missing
 
-  # length of margins vector do not correspond to cop
-  expect_error(vine_dist(list(
-    list(distr = "norm"),
-    list(distr = "gamma", shape = 1)
-  ), cop))
+  # incorrect number of argins specified
+  margs <- list(distr = "f", df1 = 1, df2 = 1)
+  margs <- list(margs, margs, margs, list(distr = "unif", min = 0, max = 1))
+  expect_error(vine_dist(margs, cop, mat))
+  expect_error(vine_dist(margs[1:2], cop, mat))
+
+  # check npar calculation
+  margs <- list(
+    list(distr = "weibull", shape = 1, scale = 1),
+    list(distr = "t", df = 4, ncp = 1),
+    list(distr = "cauchy", location = 0, scale = 1)
+  )
+  expect_equiv(vine_dist(margs, pcs, mat)$npars, 6 + 6)
 })
 
 test_that("print/summary/dim generics work", {

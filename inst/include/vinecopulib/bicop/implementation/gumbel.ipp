@@ -1,11 +1,9 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <boost/math/special_functions/fpclassify.hpp> // isnan
-#include <boost/math/special_functions/log1p.hpp>
 #include <cmath>
 #include <vinecopulib/misc/tools_eigen.hpp>
 
@@ -57,7 +55,7 @@ GumbelBicop::pdf_raw(const Eigen::MatrixXd& u)
     double temp = -std::pow(t1, thetha1) + (2 * thetha1 - 2.0) * std::log(t1) +
                   (theta - 1.0) * std::log(std::log(u1) * std::log(u2)) -
                   std::log(u1 * u2) +
-                  boost::math::log1p((theta - 1.0) * std::pow(t1, -thetha1));
+                  std::log1p((theta - 1.0) * std::pow(t1, -thetha1));
     return std::exp(temp);
   };
   return tools_eigen::binaryExpr_or_nan(u, f);
@@ -67,19 +65,14 @@ inline Eigen::VectorXd
 GumbelBicop::hinv1_raw(const Eigen::MatrixXd& u)
 {
   double theta = double(this->parameters_(0));
-  double u1, u2;
-  Eigen::VectorXd hinv = Eigen::VectorXd::Zero(u.rows());
-  for (int j = 0; j < u.rows(); ++j) {
-    u1 = u(j, 1);
-    u2 = u(j, 0);
-    if ((boost::math::isnan)(u1) || (boost::math::isnan)(u2)) {
-      hinv(j) = std::numeric_limits<double>::quiet_NaN();
-    } else {
-      hinv(j) = qcondgum(&u1, &u2, &theta);
-    }
-  }
 
-  return hinv;
+  // Define the lambda function for qcondgum
+  auto qcondgum_func = [&theta](const double& u1, const double& u2) -> double {
+    return qcondgum(u2, u1, theta);
+  };
+
+  // Use binaryExpr_or_nan to compute hinv
+  return tools_eigen::binaryExpr_or_nan(u, qcondgum_func);
 }
 
 inline Eigen::MatrixXd
@@ -108,25 +101,24 @@ GumbelBicop::get_start_parameters(const double tau)
 
 // This is copy&paste from the VineCopula package
 inline double
-qcondgum(double* q, double* u, double* de)
+qcondgum(const double& q, const double& u, const double& de)
 {
   double a, p, z1, z2, con, de1, dif;
   double mxdif;
   int iter;
 
-  p = 1 - *q;
-  z1 = -log(*u);
-  con = log(1. - p) - z1 + (1. - *de) * log(z1);
-  de1 = *de - 1.;
-  a = pow(2. * pow(z1, *de), 1. / (*de));
+  p = 1 - q;
+  z1 = -std::log(u);
+  con = std::log(1. - p) - z1 + (1. - de) * std::log(z1);
+  de1 = de - 1.;
+  a = std::pow(2. * std::pow(z1, de), 1. / (de));
   mxdif = 1;
   iter = 0;
   dif = .1; // needed in case first step leads to NaN
   while ((mxdif > 1.e-6) && (iter < 20)) {
-    double g = a + de1 * log(a) + con;
+    double g = a + de1 * std::log(a) + con;
     double gp = 1. + de1 / a;
-    if ((boost::math::isnan)(g) || (boost::math::isnan)(gp) ||
-        (boost::math::isnan)(g / gp)) {
+    if ((std::isnan)(g) || (std::isnan)(gp) || (std::isnan)(g / gp)) {
       // added for de>50
       dif /= -2.;
     } else {
@@ -142,6 +134,6 @@ qcondgum(double* q, double* u, double* de)
     }
     mxdif = fabs(dif);
   }
-  z2 = pow(pow(a, *de) - pow(z1, *de), 1. / (*de));
-  return (exp(-z2));
+  z2 = std::pow(std::pow(a, de) - std::pow(z1, de), 1. / (de));
+  return (std::exp(-z2));
 }

@@ -19,7 +19,7 @@ The empirical CDF with tail correction, ensuring that its output is never
 \details{
 The corrected empirical CDF is defined as
 \deqn{
-F_n(x) = \frac{1}{n + 1} \min\biggl\{1, \sum_{i = 1}^n 1(X_i \le x)\biggr\}
+F_n(x) = \frac{1}{n + 1} \max\biggl\{1, \sum_{i = 1}^n 1(X_i \le x)\biggr\}
 }
 }
 \examples{

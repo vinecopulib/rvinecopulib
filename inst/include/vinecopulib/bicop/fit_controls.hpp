@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -9,6 +9,7 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <vinecopulib/bicop/family.hpp>
+#include <vinecopulib/misc/fit_controls.hpp>
 
 namespace vinecopulib {
 //! @brief A class for controlling fits of bivariate copula models.
@@ -19,18 +20,21 @@ public:
   // Constructor
   FitControlsBicop(std::vector<BicopFamily> family_set = bicop_families::all,
                    std::string parametric_method = "mle",
-                   std::string nonparametric_method = "quadratic",
+                   std::string nonparametric_method = "constant",
                    double nonparametric_mult = 1.0,
                    std::string selection_criterion = "aic",
                    const Eigen::VectorXd& weights = Eigen::VectorXd(),
                    double psi0 = 0.9,
                    bool preselect_families = true,
+                   bool allow_rotations = true,
                    size_t num_threads = 1);
 
   explicit FitControlsBicop(std::string parametric_method);
 
   explicit FitControlsBicop(std::string nonparametric_method,
                             double nonparametric_mult = 1.0);
+
+  explicit FitControlsBicop(const FitControlsConfig& config);
 
   // Getters
   std::vector<BicopFamily> get_family_set() const;
@@ -51,6 +55,8 @@ public:
 
   size_t get_num_threads() const;
 
+  bool get_allow_rotations() const;
+
   // Setters
   void set_family_set(std::vector<BicopFamily> family_set);
 
@@ -70,6 +76,8 @@ public:
 
   void set_num_threads(size_t num_threads);
 
+  void set_allow_rotations(bool allow_rotations);
+
   // Misc
   std::string str() const;
 
@@ -86,6 +94,7 @@ private:
   bool preselect_families_;
   double psi0_;
   size_t num_threads_;
+  bool allow_rotations_;
 
   void check_parametric_method(std::string parametric_method);
 

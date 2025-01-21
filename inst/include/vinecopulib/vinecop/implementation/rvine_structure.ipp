@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -17,12 +17,14 @@ namespace vinecopulib {
 //! the upper left triangle must be a valid R-vine array. Truncated vines can
 //! be encoded by putting zeros above the digonal in all rows below the
 //! truncation level. Example of a 1-truncated matrix:
+//!
 //! ```
 //! 4 4 4 4
 //! 0 0 3 0
 //! 0 2 0 0
 //! 1 0 0 0
 //! ```
+//!
 //! @param mat A matrix representing a valid R-vine array.
 //! @param check Whether `mat` shall be checked for validity.
 inline RVineStructure::RVineStructure(
@@ -57,16 +59,14 @@ inline RVineStructure::RVineStructure(
   needed_hfunc2_ = compute_needed_hfunc2();
 }
 
-//! @brief Instantiates an RVineStructure object to a D-vine for a given
-//! dimension.
+//! @brief Instantiates as a D-vine for a given dimension.
 //! @param d The dimension.
 //! @param trunc_lvl The truncation level. By default, it is dim - 1.
 inline RVineStructure::RVineStructure(const size_t& d, const size_t& trunc_lvl)
   : RVineStructure(tools_stl::seq_int(1, d), std::min(d - 1, trunc_lvl), false)
 {}
 
-//! @brief Instantiates an RVineStructure object to a D-vine with a given
-//! ordering of the variables.
+//! @brief Instantiates as a D-vine with a given ordering of the variables.
 //! @param order The order of variables in the D-vine (diagonal entries in the
 //!    R-vine array); must be a permutation of 1, ..., d.
 //! @param trunc_lvl The truncation level. By default, it is d - 1.
@@ -85,9 +85,9 @@ inline RVineStructure::RVineStructure(const std::vector<size_t>& order,
     check_antidiagonal();
 }
 
-//! @brief Instantiates an RVineStructure object from the variable order
-//! (diagonal elements of the R-vine array) and a triangular structure array
-//! (all elements above the diagonal).
+//! @brief Instantiates from the variable order (diagonal elements of the
+//! R-vine array) and a triangular structure array
+//! (elements above the diagonal).
 //!
 //! @param order The order of variables (diagonal entries in the
 //!    R-vine array); must be a permutation of 1, ..., d.
@@ -137,8 +137,8 @@ inline RVineStructure::RVineStructure(
   }
 }
 
-//! @brief Instantiates from a nlohmann::json object.
-//! @param input The nlohmann::json object to convert from
+//! @brief Instantiates from a `nlohmann::json` object.
+//! @param input The `nlohmann::json` object to convert from
 //! (see `to_json()` for the structure of the input).
 //! @param check Whether to check if the input represents
 //!      a valid R-vine structure.
@@ -152,8 +152,8 @@ inline RVineStructure::RVineStructure(const nlohmann::json& input,
 
 //! @brief Instantiates an RVineStructure from a JSON file.
 //!
-//! The file needs to contain two values: `"array"` for the structure
-//! triangular array and `"order"` for the order vector.
+//! @details The file needs to contain two values: `"array"` for the 
+//! structure triangular array and `"order"` for the order vector.
 //!
 //! @param filename The name of the JSON file to read.
 //! @param check Whether to check if the input represents
@@ -163,12 +163,12 @@ inline RVineStructure::RVineStructure(const std::string& filename,
   : RVineStructure(tools_serialization::file_to_json(filename), check)
 {}
 
-//! @brief Converts the structure into a nlohmann::json object.
+//! @brief Converts the structure into a `nlohmann::json` object.
 //!
-//! The `nlohmann::json` object contains two nodes: `"array"` for the structure
-//! triangular array and `"order"` for the order vector.
+//! @details The `nlohmann::json` object contains two nodes: `"array"` for the
+//! structure triangular array and `"order"` for the order vector.
 //!
-//! @return the nlohmann::json object containing the structure.
+//! @return The `nlohmann::json` object containing the structure.
 inline nlohmann::json
 RVineStructure::to_json() const
 {
@@ -184,7 +184,7 @@ RVineStructure::to_json() const
 
 //! @brief Write the structure into a JSON file.
 //!
-//! The written file contains two values: `"array"` for the structure
+//! @details The written file contains two values: `"array"` for the structure
 //! triangular array and `"order"` for the order vector.
 //!
 //! @param filename The name of the file to write.
@@ -194,14 +194,14 @@ RVineStructure::to_file(const std::string& filename) const
   tools_serialization::json_to_file(filename, this->to_json());
 }
 
-//! Gets the dimension of the vine.
+//! @brief Gets the dimension of the vine.
 inline size_t
 RVineStructure::get_dim() const
 {
   return d_;
 }
 
-//! Gets the truncation level of the vine.
+//! @brief Gets the truncation level of the vine.
 inline size_t
 RVineStructure::get_trunc_lvl() const
 {
@@ -238,7 +238,7 @@ RVineStructure::get_struct_array(bool natural_order) const
 
 //! @brief Gets the minimum array.
 //!
-//! The minimum array is derived from an R-vine array by
+//! @details The minimum array is derived from an R-vine array by
 //! iteratively computing the (elementwise) minimum of two subsequent rows
 //! (starting from the top). It is used in estimation and evaluation
 //! algorithms to find the two edges in the previous tree that are joined by
@@ -309,10 +309,13 @@ RVineStructure::needed_hfunc2(size_t tree, size_t edge) const
 }
 
 //! @brief Truncates the R-vine structure.
-//! @param trunc_lvl The truncation level.
+//! @details While a structure of dimension `d`  contains at most `d-1`
+//! nested levels, this function extracts a sub-structure based 
+//! on a given truncation level.
 //!
 //! If the structure is already truncated at a level
 //! less than `trunc_lvl`, the function does nothing.
+//! @param trunc_lvl The truncation level.
 inline void
 RVineStructure::truncate(size_t trunc_lvl)
 {
@@ -347,13 +350,16 @@ RVineStructure::str() const
 }
 
 //! @brief Randomly sample a regular vine structure.
+//! @details Simulates from a uniform distribution over all R-vine
+//! structures on d variables
+//! 
+//! Implementation of Algorithm 13 in Harry Joe's 2014 book (p. 288),
+//! but there's a typo: the end of line 6 in the book should be
+//! 'column j' instead of 'column k'.
 //! @param d The dimension.
 //! @param natural_order Should the sampled structure be in natural order?
 //! @param seeds Seeds of the random number generator; if empty (default),
 //!   the random number generator is seeded randomly.
-//! @note Implementation of Algorithm 13 in Harry Joe's 2014 book (p. 288),
-//! but there's a typo: the end of line 6 in the book should be
-//! 'column j' instead of 'column k'.
 inline RVineStructure
 RVineStructure::simulate(size_t d, bool natural_order, std::vector<int> seeds)
 {

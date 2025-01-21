@@ -1,13 +1,10 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <boost/math/special_functions/digamma.hpp>
-#include <boost/math/special_functions/expm1.hpp>
-#include <boost/math/special_functions/fpclassify.hpp> // isnan
-#include <boost/math/special_functions/log1p.hpp>
 #include <cmath>
 #include <vinecopulib/misc/tools_eigen.hpp>
 
@@ -26,13 +23,13 @@ inline JoeBicop::JoeBicop()
 inline double
 JoeBicop::generator(const double& u)
 {
-  return (-1) * boost::math::log1p(-std::pow(1 - u, parameters_(0)));
+  return (-1) * std::log1p(-std::pow(1 - u, parameters_(0)));
 }
 
 inline double
 JoeBicop::generator_inv(const double& u)
 {
-  return 1 - std::pow(-boost::math::expm1(-u), 1 / parameters_(0));
+  return 1 - std::pow(-std::expm1(-u), 1 / parameters_(0));
 }
 
 inline double
@@ -69,19 +66,14 @@ inline Eigen::VectorXd
 JoeBicop::hinv1_raw(const Eigen::MatrixXd& u)
 {
   double theta = double(parameters_(0));
-  double u1, u2;
-  Eigen::VectorXd hinv = Eigen::VectorXd::Zero(u.rows());
-  for (int j = 0; j < u.rows(); ++j) {
-    u1 = u(j, 1);
-    u2 = u(j, 0);
-    if ((boost::math::isnan)(u1) || (boost::math::isnan)(u2)) {
-      hinv(j) = std::numeric_limits<double>::quiet_NaN();
-    } else {
-      hinv(j) = qcondjoe(&u1, &u2, &theta);
-    }
-  }
 
-  return hinv;
+  // Define the lambda function for qcondjoe
+  auto qcondjoe_func = [&theta](const double& u1, const double& u2) -> double {
+    return qcondjoe(u2, u1, theta);
+  };
+
+  // Use binaryExpr_or_nan to compute hinv
+  return tools_eigen::binaryExpr_or_nan(u, qcondjoe_func);
 }
 
 // link between Kendall's tau and the par_bicop parameter
@@ -119,7 +111,7 @@ JoeBicop::get_start_parameters(const double tau)
 
 // This is copy&paste from the VineCopula package
 inline double
-qcondjoe(double* q, double* u, double* de)
+qcondjoe(const double& q, const double& u, const double& de)
 {
   double t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t13, t15, t16, t19, t23,
     t28, t31;
@@ -127,13 +119,13 @@ qcondjoe(double* q, double* u, double* de)
   int iter;
   double diff, v, de1, dtem, de1inv, tem;
 
-  t1 = 1.0 - *u;
-  t2 = pow(t1, 1.0 * (*de));
-  t7 = 1. / (*de);
-  t10 = t2 * (*de);
+  t1 = 1.0 - u;
+  t2 = std::pow(t1, 1.0 * (de));
+  t7 = 1. / (de);
+  t10 = t2 * (de);
   t11 = 1. / t1;
-  t19 = (*de) * (*de);
-  de1 = *de - 1; // may need better modification for large delta
+  t19 = (de) * (de);
+  de1 = de - 1; // may need better modification for large delta
   dtem = -de1 / (1. + de1);
   de1inv = -1. / de1;
 
@@ -144,33 +136,33 @@ qcondjoe(double* q, double* u, double* de)
   //    C_{2|1} will be steep
   // C_{R,2|1}(v|u)=1-C_{2|1}(1-v|1-u),
   // C_{R,2|1}^{-1}(q|u)=1-C_{2|1}^{-1}(1-q|1-u)
-  tem = pow(1. - *q, dtem) - 1.;
-  tem = tem * pow(1. - *u, -de1) + 1.;
-  v = pow(tem, de1inv);
+  tem = std::pow(1. - q, dtem) - 1.;
+  tem = tem * std::pow(1. - u, -de1) + 1.;
+  v = std::pow(tem, de1inv);
   v = 1. - v;
   diff = 1;
   iter = 0;
   while (fabs(diff) > 1.e-6 && iter < 20) {
     t3 = 1. - v;
-    t4 = pow(t3, *de);
+    t4 = std::pow(t3, de);
     t5 = t2 * t4;
     t6 = t2 + t4 - t5;
-    t8 = pow(t6, t7);
+    t8 = std::pow(t6, t7);
     t9 = t7 * t8;
     t13 = t11 * t4;
     t15 = -t10 * t11 + t10 * t13;
     t16 = 1. / t6;
     t23 = 1. / t3;
     t28 = t6 * t6;
-    t31 = (-t4 * (*de) * t23 + t5 * (*de) * t23) / t28 * t15;
+    t31 = (-t4 * (de)*t23 + t5 * (de)*t23) / t28 * t15;
     c21 = -t9 * t15 * t16;
-    pdf = -t8 / t19 * t31 + t8 * (*de) * t2 * t13 * t23 * t16 + t9 * t31;
+    pdf = -t8 / t19 * t31 + t8 * (de)*t2 * t13 * t23 * t16 + t9 * t31;
     iter++;
-    if ((boost::math::isnan)(pdf) || (boost::math::isnan)(c21)) {
+    if ((std::isnan)(pdf) || (std::isnan)(c21)) {
       diff /= -2.;
     } // added for de>=30
     else
-      diff = (c21 - *q) / pdf;
+      diff = (c21 - q) / pdf;
     v -= diff;
     int iter2 = 0;
     while ((v <= 0 || v >= 1 || fabs(diff) > 0.25) & (iter2 < 20)) {

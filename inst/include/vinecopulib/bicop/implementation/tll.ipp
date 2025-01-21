@@ -1,10 +1,9 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <boost/math/special_functions/fpclassify.hpp> // isnan
 #include <vinecopulib/bicop/family.hpp>
 #include <vinecopulib/misc/tools_interpolation.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
@@ -122,7 +121,7 @@ TllBicop::fit_local_likelihood(const Eigen::MatrixXd& x,
         res(k) *= std::sqrt(S.determinant()) / det_irB;
       }
       res(k) *= std::exp(-0.5 * double(b.transpose() * S * b));
-      if ((boost::math::isnan)(res(k)) || (boost::math::isinf)(res(k))) {
+      if ((std::isnan)(res(k)) || (std::isinf)(res(k))) {
         // inverse operation might go wrong due to rounding when
         // true value is equal or close to zero
         res(k) = 0.0;
@@ -236,12 +235,19 @@ TllBicop::fit(const Eigen::MatrixXd& data,
   Eigen::MatrixXd z = tools_stats::qnorm(grid_2d);
 
   // use jittering in case observations are discrete
-  auto psobs = tools_stats::to_pseudo_obs(data.leftCols(2), "random");
+  auto psobs =
+    tools_stats::to_pseudo_obs(data.leftCols(2), "random", weights, { 5 });
   Eigen::MatrixXd z_data = tools_stats::qnorm(psobs);
 
   // find bandwidth matrix
   Eigen::Matrix2d B = select_bandwidth(z_data, method, weights);
   B *= mult;
+
+  // find latent sample in case observations are discrete
+  if (var_types_[0] == "d" || var_types_[1] == "d") {
+    psobs =
+      tools_stats::find_latent_sample(data, std::pow(B(0, 0) * B(1, 1), 0.25));
+  }
 
   // compute the density estimator (first column estimate, second influence)
   Eigen::MatrixXd ll_fit = fit_local_likelihood(z, z_data, B, method, weights);

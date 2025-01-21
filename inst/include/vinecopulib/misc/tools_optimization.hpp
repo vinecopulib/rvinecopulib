@@ -1,4 +1,4 @@
-// Copyright © 2016-2023 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -20,24 +20,24 @@ public:
 
   BobyqaControls(double initial_trust_region,
                  double final_trust_region,
-                 int maxeval);
+                 size_t maxeval);
 
   double get_initial_trust_region();
 
   double get_final_trust_region();
 
-  int get_maxeval();
+  size_t get_maxeval();
 
 private:
   double initial_trust_region_; //! Initial trust region
   double final_trust_region_;   //! Final trust region
-  int maxeval_; //! Maximal number of evaluations of the objective
+  size_t maxeval_; //! Maximal number of evaluations of the objective
 
   //! Sanity checks
   //! @{
   void check_parameters(double initial_trust_region,
                         double final_trust_region,
-                        int maxeval);
+                        size_t maxeval);
   //! @}
 };
 
@@ -49,7 +49,7 @@ public:
 
   void set_controls(double initial_trust_region,
                     double final_trust_region,
-                    int maxeval);
+                    size_t maxeval);
 
   Eigen::VectorXd optimize(
     const Eigen::VectorXd& initial_parameters,
