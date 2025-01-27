@@ -51,6 +51,19 @@ test_that("rosenblatt works with vine distribution", {
   u <- rvine(20, vd)
   expect_eql(inverse_rosenblatt(rosenblatt(u, vd), vd), u)
   vd <- vine(u, copula_controls = list(structure = mat, family = "clay"))
-  expect_eql(inverse_rosenblatt(rosenblatt(u, vd), vd), u)
+  expect_equiv(inverse_rosenblatt(rosenblatt(u, vd), vd), u)
+
 })
 
+test_that("discrete rosenblatt works with vine distributions", {
+  x <- data.frame(
+    x1 = as.ordered(sample(1:4, 50, replace = TRUE)),
+    x2 = rnorm(50),
+    x3 = rbinom(50, 3, 0.5)
+  )
+  vd <- vine(x, margins_controls = list(type = c("d", "c", "zi")),
+             copula_controls = list(family_set = "gauss"))
+  u <- rvine(50, vd)
+  expect_true(mean(u[, 3] == 0) > 0.02)
+  expect_eql(colnames(rosenblatt(x, vd)), colnames(x))
+})

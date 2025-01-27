@@ -67,7 +67,7 @@ test_that("margins_controls works", {
 test_that("weights work", {
   w <- rexp(nrow(u))
   fit_weights <- vine(u, copula_controls = list(family_set = "nonpar"),
-                     weights = w, keep_data = TRUE)
+                      weights = w, keep_data = TRUE)
   expect_eql(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
 })
@@ -79,9 +79,17 @@ test_that("d = 1 works", {
 })
 
 test_that("discrete variables work", {
-  df <- data.frame(ord = as.ordered(sample(1:3, 50, replace = TRUE)),
-                   fac = as.factor(sample(1:3, 50, replace = TRUE)))
-  expect_no_error(fit <- vine(df))
+  x <- data.frame(
+    x1 = as.ordered(sample(1:4, 50, replace = TRUE)),
+    x2 = rnorm(50),
+    x3 = rbinom(50, 3, 0.5)
+  )
+
+  expect_no_error(fit <- vine(x))
+  expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "zi"))))
+  expect_no_error(dvine(x, fit))
+  expect_no_error(pvine(x, fit))
+  expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
   expect_equiv(dim(fit$copula)[1], 3)
 })
 

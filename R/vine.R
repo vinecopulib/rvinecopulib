@@ -157,8 +157,9 @@ vine <- function(data,
   vine$margins <- finalize_margins(data, vine$margins)
 
   ## estimation of the R-vine copula --------------
+  vine$copula <- list(var_types = simplify_var_types(margins_controls$type))
+  copula_controls$var_types <- vine$copula$var_types
   copula_controls$data <- compute_pseudo_obs(data, vine)
-  copula_controls$var_types <- simplify_var_types(margins_controls$type)
   copula_controls$weights <- weights
   vine$copula <- do.call(vinecop, copula_controls)
   vine$copula_controls <- copula_controls[-which(names(copula_controls) == "data")]
@@ -174,17 +175,10 @@ prep_for_margins <- function(data) {
 compute_pseudo_obs <- function(data, vine) {
   d <- ncol(data)
   u <- dpq_marg(data, vine)
-  if (any(sapply(data, is.factor))) {
+  if (any(vine$copula$var_types != "c")) {
     u_sub <- u
-    for (k in seq_len(d)) {
-      if (is.factor(data[, k])) {
-        lv <- as.numeric(data[, k]) - 1
-        lv0 <- which(lv == 0)
-        lv[lv0] <- 1
-        xlv <- ordered(levels(data[, k])[lv], levels = levels(data[, k]))
-        u_sub[, k] <- eval_one_dpq(xlv, vine$margins[[k]])
-        u_sub[lv0, k] <- 0
-      }
+    for (k in which(vine$copula$var_types != "c")) {
+      u_sub[, k] <- eval_one_dpq(data[[k]], vine$margins[[k]], "p_sub")
     }
   } else {
     u_sub <- NULL
@@ -316,6 +310,6 @@ finalize_vine <- function(vine, data, weights, keep_data) {
 
 simplify_var_types <- function(x) {
   x[x %in% c("cont", "continuous")] <- "c"
-  x[x %in% c("disc", "discrete", "zinf", "zero-inflated")] <- "d"
+  x[x %in% c("disc", "discrete", "zi", "zinf", "zero-inflated")] <- "d"
   x
 }

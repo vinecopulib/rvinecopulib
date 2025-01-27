@@ -252,23 +252,46 @@ dpq_marg <- function(x, vine, what = "p") {
   do.call(cbind, res)
 }
 
+get_x_sub <- function(x, margin) {
+  if (inherits(margin, "kde1d")) {
+    if (margin$type == "discrete") {
+      if (is.ordered(margin$x)) {
+        xnum <- as.numeric(x)
+        lvls <- levels(margin$x)
+        x <- ordered(lvls[ifelse(xnum > 1, xnum - 1, NA)], lvls)
+      } else {
+        x <- x - 1
+      }
+    } else if (margin$type == "zero-inflated")  {
+      x[x == 0] <- -1e-15
+    }
+  } else {
+    x <- x - 1
+  }
+  x
+}
+
 eval_one_dpq <- function(x, margin, what = "p") {
   if (inherits(margin, "kde1d")) {
     dpq <- switch(what,
                   p = pkde1d(x, margin),
                   d = dkde1d(x, margin),
-                  q = qkde1d(x, margin))
+                  q = qkde1d(x, margin),
+                  p_sub = pkde1d(get_x_sub(x, margin), margin))
   } else {
     par <- margin[names(margin) != "distr"]
-    par[[length(par) + 1]] <- x
+    par[[length(par) + 1]] <- if (what == "p_sub") get_x_sub(x, margin) else x
     names(par)[[length(par)]] <- switch(what,
                                         p = "q",
+                                        p_sub = "q",
                                         d = "x",
                                         q = "p")
     dpq <- do.call(get(paste0(what, margin$distr)), par)
   }
   if (is.factor(dpq))
     dpq <- as.data.frame(dpq)
+  if (what == "p_sub")
+    dpq[is.nan(dpq)] <- 0
   dpq
 }
 
