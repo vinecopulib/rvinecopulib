@@ -107,7 +107,7 @@ rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
     col_names <- colnames(x)
 
     # prepare marginals if only one is specified
-    if (!inherits(model, "vine") && depth(model$margins) == 1) {
+    if (!inherits(model, "vine") && length(model$margins) == 1) {
       model$margins <- replicate(dim(model)[1], model$margins, simplify = FALSE)
     }
     x <- compute_pseudo_obs(x, model)
@@ -150,7 +150,7 @@ inverse_rosenblatt <- function(u, model, cores = 1) {
   } else {
     u <- vinecop_inverse_rosenblatt_cpp(u, model$copula, cores)
     # prepare marginals if only one is specified
-    if (!inherits(vine, "vine") & depth(model$margins) == 1) {
+    if (!inherits(vine, "vine") && length(model$margins) == 1) {
       model$margins <- replicate(dim(model)[1], model$margins, simplify = FALSE)
     }
     u <- dpq_marg(u, model, "q")

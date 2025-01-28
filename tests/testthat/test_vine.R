@@ -80,16 +80,27 @@ test_that("d = 1 works", {
 
 test_that("discrete variables work", {
   x <- data.frame(
-    x1 = as.ordered(sample(1:4, 50, replace = TRUE)),
+    x1 = sample(1:4, 50, replace = TRUE),
     x2 = rnorm(50),
     x3 = rbinom(50, 3, 0.5)
   )
 
-  expect_no_error(fit <- vine(x))
+  expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "c"),
+                                               xmin = c(0, NaN, NaN),
+                                               xmax = c(3, NaN, NaN))))
+  x[[1]] <- as.ordered(x[[1]])
+  expect_no_error(fit2 <- vine(x))
+  expect_equiv(fit[-2], fit2[-2])
+  expect_equal(fit$margins[[1]]$type, "discrete")
+  expect_equal(fit$copula$var_types, c("d", "c", "c"))
+  expect_equiv(dvine(x, fit), dvine(x, fit2))
+  expect_equiv(pvine(x, fit), pvine(x, fit2), tol = 1e-2)
+  expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
+
   expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "zi"))))
+  expect_equal(fit$copula$var_types, c("d", "c", "d"))
   expect_no_error(dvine(x, fit))
   expect_no_error(pvine(x, fit))
   expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
-  expect_equiv(dim(fit$copula)[1], 3)
 })
 

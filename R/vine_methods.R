@@ -63,7 +63,7 @@ dvine <- function(x, vine, cores = 1) {
 
   # prepare marginals if only one is specified
   d <- ncol(x)
-  if (!inherits(vine, "vine") & depth(vine$margins) == 1) {
+  if (!inherits(vine, "vine") && length(vine$margins) == 1) {
     vine$margins <- replicate(d, vine$margins, simplify = FALSE)
   }
 
@@ -96,7 +96,7 @@ pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
   }
 
   # prepare marginals if only one is specified
-  if (!inherits(vine, "vine") & depth(vine$margins) == 1) {
+  if (!inherits(vine, "vine") && depth(vine$margins) == 1) {
     vine$margins <- replicate(ncol(x), vine$margins, simplify = FALSE)
   }
 
@@ -126,9 +126,10 @@ rvine <- function(n, vine, qrng = FALSE, cores = 1) {
   U <- rvinecop(n, vine$copula, qrng, cores)
 
   # prepare marginals if only one is specified
-  if (!inherits(vine, "vine") & depth(vine$margins) == 1) {
+  if (!inherits(vine, "vine") && length(vine$margins) == 1) {
     vine$margins <- replicate(dim(vine)[1], vine$margins, simplify = FALSE)
   }
+
   # use quantile transformation for marginals
   X <- dpq_marg(U, vine, "q")
   colnames(X) <- vine$names
@@ -265,8 +266,6 @@ get_x_sub <- function(x, margin) {
     } else if (margin$type == "zero-inflated")  {
       x[x == 0] <- -1e-15
     }
-  } else {
-    x <- x - 1
   }
   x
 }
