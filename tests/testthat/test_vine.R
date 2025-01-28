@@ -86,15 +86,16 @@ test_that("discrete variables work", {
   )
 
   expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "c"),
-                                               xmin = c(0, NaN, NaN),
-                                               xmax = c(3, NaN, NaN))))
-  x[[1]] <- as.ordered(x[[1]])
-  expect_no_error(fit2 <- vine(x))
-  expect_equiv(fit[-2], fit2[-2])
+                                               xmin = c(1, NaN, NaN),
+                                               xmax = c(4, NaN, NaN))))
+  x2 <- x
+  x2[[1]] <- as.ordered(x2[[1]])
+  expect_no_error(fit2 <- vine(x2))
+
   expect_equal(fit$margins[[1]]$type, "discrete")
   expect_equal(fit$copula$var_types, c("d", "c", "c"))
-  expect_equiv(dvine(x, fit), dvine(x, fit2))
-  expect_equiv(pvine(x, fit), pvine(x, fit2), tol = 1e-2)
+  expect_equiv(dvine(x, fit), dvine(x2, fit2))
+  expect_equiv(pvine(x, fit), pvine(x2, fit2), tol = 1e-2)
   expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
 
   expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "zi"))))

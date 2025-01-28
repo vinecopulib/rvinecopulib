@@ -8,7 +8,7 @@ pc <- bicop_dist("bb1", 90, c(3, 2))
 pcs <- list(list(pc, pc), list(pc))
 mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
 vc <- vinecop_dist(pcs, mat)
-vd <- vine_dist(list(distr = "norm"), pcs, mat)
+vd <- vine_dist(list(list(distr = "norm")), pcs, mat)
 
 test_that("rosenblatt works with bivariate copulas", {
   u <- rbicop(20, pc)

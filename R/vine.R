@@ -225,13 +225,13 @@ vine_dist <- function(margins, pair_copulas, structure) {
     stop("marg should have length 1 or dim(structure)[1]")
   }
   stopifnot(is.list(margins))
-  if (depth(margins) == 1) {
-    check_marg <- check_distr(margins)
-    try(npars_marg <- ncol(matrix) * get_npars_distr(margins), silent = TRUE)
-  } else {
-    check_marg <- lapply(margins, check_distr)
-    try(npars_marg <- sum(sapply(margins, get_npars_distr)), silent = TRUE)
+  if (length(margins) == 1) {
+    margins <- replicate(dim(structure)[1], margins[[1]], simplify = FALSE)
   }
+  stopifnot(length(margins) == dim(structure)[1])
+  check_marg <- lapply(margins, check_distr)
+  try(npars_marg <- sum(sapply(margins, get_npars_distr)), silent = TRUE)
+
   is_ok <- sapply(check_marg, isTRUE)
   if (!all(is_ok)) {
     msg <- "Some objects in marg aren't properly defined.\n"
