@@ -8,7 +8,7 @@ set.seed(0)
 bicop <- bicop_dist("bb1", 90, c(3, 2))
 pcs <- list(list(bicop, bicop), list(bicop))
 mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-vc <- vine_dist(list(distr = "norm"), pcs, mat)
+vc <- vine_dist(list(list(distr = "norm")), pcs, mat)
 
 test_that("constructor creates proper `vine_dist` object", {
   expect_s3_class(vc, "vine_dist")
@@ -27,7 +27,6 @@ test_that("d/p/r- functions work", {
   expect_gte(min(pvine(u, vc, 100)), 0)
   expect_lte(max(pvine(u, vc, 100)), 1)
 })
-
 
 test_that("constructor catches wrong input", {
   # missing margin name

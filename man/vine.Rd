@@ -118,7 +118,7 @@ pcs <- list(
 mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
 
 # set up vine copula model with Gaussian margins
-vc <- vine_dist(list(distr = "norm"), pcs, mat)
+vc <- vine_dist(list(list(distr = "norm")), pcs, mat)
 
 # show model
 summary(vc)
