@@ -248,7 +248,7 @@ get_x_sub <- function(x, margin) {
         x <- x - 1
       }
     } else if (margin$type == "zero-inflated")  {
-      x[x == 0] <- -1e-15
+      x[x == 0] <- -.Machine$double.xmin
     }
   }
   x
