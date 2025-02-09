@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rvinecopulib</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,6 +71,7 @@ kernel density estimation are multiplied with <code>mult</code>. Defaults to
 <code>rvinecopulib:::expand_factors()</code>.</p></li>
 <li><p><code>xmin</code> numeric vector of length d; see <code><a href="https://tnagler.github.io/kde1d/reference/kde1d.html" class="external-link">kde1d::kde1d()</a></code>.</p></li>
 <li><p><code>xmax</code> numeric vector of length d; see <code><a href="https://tnagler.github.io/kde1d/reference/kde1d.html" class="external-link">kde1d::kde1d()</a></code>.</p></li>
+<li><p><code>type</code> numeric vector of length d; see <code><a href="https://tnagler.github.io/kde1d/reference/kde1d.html" class="external-link">kde1d::kde1d()</a></code>.</p></li>
 <li><p><code>bw</code> numeric vector of length d; see <code><a href="https://tnagler.github.io/kde1d/reference/kde1d.html" class="external-link">kde1d::kde1d()</a></code>.</p></li>
 <li><p><code>deg</code> numeric vector of length one or d; <code><a href="https://tnagler.github.io/kde1d/reference/kde1d.html" class="external-link">kde1d::kde1d()</a></code>.</p></li>
 </ul></dd>
@@ -160,7 +161,7 @@ with the same parameters as <code><a href="vinecop.html">vinecop()</a></code> (e
 <span class="r-in"><span><span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># set up vine copula model with Gaussian margins</span></span></span>
-<span class="r-in"><span><span class="va">vc</span> <span class="op">&lt;-</span> <span class="fu">vine_dist</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>distr <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span>, <span class="va">pcs</span>, <span class="va">mat</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">vc</span> <span class="op">&lt;-</span> <span class="fu">vine_dist</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>distr <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span><span class="op">)</span>, <span class="va">pcs</span>, <span class="va">mat</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># show model</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">vc</span><span class="op">)</span></span></span>
