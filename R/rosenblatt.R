@@ -91,10 +91,6 @@ rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
     is.number(cores)
   )
 
-  to_col <- if (inherits(model, "bicop_dist")) FALSE else (dim(model)[1] == 1)
-  x <- if_vec_to_matrix(x, to_col)
-  col_names <- colnames(x)
-
   if (inherits(model, "bicop_dist")) {
     model <- vinecop_dist(
       list(list(model)),
@@ -103,20 +99,21 @@ rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
     )
   }
 
-  if (inherits(model, "vinecop_dist")) {
-    assert_that(all((x >= 0) & (x <= 1)))
-    x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
-    x <- vinecop_rosenblatt_cpp(x, model, cores, randomize_discrete, get_seeds())
-  } else {
-    # prepare marginals if only one is specified
-    if (!inherits(vine, "vine") & depth(model$margins) == 1) {
-      model$margins <- replicate(dim(model)[1], model$margins, simplify = FALSE)
+  if (inherits(model, "vine_dist")) {
+    x <- expand_factors(x)
+    if (!is.null(model$names)) {
+      x <- x[, model$names, drop = FALSE]
     }
-    x <- dpq_marg(x, model, "p")
-    x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
-    x <- vinecop_rosenblatt_cpp(x, model$copula, cores, randomize_discrete, get_seeds())
+    x <- compute_pseudo_obs(x, model)
+    model <- model$copula
   }
-  colnames(x) <- col_names
+
+  # model is now a vinecop_dist
+  assert_that(all((x >= 0) & (x <= 1)))
+  x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
+  x <- if_vec_to_matrix(x, dim(model)[1] == 1)
+  x <- vinecop_rosenblatt_cpp(x, model, cores, randomize_discrete, get_seeds())
+  colnames(x) <- model$names
 
   x
 }
@@ -132,8 +129,6 @@ inverse_rosenblatt <- function(u, model, cores = 1) {
 
   to_col <- if (inherits(model, "bicop_dist")) FALSE else (dim(model)[1] == 1)
   u <- if_vec_to_matrix(u, to_col)
-  col_names <- colnames(u)
-
 
   if (inherits(model, "bicop_dist")) {
     model <- vinecop_dist(
@@ -147,13 +142,9 @@ inverse_rosenblatt <- function(u, model, cores = 1) {
     u <- vinecop_inverse_rosenblatt_cpp(u, model, cores)
   } else {
     u <- vinecop_inverse_rosenblatt_cpp(u, model$copula, cores)
-    # prepare marginals if only one is specified
-    if (!inherits(vine, "vine") & depth(model$margins) == 1) {
-      model$margins <- replicate(dim(model)[1], model$margins, simplify = FALSE)
-    }
     u <- dpq_marg(u, model, "q")
   }
-  colnames(u) <- col_names
+  colnames(u) <- model$names
 
   u
 }

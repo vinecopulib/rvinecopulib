@@ -67,7 +67,7 @@ test_that("margins_controls works", {
 test_that("weights work", {
   w <- rexp(nrow(u))
   fit_weights <- vine(u, copula_controls = list(family_set = "nonpar"),
-                     weights = w, keep_data = TRUE)
+                      weights = w, keep_data = TRUE)
   expect_eql(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
 })
@@ -79,9 +79,29 @@ test_that("d = 1 works", {
 })
 
 test_that("discrete variables work", {
-  df <- data.frame(ord = as.ordered(sample(1:3, 50, replace = TRUE)),
-                   fac = as.factor(sample(1:3, 50, replace = TRUE)))
-  expect_no_error(fit <- vine(df))
-  expect_equiv(dim(fit$copula)[1], 3)
+  x <- data.frame(
+    x1 = sample(1:4, 50, replace = TRUE),
+    x2 = rnorm(50),
+    x3 = rbinom(50, 3, 0.5)
+  )
+
+  expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "c"),
+                                               xmin = c(1, NaN, NaN),
+                                               xmax = c(4, NaN, NaN))))
+  x2 <- x
+  x2[[1]] <- as.ordered(x2[[1]])
+  expect_no_error(fit2 <- vine(x2))
+
+  expect_equal(fit$margins[[1]]$type, "discrete")
+  expect_equal(fit$copula$var_types, c("d", "c", "c"))
+  expect_equiv(dvine(x, fit), dvine(x2, fit2))
+  expect_equiv(pvine(x, fit), pvine(x2, fit2), tol = 1e-2)
+  expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
+
+  expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "zi"))))
+  expect_equal(fit$copula$var_types, c("d", "c", "d"))
+  expect_no_error(dvine(x, fit))
+  expect_no_error(pvine(x, fit))
+  expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
 })
 
