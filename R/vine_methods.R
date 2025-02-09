@@ -273,8 +273,9 @@ eval_one_dpq <- function(x, margin, what = "p") {
   }
   if (is.factor(dpq))
     dpq <- as.data.frame(dpq)
-  if (what == "p_sub")
-    dpq[is.nan(dpq)] <- 0
+  if (what == "p_sub") {
+    dpq[is.nan(dpq) & !is.nan(x)] <- 0
+  }
   dpq
 }
 
