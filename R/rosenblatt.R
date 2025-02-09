@@ -108,12 +108,11 @@ rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
     model <- model$copula
   }
 
-  if (inherits(model, "vinecop_dist")) {
-    assert_that(all((x >= 0) & (x <= 1)))
-    x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
-    x <- if_vec_to_matrix(x, dim(model)[1] == 1)
-    x <- vinecop_rosenblatt_cpp(x, model, cores, randomize_discrete, get_seeds())
-  }
+  # model is now a vinecop_dist
+  assert_that(all((x >= 0) & (x <= 1)))
+  x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
+  x <- if_vec_to_matrix(x, dim(model)[1] == 1)
+  x <- vinecop_rosenblatt_cpp(x, model, cores, randomize_discrete, get_seeds())
   colnames(x) <- model$names
 
   x
