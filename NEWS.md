@@ -1,3 +1,9 @@
+# rvinecopulib 0.7.1.1.1
+
+BUG FIX
+
+* fix handling of discrete variables in `vine()` models and related functions.
+
 # rvinecopulib 0.7.1.1.0
 
 Update following a upgrade of the C++ backend vinecopulib to 0.7.1, see

@@ -9,7 +9,7 @@ for the vine based distribution."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">rvinecopulib</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -113,7 +113,7 @@ standard <em>d/p/q-xxx</em> from <a href="https://rdrr.io/r/stats/Distributions.
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># set up vine copula model</span></span></span>
 <span class="r-in"><span><span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="rvine_structure_sim.html">rvine_matrix_sim</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">vc</span> <span class="op">&lt;-</span> <span class="fu"><a href="vine.html">vine_dist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>distr <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span>, <span class="va">pcs</span>, <span class="va">mat</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">vc</span> <span class="op">&lt;-</span> <span class="fu"><a href="vine.html">vine_dist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>distr <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span><span class="op">)</span>, <span class="va">pcs</span>, <span class="va">mat</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># simulate from the model</span></span></span>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">rvine</span><span class="op">(</span><span class="fl">200</span>, <span class="va">vc</span><span class="op">)</span></span></span>
