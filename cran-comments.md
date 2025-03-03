@@ -1,3 +1,5 @@
+Fixes "deprecated-literal-operator" warning on clang20 (r-devel-linux-x86_64-fedora-clang)
+
 ## Test environments
 
 * CRAN win builder (devel)

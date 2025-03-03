@@ -1,3 +1,9 @@
+# rvinecopulib 0.7.1.1.2
+
+BUG FIX
+
+* Fixes "deprecated-literal-operator" warning on clang20.
+
 # rvinecopulib 0.7.1.1.1
 
 BUG FIX
