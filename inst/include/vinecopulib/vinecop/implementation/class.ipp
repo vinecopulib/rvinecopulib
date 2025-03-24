@@ -1229,7 +1229,7 @@ Vinecop::get_npars() const
 //! and \f$W_1, \dots, W_d \f$ are are independent standard uniform random
 //! variables. This is used by default. If you are interested in the conditional
 //! probabilities
-//! \f[F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0, 0]}), \f]
+//! \f[ F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0, 0]}), \f]
 //! set `randomize_discrete = FALSE`.
 //!
 //! @param u An \f$ n \times d \f$ matrix of evaluation points.
@@ -1372,7 +1372,7 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
 //! \f$ n \f$, the number of observations).
 //! "Too large" means that the required memory will exceed 1 GB. An
 //! examplary configuration requiring less than 1 GB is \f$ n = 1000 \f$,
-//! \f$d = 200\f$.
+//! \f$ d = 200\f$.
 //!
 //! The Rosenblatt transform (Rosenblatt, 1952) \f$ U = T(V) \f$ of a random
 //! vector \f$ V = (V_1,\ldots,V_d) ~ F \f$ is defined as
@@ -1380,7 +1380,7 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
 //! =F(V_d|V_1,\ldots,V_{d-1}), \f] where \f$ F(v_k|v_1,\ldots,v_{k-1}) \f$ is
 //! the conditional distribution of \f$ V_k \f$ given  \f$ V_1 \ldots, V_{k-1},
 //! k = 2,\ldots,d \f$. The vector \f$ U = (U_1, \dots, U_d) \f$ then contains
-//! independent standard uniform variables. The inverse operation \f[V_1 =
+//! independent standard uniform variables. The inverse operation \f[ V_1 =
 //! F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots, V_d
 //! =F^{-1}(U_d|U_1,\ldots,U_{d-1}) \f] can be used to simulate from a
 //! distribution. For any copula \f$ F \f$, if \f$ U\f$ is a vector of
