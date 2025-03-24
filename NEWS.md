@@ -1,3 +1,10 @@
+# rvinecopulib 0.7.2.1.0
+
+BUG FIX
+
+* fix TLL speed issues related to FFT (#305).
+
+
 # rvinecopulib 0.7.1.1.2
 
 BUG FIX
