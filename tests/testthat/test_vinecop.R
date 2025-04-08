@@ -94,6 +94,36 @@ test_that("partial selection works", {
   expect_true(all(paste(diag(m_new[5:2, ]), m_new[1, -5]) %in% tree1_old_edges))
 })
 
+test_that("MST algorithms behave as expected", {
+  # Generate data
+  u <- replicate(7, runif(500))
+
+  # (a) prim and kruskal give the same structure
+  set.seed(42)
+  fit_prim <- vinecop(u, family_set = "indep", mst = "prim")
+
+  set.seed(42)
+  fit_kruskal <- vinecop(u, family_set = "indep", mst = "kruskal")
+
+  m_prim <- as_rvine_matrix(fit_prim$structure)
+  m_kruskal <- as_rvine_matrix(fit_kruskal$structure)
+
+  expect_equal(m_prim, m_kruskal)
+
+  # (b) random gives different structures for seeds 1:10
+  structures <- vector("list", 10)
+
+  for (i in 1:10) {
+    set.seed(i)
+    fit_random <- vinecop(u, family_set = "indep", mst = "random")
+    structures[[i]] <- as_rvine_matrix(fit_random$structure)
+  }
+
+  # Check uniqueness
+  unique_structures <- unique(structures)
+  expect_equal(length(unique_structures), 10)
+})
+
 test_that("d = 1 works", {
   vc <- vinecop(runif(20), structure = rvine_structure(1))
   vc2 <- vinecop(runif(20))

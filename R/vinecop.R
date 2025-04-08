@@ -156,6 +156,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     is.string(mst_algorithm)
   )
 
+  seeds <- get_seeds()
   if (!is.null(vinecop_object)) {
     if (!inherits(vinecop_object, "vinecop")) {
       stop("'vinecop_object' must be of class 'vinecop'")
@@ -172,7 +173,8 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
       weights = weights,
       show_trace = show_trace,
       num_threads = cores,
-      mst_algorithm = mst_algorithm
+      mst_algorithm = mst_algorithm,
+      seeds = seeds
     )
   } else {
     # check if families known (w/ partial matching) and expand convenience defs
@@ -184,8 +186,6 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     } else {
       structure <- as_rvine_structure(structure)
     }
-
-    seeds <- get_seeds()
 
     ## fit and select copula model
     vinecop <- vinecop_select_cpp(
@@ -242,7 +242,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     trunc_lvl = trunc_lvl,
     tree_crit = tree_crit,
     threshold = threshold,
-    seeds = seeds
+    mst_algorithm <- mst_algorithm
   )
   vinecop$nobs <- NROW(data)
   vinecop

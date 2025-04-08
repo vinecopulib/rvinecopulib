@@ -5,6 +5,7 @@
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
 #include <stdexcept>
+#include <random>
 #include <vinecopulib/misc/tools_stl.hpp>
 
 //! @file vinecop/implementation/fit_controls.ipp

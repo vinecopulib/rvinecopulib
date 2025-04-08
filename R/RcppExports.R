@@ -93,8 +93,8 @@ vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_m
     .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, mst_algorithm, seeds)
 }
 
-vinecop_fit_cpp <- function(data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads) {
-    .Call(`_rvinecopulib_vinecop_fit_cpp`, data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads)
+vinecop_fit_cpp <- function(data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads, mst_algorithm, seeds) {
+    .Call(`_rvinecopulib_vinecop_fit_cpp`, data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads, mst_algorithm, seeds)
 }
 
 fit_margins_cpp <- function(data, xmin, xmax, type, mult, bw, deg, weights, num_threads) {
