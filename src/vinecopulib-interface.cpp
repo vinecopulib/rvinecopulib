@@ -231,7 +231,7 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd &data,
                               bool show_trace,
                               size_t num_threads,
                               std::vector<std::string> var_types,
-                              std::string mst_algorithm,
+                              std::string tree_algorithm,
                               std::vector<int> seeds)
 {
   std::vector<BicopFamily> fam_set(family_set.size());
@@ -257,7 +257,7 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd &data,
   fit_controls.set_select_trunc_lvl(select_truncation_level);
   fit_controls.set_select_families(select_families);
   fit_controls.set_show_trace(show_trace);
-  fit_controls.set_mst_algorithm(mst_algorithm);
+  fit_controls.set_tree_algorithm(tree_algorithm);
   fit_controls.set_seeds(seeds);
 
   Vinecop vinecop_cpp(rvine_structure_wrap(structure, false));
@@ -276,7 +276,7 @@ Rcpp::List vinecop_fit_cpp(const Eigen::MatrixXd &data,
                            const Eigen::VectorXd &weights,
                            bool show_trace,
                            size_t num_threads,
-                           std::string mst_algorithm,
+                           std::string tree_algorithm,
                            std::vector<int> seeds)
 {
   FitControlsVinecop fit_controls;
@@ -286,7 +286,7 @@ Rcpp::List vinecop_fit_cpp(const Eigen::MatrixXd &data,
   fit_controls.set_weights(weights);
   fit_controls.set_show_trace(show_trace);
   fit_controls.set_num_threads(num_threads);
-  fit_controls.set_mst_algorithm(mst_algorithm);
+  fit_controls.set_tree_algorithm(tree_algorithm);
   fit_controls.set_seeds(seeds);
 
   Vinecop vinecop_cpp = vinecop_wrap(vinecop_r, false);

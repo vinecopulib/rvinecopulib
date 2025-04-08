@@ -47,7 +47,7 @@ public:
     bool select_families = true,
     bool show_trace = false,
     size_t num_threads = 1,
-    std::string mst_algorithm = "prim",
+    std::string tree_algorithm = "mst_prim",
     bool allow_rotations = true,
     std::vector<int> seeds = std::vector<int>());
 
@@ -60,7 +60,7 @@ public:
     bool select_threshold = false,
     bool select_families = true,
     bool show_trace = false,
-    std::string mst_algorithm = "prim",
+    std::string tree_algorithm = "mst_prim",
     std::vector<int> seeds = std::vector<int>());
 
   explicit FitControlsVinecop(const FitControlsConfig& config);
@@ -86,7 +86,7 @@ public:
 
   FitControlsBicop get_fit_controls_bicop() const;
 
-  std::string get_mst_algorithm() const;
+  std::string get_tree_algorithm() const;
 
   std::vector<int> get_seeds() const;
 
@@ -111,7 +111,7 @@ public:
 
   void set_fit_controls_bicop(FitControlsBicop controls);
 
-  void set_mst_algorithm(std::string mst_algorithm);
+  void set_tree_algorithm(std::string tree_algorithm);
 
   void set_seeds(std::vector<int> seeds);
 
@@ -126,7 +126,7 @@ private:
   bool select_trunc_lvl_;
   bool select_threshold_;
   bool select_families_;
-  std::string mst_algorithm_;
+  std::string tree_algorithm_;
   std::vector<int> seeds_;
   boost::random::mt19937 rng_;
 

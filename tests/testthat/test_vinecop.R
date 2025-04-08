@@ -100,10 +100,10 @@ test_that("MST algorithms behave as expected", {
 
   # (a) prim and kruskal give the same structure
   set.seed(42)
-  fit_prim <- vinecop(u, family_set = "indep", mst = "prim")
+  fit_prim <- vinecop(u, family_set = "indep", tree_algorithm = "mst_prim")
 
   set.seed(42)
-  fit_kruskal <- vinecop(u, family_set = "indep", mst = "kruskal")
+  fit_kruskal <- vinecop(u, family_set = "indep", tree_algorithm = "mst_kruskal")
 
   m_prim <- as_rvine_matrix(fit_prim$structure)
   m_kruskal <- as_rvine_matrix(fit_kruskal$structure)
@@ -115,7 +115,7 @@ test_that("MST algorithms behave as expected", {
 
   for (i in 1:10) {
     set.seed(i)
-    fit_random <- vinecop(u, family_set = "indep", mst = "random")
+    fit_random <- vinecop(u, family_set = "indep", tree_algorithm = "random_weighted")
     structures[[i]] <- as_rvine_matrix(fit_random$structure)
   }
 

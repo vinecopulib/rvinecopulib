@@ -33,9 +33,16 @@
 #' @param var_types variable types, a length d vector; e.g., `c("c", "c")` for
 #'   two continuous variables, or `c("c", "d")` for first variable continuous
 #'   and second discrete.
-#' @param mst_algorithm The algorithm for building the maximum spanning
-#'   tree (`"prim"`, `"kruskal"`, `"random"`) during the tree-wise
-#'   structure selection.
+#' @param tree_algorithm The algorithm for building the spanning
+#'   tree (`"mst_prim"`, `"mst_kruskal"`, `"random_weighted"`, or
+#'   `"random_unweighted"`) during the tree-wise structure selection.
+#'   `"mst_prim"` and `"mst_kruskal"` use Prim's and Kruskal's algorithms
+#'   respectively to select the maximum spanning tree, maximizing
+#'   the sum of the edge weights (i.e., `tree_criterion`).
+#'   `"random_weighted"` and `"random_unweighted"` use Wilson's
+#'   algorithm to generate a random spanning tree, either with probability
+#'   proportional to the product of the edge weights (weighted) or
+#'   uniformly (unweighted).
 #'
 #' @details
 #'
@@ -57,6 +64,29 @@
 #' \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
 #' limit and the cdf itself coincide. Respective columns can be omitted in the
 #' second block.
+#'
+#' ## Structure selection
+#'
+#' Selection of the structure is performed using the algorithm of
+#' Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka (2013).
+#' *Selecting and estimating regular vine copulae and application to
+#' financial returns.* Computational Statistics & Data Analysis, 59 (1),
+#' 52-69.
+#' The dependence measure used to select trees (default: Kendall's tau) is
+#' corrected for ties and can be changed using the `tree_criterion`
+#' argument, which can be set to `"tau"`, `"rho"` or `"hoeffd"`.
+#' Both Prim's (default: `"mst_prim"`) and Kruskal's ()`"mst_kruskal"`)
+#' algorithms are available through `tree_algorithm` to set the
+#' maximum spanning tree selection algorithm.
+#' An alternative to the maximum spanning tree selection is to use random
+#' spanning trees, which can be selected using `controls.tree_algorithm` and
+#' come in two flavors, both using Wilson's algorithm loop erased random walks:
+#'
+#'   - "random_weighted"` generates a random spanning tree with probability
+#'     proportional to the product of the weights (i.e., the dependence) of
+#'     the edges in the tree.
+#'   - "random_unweighted"` generates a random spanning tree uniformly over all
+#'     spanning trees satisfying the proximity condition.
 #'
 #' ## Partial structure selection
 #'
@@ -133,7 +163,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
                     allow_rotations = TRUE,
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
                     keep_data = FALSE, vinecop_object = NULL,
-                    show_trace = FALSE, cores = 1, mst_algorithm = "prim") {
+                    show_trace = FALSE, cores = 1, tree_algorithm = "mst_prim") {
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||
@@ -153,7 +183,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     is.flag(keep_data),
     is.number(cores), cores > 0,
     correct_var_types(var_types),
-    is.string(mst_algorithm)
+    is.string(tree_algorithm)
   )
 
   seeds <- get_seeds()
@@ -173,7 +203,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
       weights = weights,
       show_trace = show_trace,
       num_threads = cores,
-      mst_algorithm = mst_algorithm,
+      tree_algorithm = tree_algorithm,
       seeds = seeds
     )
   } else {
@@ -213,7 +243,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
       show_trace = show_trace,
       num_threads = cores,
       var_types = var_types,
-      mst_algorithm = mst_algorithm,
+      tree_algorithm = tree_algorithm,
       seeds = seeds
     )
   }
@@ -242,7 +272,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     trunc_lvl = trunc_lvl,
     tree_crit = tree_crit,
     threshold = threshold,
-    mst_algorithm <- mst_algorithm
+    tree_algorithm <- tree_algorithm
   )
   vinecop$nobs <- NROW(data)
   vinecop

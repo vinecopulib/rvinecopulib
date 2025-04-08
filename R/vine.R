@@ -114,7 +114,7 @@ vine <- function(data,
                    keep_data = FALSE,
                    show_trace = FALSE,
                    cores = 1,
-                   mst_algorithm = "prim",
+                   tree_algorithm = "mst_prim",
                  ),
                  weights = numeric(),
                  keep_data = FALSE,
@@ -147,14 +147,15 @@ vine <- function(data,
   ## estimation of the marginals
   vine <- list()
   vine$margins <- fit_margins_cpp(prep_for_margins(data),
-                                  xmin = margins_controls$xmin,
-                                  xmax = margins_controls$xmax,
-                                  type = margins_controls$type,
-                                  mult = margins_controls$mult,
-                                  bw = margins_controls$bw,
-                                  deg = margins_controls$deg,
-                                  weights = weights,
-                                  cores)
+    xmin = margins_controls$xmin,
+    xmax = margins_controls$xmax,
+    type = margins_controls$type,
+    mult = margins_controls$mult,
+    bw = margins_controls$bw,
+    deg = margins_controls$deg,
+    weights = weights,
+    cores
+  )
   vine$margins_controls <- margins_controls
   vine$margins <- finalize_margins(data, vine$margins)
 
@@ -193,9 +194,10 @@ compute_pseudo_obs <- function(data, vine) {
 expand_factors <- function(data) {
   if (is.data.frame(data)) {
     data <- lapply(data, function(x) {
-      if (is.numeric(x) | is.ordered(x))
+      if (is.numeric(x) | is.ordered(x)) {
         return(x)
-      x <- model.matrix(~ x)[, -1, drop = FALSE]
+      }
+      x <- model.matrix(~x)[, -1, drop = FALSE]
       x <- as.data.frame(x)
       x <- lapply(x, function(y) ordered(y, levels = 0:1))
     })
@@ -238,8 +240,8 @@ vine_dist <- function(margins, pair_copulas, structure) {
   if (!all(is_ok)) {
     msg <- "Some objects in marg aren't properly defined.\n"
     msg <- c(msg, paste0("margin ", seq_along(check_marg)[!is_ok], " : ",
-                         unlist(check_marg[!is_ok]), ".",
-                         sep = "\n"
+      unlist(check_marg[!is_ok]), ".",
+      sep = "\n"
     ))
     stop(msg)
   }
@@ -264,8 +266,9 @@ expand_margin_controls <- function(controls, d, data) {
     controls[["mult"]] <- log(1 + d)
   }
   for (par in names(controls)) {
-    if (length(controls[[par]]) != ncol(data))
+    if (length(controls[[par]]) != ncol(data)) {
       controls[[par]] <- rep(controls[[par]], ncol(data))
+    }
   }
   controls
 }

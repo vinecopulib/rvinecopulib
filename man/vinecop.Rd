@@ -24,7 +24,7 @@ vinecop(
   vinecop_object = NULL,
   show_trace = FALSE,
   cores = 1,
-  mst_algorithm = "prim"
+  tree_algorithm = "mst_prim"
 )
 }
 \arguments{
@@ -98,9 +98,16 @@ printed.}
 \item{cores}{number of cores to use; if more than 1, estimation of pair
 copulas within a tree is done in parallel.}
 
-\item{mst_algorithm}{The algorithm for building the maximum spanning
-tree (\code{"prim"}, \code{"kruskal"}, \code{"random"}) during the tree-wise
-structure selection.}
+\item{tree_algorithm}{The algorithm for building the spanning
+tree (\code{"mst_prim"}, \code{"mst_kruskal"}, \code{"random_weighted"}, or
+\code{"random_unweighted"}) during the tree-wise structure selection.
+\code{"mst_prim"} and \code{"mst_kruskal"} use Prim's and Kruskal's algorithms
+respectively to select the maximum spanning tree, maximizing
+the sum of the edge weights (i.e., \code{tree_criterion}).
+\code{"random_weighted"} and \code{"random_unweighted"} use Wilson's
+algorithm to generate a random spanning tree, either with probability
+proportional to the product of the edge weights (weighted) or
+uniformly (unweighted).}
 }
 \value{
 Objects inheriting from \code{vinecop} and \code{vinecop_dist} for \code{\link[=vinecop]{vinecop()}}. In
@@ -141,6 +148,31 @@ left-sided limit of the cdf. For, e.g., an integer-valued variable, it holds
 \eqn{F_{X_j}(X_j^-) = F_{X_j}(X_j - 1)}. For continuous variables the left
 limit and the cdf itself coincide. Respective columns can be omitted in the
 second block.
+}
+
+\subsection{Structure selection}{
+
+Selection of the structure is performed using the algorithm of
+Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka (2013).
+\emph{Selecting and estimating regular vine copulae and application to
+financial returns.} Computational Statistics & Data Analysis, 59 (1),
+52-69.
+The dependence measure used to select trees (default: Kendall's tau) is
+corrected for ties and can be changed using the \code{tree_criterion}
+argument, which can be set to \code{"tau"}, \code{"rho"} or \code{"hoeffd"}.
+Both Prim's (default: \code{"mst_prim"}) and Kruskal's ()\code{"mst_kruskal"})
+algorithms are available through \code{tree_algorithm} to set the
+maximum spanning tree selection algorithm.
+An alternative to the maximum spanning tree selection is to use random
+spanning trees, which can be selected using \code{controls.tree_algorithm} and
+come in two flavors, both using Wilson's algorithm loop erased random walks:
+\itemize{
+\item "random_weighted"` generates a random spanning tree with probability
+proportional to the product of the weights (i.e., the dependence) of
+the edges in the tree.
+\item "random_unweighted"` generates a random spanning tree uniformly over all
+spanning trees satisfying the proximity condition.
+}
 }
 
 \subsection{Partial structure selection}{

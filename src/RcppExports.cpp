@@ -294,8 +294,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // vinecop_select_cpp
-Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data, Rcpp::List& structure, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, const Eigen::VectorXd& weights, double psi0, bool select_truncation_level, bool select_threshold, bool preselect_families, bool select_families, bool allow_rotations, bool show_trace, size_t num_threads, std::vector<std::string> var_types, std::string mst_algorithm, std::vector<int> seeds);
-RcppExport SEXP _rvinecopulib_vinecop_select_cpp(SEXP dataSEXP, SEXP structureSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP select_truncation_levelSEXP, SEXP select_thresholdSEXP, SEXP preselect_familiesSEXP, SEXP select_familiesSEXP, SEXP allow_rotationsSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP, SEXP var_typesSEXP, SEXP mst_algorithmSEXP, SEXP seedsSEXP) {
+Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data, Rcpp::List& structure, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, const Eigen::VectorXd& weights, double psi0, bool select_truncation_level, bool select_threshold, bool preselect_families, bool select_families, bool allow_rotations, bool show_trace, size_t num_threads, std::vector<std::string> var_types, std::string tree_algorithm, std::vector<int> seeds);
+RcppExport SEXP _rvinecopulib_vinecop_select_cpp(SEXP dataSEXP, SEXP structureSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP select_truncation_levelSEXP, SEXP select_thresholdSEXP, SEXP preselect_familiesSEXP, SEXP select_familiesSEXP, SEXP allow_rotationsSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP, SEXP var_typesSEXP, SEXP tree_algorithmSEXP, SEXP seedsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -319,15 +319,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type show_trace(show_traceSEXP);
     Rcpp::traits::input_parameter< size_t >::type num_threads(num_threadsSEXP);
     Rcpp::traits::input_parameter< std::vector<std::string> >::type var_types(var_typesSEXP);
-    Rcpp::traits::input_parameter< std::string >::type mst_algorithm(mst_algorithmSEXP);
+    Rcpp::traits::input_parameter< std::string >::type tree_algorithm(tree_algorithmSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type seeds(seedsSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_select_cpp(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, mst_algorithm, seeds));
+    rcpp_result_gen = Rcpp::wrap(vinecop_select_cpp(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds));
     return rcpp_result_gen;
 END_RCPP
 }
 // vinecop_fit_cpp
-Rcpp::List vinecop_fit_cpp(const Eigen::MatrixXd& data, Rcpp::List& vinecop_r, std::string par_method, std::string nonpar_method, double mult, const Eigen::VectorXd& weights, bool show_trace, size_t num_threads, std::string mst_algorithm, std::vector<int> seeds);
-RcppExport SEXP _rvinecopulib_vinecop_fit_cpp(SEXP dataSEXP, SEXP vinecop_rSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP weightsSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP, SEXP mst_algorithmSEXP, SEXP seedsSEXP) {
+Rcpp::List vinecop_fit_cpp(const Eigen::MatrixXd& data, Rcpp::List& vinecop_r, std::string par_method, std::string nonpar_method, double mult, const Eigen::VectorXd& weights, bool show_trace, size_t num_threads, std::string tree_algorithm, std::vector<int> seeds);
+RcppExport SEXP _rvinecopulib_vinecop_fit_cpp(SEXP dataSEXP, SEXP vinecop_rSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP weightsSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP, SEXP tree_algorithmSEXP, SEXP seedsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -339,9 +339,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< bool >::type show_trace(show_traceSEXP);
     Rcpp::traits::input_parameter< size_t >::type num_threads(num_threadsSEXP);
-    Rcpp::traits::input_parameter< std::string >::type mst_algorithm(mst_algorithmSEXP);
+    Rcpp::traits::input_parameter< std::string >::type tree_algorithm(tree_algorithmSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type seeds(seedsSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_fit_cpp(data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads, mst_algorithm, seeds));
+    rcpp_result_gen = Rcpp::wrap(vinecop_fit_cpp(data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads, tree_algorithm, seeds));
     return rcpp_result_gen;
 END_RCPP
 }
