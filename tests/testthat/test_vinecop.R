@@ -14,20 +14,26 @@ test_that("returns proper 'vinecop' object", {
   expect_s3_class(fit, "vinecop_dist")
   expect_identical(
     names(fit),
-    c("pair_copulas", "structure", "var_types",
-      "npars", "loglik", "threshold", "controls", "nobs")
+    c(
+      "pair_copulas", "structure", "var_types",
+      "npars", "loglik", "threshold", "controls", "nobs"
+    )
   )
   expect_identical(
     names(fit_with_data),
-    c("pair_copulas", "structure", "var_types",
-      "npars", "loglik", "threshold", "data", "controls", "nobs")
+    c(
+      "pair_copulas", "structure", "var_types",
+      "npars", "loglik", "threshold", "data", "controls", "nobs"
+    )
   )
 
   colnames(u) <- paste(seq_len(ncol(u)))
   expect_identical(
     names(vinecop(u, family = "indep")),
-    c("pair_copulas", "structure", "var_types",
-      "npars", "loglik", "threshold", "names", "controls", "nobs")
+    c(
+      "pair_copulas", "structure", "var_types",
+      "npars", "loglik", "threshold", "names", "controls", "nobs"
+    )
   )
 })
 
@@ -64,9 +70,11 @@ test_that("print/summary generics work", {
   out <- capture.output(summary(fit))
   expect_eql(out[length(out)], "1 <-> a,   2 <-> b,   3 <-> c ")
 
-  fit$names <- c("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                 "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-                 "cccccccccccccccccccccccccccccccccccccccccccccccc")
+  fit$names <- c(
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "cccccccccccccccccccccccccccccccccccccccccccccccc"
+  )
   out <- capture.output(summary(fit))
   expect_eql(out[length(out)], "3 <-> cccccccccccccccccccccccccccccccccccccccccccccccc ")
 })
@@ -83,14 +91,17 @@ test_that("truncation works", {
 
 test_that("partial selection works", {
   fit_partial <- vinecop(u[, sample(1:5)],
-                         structure = truncate_model(fit$structure, 1),
-                         trunc_lvl = 3)
+    structure = truncate_model(fit$structure, 1),
+    trunc_lvl = 3
+  )
   expect_eql(unname(dim(fit_partial)[2]), 3)
 
   m_old <- as_rvine_matrix(fit$structure)
   m_new <- as_rvine_matrix(fit_partial$structure)
-  tree1_old_edges <- c(paste(diag(m_old[5:2, ]), m_old[1, -5]),
-                       paste(m_old[1, -5], diag(m_old[5:2, ])))
+  tree1_old_edges <- c(
+    paste(diag(m_old[5:2, ]), m_old[1, -5]),
+    paste(m_old[1, -5], diag(m_old[5:2, ]))
+  )
   expect_true(all(paste(diag(m_new[5:2, ]), m_new[1, -5]) %in% tree1_old_edges))
 })
 
@@ -103,7 +114,10 @@ test_that("MST algorithms behave as expected", {
   fit_prim <- vinecop(u, family_set = "indep", tree_algorithm = "mst_prim")
 
   set.seed(42)
-  fit_kruskal <- vinecop(u, family_set = "indep", tree_algorithm = "mst_kruskal")
+  fit_kruskal <- vinecop(
+    u,
+    family_set = "indep", tree_algorithm = "mst_kruskal"
+  )
 
   m_prim <- as_rvine_matrix(fit_prim$structure)
   m_kruskal <- as_rvine_matrix(fit_kruskal$structure)
@@ -115,7 +129,10 @@ test_that("MST algorithms behave as expected", {
 
   for (i in 1:10) {
     set.seed(i)
-    fit_random <- vinecop(u, family_set = "indep", tree_algorithm = "random_weighted")
+    fit_random <- vinecop(
+      u,
+      family_set = "indep", tree_algorithm = "random_weighted"
+    )
     structures[[i]] <- as_rvine_matrix(fit_random$structure)
   }
 
@@ -141,10 +158,11 @@ test_that("fitting only parameters works", {
 
   vc <- vinecop(u, family = "tll")
   vc2 <- vinecop(u, vinecop_object = vc, mult = 10)
-  expect_true(TRUE != all.equal(vc$pair_copulas[[1]][[1]]$parameters,
-                                vc2$pair_copulas[[1]][[1]]$parameters))
+  expect_true(TRUE != all.equal(
+    vc$pair_copulas[[1]][[1]]$parameters,
+    vc2$pair_copulas[[1]][[1]]$parameters
+  ))
 
   expect_warning(vinecop(u, structure = dvine_structure(3), vinecop = vc))
   expect_warning(vinecop(u, family_set = "gauss", vinecop = vc))
 })
-
