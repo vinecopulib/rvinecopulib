@@ -33,6 +33,9 @@
 #' @param var_types variable types, a length d vector; e.g., `c("c", "c")` for
 #'   two continuous variables, or `c("c", "d")` for first variable continuous
 #'   and second discrete.
+#' @param mst_algorithm The algorithm for building the maximum spanning
+#'   tree (`"prim"`, `"kruskal"`, `"random"`) during the tree-wise
+#'   structure selection.
 #'
 #' @details
 #'
@@ -130,7 +133,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
                     allow_rotations = TRUE,
                     trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
                     keep_data = FALSE, vinecop_object = NULL,
-                    show_trace = FALSE, cores = 1) {
+                    show_trace = FALSE, cores = 1, mst_algorithm = "prim") {
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||
@@ -149,7 +152,8 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     is.scalar(threshold),
     is.flag(keep_data),
     is.number(cores), cores > 0,
-    correct_var_types(var_types)
+    correct_var_types(var_types),
+    is.string(mst_algorithm)
   )
 
   if (!is.null(vinecop_object)) {
@@ -167,7 +171,8 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
       mult = mult,
       weights = weights,
       show_trace = show_trace,
-      num_threads = cores
+      num_threads = cores,
+      mst_algorithm = mst_algorithm
     )
   } else {
     # check if families known (w/ partial matching) and expand convenience defs
@@ -179,6 +184,8 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     } else {
       structure <- as_rvine_structure(structure)
     }
+
+    seeds <- get_seeds()
 
     ## fit and select copula model
     vinecop <- vinecop_select_cpp(
@@ -205,7 +212,9 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
       allow_rotations = allow_rotations,
       show_trace = show_trace,
       num_threads = cores,
-      var_types = var_types
+      var_types = var_types,
+      mst_algorithm = mst_algorithm,
+      seeds = seeds
     )
   }
 
@@ -232,7 +241,8 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     allow_rotations = allow_rotations,
     trunc_lvl = trunc_lvl,
     tree_crit = tree_crit,
-    threshold = threshold
+    threshold = threshold,
+    seeds = seeds
   )
   vinecop$nobs <- NROW(data)
   vinecop

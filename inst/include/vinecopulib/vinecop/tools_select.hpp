@@ -84,6 +84,7 @@ typedef boost::adjacency_list<
 
 typedef boost::graph_traits<VineTree>::edge_descriptor EdgeIterator;
 typedef std::pair<EdgeIterator, bool> FoundEdge;
+typedef boost::property_map<VineTree, boost::edge_weight_t>::type WeightMap;
 
 class VinecopSelector
 {

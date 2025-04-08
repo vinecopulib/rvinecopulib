@@ -23,7 +23,8 @@ vinecop(
   keep_data = FALSE,
   vinecop_object = NULL,
   show_trace = FALSE,
-  cores = 1
+  cores = 1,
+  mst_algorithm = "prim"
 )
 }
 \arguments{
@@ -96,6 +97,10 @@ printed.}
 
 \item{cores}{number of cores to use; if more than 1, estimation of pair
 copulas within a tree is done in parallel.}
+
+\item{mst_algorithm}{The algorithm for building the maximum spanning
+tree (\code{"prim"}, \code{"kruskal"}, \code{"random"}) during the tree-wise
+structure selection.}
 }
 \value{
 Objects inheriting from \code{vinecop} and \code{vinecop_dist} for \code{\link[=vinecop]{vinecop()}}. In

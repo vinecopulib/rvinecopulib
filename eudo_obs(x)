@@ -1,0 +1,214 @@
+vinecop              package:rvinecopulib              R Documentation
+
+_F_i_t_t_i_n_g _v_i_n_e _c_o_p_u_l_a _m_o_d_e_l_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Automated fitting and model selection for vine copula models with
+     continuous or discrete data. Selection of the structure is
+     performed using the algorithm of Dissmann et al. (2013).
+
+_U_s_a_g_e:
+
+     vinecop(
+       data,
+       var_types = rep("c", NCOL(data)),
+       family_set = "all",
+       structure = NA,
+       par_method = "mle",
+       nonpar_method = "constant",
+       mult = 1,
+       selcrit = "aic",
+       weights = numeric(),
+       psi0 = 0.9,
+       presel = TRUE,
+       allow_rotations = TRUE,
+       trunc_lvl = Inf,
+       tree_crit = "tau",
+       threshold = 0,
+       keep_data = FALSE,
+       vinecop_object = NULL,
+       show_trace = FALSE,
+       cores = 1,
+       mst_algorithm = "prim"
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+    data: a matrix or data.frame with at least two columns, containing
+          the (pseudo-)observations for the two variables (copula data
+          should have approximately uniform margins). More columns are
+          required for discrete models, see _Details_.
+
+var_types: variable types, a length d vector; e.g., ‘c("c", "c")’ for
+          two continuous variables, or ‘c("c", "d")’ for first variable
+          continuous and second discrete.
+
+family_set: a character vector of families; see ‘bicop()’ for
+          additional options.
+
+structure: an ‘rvine_structure’ object, namely a compressed
+          representation of the vine structure, or an object that can
+          be coerced into one (see ‘rvine_structure()’ and
+          ‘as_rvine_structure()’). The dimension must be
+          ‘length(pair_copulas[[1]]) + 1’; ‘structure = NA’ performs
+          automatic selection based on Dissman's algorithm. See
+          _Details_ for partial selection of the structure.
+
+par_method: the estimation method for parametric models, either ‘"mle"’
+          for maximum likelihood or ‘"itau"’ for inversion of Kendall's
+          tau (only available for one-parameter families and ‘"t"’.
+
+nonpar_method: the estimation method for nonparametric models, either
+          ‘"constant"’ for the standard transformation estimator, or
+          ‘"linear"’/‘"quadratic"’ for the local-likelihood
+          approximations of order one/two.
+
+    mult: multiplier for the smoothing parameters of nonparametric
+          families. Values larger than 1 make the estimate more smooth,
+          values less than 1 less smooth.
+
+ selcrit: criterion for family selection, either ‘"loglik"’, ‘"aic"’,
+          ‘"bic"’, ‘"mbic"’. For ‘vinecop()’ there is the additional
+          option ‘"mbicv"’.
+
+ weights: optional vector of weights for each observation.
+
+    psi0: prior probability of a non-independence copula (only used for
+          ‘selcrit = "mbic"’ and ‘selcrit = "mbicv"’).
+
+  presel: whether the family set should be thinned out according to
+          symmetry characteristics of the data.
+
+allow_rotations: whether to allow rotations of the copula.
+
+trunc_lvl: the truncation level of the vine copula; ‘Inf’ means no
+          truncation, ‘NA’ indicates that the truncation level should
+          be selected automatically by ‘mBICV()’.
+
+tree_crit: the criterion for tree selection, one of ‘"tau"’, ‘"rho"’,
+          ‘"hoeffd"’, ‘"mcor"’, or ‘"joe"’ for Kendall's tau,
+          Spearman's rho, Hoeffding's D, maximum correlation, or
+          logarithm of the partial correlation, respectively.
+
+threshold: for thresholded vine copulas; ‘NA’ indicates that the
+          threshold should be selected automatically by ‘mBICV()’.
+
+keep_data: whether the data should be stored (necessary for using
+          ‘fitted()’).
+
+vinecop_object: a ‘vinecop’ object to be updated; if provided, only the
+          parameters are fit; structure and families are kept the same.
+
+show_trace: logical; whether a trace of the fitting progress should be
+          printed.
+
+   cores: number of cores to use; if more than 1, estimation of pair
+          copulas within a tree is done in parallel.
+
+mst_algorithm: The algorithm for building the maximum spanning tree
+          (‘"prim"’, ‘"kruskal"’, ‘"random"’) during the tree-wise
+          structure selection.
+
+_D_e_t_a_i_l_s:
+
+  _M_i_s_s_i_n_g _d_a_t_a:
+
+       If there are missing data (i.e., ‘NA’ entries), incomplete
+       observations are discarded before fitting a pair-copula. This is
+       done on a pair-by-pair basis so that the maximal available
+       information is used.
+
+  _D_i_s_c_r_e_t_e _v_a_r_i_a_b_l_e_s:
+
+       The dependence measures used to select trees (default: Kendall's
+       tau) are corrected for ties (see wdm::wdm).
+
+       Let ‘n’ be the number of observations and ‘d’ the number of
+       variables. When at least one variable is discrete, two types of
+       "observations" are required in ‘data’: the first n x d block
+       contains realizations of F_{X_j}(X_j). The second n x d block
+       contains realizations of F_{X_j}(X_j^-). The minus indicates a
+       left-sided limit of the cdf. For, e.g., an integer-valued
+       variable, it holds F_{X_j}(X_j^-) = F_{X_j}(X_j - 1). For
+       continuous variables the left limit and the cdf itself coincide.
+       Respective columns can be omitted in the second block.
+
+  _P_a_r_t_i_a_l _s_t_r_u_c_t_u_r_e _s_e_l_e_c_t_i_o_n:
+
+       It is possible to fix the vine structure only in the first trees
+       and select the remaining ones automatically. To specify only the
+       first ‘k’ trees, supply a ‘k’-truncated ‘rvine_structure()’ or
+       ‘rvine_matrix()’. All trees up to ‘trunc_lvl’ will then be
+       selected automatically.
+
+_V_a_l_u_e:
+
+     Objects inheriting from ‘vinecop’ and ‘vinecop_dist’ for
+     ‘vinecop()’. In addition to the entries provided by
+     ‘vinecop_dist()’, there are:
+
+        • ‘threshold’, the (set or estimated) threshold used for
+          thresholding the vine.
+
+        • ‘data’ (optionally, if ‘keep_data = TRUE’ was used), the
+          dataset that was passed to ‘vinecop()’.
+
+        • ‘controls’, a ‘list’ with fit controls that was passed to
+          ‘vinecop()’.
+
+        • ‘nobs’, the number of observations that were used to fit the
+          model.
+
+_R_e_f_e_r_e_n_c_e_s:
+
+     Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka
+     (2013). _Selecting and estimating regular vine copulae and
+     application to financial returns._ Computational Statistics & Data
+     Analysis, 59 (1), 52-69.
+
+_S_e_e _A_l_s_o:
+
+     ‘vinecop()’, ‘dvinecop()’, ‘pvinecop()’, ‘rvinecop()’,
+     ‘plot.vinecop()’, ‘contour.vinecop()’
+
+_E_x_a_m_p_l_e_s:
+
+     ## simulate dummy data
+     x <- rnorm(30) * matrix(1, 30, 5) + 0.5 * matrix(rnorm(30 * 5), 30, 5)
+     u <- pseudo_obs(x)
+     
+     ## fit and select the model structure, family and parameters
+     fit <- vinecop(u)
+     summary(fit)
+     plot(fit)
+     contour(fit)
+     
+     ## select by log-likelihood criterion from one-paramter families
+     fit <- vinecop(u, family_set = "onepar", selcrit = "bic")
+     summary(fit)
+     
+     ## 1-truncated, Gaussian D-vine
+     fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss", trunc_lvl = 1)
+     plot(fit)
+     contour(fit)
+     
+     ## Partial structure selection with only first tree specified
+     structure <- rvine_structure(order = 1:5, list(rep(5, 4)))
+     structure
+     fit <- vinecop(u, structure = structure, family = "gauss")
+     plot(fit)
+     
+     ## Model for discrete data
+     x <- qpois(u, 1)  # transform to Poisson margins
+     # we require two types of observations (see Details)
+     u_disc <- cbind(ppois(x, 1), ppois(x - 1, 1))
+     fit <- vinecop(u_disc, var_types = rep("d", 5))
+     
+     ## Model for mixed data
+     x <- qpois(u[, 1], 1)  # transform first variable to Poisson margin
+     # we require two types of observations (see Details)
+     u_disc <- cbind(ppois(x, 1), u[, 2:5], ppois(x - 1, 1))
+     fit <- vinecop(u_disc, var_types = c("d", rep("c", 4)))
+     
+

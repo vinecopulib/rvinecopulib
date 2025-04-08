@@ -9,6 +9,7 @@
 
 #include <boost/graph/kruskal_min_spanning_tree.hpp>
 #include <boost/graph/prim_minimum_spanning_tree.hpp>
+#include <boost/graph/random_spanning_tree.hpp>
 #include <cmath>
 #include <iostream>
 #include <wdm/eigen.hpp>
@@ -903,7 +904,7 @@ VinecopSelector::min_spanning_tree(VineTree& graph)
         return targets[source] != target && targets[target] != source;
       },
       graph);
-  } else {
+  } else if (controls_.get_mst_algorithm() == "kruskal") {
     std::vector<EdgeIterator> spanning_tree;
     kruskal_minimum_spanning_tree(graph, std::back_inserter(spanning_tree));
     // Using a hashmap to make the lookup faster
@@ -918,6 +919,38 @@ VinecopSelector::min_spanning_tree(VineTree& graph)
         auto source = boost::source(e, graph);
         auto target = boost::target(e, graph);
         return edges_set.find({ source, target }) == edges_set.end();
+      },
+      graph);
+  } else {
+    size_t d = num_vertices(graph);
+    std::vector<size_t> predecessors(d);
+    boost::mt19937 gen = controls_.get_rng();
+
+    // Here we inverse the weights to get a spanning tree
+    // with probability proportional to the product of the weights
+    // (i.e., the higher the weight, the more likely it is to be selected)
+    WeightMap original_weights = get(boost::edge_weight, graph);
+    std::map<EdgeIterator, double> inv_weights;
+
+    for (auto e : boost::make_iterator_range(edges(graph))) {
+      inv_weights[e] = 1.0 / (original_weights[e] + 1e-10);
+    }
+
+    boost::associative_property_map<std::map<EdgeIterator, double>>
+      inv_weight_map(inv_weights);
+
+    boost::random_spanning_tree(
+      graph,
+      gen,
+      boost::weight_map(inv_weight_map)
+        .predecessor_map(&predecessors[0])
+        .root_vertex(0)); // Root vertex can be any valid vertex
+
+    remove_edge_if(
+      [&](const EdgeIterator& e) {
+        auto source = boost::source(e, graph);
+        auto target = boost::target(e, graph);
+        return predecessors[source] != target && predecessors[target] != source;
       },
       graph);
   }

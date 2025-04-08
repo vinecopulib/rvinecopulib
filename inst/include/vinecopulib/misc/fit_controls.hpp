@@ -72,6 +72,9 @@ struct FitControlsConfig {
 
     //! The algorithm for building the maximum spanning tree. Default: "prim".
     optional::optional<std::string> mst_algorithm;
+
+    //! A vector of random seeds for the random number generator
+    optional::optional<std::vector<int>> seeds;
 };
 
 }
