@@ -272,7 +272,7 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
     trunc_lvl = trunc_lvl,
     tree_crit = tree_crit,
     threshold = threshold,
-    tree_algorithm <- tree_algorithm
+    tree_algorithm = tree_algorithm
   )
   vinecop$nobs <- NROW(data)
   vinecop

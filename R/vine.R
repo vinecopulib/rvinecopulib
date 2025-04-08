@@ -114,7 +114,7 @@ vine <- function(data,
                    keep_data = FALSE,
                    show_trace = FALSE,
                    cores = 1,
-                   tree_algorithm = "mst_prim",
+                   tree_algorithm = "mst_prim"
                  ),
                  weights = numeric(),
                  keep_data = FALSE,
