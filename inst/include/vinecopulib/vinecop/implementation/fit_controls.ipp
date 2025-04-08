@@ -397,7 +397,7 @@ FitControlsVinecop::set_seeds(std::vector<int> seeds)
   if (seeds.size() == 0) {
     // no seeds provided, seed randomly
     std::random_device rd{};
-    seeds = std::vector<int>(5);
+    seeds = std::vector<int>(20);
     std::generate(
       seeds.begin(), seeds.end(), [&]() { return static_cast<int>(rd()); });
   }

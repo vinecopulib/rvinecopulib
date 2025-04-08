@@ -926,14 +926,18 @@ VinecopSelector::min_spanning_tree(VineTree& graph)
     std::vector<size_t> predecessors(d);
     boost::mt19937 gen = controls_.get_rng();
 
+    // Randomize root vertex
+    std::uniform_int_distribution<size_t> root_dist(0, d - 1);
+    size_t root = root_dist(gen);
+
     if (controls_.get_tree_algorithm() == "random_unweighted") {
       // Here, no weight map is used
       // So that it's Wilson uniformly over all spanning trees
       boost::random_spanning_tree(
         graph,
         gen,
-        boost::predecessor_map(&predecessors[0])
-             .root_vertex(0));
+        boost::predecessor_map(predecessors.data())
+             .root_vertex(root));
     } else {
       // Here we inverse the weights to get a spanning tree
       // with probability proportional to the product of the weights
@@ -947,8 +951,8 @@ VinecopSelector::min_spanning_tree(VineTree& graph)
       boost::random_spanning_tree(
         graph,
         gen,
-        boost::predecessor_map(&predecessors[0])
-             .root_vertex(0)
+        boost::predecessor_map(predecessors.data())
+             .root_vertex(root)
              .weight_map(inv_weight_map));
     }
 
