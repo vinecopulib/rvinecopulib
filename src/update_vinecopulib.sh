@@ -7,7 +7,7 @@ mv ./vinecopulib/include/* ../inst/include
 
 sed -i '11i#define INTERFACED_FROM_R' ./../inst/include/vinecopulib/misc/tools_interface.hpp
 
-sed -i '11i#define INTERFACED_FROM_R' ./../inst/include/vinecopulib/misc/tools_integration.hpp
+sed -i -e '8,13d' -e '31,34d' ./../inst/include/vinecopulib/misc/tools_integration.hpp
 
 rm -rf ./../inst/include/vinecopulib/mainpage.h
 rm -rf vinecopulib
