@@ -22,7 +22,7 @@ namespace vinecopulib {
 //! @param nonparametric_mult A factor with which the smoothing parameters
 //!     are multiplied.
 //! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`
-//!     or `"bic"`).
+//!     or `"bic"`) for the pair copula families.
 //! @param weights A vector of weights for the observations.
 //! @param psi0 Only for `selection_criterion = "mbic"`, the prior probability 
 //!     of non-independence.

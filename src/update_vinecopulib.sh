@@ -1,11 +1,13 @@
 #!/bin/bash
 
-git clone --depth 1 git@github.com:vinecopulib/vinecopulib.git -b dev --single-branch
+git clone --depth 1 git@github.com:vinecopulib/vinecopulib.git -b random_spanning_tree --single-branch
 
 rm -rf ../inst/include/vinecopulib/*
 mv ./vinecopulib/include/* ../inst/include
 
 sed -i '11i#define INTERFACED_FROM_R' ./../inst/include/vinecopulib/misc/tools_interface.hpp
+
+sed -i -e '8,13d' -e '31,34d' ./../inst/include/vinecopulib/misc/tools_integration.hpp
 
 rm -rf ./../inst/include/vinecopulib/mainpage.h
 rm -rf vinecopulib

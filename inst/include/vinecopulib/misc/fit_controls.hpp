@@ -70,8 +70,11 @@ struct FitControlsConfig {
     //! Whether to show a trace of the building progress. Default: false.
     optional::optional<bool> show_trace;
 
-    //! The algorithm for building the maximum spanning tree. Default: "prim".
-    optional::optional<std::string> mst_algorithm;
+    //! The algorithm for building the maximum spanning tree. Default: "mst_prim".
+    optional::optional<std::string> tree_algorithm;
+
+    //! A vector of random seeds for the random number generator
+    optional::optional<std::vector<int>> seeds;
 };
 
 }

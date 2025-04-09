@@ -9,6 +9,7 @@
 
 #include <boost/graph/kruskal_min_spanning_tree.hpp>
 #include <boost/graph/prim_minimum_spanning_tree.hpp>
+#include <boost/graph/random_spanning_tree.hpp>
 #include <cmath>
 #include <iostream>
 #include <wdm/eigen.hpp>
@@ -892,7 +893,7 @@ VinecopSelector::compute_fit_id(const EdgeProperties& e)
 inline void
 VinecopSelector::min_spanning_tree(VineTree& graph)
 {
-  if (controls_.get_mst_algorithm() == "prim") {
+  if (controls_.get_tree_algorithm() == "mst_prim") {
     size_t d = num_vertices(graph);
     std::vector<size_t> targets(d);
     prim_minimum_spanning_tree(graph, targets.data());
@@ -903,7 +904,7 @@ VinecopSelector::min_spanning_tree(VineTree& graph)
         return targets[source] != target && targets[target] != source;
       },
       graph);
-  } else {
+  } else if (controls_.get_tree_algorithm() == "mst_kruskal") {
     std::vector<EdgeIterator> spanning_tree;
     kruskal_minimum_spanning_tree(graph, std::back_inserter(spanning_tree));
     // Using a hashmap to make the lookup faster
@@ -918,6 +919,48 @@ VinecopSelector::min_spanning_tree(VineTree& graph)
         auto source = boost::source(e, graph);
         auto target = boost::target(e, graph);
         return edges_set.find({ source, target }) == edges_set.end();
+      },
+      graph);
+  } else {
+    size_t d = num_vertices(graph);
+    std::vector<size_t> predecessors(d);
+    boost::mt19937 gen = controls_.get_rng();
+
+    // Randomize root vertex
+    std::uniform_int_distribution<size_t> root_dist(0, d - 1);
+    size_t root = root_dist(gen);
+
+    if (controls_.get_tree_algorithm() == "random_unweighted") {
+      // Here, no weight map is used
+      // So that it's Wilson uniformly over all spanning trees
+      boost::random_spanning_tree(
+        graph,
+        gen,
+        boost::predecessor_map(predecessors.data())
+             .root_vertex(root));
+    } else {
+      // Here we inverse the weights to get a spanning tree
+      // with probability proportional to the product of the weights
+      // (i.e., the higher the weight, the more likely it is to be selected)
+      WeightMap original_weights = get(boost::edge_weight, graph);
+      std::map<EdgeIterator, double> inv_weights;
+      for (auto e : boost::make_iterator_range(edges(graph))) {
+        inv_weights[e] = 1.0 / (original_weights[e] + 1e-10);
+      }
+      boost::associative_property_map<std::map<EdgeIterator, double>> inv_weight_map(inv_weights);
+      boost::random_spanning_tree(
+        graph,
+        gen,
+        boost::predecessor_map(predecessors.data())
+             .root_vertex(root)
+             .weight_map(inv_weight_map));
+    }
+
+    remove_edge_if(
+      [&](const EdgeIterator& e) {
+        auto source = boost::source(e, graph);
+        auto target = boost::target(e, graph);
+        return predecessors[source] != target && predecessors[target] != source;
       },
       graph);
   }

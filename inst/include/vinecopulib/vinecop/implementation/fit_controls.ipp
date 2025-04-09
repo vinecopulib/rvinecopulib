@@ -4,6 +4,8 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <boost/random/seed_seq.hpp>
+#include <random>
 #include <stdexcept>
 #include <vinecopulib/misc/tools_stl.hpp>
 
@@ -23,7 +25,8 @@ inline FitControlsVinecop::FitControlsVinecop()
   select_threshold_ = false;
   select_families_ = true;
   show_trace_ = false;
-  mst_algorithm_ = "prim";
+  tree_algorithm_ = "mst_prim";
+  set_seeds(std::vector<int>());
 }
 
 //! @brief Instantiates custom controls for fitting vine copula models.
@@ -37,11 +40,12 @@ inline FitControlsVinecop::FitControlsVinecop()
 //! @param nonparametric_mult A factor with which the smoothing parameters
 //!     are multiplied.
 //! @param trunc_lvl Truncation level for truncated vines.
-//! @param tree_criterion The criterion for selecting the maximum spanning
-//!     tree (`"tau"`, `"hoeffd"`, `"rho"`, and `"mcor"` implemented so far).
+//! @param tree_criterion The criterion for selecting the spanning
+//!     tree (`"tau"`, `"hoeffd"`, `"rho"`, and `"mcor"` implemented so far)
+//!     during the tree-wise structure selection.
 //! @param threshold For thresholded vines (0 = no threshold).
 //! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`
-//!     or `"bic"`).
+//!     or `"bic"`) for the pair copula families.
 //! @param weights A vector of weights for the observations.
 //! @param psi0 Only for `selection_criterion = "mbic"`, prior probability of
 //!     non-independence.
@@ -58,10 +62,21 @@ inline FitControlsVinecop::FitControlsVinecop()
 //! @param num_threads Number of concurrent threads to use while fitting
 //!     pair copulas within a tree; never uses more than the number
 //!     of concurrent threads supported by the implementation.
-//! @param mst_algorithm The algorithm for building the maximum spanning
-//!     tree (`"prim"` or `"kruskal"`) during the tree-wise structure selection.
+//! @param tree_algorithm The algorithm for building the spanning
+//!     tree (`"mst_prim"`, `"mst_kruskal"`, `"random_weighted"`, or
+//!     `"random_unweighted"`) during the tree-wise structure selection.
+//!     `"mst_prim"` and `"mst_kruskal"` use Prim's and Kruskal's algorithms
+//!     respectively to select the maximum spanning tree, maximizing
+//!     the sum of the edge weights (i.e., `tree_criterion`).
+//!     `"random_weighted"` and `"random_unweighted"` use Wilson's
+//!     algorithm to generate a random spanning tree, either with probability
+//!     proportional to the product of the edge weights (weighted) or
+//!     uniformly (unweighted).
 //! @param allow_rotations Allow rotations for the families when doing
 //!     model selection (default: true).
+//! @param seeds A vector of random seeds for the random number generator
+//!     for parts of the algorithm that are randomized (e.g.,
+//!     random tree selection).
 inline FitControlsVinecop::FitControlsVinecop(
   std::vector<BicopFamily> family_set,
   std::string parametric_method,
@@ -79,8 +94,9 @@ inline FitControlsVinecop::FitControlsVinecop(
   bool select_families,
   bool show_trace,
   size_t num_threads,
-  std::string mst_algorithm,
-  bool allow_rotations)
+  std::string tree_algorithm,
+  bool allow_rotations,
+  std::vector<int> seeds)
   : FitControlsBicop(family_set,
                      parametric_method,
                      nonparametric_method,
@@ -99,15 +115,17 @@ inline FitControlsVinecop::FitControlsVinecop(
   set_select_threshold(select_threshold);
   set_select_families(select_families);
   set_show_trace(show_trace);
-  set_mst_algorithm(mst_algorithm);
+  set_tree_algorithm(tree_algorithm);
+  set_seeds(seeds);
 }
 
 //! @brief Instantiates custom controls for fitting vine copula models.
 //!
 //! @param controls See `FitControlsBicop()`.
 //! @param trunc_lvl Truncation level for truncated vines.
-//! @param tree_criterion The criterion for selecting the maximum spanning
-//!     tree (`"tau"`, `"hoeffd"` and `"rho"` implemented so far).
+//! @param tree_criterion The criterion for selecting the spanning
+//!     tree (`"tau"`, `"hoeffd"`, `"rho"`, and `"mcor"` implemented so far)
+//!     during the tree-wise structure selection.
 //! @param threshold For thresholded vines (`0` = no threshold).
 //! @param show_trace Whether to show a trace of the building progress.
 //! @param select_trunc_lvl Whether the truncation shall be selected
@@ -117,8 +135,19 @@ inline FitControlsVinecop::FitControlsVinecop(
 //! @param select_families Whether the families shall be selected
 //! automatically, or should the method simply update the parameters for
 //! the pair copulas already present in the model.
-//! @param mst_algorithm The algorithm for building the maximum spanning
-//!     tree (`"prim"` or `"kruskal"`) during the tree-wise structure selection.
+//! @param tree_algorithm The algorithm for building the spanning
+//!     tree (`"mst_prim"`, `"mst_kruskal"`, `"random_weighted"`, or
+//!     `"random_unweighted"`) during the tree-wise structure selection.
+//!     `"mst_prim"` and `"mst_kruskal"` use Prim's and Kruskal's algorithms
+//!     respectively to select the maximum spanning tree, maximizing
+//!     the sum of the edge weights (i.e., `tree_criterion`).
+//!     `"random_weighted"` and `"random_unweighted"` use Wilson's
+//!     algorithm to generate a random spanning tree, either with probability
+//!     proportional to the product of the edge weights (weighted) or
+//!     uniformly (unweighted).
+//! @param seeds A vector of random seeds for the random number generator
+//!     for parts of the algorithm that are randomized (e.g.,
+//!     random tree selection).
 inline FitControlsVinecop::FitControlsVinecop(const FitControlsBicop& controls,
                                               size_t trunc_lvl,
                                               std::string tree_criterion,
@@ -127,7 +156,8 @@ inline FitControlsVinecop::FitControlsVinecop(const FitControlsBicop& controls,
                                               bool select_threshold,
                                               bool select_families,
                                               bool show_trace,
-                                              std::string mst_algorithm)
+                                              std::string tree_algorithm,
+                                              std::vector<int> seeds)
   : FitControlsBicop(controls)
 {
   set_trunc_lvl(trunc_lvl);
@@ -137,7 +167,8 @@ inline FitControlsVinecop::FitControlsVinecop(const FitControlsBicop& controls,
   set_select_threshold(select_threshold);
   set_select_families(select_families);
   set_show_trace(show_trace);
-  set_mst_algorithm(mst_algorithm);
+  set_tree_algorithm(tree_algorithm);
+  set_seeds(seeds);
 }
 
 //! @brief Instantiates the controls from a configuration object.
@@ -166,8 +197,11 @@ inline FitControlsVinecop::FitControlsVinecop(const FitControlsConfig& config)
   if (optional::has_value(config.show_trace)) {
     set_show_trace(optional::value(config.show_trace));
   }
-  if (optional::has_value(config.mst_algorithm)) {
-    set_mst_algorithm(optional::value(config.mst_algorithm));
+  if (optional::has_value(config.tree_algorithm)) {
+    set_tree_algorithm(optional::value(config.tree_algorithm));
+  }
+  if (optional::has_value(config.seeds)) {
+    set_seeds(optional::value(config.seeds));
   }
 }
 
@@ -290,9 +324,23 @@ FitControlsVinecop::get_select_threshold() const
 
 //! @brief Gets the maximum spanning tree algorithm.
 inline std::string
-FitControlsVinecop::get_mst_algorithm() const
+FitControlsVinecop::get_tree_algorithm() const
 {
-  return mst_algorithm_;
+  return tree_algorithm_;
+}
+
+//! @brief Gets the random seeds for the random number generator.
+inline std::vector<int>
+FitControlsVinecop::get_seeds() const
+{
+  return seeds_;
+}
+
+//! @brief Gets the random number generator.
+inline boost::random::mt19937
+FitControlsVinecop::get_rng() const
+{
+  return rng_;
 }
 
 //! @brief Sets whether to select the threshold automatically.
@@ -335,12 +383,34 @@ FitControlsVinecop::set_fit_controls_bicop(FitControlsBicop controls)
 
 //! @brief Sets the maximum spanning tree algorithm.
 inline void
-FitControlsVinecop::set_mst_algorithm(std::string mst_algorithm)
+FitControlsVinecop::set_tree_algorithm(std::string tree_algorithm)
 {
-  if (!tools_stl::is_member(mst_algorithm, { "prim", "kruskal" })) {
-    throw std::runtime_error("mst_algorithm must be one of 'prim' or 'kruskal'");
+  if (!tools_stl::is_member(tree_algorithm,
+                            { "mst_prim",
+                              "mst_kruskal",
+                              "random_weighted",
+                              "random_unweighted" })) {
+    throw std::runtime_error(
+      "tree_algorithm must be one of 'mst_prim', 'mst_kruskal', "
+      "'random_weighted', or 'random_unweighted'");
   }
-  mst_algorithm_ = mst_algorithm;
+  tree_algorithm_ = tree_algorithm;
+}
+
+//! @brief Sets the random seeds for the random number generator.
+inline void
+FitControlsVinecop::set_seeds(std::vector<int> seeds)
+{
+  if (seeds.size() == 0) {
+    // no seeds provided, seed randomly
+    std::random_device rd{};
+    seeds = std::vector<int>(20);
+    std::generate(
+      seeds.begin(), seeds.end(), [&]() { return static_cast<int>(rd()); });
+  }
+  seeds_ = seeds;
+  boost::random::seed_seq seq(seeds.begin(), seeds.end());
+  rng_.seed(seq);
 }
 
 //! @}
@@ -375,7 +445,7 @@ FitControlsVinecop::str() const
                << std::endl;
   controls_str << "Number of threads: "
                << (get_num_threads() == 0 ? 1 : get_num_threads()) << std::endl;
-  controls_str << "MST algorithm: " << get_mst_algorithm() << std::endl;
+  controls_str << "MST algorithm: " << get_tree_algorithm() << std::endl;
   return controls_str.str().c_str();
 }
 

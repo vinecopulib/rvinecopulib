@@ -279,6 +279,20 @@ Vinecop::make_pair_copula_store(const size_t d, const size_t trunc_lvl)
 //! 52-69.
 //! The dependence measure used to select trees (default: Kendall's tau) is
 //! corrected for ties (see the [wdm](https://github.com/tnagler/wdm) library).
+//! The dependence measure can be changed using the `controls.tree_criterion`,
+//! which can be set to `"tau"`, `"rho"` or `"hoeffd"`.
+//! Both Prim's (default: `"mst_prim"`) and Kruskal's ()`"mst_kruskal"`) 
+//! algorithms are available through `controls.tree_algorithm` for the 
+//! maximum spanning tree selection.
+//! An alternative to the maximum spanning tree selection is to use random
+//! spanning trees, which can be selected using `controls.tree_algorithm` and
+//! come in two flavors, both using Wilson's algorithm loop erased random walks:
+//!
+//!   - "random_weighted"` generates a random spanning tree with probability
+//!     proportional to the product of the weights (i.e., the dependence) of
+//!     the edges in the tree.
+//!   - "random_unweighted"` generates a random spanning tree uniformly over all
+//!     spanning trees satisfying the proximity condition.
 //!
 //! If the `controls` object has been instantiated with
 //! `select_families = false`, then the method simply updates the parameters of

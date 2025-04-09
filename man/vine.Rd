@@ -11,7 +11,7 @@ vine(
   copula_controls = list(family_set = "all", structure = NA, par_method = "mle",
     nonpar_method = "constant", mult = 1, selcrit = "aic", psi0 = 0.9, presel = TRUE,
     allow_rotations = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data
-    = FALSE, show_trace = FALSE, cores = 1),
+    = FALSE, show_trace = FALSE, cores = 1, tree_algorithm = "mst_prim"),
   weights = numeric(),
   keep_data = FALSE,
   cores = 1
