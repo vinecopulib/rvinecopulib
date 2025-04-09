@@ -6,11 +6,9 @@
 
 #pragma once
 
+#include <boost/random/mersenne_twister.hpp>
 #include <limits>
 #include <vinecopulib/bicop/fit_controls.hpp>
-#include <boost/random.hpp>
-#include <boost/random/random_device.hpp>
-#include <boost/random/seed_seq.hpp>
 
 #if defined(__GNUC__) || defined(__clang__)
 #define DEPRECATED __attribute__((deprecated))

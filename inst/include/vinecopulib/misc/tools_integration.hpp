@@ -6,6 +6,12 @@
 
 #pragma once
 
+// Suppress compiler warnings caused by boost/odeint internals
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 // replace std::sprintf by void function
 // - this is necessary because `sprintf()` is now flagged as potential security
 //   risk and deprecated in macOS 13.
@@ -13,12 +19,19 @@
 //   really need it.
 // - we can remove this hack if and when updates odeint (PR open).
 #define sprintf _sprintf_do_nothing
-namespace std
+namespace std {
+constexpr int
+_sprintf_do_nothing(char*, const char*, ...)
 {
-constexpr int _sprintf_do_nothing(char*, const char*, ...) { return 0; }
+  return 0;
+}
 }
 #include <boost/numeric/odeint.hpp>
 #undef sprintf
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 #include <functional>
 

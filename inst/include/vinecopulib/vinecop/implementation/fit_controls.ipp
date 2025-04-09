@@ -4,8 +4,9 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <stdexcept>
+#include <boost/random/seed_seq.hpp>
 #include <random>
+#include <stdexcept>
 #include <vinecopulib/misc/tools_stl.hpp>
 
 //! @file vinecop/implementation/fit_controls.ipp
@@ -74,7 +75,7 @@ inline FitControlsVinecop::FitControlsVinecop()
 //! @param allow_rotations Allow rotations for the families when doing
 //!     model selection (default: true).
 //! @param seeds A vector of random seeds for the random number generator
-//!     for parts of the algorithm that are randomized (e.g., 
+//!     for parts of the algorithm that are randomized (e.g.,
 //!     random tree selection).
 inline FitControlsVinecop::FitControlsVinecop(
   std::vector<BicopFamily> family_set,
@@ -384,8 +385,14 @@ FitControlsVinecop::set_fit_controls_bicop(FitControlsBicop controls)
 inline void
 FitControlsVinecop::set_tree_algorithm(std::string tree_algorithm)
 {
-  if (!tools_stl::is_member(tree_algorithm, { "mst_prim", "mst_kruskal", "random_weighted", "random_unweighted" })) {
-    throw std::runtime_error("tree_algorithm must be one of 'mst_prim', 'mst_kruskal', 'random_weighted', or 'random_unweighted'");
+  if (!tools_stl::is_member(tree_algorithm,
+                            { "mst_prim",
+                              "mst_kruskal",
+                              "random_weighted",
+                              "random_unweighted" })) {
+    throw std::runtime_error(
+      "tree_algorithm must be one of 'mst_prim', 'mst_kruskal', "
+      "'random_weighted', or 'random_unweighted'");
   }
   tree_algorithm_ = tree_algorithm;
 }

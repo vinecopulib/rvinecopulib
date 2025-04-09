@@ -4,9 +4,9 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
-#include <boost/random.hpp>
-#include <boost/random/random_device.hpp>
+#include <boost/random/mersenne_twister.hpp>
 #include <boost/random/seed_seq.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
 #include <memory>
 #include <unsupported/Eigen/FFT>
 #include <vinecopulib/misc/tools_stats_ghalton.hpp>
@@ -277,9 +277,13 @@ find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter)
 }
 
 // Utility function to compute the next power of 2.
-inline size_t next_power_of_two(size_t n) {
+inline size_t
+next_power_of_two(size_t n)
+{
   size_t power = 1;
-  while (power < n) { power *= 2; }
+  while (power < n) {
+    power *= 2;
+  }
   return power;
 }
 
