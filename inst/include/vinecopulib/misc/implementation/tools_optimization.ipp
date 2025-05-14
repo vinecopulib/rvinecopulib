@@ -76,7 +76,7 @@ Optimizer::optimize(const Eigen::VectorXd& initial_parameters,
   } else {
     double eps = 1e-6;
     std::function<double(double)> f = [objective, this](double x) {
-      Eigen::Map<const Eigen::VectorXd> par(&x, 1);
+      Eigen::VectorXd par = Eigen::VectorXd::Constant(1, x);
       this->objective_calls_++;
       return -objective(par);
     };
