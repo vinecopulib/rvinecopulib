@@ -1,3 +1,16 @@
+# rvinecopulib 0.7.3.1.0
+
+### NEW FEATURES
+
+* Allow for random spanning trees as alternatives to the MST-based structure selection using
+  `tree_algorithm` in `vine` and `vinecop`. Options are `"mst_prim"`, `"mst_kruskal"`,
+  `"random_weighted"` or `"random_unweighted"` (#307).
+
+### BUG FIXES
+
+* Decouple edge insertion from criterion computation fix randomness
+  issues in structure selection when using multiple threads ([#640](https://github.com/vinecopulib/vinecopulib/pull/640))
+
 # rvinecopulib 0.7.2.1.0
 
 BUG FIX

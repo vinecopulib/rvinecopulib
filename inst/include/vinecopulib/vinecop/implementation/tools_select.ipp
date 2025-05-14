@@ -117,7 +117,7 @@ inline VinecopSelector::VinecopSelector(const Eigen::MatrixXd& data,
   : VinecopSelector(data, controls, var_types)
 {
   vine_struct_ = vine_struct;
-  structure_known_ = false;
+  structure_unknown_ = false;
 }
 
 inline std::vector<std::vector<Bicop>>
@@ -363,30 +363,39 @@ inline void
 VinecopSelector::add_allowed_edges(VineTree& vine_tree)
 {
   std::string tree_criterion = controls_.get_tree_criterion();
-  if (structure_known_) {
-    double threshold = controls_.get_threshold();
-    std::mutex m;
-    auto add_edge = [&](size_t v0) {
+  if (structure_unknown_) {
+    std::vector<std::pair<size_t, size_t>> edge_list;
+    for (size_t v0 = 0; v0 < num_vertices(vine_tree); ++v0) {
       tools_interface::check_user_interrupt(v0 % 50 == 0);
       for (size_t v1 = 0; v1 < v0; ++v1) {
-        // check proximity condition: common neighbor in previous tree
-        // (-1 means 'no common neighbor')
         if (find_common_neighbor(v0, v1, vine_tree) > -1) {
-          auto pc_data = get_pc_data(v0, v1, vine_tree);
-          double crit = calculate_criterion(
-            pc_data, tree_criterion, controls_.get_weights());
-          double w = 1.0 - static_cast<double>(crit >= threshold) * crit;
-          {
-            std::lock_guard<std::mutex> lk(m);
-            auto e = boost::add_edge(v0, v1, w, vine_tree).first;
-            vine_tree[e].weight = w;
-            vine_tree[e].crit = crit;
-          }
+          boost::add_edge(v0, v1, vine_tree);
+          edge_list.emplace_back(v0, v1); // ordering preserved
         }
+      }
+    }
+
+    std::mutex m;
+    double threshold = controls_.get_threshold();
+    auto process_edge = [&](const std::pair<size_t, size_t>& entry) {
+      size_t v0 = entry.first;
+      size_t v1 = entry.second;
+
+      auto pc_data = get_pc_data(v0, v1, vine_tree);
+      double crit =
+        calculate_criterion(pc_data, tree_criterion, controls_.get_weights());
+      double w = 1.0 - static_cast<double>(crit >= threshold) * crit;
+
+      {
+        std::lock_guard<std::mutex> lk(m);
+        auto e = boost::edge(v0, v1, vine_tree).first;
+        put(boost::edge_weight, vine_tree, e, w);
+        vine_tree[e].weight = w;
+        vine_tree[e].crit = crit;
       }
     };
 
-    pool_.map(add_edge, boost::vertices(vine_tree));
+    pool_.map(process_edge, edge_list);
     pool_.wait();
   } else {
     size_t tree = d_ - boost::num_vertices(vine_tree);
@@ -425,7 +434,7 @@ VinecopSelector::finalize(size_t trunc_lvl)
   pair_copulas_ = make_pair_copula_store(d_, trunc_lvl);
   trunc_lvl = pair_copulas_.size(); // trunc_lvl may be <size_t>::max()
 
-  if (structure_known_) {
+  if (structure_unknown_) {
     using namespace tools_stl;
     trees_opt_ = trees_;
     TriangularArray<size_t> mat(d_, trunc_lvl);
@@ -651,7 +660,7 @@ VinecopSelector::select_tree(size_t t)
 
   if (t >= vine_struct_.get_trunc_lvl()) {
     // only important if proximity_ was previously false (partial selection)
-    structure_known_ = true;
+    structure_unknown_ = true;
   }
   add_allowed_edges(new_tree);
   if (boost::num_vertices(new_tree) > 2) {
