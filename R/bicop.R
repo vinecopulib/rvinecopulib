@@ -121,23 +121,37 @@
 #' fit_disc <- bicop(udisc, var_types = c("d", "d"))
 #' summary(fit_disc)
 #' @export
-bicop <- function(data, var_types = c("c", "c"), family_set = "all",
-                  par_method = "mle", nonpar_method = "quadratic", mult = 1,
-                  selcrit = "aic", weights = numeric(), psi0 = 0.9,
-                  presel = TRUE, allow_rotations = TRUE,
-                  keep_data = FALSE, cores = 1) {
+bicop <- function(
+  data,
+  var_types = c("c", "c"),
+  family_set = "all",
+  par_method = "mle",
+  nonpar_method = "quadratic",
+  mult = 1,
+  selcrit = "aic",
+  weights = numeric(),
+  psi0 = 0.9,
+  presel = TRUE,
+  allow_rotations = TRUE,
+  keep_data = FALSE,
+  cores = 1
+) {
   assert_that(
     is.character(family_set),
     is.string(par_method),
     is.string(nonpar_method),
-    is.number(mult), mult > 0,
+    is.number(mult),
+    mult > 0,
     is.string(selcrit),
     is.numeric(weights),
-    is.number(psi0), psi0 > 0, psi0 < 1,
+    is.number(psi0),
+    psi0 > 0,
+    psi0 < 1,
     is.flag(presel),
     is.flag(allow_rotations),
     is.flag(keep_data),
-    is.number(cores), cores > 0,
+    is.number(cores),
+    cores > 0,
     correct_var_types(var_types)
   )
 
@@ -273,8 +287,12 @@ as.bicop <- function(object, check = TRUE) {
 #' cop_disc <- bicop_dist("bb8", 0, c(2, 0.5), var_types = c("d", "d"))
 #' cop_disc
 #'
-bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0),
-                       var_types = c("c", "c")) {
+bicop_dist <- function(
+  family = "indep",
+  rotation = 0,
+  parameters = numeric(0),
+  var_types = c("c", "c")
+) {
   assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
   assert_that(correct_var_types(var_types))
   if (family %in% setdiff(family_set_nonparametric, "indep")) {
@@ -283,7 +301,9 @@ bicop_dist <- function(family = "indep", rotation = 0, parameters = numeric(0),
       stopifnot(dim(parameters) == c(30, 30))
       margin_integrals <- c(rowMeans(parameters), colMeans(parameters))
       if (any(abs(margin_integrals - 1) > 0.5))
-        warning("margins implied by 'parameters' deviate strongly from the standard uniform distribution.")
+        warning(
+          "margins implied by 'parameters' deviate strongly from the standard uniform distribution."
+        )
     } else {
       parameters <- matrix(1, 30, 30)
     }

@@ -14,8 +14,17 @@ test_that("returns proper 'vine' object", {
   expect_identical(
     names(fit),
     c(
-      "margins", "margins_controls", "copula", "copula_controls",
-      "npars", "loglik", "data", "weights", "nobs", "names", "var_levels"
+      "margins",
+      "margins_controls",
+      "copula",
+      "copula_controls",
+      "npars",
+      "loglik",
+      "data",
+      "weights",
+      "nobs",
+      "names",
+      "var_levels"
     )
   )
 })
@@ -44,10 +53,13 @@ test_that("truncation works", {
   expect_silent(dvine(u, fit_truncated))
   expect_silent(rvine(50, fit_truncated))
 
-  fit_truncated <- vine(u, copula_controls = list(
-    family_set = "nonpar",
-    trunc_lvl = 1
-  ))
+  fit_truncated <- vine(
+    u,
+    copula_controls = list(
+      family_set = "nonpar",
+      trunc_lvl = 1
+    )
+  )
   expect_silent(dvine(u, fit_truncated))
   expect_silent(rvine(50, fit_truncated))
 })
@@ -59,15 +71,22 @@ test_that("margins_controls works", {
     rep(2, ncol(u))
   )
 
-  fit_xmin <- vine(abs(u), margins_controls = list(xmin = 0, deg = 1, mult = 1:5))
+  fit_xmin <- vine(
+    abs(u),
+    margins_controls = list(xmin = 0, deg = 1, mult = 1:5)
+  )
   expect_eql(sapply(fit_xmin$margins, "[[", "xmin"), rep(0, 5))
   expect_eql(sapply(fit_xmin$margins, "[[", "deg"), rep(1, 5))
 })
 
 test_that("weights work", {
   w <- rexp(nrow(u))
-  fit_weights <- vine(u, copula_controls = list(family_set = "nonpar"),
-                      weights = w, keep_data = TRUE)
+  fit_weights <- vine(
+    u,
+    copula_controls = list(family_set = "nonpar"),
+    weights = w,
+    keep_data = TRUE
+  )
   expect_eql(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
 })
@@ -85,9 +104,16 @@ test_that("discrete variables work", {
     x3 = rbinom(50, 3, 0.5)
   )
 
-  expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "c"),
-                                               xmin = c(1, NaN, NaN),
-                                               xmax = c(4, NaN, NaN))))
+  expect_no_error(
+    fit <- vine(
+      x,
+      margin = list(
+        type = c("d", "c", "c"),
+        xmin = c(1, NaN, NaN),
+        xmax = c(4, NaN, NaN)
+      )
+    )
+  )
   x2 <- x
   x2[[1]] <- as.ordered(x2[[1]])
   expect_no_error(fit2 <- vine(x2))
@@ -104,4 +130,3 @@ test_that("discrete variables work", {
   expect_no_error(pvine(x, fit))
   expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
 })
-

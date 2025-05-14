@@ -11,8 +11,7 @@
 #'
 #' @noRd
 if_vec_to_matrix <- function(u, to_col = FALSE) {
-  if (is.null(u))
-    return(NULL)
+  if (is.null(u)) return(NULL)
   assert_that(is.numeric(u) | is.data.frame(u))
   if (NCOL(u) == 1) {
     if (to_col) {
@@ -54,9 +53,13 @@ process_family_set <- function(family_set, par_method) {
   family_set <- expand_family_set(family_set)
   if (par_method == "itau") {
     if (any(!(family_set %in% family_set_itau))) {
-      warning("Only families (",
+      warning(
+        "Only families (",
         paste(family_set_itau, collapse = ", "),
-        ") can be used with ", "'par_method = ", '"itau"', "'; ",
+        ") can be used with ",
+        "'par_method = ",
+        '"itau"',
+        "'; ",
         "reducing family set.",
         call. = FALSE
       )
@@ -125,8 +128,10 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
     # Make the panel
     # ncol: Number of columns of plots
     # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots / cols)),
-      ncol = cols, nrow = ceiling(numPlots / cols)
+    layout <- matrix(
+      seq(1, cols * ceiling(numPlots / cols)),
+      ncol = cols,
+      nrow = ceiling(numPlots / cols)
     )
   }
 
@@ -136,11 +141,10 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
     # Set up the page
     grid::grid.newpage()
     grid::pushViewport(grid::viewport(
-      layout =
-        grid::grid.layout(
-          nrow(layout),
-          ncol(layout)
-        )
+      layout = grid::grid.layout(
+        nrow(layout),
+        ncol(layout)
+      )
     ))
 
     # Make each plot, in the correct location
@@ -148,7 +152,8 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
       # Get the i,j matrix positions of the regions that contain this subplot
       matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
 
-      print(plots[[i]],
+      print(
+        plots[[i]],
         vp = grid::viewport(
           layout.pos.row = matchidx$row,
           layout.pos.col = matchidx$col
@@ -162,8 +167,18 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
 depth <- function(this) ifelse(is.list(this), 1L + max(sapply(this, depth)), 0L)
 
 supported_distributions <- c(
-  "beta", "cauchy", "chisq", "exp", "f", "gamma",
-  "logis", "lnorm", "norm", "t", "unif", "weibull"
+  "beta",
+  "cauchy",
+  "chisq",
+  "exp",
+  "f",
+  "gamma",
+  "logis",
+  "lnorm",
+  "norm",
+  "t",
+  "unif",
+  "weibull"
 )
 
 #' @importFrom stats pbeta qbeta qbeta dcauchy pcauchy qcauchy dchisq pchisq
@@ -171,7 +186,6 @@ supported_distributions <- c(
 #' @importFrom stats dlnorm plnorm qlnorm dt pt qt dunif punif qunif
 #' @importFrom stats dweibull pweibull qweibull
 check_distr <- function(distr) {
-
   ## if provided with a kde1d object, then there is nothing to do
   if (inherits(distr, "kde1d")) {
     return(TRUE)
@@ -182,7 +196,9 @@ check_distr <- function(distr) {
     return("a distribution should be a kde1d object or a list")
   }
   if (!any(is.element(names(distr), "distr"))) {
-    return("a distribution should be a kde1d object or a list with a 'distr' element")
+    return(
+      "a distribution should be a kde1d object or a list with a 'distr' element"
+    )
   }
   nn <- distr[["distr"]]
   if (!is.element(nn, supported_distributions)) {
@@ -202,7 +218,8 @@ check_distr <- function(distr) {
 }
 
 get_npars_distr <- function(distr) {
-  switch(distr$distr,
+  switch(
+    distr$distr,
     beta = 2,
     cauchy = 2,
     chisq = ifelse("ncp" %in% names(distr), 2, 1),
@@ -403,5 +420,3 @@ print_varname_legend <- function(object) {
 get_seeds <- function() {
   as.numeric(sprintf("%20.0f", runif(20, 1e6, 1e7)))
 }
-
-

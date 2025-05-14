@@ -24,17 +24,18 @@ pairs_copula_data <- function(data, main = "", ...) {
   on.exit(par(old_par))
 
   labels <- colnames(data)
-  if (is.null(labels))
-    labels <- paste0("var", seq_len(ncol(data)))
-  args <- list(x = data,
-               labels = labels,
-               main = main,
-               lower.panel = function(x, y) lp_pairs_copula_data(x, y, ...),
-               diag.panel = function(x) dp_pairs_copula_data(x, ...),
-               upper.panel = function(x, y)  up_pairs_copula_data(x, y, ...),
-               label.pos = 0.85,
-               cex.labels = 1,
-               gap = 0)
+  if (is.null(labels)) labels <- paste0("var", seq_len(ncol(data)))
+  args <- list(
+    x = data,
+    labels = labels,
+    main = main,
+    lower.panel = function(x, y) lp_pairs_copula_data(x, y, ...),
+    diag.panel = function(x) dp_pairs_copula_data(x, ...),
+    upper.panel = function(x, y) up_pairs_copula_data(x, y, ...),
+    label.pos = 0.85,
+    cex.labels = 1,
+    gap = 0
+  )
   call_with_dots(pairs.default, args, ...)
 }
 
@@ -53,10 +54,7 @@ lp_pairs_copula_data <- function(x, y, ...) {
   args <- list(data = cbind(x, y), family_set = "tll")
   cop <- call_with_dots(bicop, args, ...)
 
-  args <- list(x = cop,
-               size = 100,
-               axes = FALSE,
-               drawlabels = FALSE)
+  args <- list(x = cop, size = 100, axes = FALSE, drawlabels = FALSE)
   call_with_dots(contour.bicop, args, ...)
 }
 
@@ -70,9 +68,7 @@ up_pairs_copula_data <- function(x, y, ...) {
 
   cor <- call_with_dots(cor, list(x = x, y = y, method = "kendall"), ...)
   txt <- format(x = cor, digits = 2, nsmall = 2)[1]
-  args <- list(x = 0.5, y = 0.5,
-               labels = txt,
-               cex = 1 + abs(cor) * 2)
+  args <- list(x = 0.5, y = 0.5, labels = txt, cex = 1 + abs(cor) * 2)
   call_with_dots(text.default, args, ...)
 }
 
@@ -81,12 +77,14 @@ dp_pairs_copula_data <- function(x, ...) {
   old_par <- par(usr = c(0, 1, 0, 1.6), new = TRUE)
   on.exit(par(old_par))
 
-  args <- list(x = x,
-               freq = FALSE,
-               add = TRUE,
-               border = "white",
-               main = "",
-               col = "grey")
+  args <- list(
+    x = x,
+    freq = FALSE,
+    add = TRUE,
+    border = "white",
+    main = "",
+    col = "grey"
+  )
   call_with_dots(hist.default, args, ..., except = c("col", "freq"))
   box()
   abline(h = 1, col = "black", lty = 3)

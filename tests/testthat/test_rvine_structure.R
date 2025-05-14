@@ -29,7 +29,7 @@ test_that("constructor and as/is generics work", {
   expect_true(is.rvine_matrix(rvm))
   mat[1, 1] <- 0
   expect_silent(as_rvine_matrix(mat, validate = FALSE))
-  })
+})
 
 test_that("print/dim generics work", {
   rvs <- as_rvine_structure(mylist)

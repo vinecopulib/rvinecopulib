@@ -100,7 +100,8 @@ truncate_column <- function(column, trunc_lvl) {
 check_trunc_lvl <- function(object, trunc_lvl) {
   msg <- paste0(
     "trunc_lvl should be a number between 0 and the number of trees (",
-    dim(object)["dim"] - 1, ")."
+    dim(object)["dim"] - 1,
+    ")."
   )
   assert_that(
     is.number(trunc_lvl),
@@ -110,8 +111,10 @@ check_trunc_lvl <- function(object, trunc_lvl) {
     msg = msg
   )
   if (trunc_lvl > dim(object)["trunc_lvl"]) {
-    warning("truncation has no effect; vine is already ",
-      dim(object)["trunc_lvl"], "-truncated.",
+    warning(
+      "truncation has no effect; vine is already ",
+      dim(object)["trunc_lvl"],
+      "-truncated.",
       call. = FALSE
     )
   }
@@ -134,7 +137,8 @@ get_truncated_pcs <- function(object, trunc_lvl) {
 #' @noRd
 adjust_fit_stats <- function(object, trunc_lvl) {
   trunc_pcs <- get_truncated_pcs(object, trunc_lvl)
-  if (length(trunc_pcs) == 0) { # model is unchanged
+  if (length(trunc_pcs) == 0) {
+    # model is unchanged
     return(object)
   }
 

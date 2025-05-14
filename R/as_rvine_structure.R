@@ -118,7 +118,7 @@ as_rvine_matrix.rvine_structure <- function(x, ..., validate = FALSE) {
   matrix <- matrix[d:1, ]
   for (i in seq_len(min(trunc_lvl, d - 1))) {
     newrow <- order[x[["struct_array"]][[i]]]
-    matrix[i, 1:length(newrow)] <- newrow
+    matrix[i, seq_along(newrow)] <- newrow
   }
 
   class(matrix) <- c("rvine_matrix", class(matrix))
@@ -182,13 +182,14 @@ as_rvine_structure.rvine_matrix <- function(x, ..., validate = FALSE) {
   struct_array <- lapply(1:(d - 1), function(i) order[x[i, 1:(d - i)]])
 
   # create and return x
-  structure(list(
-    order = diag(x[d:1, ]),
-    struct_array = struct_array,
-    d = d,
-    trunc_lvl = dim(x)[2]
-  ),
-  class = c("rvine_structure", "list")
+  structure(
+    list(
+      order = diag(x[d:1, ]),
+      struct_array = struct_array,
+      d = d,
+      trunc_lvl = dim(x)[2]
+    ),
+    class = c("rvine_structure", "list")
   )
 }
 
