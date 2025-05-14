@@ -9,4 +9,3 @@ test_that("summary_df is printed correctly", {
   expect_identical(x, x2)
   expect_length(output, 13)
 })
-

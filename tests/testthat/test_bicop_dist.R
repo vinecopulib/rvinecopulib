@@ -7,8 +7,10 @@ context("Class 'bicop_dist'")
 test_that("constructor creates proper bicop_dist object", {
   dist <- bicop_dist("gumbel", 90, 3)
   expect_s3_class(dist, "bicop_dist")
-  expect_identical(names(dist),
-                   c("family", "rotation", "parameters", "var_types", "npars"))
+  expect_identical(
+    names(dist),
+    c("family", "rotation", "parameters", "var_types", "npars")
+  )
 })
 
 
@@ -29,8 +31,9 @@ test_that("d/p/r/h functions work", {
   set.seed(0)
   dist <- bicop_dist("bb1", 270, c(1, 2))
   u <- rbicop(50, "bb1", 270, c(1, 2))
-  expect_false(any(rbicop(50, dist, qrng = FALSE) ==
-    rbicop(50, dist, qrng = FALSE)))
+  expect_false(any(
+    rbicop(50, dist, qrng = FALSE) == rbicop(50, dist, qrng = FALSE)
+  ))
 
   set.seed(1)
   u1 <- rbicop(50, dist, qrng = TRUE)

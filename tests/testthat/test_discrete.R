@@ -34,11 +34,13 @@ test_that("bicop works", {
   u <- cbind(u, u)
   u[, 1] <- ceiling(u[, 1] * 3) / 3
   u[, 3] <- floor(u[, 3] * 3) / 3
-  cop <- bicop(u,
-               family = "gumbel",
-               var_types = c("d", "c"),
-               presel = FALSE,
-               keep_data = TRUE)
+  cop <- bicop(
+    u,
+    family = "gumbel",
+    var_types = c("d", "c"),
+    presel = FALSE,
+    keep_data = TRUE
+  )
   expect_eql(cop$family, "gumbel")
   expect_eql(cop$rotation, 90)
   expect_eql(cop$parameters[1], 4, tol = 0.5)

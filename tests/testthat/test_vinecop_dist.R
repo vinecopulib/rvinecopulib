@@ -22,8 +22,9 @@ test_that("constructor creates proper vinecop_dist object", {
 
 test_that("d/p/r- functions work", {
   u <- rvinecop(50, vc)
-  expect_false(any(rvinecop(50, vc, qrng = FALSE) ==
-    rvinecop(50, vc, qrng = FALSE)))
+  expect_false(any(
+    rvinecop(50, vc, qrng = FALSE) == rvinecop(50, vc, qrng = FALSE)
+  ))
   set.seed(1)
   u <- rvinecop(50, vc, qrng = TRUE)
   set.seed(1)
@@ -71,17 +72,42 @@ test_that("print/summary/dim generics work", {
 })
 
 test_that("plot functions work", {
-  pcs <- lapply(1:4, function(j) # pair-copulas in tree j
-    lapply(runif(5 - j), function(cor) bicop_dist("gaussian", 0, cor)))
+  pcs <- lapply(
+    1:4,
+    function(j)
+      # pair-copulas in tree j
+      lapply(runif(5 - j), function(cor) bicop_dist("gaussian", 0, cor))
+  )
   mat <- matrix(
     c(
-      1, 2, 3, 4, 5,
-      1, 2, 3, 4, 0,
-      1, 2, 3, 0, 0,
-      1, 2, 0, 0, 0,
-      1, 0, 0, 0, 0
+      1,
+      2,
+      3,
+      4,
+      5,
+      1,
+      2,
+      3,
+      4,
+      0,
+      1,
+      2,
+      3,
+      0,
+      0,
+      1,
+      2,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
     ),
-    5, 5
+    5,
+    5
   )
   vc <- vinecop_dist(pcs, mat)
 
@@ -106,7 +132,6 @@ test_that("plot functions work", {
 })
 
 test_that("getters work", {
-
   # test get_structure
   expect_silent(pcc <- get_structure(vc))
   expect_error(get_structure(12))
@@ -142,14 +167,12 @@ test_that("getters work", {
   expect_equiv(get_ktau(vc, 1, 1), par_to_ktau(bicop))
   expect_equiv(
     get_all_ktaus(vc),
-    lapply(pcs, function(tree)
-      lapply(tree, function(pc) par_to_ktau(pc)))
+    lapply(pcs, function(tree) lapply(tree, function(pc) par_to_ktau(pc)))
   )
   expect_equiv(get_family(vc, 1, 1), "bb1")
   expect_equiv(
     get_all_families(vc),
-    lapply(pcs, function(tree)
-      lapply(tree, function(pc) pc$family))
+    lapply(pcs, function(tree) lapply(tree, function(pc) pc$family))
   )
 
   # test printed output of getters

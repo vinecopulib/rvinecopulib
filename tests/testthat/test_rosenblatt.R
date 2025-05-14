@@ -32,8 +32,12 @@ test_that("discrete rosenblatt works with vine copulas", {
   uu[u[, 2] < thresh, 2] <- 1e-10
   uu[u[, 2] < thresh, 4] <- thresh
 
-  vc_c <- vc <- vinecop(uu, var_types = c("c", "d", "c"),
-                        structure = mat, family = "clay")
+  vc_c <- vc <- vinecop(
+    uu,
+    var_types = c("c", "d", "c"),
+    structure = mat,
+    family = "clay"
+  )
   vc_c$var_types = rep("c", 3)
 
   v <- inverse_rosenblatt(rosenblatt(uu, vc), vc_c)
@@ -52,7 +56,6 @@ test_that("rosenblatt works with vine distribution", {
   expect_eql(inverse_rosenblatt(rosenblatt(u, vd), vd), u)
   vd <- vine(u, copula_controls = list(structure = mat, family = "clay"))
   expect_equiv(inverse_rosenblatt(rosenblatt(u, vd), vd), u)
-
 })
 
 test_that("discrete rosenblatt works with vine distributions", {
@@ -61,8 +64,11 @@ test_that("discrete rosenblatt works with vine distributions", {
     x2 = rnorm(50),
     x3 = rbinom(50, 3, 0.5)
   )
-  vd <- vine(x, margins_controls = list(type = c("d", "c", "zi")),
-             copula_controls = list(family_set = "gauss"))
+  vd <- vine(
+    x,
+    margins_controls = list(type = c("d", "c", "zi")),
+    copula_controls = list(family_set = "gauss")
+  )
   u <- rvine(50, vd)
   expect_true(mean(u[, 3] == 0) > 0.02)
   expect_eql(colnames(rosenblatt(x, vd)), colnames(x))

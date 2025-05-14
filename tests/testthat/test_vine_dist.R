@@ -36,9 +36,11 @@ test_that("constructor catches wrong input", {
   expect_error(vine_dist(list(list(distr = "gamma", stupid = 42)), pcs, mat))
 
   # same with multiple margins specified
-  margs <- list(list(distr = "chisq", df = 1),
-                list(distr = "exp", scale = 1),  # does not have scale parameter
-                list(distr = "lnorm", meanlog = 0, sdlog = 1))
+  margs <- list(
+    list(distr = "chisq", df = 1),
+    list(distr = "exp", scale = 1), # does not have scale parameter
+    list(distr = "lnorm", meanlog = 0, sdlog = 1)
+  )
   expect_error(vine_dist(margs, pcs, mat))
 
   # missing margin argument
@@ -75,7 +77,6 @@ test_that("print/summary/dim generics work", {
 })
 
 test_that("getters work", {
-
   # test get_matrix
   expect_equiv(as_rvine_matrix(mat), get_matrix(vc))
   expect_error(get_matrix(12))
@@ -107,14 +108,12 @@ test_that("getters work", {
   expect_equiv(get_ktau(vc, 1, 1), par_to_ktau(bicop))
   expect_equiv(
     get_all_ktaus(vc),
-    lapply(pcs, function(tree)
-      lapply(tree, function(pc) par_to_ktau(pc)))
+    lapply(pcs, function(tree) lapply(tree, function(pc) par_to_ktau(pc)))
   )
   expect_equiv(get_family(vc, 1, 1), "bb1")
   expect_equiv(
     get_all_families(vc),
-    lapply(pcs, function(tree)
-      lapply(tree, function(pc) pc$family))
+    lapply(pcs, function(tree) lapply(tree, function(pc) pc$family))
   )
 
   # test printed output of getters
