@@ -147,29 +147,39 @@
 #' @name rvine_structure
 #' @aliases rvine_matrix is.rvine_structure is.rvine_matrix dvine_structure
 #'   cvine_structure
-rvine_structure <- function(order, struct_array = list(), is_natural_order = FALSE) {
-
+rvine_structure <- function(
+  order,
+  struct_array = list(),
+  is_natural_order = FALSE
+) {
   # sanity checks and extract dimension/trunc_lvl
-  assert_that(is.vector(order) && all(sapply(order, is.count)),
+  assert_that(
+    is.vector(order) && all(sapply(order, is.count)),
     msg = "Order should be a vector of positive integers."
   )
   assert_that(is.vector(struct_array) || is.list(struct_array))
-  assert_that(all(rapply(struct_array, function(i) sapply(i, is.count))),
+  assert_that(
+    all(rapply(struct_array, function(i) sapply(i, is.count))),
     msg = "All elements of struct_array should be positive integers."
   )
   d <- length(order)
-  assert_that(length(struct_array) < length(order),
-    msg = paste("The length of struct array is incompatible with order,",
-                "it should be in {1, ..., length(order) - 1}")
+  assert_that(
+    length(struct_array) < length(order),
+    msg = paste(
+      "The length of struct array is incompatible with order,",
+      "it should be in {1, ..., length(order) - 1}"
+    )
   )
 
   trunc_lvl <- length(struct_array)
   lens <- sapply(seq_len(trunc_lvl), function(j) length(struct_array[[j]]))
-  assert_that(all(lens == seq(d - 1, d - trunc_lvl)),
+  assert_that(
+    all(lens == seq(d - 1, d - trunc_lvl)),
     msg = paste(
       "The number of elements in struct_array is incompatible with order.",
-      "The first entry of struct_array should be a vectors of size" ,
-      "length(order) - 1, the second of size length(order) - 2), etc.")
+      "The first entry of struct_array should be a vectors of size",
+      "length(order) - 1, the second of size length(order) - 2), etc."
+    )
   )
 
   # create and check output
@@ -180,7 +190,8 @@ rvine_structure <- function(order, struct_array = list(), is_natural_order = FAL
       d = d,
       trunc_lvl = trunc_lvl
     ),
-    TRUE, is_natural_order
+    TRUE,
+    is_natural_order
   )
   output <- structure(output, class = c("rvine_structure", "list"))
 
@@ -202,8 +213,10 @@ rvine_structure <- function(order, struct_array = list(), is_natural_order = FAL
 plot.rvine_structure <- function(x, ...) {
   d <- dim(x)[1]
   trunc_lvl <- dim(x)[2]
-  pcs <- lapply(seq_len(min(d - 1, trunc_lvl)),
-                function(i) lapply(seq_len(d - i), function(j) bicop_dist()))
+  pcs <- lapply(
+    seq_len(min(d - 1, trunc_lvl)),
+    function(i) lapply(seq_len(d - i), function(j) bicop_dist())
+  )
   plot.vinecop_dist(vinecop_dist(pcs, x), ...)
 }
 
@@ -221,10 +234,11 @@ plot.rvine_matrix <- function(x, ...) {
 #' @param trunc_lvl the truncation level
 #' @export
 cvine_structure <- function(order, trunc_lvl = Inf) {
-  if (is.count(order))
-    order <- seq_len(order)
-  assert_that(is.vector(order) && all(sapply(order, is.count)),
-              msg = "Order should be a vector of positive integers.")
+  if (is.count(order)) order <- seq_len(order)
+  assert_that(
+    is.vector(order) && all(sapply(order, is.count)),
+    msg = "Order should be a vector of positive integers."
+  )
   assert_that(is.scalar(trunc_lvl) & is.number(trunc_lvl))
 
   d <- length(order)
@@ -239,7 +253,8 @@ cvine_structure <- function(order, trunc_lvl = Inf) {
       d = d,
       trunc_lvl = trunc_lvl
     ),
-    FALSE, TRUE
+    FALSE,
+    TRUE
   )
   structure(output, class = c("rvine_structure", "list"))
 }
@@ -247,10 +262,11 @@ cvine_structure <- function(order, trunc_lvl = Inf) {
 #' @rdname rvine_structure
 #' @export
 dvine_structure <- function(order, trunc_lvl = Inf) {
-  if (is.count(order))
-    order <- seq_len(order)
-  assert_that(is.vector(order) && all(sapply(order, is.count)),
-              msg = "Order should be a vector of positive integers.")
+  if (is.count(order)) order <- seq_len(order)
+  assert_that(
+    is.vector(order) && all(sapply(order, is.count)),
+    msg = "Order should be a vector of positive integers."
+  )
   assert_that(is.scalar(trunc_lvl) & is.number(trunc_lvl))
 
   d <- length(order)
@@ -265,7 +281,8 @@ dvine_structure <- function(order, trunc_lvl = Inf) {
       d = d,
       trunc_lvl = trunc_lvl
     ),
-    FALSE, TRUE
+    FALSE,
+    TRUE
   )
   structure(output, class = c("rvine_structure", "list"))
 }
@@ -282,7 +299,8 @@ rvine_matrix_nocheck <- function(matrix) {
   d <- ncol(matrix)
   class(matrix) <- c("rvine_matrix", class(matrix))
   attr(matrix, "d") <- d
-  attr(matrix, "trunc_lvl") <- ifelse(any(matrix[, 1] == 0),
+  attr(matrix, "trunc_lvl") <- ifelse(
+    any(matrix[, 1] == 0),
     min(which(matrix[, 1] == 0)) - 1,
     d - 1
   )
@@ -296,8 +314,10 @@ validate_rvine_structure <- function(structure, is_natural_order = TRUE) {
 }
 
 validate_rvine_matrix <- function(matrix) {
-  assert_that(is.rvine_matrix(matrix) ||
-    (is.matrix(matrix) && is.numeric(matrix)))
+  assert_that(
+    is.rvine_matrix(matrix) ||
+      (is.matrix(matrix) && is.numeric(matrix))
+  )
   rvine_matrix_check_cpp(matrix)
 }
 
@@ -310,17 +330,28 @@ dim.rvine_matrix <- function(x) {
 
 #' @export
 #' @importFrom utils write.table
-print.rvine_matrix <- function(x, ..., zero.print = " ", n = 10,
-                               structure = FALSE) {
+print.rvine_matrix <- function(
+  x,
+  ...,
+  zero.print = " ",
+  n = 10,
+  structure = FALSE
+) {
   if (structure) {
-    cat(dim(x)[1], "-dimensional R-vine structure ('rvine_structure')", sep = "")
+    cat(
+      dim(x)[1],
+      "-dimensional R-vine structure ('rvine_structure')",
+      sep = ""
+    )
   } else {
     cat(dim(x)[1], "-dimensional R-vine matrix ('rvine_matrix')", sep = "")
   }
   print_truncation_info(x)
-  write.table(format(x, zero.print = zero.print),
+  write.table(
+    format(x, zero.print = zero.print),
     quote = FALSE,
-    row.names = FALSE, col.names = FALSE
+    row.names = FALSE,
+    col.names = FALSE
   )
   invisible(x)
 }

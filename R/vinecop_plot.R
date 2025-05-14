@@ -64,8 +64,13 @@
 #' # contour plot
 #' contour(vc)
 #' @export
-plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
-                              edge_labels = NULL, ...) {
+plot.vinecop_dist <- function(
+  x,
+  tree = 1,
+  var_names = "ignore",
+  edge_labels = NULL,
+  ...
+) {
   if (!requireNamespace("ggraph", quietly = TRUE)) {
     stop("The 'ggraph' package must be installed to plot.")
   }
@@ -117,12 +122,11 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
   plots <- vector("list", length(tree))
   name <- NULL # for the CRAN check
   for (i in seq_along(tree)) {
-    p <- ggraph::ggraph(g[[i]], "igraph",
-      algorithm = "tree", circular = TRUE
-    )
+    p <- ggraph::ggraph(g[[i]], "igraph", algorithm = "tree", circular = TRUE)
     if (!is.null(edge_labels)) {
       p <- p +
-        ggraph::geom_edge_link(ggplot2::aes(label = name),
+        ggraph::geom_edge_link(
+          ggplot2::aes(label = name),
           colour = "#000000",
           angle_calc = "along",
           label_dodge = grid::unit(7, "points")
@@ -135,16 +139,18 @@ plot.vinecop_dist <- function(x, tree = 1, var_names = "ignore",
       ggplot2::theme_void() +
       ggplot2::labs(title = paste0("Tree ", tree[i]))
     if (var_names != "hide") {
-      p <- p + ggraph::geom_node_text(ggplot2::aes(label = name),
-        fontface = "bold",
-        repel = TRUE
-      )
+      p <- p +
+        ggraph::geom_node_text(
+          ggplot2::aes(label = name),
+          fontface = "bold",
+          repel = TRUE
+        )
     }
     if (var_names == "legend") {
-      p <- p + ggplot2::labs(caption = paste(x$names, names,
-        sep = " = ",
-        collapse = ", "
-      ))
+      p <- p +
+        ggplot2::labs(
+          caption = paste(x$names, names, sep = " = ", collapse = ", ")
+        )
     }
     plots[[i]] <- p +
       ggplot2::theme(plot.margin = ggplot2::margin(5, 5, 5, 5, "pt"))
@@ -170,13 +176,14 @@ get_graph <- function(tree, vc, edge_labels) {
 
   ## extract node and edge labels as numbers
   if (tree > 1) {
-    V <- t(sapply(seq.int(d - tree + 1), function(j)
-      M[c(d - j + 1, (tree - 1):1), j]))
+    V <- t(sapply(
+      seq.int(d - tree + 1),
+      function(j) M[c(d - j + 1, (tree - 1):1), j]
+    ))
   } else {
     V <- matrix(diag(M[d:1, ]), ncol = 1)
   }
-  E <- t(sapply(seq.int(d - tree), function(j)
-    M[c(d - j + 1, tree:1), j]))
+  E <- t(sapply(seq.int(d - tree), function(j) M[c(d - j + 1, tree:1), j]))
 
   ## build adjacency matrix by matching V and E
   for (i in 1:nrow(E)) {
@@ -186,7 +193,8 @@ get_graph <- function(tree, vc, edge_labels) {
 
   ## convert to variable names
   if (tree > 1) {
-    colnames(I) <- rownames(I) <- sapply(1:(d - tree + 1),
+    colnames(I) <- rownames(I) <- sapply(
+      1:(d - tree + 1),
       get_name,
       tree = tree - 1,
       vc = vc
@@ -200,7 +208,9 @@ get_graph <- function(tree, vc, edge_labels) {
 
   ## add edge labels
   if (!is.null(edge_labels)) {
-    igraph::E(g)$name <- sapply(tree, set_edge_labels,
+    igraph::E(g)$name <- sapply(
+      tree,
+      set_edge_labels,
       vc = vc,
       edge_labels = edge_labels
     )
@@ -212,12 +222,10 @@ get_graph <- function(tree, vc, edge_labels) {
 ## finds appropriate edge labels for the plot
 set_edge_labels <- function(tree, vc, edge_labels) {
   d <- dim(vc)[1]
-  get_edge_label <- switch(edge_labels,
+  get_edge_label <- switch(
+    edge_labels,
     family = get_family,
-    tau = function(vc, tree, edge)
-      round(get_ktau(vc, tree, edge),
-        digits = 2
-      ),
+    tau = function(vc, tree, edge) round(get_ktau(vc, tree, edge), digits = 2),
     family_tau = get_family_tau,
     pair = get_name
   )
@@ -230,11 +238,10 @@ get_name <- function(vc, tree, edge) {
   M <- get_matrix(vc)
   d <- nrow(M)
   # conditioned set
-  bef <- paste0(vc$names[M[c(d - edge + 1, tree), edge]],
-    collapse = ","
-  )
+  bef <- paste0(vc$names[M[c(d - edge + 1, tree), edge]], collapse = ",")
   # conditioning set
-  aft <- ifelse(tree > 1,
+  aft <- ifelse(
+    tree > 1,
     paste0(vc$names[M[(tree - 1):1, edge]], collapse = ","),
     ""
   )
@@ -245,8 +252,10 @@ get_name <- function(vc, tree, edge) {
 
 get_family_tau <- function(vc, tree, edge) {
   paste0(
-    get_family(vc, tree, edge), "(",
-    round(get_ktau(vc, tree, edge), digits = 2), ")"
+    get_family(vc, tree, edge),
+    "(",
+    round(get_ktau(vc, tree, edge), digits = 2),
+    ")"
   )
 }
 
@@ -260,7 +269,8 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
   d <- dim(x)[1]
   trunc_lvl <- dim(x)[2]
   assert_that(is.number(cex.nums))
-  assert_that((length(tree) == 1 && tree == "ALL") || all(tree <= trunc_lvl),
+  assert_that(
+    (length(tree) == 1 && tree == "ALL") || all(tree <= trunc_lvl),
     msg = "Selected tree does not exist."
   )
   if (trunc_lvl == 0) {
@@ -284,7 +294,8 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
     margins <- "norm"
   }
   if (is.null(list(...)$xlim) & is.null(list(...)$ylim)) {
-    xylim <- switch(margins,
+    xylim <- switch(
+      margins,
       "unif" = c(1e-2, 1 - 1e-2),
       "norm" = c(-3, 3),
       "exp" = c(0, 6),
@@ -340,8 +351,10 @@ contour.vinecop_dist <- function(x, tree = "ALL", cex.nums = 1, ...) {
         # create empty plot
         plot.new()
         plot.window(
-          xlim = xlim, ylim = ylim,
-          xaxs = "i", yaxs = "i"
+          xlim = xlim,
+          ylim = ylim,
+          xaxs = "i",
+          yaxs = "i"
         )
 
         # call contour.bicop with ... arguments

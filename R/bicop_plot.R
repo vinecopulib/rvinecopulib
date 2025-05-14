@@ -64,7 +64,8 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
   }
 
   if (is.null(list(...)$xlim) & is.null(list(...)$ylim)) {
-    xylim <- switch(margins,
+    xylim <- switch(
+      margins,
       "unif" = c(1e-2, 1 - 1e-2),
       "norm" = c(-3, 3),
       "exp" = c(0, 6),
@@ -76,7 +77,8 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
 
   ## prepare for plotting with selected margins
   if (margins == "unif") {
-    points <- switch(type,
+    points <- switch(
+      type,
       "contour" = seq(1e-5, 1 - 1e-5, length.out = size),
       "surface" = 1:size / (size + 1)
     )
@@ -140,12 +142,19 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
     dens <- pmin(dens, 6)
   }
 
-  jet.colors <- colorRampPalette(c(
-    "#00007F", "blue", "#007FFF", "cyan",
-    "#7FFF7F", "yellow", "#FF7F00", "red",
-    "#7F0000"
-  ),
-  bias = 2
+  jet.colors <- colorRampPalette(
+    c(
+      "#00007F",
+      "blue",
+      "#007FFF",
+      "cyan",
+      "#7FFF7F",
+      "yellow",
+      "#FF7F00",
+      "red",
+      "#7F0000"
+    ),
+    bias = 2
   )
   ## actual plotting
   if (type == "contour") {
@@ -157,13 +166,15 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
       levels = levels,
       xlim = xlim,
       ylim = ylim,
-      xlab = switch(margins,
+      xlab = switch(
+        margins,
         "unif" = expression(u[1]),
         "norm" = expression(z[1]),
         "exp" = expression(e[1]),
         "flexp" = expression(e[1])
       ),
-      ylab = switch(margins,
+      ylab = switch(
+        margins,
         "unif" = expression(u[2]),
         "norm" = expression(z[2]),
         "exp" = expression(e[2]),
@@ -179,7 +190,8 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
       x = c ~ u * v,
       data = lst,
       scales = list(arrows = FALSE),
-      drape = TRUE, colorkey = FALSE,
+      drape = TRUE,
+      colorkey = FALSE,
       screen = list(z = 25, x = -55),
       shade = FALSE,
       aspect = c(1, 1),
@@ -188,20 +200,23 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
       par.settings = list(axis.line = list(col = "transparent")),
       col = NA,
       col.regions = jet.colors(100),
-      xlab = switch(margins,
+      xlab = switch(
+        margins,
         "unif" = expression(u[1]),
         "norm" = expression(z[1]),
         "exp" = expression(e[1]),
         "flexp" = expression(e[1])
       ),
-      ylab = switch(margins,
+      ylab = switch(
+        margins,
         "unif" = expression(u[2]),
         "norm" = expression(z[2]),
         "exp" = expression(e[2]),
         "flexp" = expression(e[2])
       ),
       zlab = "",
-      zlim = switch(margins,
+      zlim = switch(
+        margins,
         "unif" = c(0, max(3, 1.1 * max(lst$c))),
         "norm" = c(0, max(0.4, 1.1 * max(lst$c))),
         "exp" = c(0, max(1, 1.1 * max(lst$c))),
@@ -211,7 +226,8 @@ plot.bicop_dist <- function(x, type = "surface", margins, size, ...) {
   }
 
   pars <- modifyList(pars, list(...))
-  plot_obj <- switch(type,
+  plot_obj <- switch(
+    type,
     contour = do.call(contour, pars),
     surface = print(do.call(wireframe, pars))
   )

@@ -173,8 +173,14 @@ get_vine_dist_margin_summary <- function(vd) {
 #' x <- sapply(1:5, function(i) rnorm(50))
 #' fit <- vine(x, copula_controls = list(family_set = "par"), keep_data = TRUE)
 #' all.equal(predict(fit, x), fitted(fit), check.environment = FALSE)
-predict.vine <- function(object, newdata, what = "pdf", n_mc = 10^4,
-                         cores = 1, ...) {
+predict.vine <- function(
+  object,
+  newdata,
+  what = "pdf",
+  n_mc = 10^4,
+  cores = 1,
+  ...
+) {
   stopifnot(what %in% c("pdf", "cdf"))
   switch(
     what,
@@ -232,8 +238,10 @@ get_vine_margin_summary <- function(object) {
 
 dpq_marg <- function(x, vine, what = "p") {
   d <- ncol(x)
-  res <- lapply(seq_len(d),
-                function(i) eval_one_dpq(x[, i], vine$margins[[i]], what))
+  res <- lapply(
+    seq_len(d),
+    function(i) eval_one_dpq(x[, i], vine$margins[[i]], what)
+  )
   do.call(cbind, res)
 }
 
@@ -247,7 +255,7 @@ get_x_sub <- function(x, margin) {
       } else {
         x <- x - 1
       }
-    } else if (margin$type == "zero-inflated")  {
+    } else if (margin$type == "zero-inflated") {
       x[x == 0] <- -.Machine$double.xmin
     }
   }
@@ -256,23 +264,26 @@ get_x_sub <- function(x, margin) {
 
 eval_one_dpq <- function(x, margin, what = "p") {
   if (inherits(margin, "kde1d")) {
-    dpq <- switch(what,
-                  p = pkde1d(x, margin),
-                  d = dkde1d(x, margin),
-                  q = qkde1d(x, margin),
-                  p_sub = pkde1d(get_x_sub(x, margin), margin))
+    dpq <- switch(
+      what,
+      p = pkde1d(x, margin),
+      d = dkde1d(x, margin),
+      q = qkde1d(x, margin),
+      p_sub = pkde1d(get_x_sub(x, margin), margin)
+    )
   } else {
     par <- margin[names(margin) != "distr"]
     par[[length(par) + 1]] <- if (what == "p_sub") get_x_sub(x, margin) else x
-    names(par)[[length(par)]] <- switch(what,
-                                        p = "q",
-                                        p_sub = "q",
-                                        d = "x",
-                                        q = "p")
+    names(par)[[length(par)]] <- switch(
+      what,
+      p = "q",
+      p_sub = "q",
+      d = "x",
+      q = "p"
+    )
     dpq <- do.call(get(paste0(what, margin$distr)), par)
   }
-  if (is.factor(dpq))
-    dpq <- as.data.frame(dpq)
+  if (is.factor(dpq)) dpq <- as.data.frame(dpq)
   if (what == "p_sub") {
     dpq[is.nan(dpq) & !is.nan(x)] <- 0
   }

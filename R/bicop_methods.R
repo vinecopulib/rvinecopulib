@@ -125,8 +125,15 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
 #'    variable, `cond_var = 2` on the second.
 #' @param inverse whether to compute the h-function or its inverse.
 #' @export
-hbicop <- function(u, cond_var, family, rotation, parameters, inverse = FALSE,
-                   var_types = c("c", "c")) {
+hbicop <- function(
+  u,
+  cond_var,
+  family,
+  rotation,
+  parameters,
+  inverse = FALSE,
+  var_types = c("c", "c")
+) {
   assert_that(in_set(cond_var, 1:2), is.flag(inverse))
   bicop <- args2bicop(family, rotation, parameters, var_types)
   u <- if_vec_to_matrix(u)
@@ -267,16 +274,20 @@ print.bicop_dist <- function(x, ...) {
   if (x$family %in% setdiff(family_set_nonparametric, "indep")) {
     x$parameters <- paste0(round(x$npars, 2), sep = " d.f.")
   }
-  cat("Bivariate copula ('bicop_dist'): ",
-    "family = ", x$family,
-    ", rotation = ", x$rotation,
-    ", parameters = ", ifelse(length(x$parameters) > 1,
-      paste(round(x$parameters, 2),
-        collapse = ", "
-      ),
+  cat(
+    "Bivariate copula ('bicop_dist'): ",
+    "family = ",
+    x$family,
+    ", rotation = ",
+    x$rotation,
+    ", parameters = ",
+    ifelse(
+      length(x$parameters) > 1,
+      paste(round(x$parameters, 2), collapse = ", "),
       x$parameters
     ),
-    ", var_types = ", paste(x$var_types, collapse = ","),
+    ", var_types = ",
+    paste(x$var_types, collapse = ","),
     sep = ""
   )
   cat("\n")
@@ -296,11 +307,16 @@ print.bicop <- function(x, ...) {
   } else {
     pars_formatted <- paste(round(x$parameters, 2), collapse = ", ")
   }
-  cat("Bivariate copula fit ('bicop'): ",
-    "family = ", x$family,
-    ", rotation = ", x$rotation,
-    ", parameters = ", pars_formatted,
-    ", var_types = ", paste(x$var_types, collapse = ","),
+  cat(
+    "Bivariate copula fit ('bicop'): ",
+    "family = ",
+    x$family,
+    ", rotation = ",
+    x$rotation,
+    ", parameters = ",
+    pars_formatted,
+    ", var_types = ",
+    paste(x$var_types, collapse = ","),
     "\n",
     sep = ""
   )

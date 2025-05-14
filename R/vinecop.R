@@ -156,14 +156,28 @@
 #' # we require two types of observations (see Details)
 #' u_disc <- cbind(ppois(x, 1), u[, 2:5], ppois(x - 1, 1))
 #' fit <- vinecop(u_disc, var_types = c("d", rep("c", 4)))
-vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
-                    structure = NA, par_method = "mle",
-                    nonpar_method = "constant", mult = 1, selcrit = "aic",
-                    weights = numeric(), psi0 = 0.9, presel = TRUE,
-                    allow_rotations = TRUE,
-                    trunc_lvl = Inf, tree_crit = "tau", threshold = 0,
-                    keep_data = FALSE, vinecop_object = NULL,
-                    show_trace = FALSE, cores = 1, tree_algorithm = "mst_prim") {
+vinecop <- function(
+  data,
+  var_types = rep("c", NCOL(data)),
+  family_set = "all",
+  structure = NA,
+  par_method = "mle",
+  nonpar_method = "constant",
+  mult = 1,
+  selcrit = "aic",
+  weights = numeric(),
+  psi0 = 0.9,
+  presel = TRUE,
+  allow_rotations = TRUE,
+  trunc_lvl = Inf,
+  tree_crit = "tau",
+  threshold = 0,
+  keep_data = FALSE,
+  vinecop_object = NULL,
+  show_trace = FALSE,
+  cores = 1,
+  tree_algorithm = "mst_prim"
+) {
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||
@@ -171,17 +185,21 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
       (is.scalar(structure) && is.na(structure)),
     is.string(par_method),
     is.string(nonpar_method),
-    is.number(mult), mult > 0,
+    is.number(mult),
+    mult > 0,
     is.string(selcrit),
     is.numeric(weights),
-    is.number(psi0), psi0 > 0, psi0 < 1,
+    is.number(psi0),
+    psi0 > 0,
+    psi0 < 1,
     is.flag(presel),
     is.flag(allow_rotations),
     is.scalar(trunc_lvl),
     is.string(tree_crit),
     is.scalar(threshold),
     is.flag(keep_data),
-    is.number(cores), cores > 0,
+    is.number(cores),
+    cores > 0,
     correct_var_types(var_types),
     is.string(tree_algorithm)
   )
@@ -192,7 +210,9 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
       stop("'vinecop_object' must be of class 'vinecop'")
     }
     if (!identical(structure, NA) || !identical(family_set, "all")) {
-      warning("'structure' and 'family_set' are ignored when 'vinecop_object' is provided")
+      warning(
+        "'structure' and 'family_set' are ignored when 'vinecop_object' is provided"
+      )
     }
     vinecop <- vinecop_fit_cpp(
       data = as.matrix(data),
@@ -229,7 +249,8 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
       weights = weights,
       psi0 = psi0,
       preselect_families = presel,
-      truncation_level = ifelse( # Inf cannot be passed to C++
+      truncation_level = ifelse(
+        # Inf cannot be passed to C++
         is.finite(trunc_lvl),
         trunc_lvl,
         .Machine$integer.max
@@ -247,7 +268,6 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
       seeds = seeds
     )
   }
-
 
   ## make all pair-copulas bicop objects
   vinecop$pair_copulas <- lapply(
@@ -326,8 +346,11 @@ vinecop <- function(data, var_types = rep("c", NCOL(data)), family_set = "all",
 #'
 #' # simulate from the model
 #' pairs(rvinecop(200, vc))
-vinecop_dist <- function(pair_copulas, structure,
-                         var_types = rep("c", dim(structure)[1])) {
+vinecop_dist <- function(
+  pair_copulas,
+  structure,
+  var_types = rep("c", dim(structure)[1])
+) {
   # create object
   vinecop <- structure(
     list(

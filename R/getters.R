@@ -68,8 +68,10 @@
 #' @rdname getters
 #' @export
 get_structure <- function(object) {
-  assert_that(inherits(object, "vinecop_dist") ||
-    inherits(object, "vine_dist"))
+  assert_that(
+    inherits(object, "vinecop_dist") ||
+      inherits(object, "vine_dist")
+  )
   if (inherits(object, "vinecop_dist")) {
     return(object$structure)
   } else {
@@ -89,11 +91,12 @@ get_matrix <- function(object) {
 #' @rdname getters
 #' @export
 get_pair_copula <- function(object, tree = NA, edge = NA) {
-
   ## sanity checks
-  assert_that(inherits(object, "bicop_dist") ||
-    inherits(object, "vinecop_dist") ||
-    inherits(object, "vine_dist"))
+  assert_that(
+    inherits(object, "bicop_dist") ||
+      inherits(object, "vinecop_dist") ||
+      inherits(object, "vine_dist")
+  )
 
   if (inherits(object, "bicop_dist")) {
     if (!is.scalar(tree) || !is.na(tree)) {
@@ -105,13 +108,15 @@ get_pair_copula <- function(object, tree = NA, edge = NA) {
     return(object)
   } else {
     d <- dim(object)
-    assert_that(is.number(tree),
+    assert_that(
+      is.number(tree),
       tree >= 1,
       tree <= d[2],
       msg = "tree should be a number between 1 and
                     the truncation level."
     )
-    assert_that(is.number(edge),
+    assert_that(
+      is.number(edge),
       edge >= 1,
       edge <= d[1] - tree,
       msg = "tree should be a number between 1 and
@@ -150,8 +155,10 @@ get_family <- function(object, tree = NA, edge = NA) {
 #' @rdname getters
 #' @export
 get_all_pair_copulas <- function(object, trees = NA) {
-  assert_that(inherits(object, "vinecop_dist") ||
-    inherits(object, "vine_dist"))
+  assert_that(
+    inherits(object, "vinecop_dist") ||
+      inherits(object, "vine_dist")
+  )
   d <- dim(object)
 
   if (inherits(object, "vinecop_dist")) {
@@ -161,7 +168,8 @@ get_all_pair_copulas <- function(object, trees = NA) {
   }
 
   if (!any(is.na(trees))) {
-    assert_that(is.numeric(trees),
+    assert_that(
+      is.numeric(trees),
       all(trees >= 1),
       all(trees <= d[1] - 1),
       msg = "the elements of trees should be numbers between 1 and d - 1."
@@ -174,7 +182,9 @@ get_all_pair_copulas <- function(object, trees = NA) {
   } else {
     if (any(trees > t)) {
       warning(
-        "vine copula is ", t, "-truncated; ",
+        "vine copula is ",
+        t,
+        "-truncated; ",
         "only returning available trees."
       )
       trees <- trees[trees <= t]
@@ -189,7 +199,8 @@ get_all_pair_copulas <- function(object, trees = NA) {
 
 get_all_xyz <- function(object, trees, func, list_name) {
   pcs <- get_all_pair_copulas(object, trees)
-  res <- structure(lapply(pcs, function(tree) lapply(tree, func)),
+  res <- structure(
+    lapply(pcs, function(tree) lapply(tree, func)),
     class = c("rvine_list", list_name)
   )
   attr(res, "d") <- attr(pcs, "d")
@@ -217,7 +228,8 @@ get_all_families <- function(object, trees = NA) {
 
 #' @export
 print.rvine_list <- function(x, ...) {
-  what <- switch(class(x)[2],
+  what <- switch(
+    class(x)[2],
     pair_copulas = "pair-copulas",
     parameters = "copula parameters",
     ktaus = "Kendall's taus",
@@ -227,8 +239,11 @@ print.rvine_list <- function(x, ...) {
   d <- attr(x, "d")
   trees <- attr(x, "trees")
   msg <- paste(
-    "Nested list of lists for the", what, "of a",
-    d, "dimensional vine with"
+    "Nested list of lists for the",
+    what,
+    "of a",
+    d,
+    "dimensional vine with"
   )
 
   ntrees <- length(trees)
@@ -239,7 +254,8 @@ print.rvine_list <- function(x, ...) {
   } else {
     trees_print <- paste(
       paste(trees[1:(ntrees - 1)], collapse = ", "),
-      "and", trees[ntrees]
+      "and",
+      trees[ntrees]
     )
     cat(paste(msg, " trees ", trees_print, ". \n", sep = ""))
   }
@@ -255,8 +271,17 @@ print.rvine_list <- function(x, ...) {
       cat("# ... with", length(trees) - 10, trees_print)
       break
     }
-    cat(paste(arg, "[[", t, "]] -> a list with the ", d - trees[t],
-      " ", what, " of tree ", trees[t], ". \n",
+    cat(paste(
+      arg,
+      "[[",
+      t,
+      "]] -> a list with the ",
+      d - trees[t],
+      " ",
+      what,
+      " of tree ",
+      trees[t],
+      ". \n",
       sep = ""
     ))
   }

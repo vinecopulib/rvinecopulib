@@ -83,7 +83,8 @@ dvinecop <- function(u, vinecop, cores = 1) {
 pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
   assert_that(
     inherits(vinecop, "vinecop_dist"),
-    is.number(n_mc), is.count(cores)
+    is.number(n_mc),
+    is.count(cores)
   )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
   vinecop_cdf_cpp(as.matrix(u), vinecop, n_mc, cores, get_seeds())
@@ -120,18 +121,27 @@ print.vinecop_dist <- function(x, ...) {
 
 #' @importFrom utils capture.output
 #' @export
-summary.vinecop_dist <- function(object,
-                                 trees = seq_len(dim(object)["trunc_lvl"]),
-                                 ...) {
+summary.vinecop_dist <- function(
+  object,
+  trees = seq_len(dim(object)["trunc_lvl"]),
+  ...
+) {
   mat <- as_rvine_matrix(get_structure(object))
   d <- dim(object)[1]
   trees <- intersect(trees, seq_len(dim(object)["trunc_lvl"]))
   n_pcs <- length(unlist(object$pair_copulas[trees], recursive = FALSE))
   mdf <- as.data.frame(matrix(NA, n_pcs, 10))
   names(mdf) <- c(
-    "tree", "edge",
-    "conditioned", "conditioning", "var_types",
-    "family", "rotation", "parameters", "df", "tau"
+    "tree",
+    "edge",
+    "conditioned",
+    "conditioning",
+    "var_types",
+    "family",
+    "rotation",
+    "parameters",
+    "df",
+    "tau"
   )
   k <- 1
   for (t in trees) {
@@ -195,12 +205,19 @@ summary.vinecop_dist <- function(object,
 #' u <- sapply(1:5, function(i) runif(50))
 #' fit <- vinecop(u, family = "par", keep_data = TRUE)
 #' all.equal(predict(fit, u), fitted(fit), check.environment = FALSE)
-predict.vinecop <- function(object, newdata, what = "pdf", n_mc = 10^4,
-                            cores = 1, ...) {
+predict.vinecop <- function(
+  object,
+  newdata,
+  what = "pdf",
+  n_mc = 10^4,
+  cores = 1,
+  ...
+) {
   assert_that(
     in_set(what, c("pdf", "cdf")),
     is.number(n_mc),
-    is.number(cores), cores > 0
+    is.number(cores),
+    cores > 0
   )
   newdata <- if_vec_to_matrix(newdata, dim(object)[1] == 1)
   switch(
@@ -219,7 +236,8 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
   assert_that(
     in_set(what, c("pdf", "cdf")),
     is.number(n_mc),
-    is.number(cores), cores > 0
+    is.number(cores),
+    cores > 0
   )
   switch(
     what,
@@ -266,11 +284,12 @@ logLik.vinecop <- function(object, ...) {
 #' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
   assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
-  ll <- ifelse(is.null(newdata),
+  ll <- ifelse(
+    is.null(newdata),
     object$loglik,
     sum(log(dvinecop(newdata, object)))
   )
-  - 2 * ll + compute_mBICV_penalty(object, psi0)
+  -2 * ll + compute_mBICV_penalty(object, psi0)
 }
 
 compute_mBICV_penalty <- function(object, psi0) {
@@ -280,9 +299,11 @@ compute_mBICV_penalty <- function(object, psi0) {
   q_m <- c(q_m, rep(0, d - 1 - length(q_m)))
   m_seq <- seq_len(d - 1)
   pen <- object$npars * log(object$nobs)
-  pen - 2 * sum(
-    q_m * log(psi0^m_seq) + (d - seq_len(d - 1) - q_m) * log(1 - psi0^m_seq)
-  )
+  pen -
+    2 *
+      sum(
+        q_m * log(psi0^m_seq) + (d - seq_len(d - 1) - q_m) * log(1 - psi0^m_seq)
+      )
 }
 
 #' @export
@@ -295,7 +316,11 @@ print.vinecop <- function(x, ...) {
 
 
 #' @export
-summary.vinecop <- function(object, trees = seq_len(dim(object)["trunc_lvl"]), ...) {
+summary.vinecop <- function(
+  object,
+  trees = seq_len(dim(object)["trunc_lvl"]),
+  ...
+) {
   trees <- intersect(trees, seq_len(dim(object)["trunc_lvl"]))
   mdf <- summary.vinecop_dist(object, trees)
   d <- dim(object)[1]

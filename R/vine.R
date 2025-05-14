@@ -90,35 +90,37 @@
 #'
 #' @importFrom kde1d dkde1d pkde1d qkde1d
 #' @export
-vine <- function(data,
-                 margins_controls = list(
-                   mult = NULL,
-                   xmin = NaN,
-                   xmax = NaN,
-                   bw = NA,
-                   deg = 2
-                 ),
-                 copula_controls = list(
-                   family_set = "all",
-                   structure = NA,
-                   par_method = "mle",
-                   nonpar_method = "constant",
-                   mult = 1,
-                   selcrit = "aic",
-                   psi0 = 0.9,
-                   presel = TRUE,
-                   allow_rotations = TRUE,
-                   trunc_lvl = Inf,
-                   tree_crit = "tau",
-                   threshold = 0,
-                   keep_data = FALSE,
-                   show_trace = FALSE,
-                   cores = 1,
-                   tree_algorithm = "mst_prim"
-                 ),
-                 weights = numeric(),
-                 keep_data = FALSE,
-                 cores = 1) {
+vine <- function(
+  data,
+  margins_controls = list(
+    mult = NULL,
+    xmin = NaN,
+    xmax = NaN,
+    bw = NA,
+    deg = 2
+  ),
+  copula_controls = list(
+    family_set = "all",
+    structure = NA,
+    par_method = "mle",
+    nonpar_method = "constant",
+    mult = 1,
+    selcrit = "aic",
+    psi0 = 0.9,
+    presel = TRUE,
+    allow_rotations = TRUE,
+    trunc_lvl = Inf,
+    tree_crit = "tau",
+    threshold = 0,
+    keep_data = FALSE,
+    show_trace = FALSE,
+    cores = 1,
+    tree_algorithm = "mst_prim"
+  ),
+  weights = numeric(),
+  keep_data = FALSE,
+  cores = 1
+) {
   ## basic sanity checks (copula_controls are checked by vinecop)
   data <- expand_factors(data)
 
@@ -146,7 +148,8 @@ vine <- function(data,
 
   ## estimation of the marginals
   vine <- list()
-  vine$margins <- fit_margins_cpp(prep_for_margins(data),
+  vine$margins <- fit_margins_cpp(
+    prep_for_margins(data),
     xmin = margins_controls$xmin,
     xmax = margins_controls$xmax,
     type = margins_controls$type,
@@ -165,7 +168,9 @@ vine <- function(data,
   copula_controls$data <- compute_pseudo_obs(data, vine)
   copula_controls$weights <- weights
   vine$copula <- do.call(vinecop, copula_controls)
-  vine$copula_controls <- copula_controls[-which(names(copula_controls) == "data")]
+  vine$copula_controls <- copula_controls[
+    -which(names(copula_controls) == "data")
+  ]
 
   finalize_vine(vine, data, weights, keep_data)
 }
@@ -239,10 +244,17 @@ vine_dist <- function(margins, pair_copulas, structure) {
   is_ok <- sapply(check_marg, isTRUE)
   if (!all(is_ok)) {
     msg <- "Some objects in marg aren't properly defined.\n"
-    msg <- c(msg, paste0("margin ", seq_along(check_marg)[!is_ok], " : ",
-      unlist(check_marg[!is_ok]), ".",
-      sep = "\n"
-    ))
+    msg <- c(
+      msg,
+      paste0(
+        "margin ",
+        seq_along(check_marg)[!is_ok],
+        " : ",
+        unlist(check_marg[!is_ok]),
+        ".",
+        sep = "\n"
+      )
+    )
     stop(msg)
   }
 
@@ -250,12 +262,15 @@ vine_dist <- function(margins, pair_copulas, structure) {
   copula <- vinecop_dist(pair_copulas, structure)
 
   # create object
-  structure(list(
-    margins = margins,
-    copula = copula,
-    npars = copula$npars + npars_marg,
-    loglik = NA
-  ), class = "vine_dist")
+  structure(
+    list(
+      margins = margins,
+      copula = copula,
+      npars = copula$npars + npars_marg,
+      loglik = NA
+    ),
+    class = "vine_dist"
+  )
 }
 
 expand_margin_controls <- function(controls, d, data) {
