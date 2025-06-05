@@ -7,9 +7,10 @@
 #pragma once
 
 #include <vinecopulib/bicop/parametric.hpp>
+#include <vinecopulib/bicop/gumbel.hpp>
 
 namespace vinecopulib {
-//! @brief An abstract class for Archimedean copula families.
+//! @brief The Gaussian copula.
 //!
 //! This class is used in the implementation underlying the Bicop class.
 //! Users should not use AbstractBicop or derived classes directly, but
@@ -17,35 +18,34 @@ namespace vinecopulib {
 //!
 //! @literature
 //! Joe, Harry. Dependence modeling with copulas. CRC Press, 2014.
-class ArchimedeanBicop : public ParBicop
+class XtdGumbelBicop : public ParBicop
 {
-    friend class XtdGumbelBicop;
+public:
+  // constructor
+  XtdGumbelBicop();
+
+  void set_parameters(const Eigen::MatrixXd& parameters) override;
 
 private:
-  // cdf, hfunctions and inverses
-  // Eigen::VectorXd pdf(const Eigen::MatrixXd &u);
+  // PDF
+  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u);
 
+  // CDF
   Eigen::VectorXd cdf(const Eigen::MatrixXd& u);
 
+  // hfunction
   Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u);
-
   Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u);
-
   Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u);
-
   Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u);
 
-  // generator, its inverse and derivative
-  virtual double generator(const double& u) = 0;
-
-  virtual double generator_inv(const double& u) = 0;
-
-  virtual double generator_derivative(const double& u) = 0;
-
-  // virtual double generator_derivative2(const double &u) = 0;
+  Eigen::MatrixXd tau_to_parameters(const double& tau);
+  double parameters_to_tau(const Eigen::MatrixXd& par);
 
   Eigen::VectorXd get_start_parameters(const double tau);
+
+  std::shared_ptr<GumbelBicop> gumbel_bicop_;
 };
 }
 
-#include <vinecopulib/bicop/implementation/archimedean.ipp>
+#include <vinecopulib/bicop/implementation/xtdgumbel.ipp>

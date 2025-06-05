@@ -38,6 +38,8 @@ inline BicopFamily to_cpp_family(const std::string& fam)
     bicop_fam = BicopFamily::tll;
   } else if (fam == "tawn") {
     bicop_fam = BicopFamily::tawn;
+  } else if (fam == "xtd_gumbel") {
+    bicop_fam = BicopFamily::xtd_gumbel;
   } else {
     throw std::runtime_error("family not implemented");
   }
@@ -74,6 +76,8 @@ inline std::string to_r_family(const BicopFamily& fam)
     bicop_fam = "tll";
   } else if (fam == BicopFamily::tawn) {
     bicop_fam = "tawn";
+  } else if (fam == BicopFamily::xtd_gumbel) {
+    bicop_fam = "xtd_gumbel";
   } else {
     throw std::runtime_error("family not implemented");
   }
@@ -95,7 +99,7 @@ inline Bicop bicop_wrap(const Rcpp::List& bicop_r)
     bicop_cpp = Bicop(
       to_cpp_family(bicop_r["family"]),
       bicop_r["rotation"],
-             pars
+      pars
     );
   }
   bicop_cpp.set_var_types(bicop_r["var_types"]);

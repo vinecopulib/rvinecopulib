@@ -24,7 +24,8 @@ const family_bimap family_names =
     (BicopFamily::bb7,"BB7")
     (BicopFamily::bb8, "BB8")
     (BicopFamily::tawn, "Tawn")
-    (BicopFamily::tll, "TLL");
+    (BicopFamily::tll, "TLL")
+    (BicopFamily::xtd_gumbel, "XTD Gumbel");
 
 //! @brief Converts a BicopFamily into a string with its name.
 //! @param family The family.

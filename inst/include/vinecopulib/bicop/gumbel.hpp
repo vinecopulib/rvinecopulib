@@ -19,6 +19,8 @@ namespace vinecopulib {
 //! Joe, Harry. Dependence modeling with copulas. CRC Press, 2014.
 class GumbelBicop : public ArchimedeanBicop
 {
+  friend class XtdGumbelBicop;
+
 public:
   // constructor
   GumbelBicop();

@@ -117,6 +117,10 @@ to_pseudo_obs(Eigen::MatrixXd x,
               const Eigen::VectorXd& weights = Eigen::VectorXd(),
               std::vector<int> seeds = std::vector<int>());
 
+Eigen::MatrixXd
+rotate_data(const Eigen::MatrixXd& u, int rotation);
+
+
 // Covers the unit hypercube with boxes and assigns each sample to a box.
 // Used internally for recovering the latent sample of a discrete copula.
 class BoxCovering

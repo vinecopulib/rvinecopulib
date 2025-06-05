@@ -24,6 +24,7 @@ family_set_bb <- c(
 
 family_set_onepar <- c(
   "gaussian",
+  "xtd_gumbel",
   family_set_archimedean
 )
 

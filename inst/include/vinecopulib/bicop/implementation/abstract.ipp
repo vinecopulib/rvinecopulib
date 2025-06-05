@@ -19,6 +19,7 @@
 #include <vinecopulib/bicop/student.hpp>
 #include <vinecopulib/bicop/tawn.hpp>
 #include <vinecopulib/bicop/tll.hpp>
+#include <vinecopulib/bicop/xtdgumbel.hpp>
 #include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
@@ -76,6 +77,9 @@ AbstractBicop::create(BicopFamily family, const Eigen::MatrixXd& parameters)
       break;
     case BicopFamily::tll:
       new_bicop = BicopPtr(new TllBicop());
+      break;
+    case BicopFamily::xtd_gumbel:
+      new_bicop = BicopPtr(new XtdGumbelBicop());
       break;
 
     default:

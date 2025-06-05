@@ -936,7 +936,7 @@ VinecopSelector::min_spanning_tree(VineTree& graph)
     boost::mt19937 gen = controls_.get_rng();
 
     // Randomize root vertex
-    std::uniform_int_distribution<size_t> root_dist(0, d - 1);
+    boost::random::uniform_int_distribution<size_t> root_dist(0, d - 1);
     size_t root = root_dist(gen);
 
     if (controls_.get_tree_algorithm() == "random_unweighted") {

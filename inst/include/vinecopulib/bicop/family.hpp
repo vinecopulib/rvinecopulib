@@ -26,7 +26,8 @@ enum class BicopFamily
   bb7,      ///< BB7 copula
   bb8,      ///< BB8 copula
   tawn,     ///< Tawn copula
-  tll       ///< Transformation local likelihood kernel estimator
+  tll,      ///< Transformation local likelihood kernel estimator
+  xtd_gumbel ///< Extended Gumbel copula
 };
 
 std::string
@@ -52,7 +53,8 @@ const std::vector<BicopFamily> parametric = {
   BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
   BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
-  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn
+  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn, 
+  BicopFamily::xtd_gumbel
 };
 
 //! All nonparametric families
@@ -62,7 +64,7 @@ const std::vector<BicopFamily> nonparametric = { BicopFamily::indep,
 //! All one-parameter families
 const std::vector<BicopFamily> one_par = {
   BicopFamily::gaussian, BicopFamily::clayton, BicopFamily::gumbel,
-  BicopFamily::frank,    BicopFamily::joe,
+  BicopFamily::frank,    BicopFamily::joe, BicopFamily::xtd_gumbel
 };
 
 //! All two-parameter families
@@ -106,7 +108,8 @@ const std::vector<BicopFamily> rotationless = { BicopFamily::indep,
                                                 BicopFamily::gaussian,
                                                 BicopFamily::student,
                                                 BicopFamily::frank,
-                                                BicopFamily::tll };
+                                                BicopFamily::tll,
+                                                BicopFamily::xtd_gumbel };
 
 //! Families with stronger dependence in the lower tail
 const std::vector<BicopFamily> lt = { BicopFamily::clayton,
@@ -124,7 +127,7 @@ const std::vector<BicopFamily> ut = { BicopFamily::gumbel, BicopFamily::joe,
 const std::vector<BicopFamily> itau = {
   BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
-  BicopFamily::joe
+  BicopFamily::joe, BicopFamily::xtd_gumbel
 };
 
 

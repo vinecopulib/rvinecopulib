@@ -144,6 +144,45 @@ to_pseudo_obs_1d(Eigen::VectorXd x,
   return x.array() / (static_cast<double>(n) + 1.0);
 }
 
+
+//! @brief Rotates the data corresponding to the models rotation.
+//! @param u An `n x 2` matrix.
+//! @param rotation The rotation angle in degrees, must be one of {0, 90, 180, 270}.
+Eigen::MatrixXd
+rotate_data(const Eigen::MatrixXd& u, int rotation)
+{
+  Eigen::MatrixXd uu = u;
+  // counter-clockwise rotations
+  switch (rotation) {
+    case 0:
+      break;
+
+    case 90:
+      uu.col(0).swap(uu.col(1));
+      uu.col(1) = 1 - uu.col(1).array();
+      if (u.cols() == 4) {
+        uu.col(2).swap(uu.col(3));
+        uu.col(3) = 1 - uu.col(3).array();
+      }
+      break;
+
+    case 180:
+      uu = 1 - uu.array();
+      break;
+
+    case 270:
+      uu.col(0).swap(uu.col(1));
+      uu.col(0) = 1 - uu.col(0).array();
+      if (uu.cols() == 4) {
+        uu.col(2).swap(uu.col(3));
+        uu.col(2) = 1 - uu.col(2).array();
+      }
+      break;
+  }
+  return uu;
+}
+
+
 // Construct a box covering from a matrix of samples.
 // @param u A matrix of samples.
 // @param K The number of boxes in each dimension.
