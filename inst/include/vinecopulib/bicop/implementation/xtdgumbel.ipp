@@ -19,7 +19,7 @@ inline XtdGumbelBicop::XtdGumbelBicop()
   gumbel_bicop_ = std::make_shared<GumbelBicop>();
 }
 
-inline void XtdGumbelBicop::set_parameters(const Eigen::MatrixXd& par) 
+inline void XtdGumbelBicop::set_parameters(const Eigen::MatrixXd& par)
 {
   parameters_ = par;
   gumbel_bicop_->set_parameters(par.array().abs() + 1.0);
@@ -31,7 +31,7 @@ XtdGumbelBicop::pdf_raw(const Eigen::MatrixXd& u)
   if (parameters_(0) >= 0) {
       return gumbel_bicop_->pdf_raw(u);
   } else {
-      return gumbel_bicop_->pdf_raw(tools_stats::rotate_data(u, 90));
+      return gumbel_bicop_->pdf_raw(tools_stats::rotate_data(u, 180));
   }
 }
 
@@ -48,7 +48,7 @@ XtdGumbelBicop::hfunc1_raw(const Eigen::MatrixXd& u)
   if (parameters_(0) >= 0) {
     return gumbel_bicop_->hfunc1_raw(u);
   } else {
-    return gumbel_bicop_->hfunc1_raw(tools_eigen::swap_cols(tools_stats::rotate_data(u, 90)));
+    return 1.0 - gumbel_bicop_->hfunc1_raw(tools_stats::rotate_data(u, 180)).array();
   }
 }
 
@@ -59,7 +59,7 @@ XtdGumbelBicop::hfunc2_raw(const Eigen::MatrixXd& u)
   if (parameters_(0) >= 0) {
     return gumbel_bicop_->hfunc1_raw(tools_eigen::swap_cols(u));
   } else {
-    return gumbel_bicop_->hfunc1_raw(tools_stats::rotate_data(u, 90));
+    return 1.0 -  gumbel_bicop_->hfunc1_raw(tools_eigen::swap_cols(tools_stats::rotate_data(u, 180))).array();
   }
 }
 
@@ -69,7 +69,7 @@ XtdGumbelBicop::hinv1_raw(const Eigen::MatrixXd& u)
   if (parameters_(0) >= 0) {
     return gumbel_bicop_->hinv1_raw(u);
   } else {
-    return gumbel_bicop_->hinv1_raw(tools_eigen::swap_cols(tools_stats::rotate_data(u, 90)));
+    return 1.0 - gumbel_bicop_->hinv1_raw(tools_stats::rotate_data(u, 180)).array();
   }
 }
 
@@ -79,7 +79,7 @@ XtdGumbelBicop::hinv2_raw(const Eigen::MatrixXd& u)
   if (parameters_(0) >= 0) {
     return gumbel_bicop_->hinv1_raw(tools_eigen::swap_cols(u));
   } else {
-    return 1 - gumbel_bicop_->hinv1_raw(tools_stats::rotate_data(u, 90)).array();
+    return 1.0 - gumbel_bicop_->hinv1_raw(tools_eigen::swap_cols(tools_stats::rotate_data(u, 180))).array();
   }
 }
 
