@@ -43,7 +43,7 @@ const std::vector<BicopFamily> all = {
   BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
   BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
-  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn, 
+  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn,
   BicopFamily::tll
 };
 
@@ -73,9 +73,7 @@ const std::vector<BicopFamily> two_par = { BicopFamily::student,
                                            BicopFamily::bb8 };
 
 //! All three-parameter families
-const std::vector<BicopFamily> three_par = {
-  BicopFamily::tawn
-};
+const std::vector<BicopFamily> three_par = { BicopFamily::tawn };
 
 //! All elliptical copulas
 const std::vector<BicopFamily> elliptical = { BicopFamily::gaussian,
@@ -89,9 +87,8 @@ const std::vector<BicopFamily> archimedean = {
 };
 
 //! All Extreme-value copulas
-const std::vector<BicopFamily> extreme_value = {
-  BicopFamily::tawn, BicopFamily::gumbel
-};
+const std::vector<BicopFamily> extreme_value = { BicopFamily::tawn,
+                                                 BicopFamily::gumbel };
 
 //! All BB copulas
 const std::vector<BicopFamily> bb = { BicopFamily::bb1,
@@ -126,7 +123,6 @@ const std::vector<BicopFamily> itau = {
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
   BicopFamily::joe
 };
-
 
 } // end of namespace BicopFamilies
 } // end of namespace vinecopulib

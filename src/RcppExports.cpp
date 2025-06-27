@@ -364,6 +364,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// merge_rvine_structures
+Rcpp::List merge_rvine_structures(Rcpp::List rvine_structure_list);
+RcppExport SEXP _rvinecopulib_merge_rvine_structures(SEXP rvine_structure_listSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type rvine_structure_list(rvine_structure_listSEXP);
+    rcpp_result_gen = Rcpp::wrap(merge_rvine_structures(rvine_structure_list));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_pseudo_obs_cpp", (DL_FUNC) &_rvinecopulib_pseudo_obs_cpp, 2},
@@ -391,6 +402,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 22},
     {"_rvinecopulib_vinecop_fit_cpp", (DL_FUNC) &_rvinecopulib_vinecop_fit_cpp, 10},
     {"_rvinecopulib_fit_margins_cpp", (DL_FUNC) &_rvinecopulib_fit_margins_cpp, 9},
+    {"_rvinecopulib_merge_rvine_structures", (DL_FUNC) &_rvinecopulib_merge_rvine_structures, 1},
     {NULL, NULL, 0}
 };
 

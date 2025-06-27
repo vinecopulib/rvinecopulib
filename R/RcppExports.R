@@ -101,3 +101,7 @@ fit_margins_cpp <- function(data, xmin, xmax, type, mult, bw, deg, weights, num_
     .Call(`_rvinecopulib_fit_margins_cpp`, data, xmin, xmax, type, mult, bw, deg, weights, num_threads)
 }
 
+merge_rvine_structures <- function(rvine_structure_list) {
+    .Call(`_rvinecopulib_merge_rvine_structures`, rvine_structure_list)
+}
+

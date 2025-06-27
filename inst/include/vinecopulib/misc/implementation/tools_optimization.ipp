@@ -20,7 +20,8 @@ namespace tools_optimization {
 //! @param objective The optimizer's objective function
 inline Optimizer::Optimizer()
   : controls_(BobyqaControls())
-{}
+{
+}
 
 //! @brief Sets the optimizer's controls..
 //!
@@ -63,14 +64,14 @@ Optimizer::optimize(const Eigen::VectorXd& initial_parameters,
         return -objective(par);
       };
     auto result = tools_bobyqa::bobyqa(f,
-                                       n_parameters,
-                                       number_interpolation_conditions,
+                                       static_cast<long>(n_parameters),
+                                       static_cast<long>(number_interpolation_conditions),
                                        initial_parameters,
                                        lower_bounds,
                                        upper_bounds,
                                        controls_.get_initial_trust_region(),
                                        controls_.get_final_trust_region(),
-                                       controls_.get_maxeval());
+                                       static_cast<long>(controls_.get_maxeval()));
     optimal_parameters = result.first;
     objective_max_ = -result.second;
   } else {

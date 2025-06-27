@@ -281,8 +281,8 @@ Vinecop::make_pair_copula_store(const size_t d, const size_t trunc_lvl)
 //! corrected for ties (see the [wdm](https://github.com/tnagler/wdm) library).
 //! The dependence measure can be changed using the `controls.tree_criterion`,
 //! which can be set to `"tau"`, `"rho"` or `"hoeffd"`.
-//! Both Prim's (default: `"mst_prim"`) and Kruskal's ()`"mst_kruskal"`) 
-//! algorithms are available through `controls.tree_algorithm` for the 
+//! Both Prim's (default: `"mst_prim"`) and Kruskal's ()`"mst_kruskal"`)
+//! algorithms are available through `controls.tree_algorithm` for the
 //! maximum spanning tree selection.
 //! An alternative to the maximum spanning tree selection is to use random
 //! spanning trees, which can be selected using `controls.tree_algorithm` and
@@ -451,7 +451,7 @@ Vinecop::fit(const Eigen::MatrixXd& data,
   loglik_ = 0, nobs_ = n;
   for (size_t tree = 0; tree < trunc_lvl; ++tree) {
     for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
-        loglik_ += pair_copulas_[tree][edge].get_loglik();
+      loglik_ += pair_copulas_[tree][edge].get_loglik();
     }
   }
 }

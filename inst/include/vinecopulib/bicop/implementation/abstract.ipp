@@ -250,7 +250,7 @@ AbstractBicop::hfunc2(const Eigen::MatrixXd& u)
     // the quotient can be instable, use analytical derivative if denominator
     // too small
     for (Eigen::Index i = 0; i < u.rows(); i++) {
-       if (u2diff(i) > 5e-3) {
+      if (u2diff(i) > 5e-3) {
         h(i) = cdf(uu.row(i).leftCols(2))(0) - cdf(uu.row(i).rightCols(2))(0);
         h(i) /= u2diff(i);
       } else {

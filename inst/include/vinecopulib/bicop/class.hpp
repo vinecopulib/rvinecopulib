@@ -17,11 +17,11 @@ using BicopPtr = std::shared_ptr<AbstractBicop>;
 
 //! @brief A class for bivariate copula models.
 //!
-//! @details The model is fully characterized by the family, 
-//! rotation (one of `0`, `90`, `180`, `270`), a matrix of parameters, and 
-//! variable types (two strings, one for each variable, either `"c"` 
+//! @details The model is fully characterized by the family,
+//! rotation (one of `0`, `90`, `180`, `270`), a matrix of parameters, and
+//! variable types (two strings, one for each variable, either `"c"`
 //! for continuous or `"d"` for discrete).
-//! 
+//!
 //! Implemented families (see `BicopFamily`):
 //!
 //! ```

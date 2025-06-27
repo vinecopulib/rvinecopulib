@@ -945,8 +945,7 @@ VinecopSelector::min_spanning_tree(VineTree& graph)
       boost::random_spanning_tree(
         graph,
         gen,
-        boost::predecessor_map(predecessors.data())
-             .root_vertex(root));
+        boost::predecessor_map(predecessors.data()).root_vertex(root));
     } else {
       // Here we inverse the weights to get a spanning tree
       // with probability proportional to the product of the weights
@@ -956,13 +955,13 @@ VinecopSelector::min_spanning_tree(VineTree& graph)
       for (auto e : boost::make_iterator_range(edges(graph))) {
         inv_weights[e] = 1.0 / (original_weights[e] + 1e-10);
       }
-      boost::associative_property_map<std::map<EdgeIterator, double>> inv_weight_map(inv_weights);
-      boost::random_spanning_tree(
-        graph,
-        gen,
-        boost::predecessor_map(predecessors.data())
-             .root_vertex(root)
-             .weight_map(inv_weight_map));
+      boost::associative_property_map<std::map<EdgeIterator, double>>
+        inv_weight_map(inv_weights);
+      boost::random_spanning_tree(graph,
+                                  gen,
+                                  boost::predecessor_map(predecessors.data())
+                                    .root_vertex(root)
+                                    .weight_map(inv_weight_map));
     }
 
     remove_edge_if(

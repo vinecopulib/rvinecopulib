@@ -753,7 +753,7 @@ Bicop::flip()
   } else if (rotation_ == 270) {
     rotation_ = 90;
   }
-  // The following implements any changes to the shape beyond the change in 
+  // The following implements any changes to the shape beyond the change in
   // rotation. Formost of our families, it does nothing.
   bicop_->flip();
 }

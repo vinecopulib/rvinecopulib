@@ -24,7 +24,7 @@ namespace vinecopulib {
 //! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`
 //!     or `"bic"`) for the pair copula families.
 //! @param weights A vector of weights for the observations.
-//! @param psi0 Only for `selection_criterion = "mbic"`, the prior probability 
+//! @param psi0 Only for `selection_criterion = "mbic"`, the prior probability
 //!     of non-independence.
 //! @param preselect_families Whether to exclude families before fitting
 //!     based on symmetry properties of the data.
@@ -82,38 +82,38 @@ inline FitControlsBicop::FitControlsBicop(std::string nonparametric_method,
 //! @brief Instantiates the controls from a configuration object.
 //! @param config The configuration object.
 inline FitControlsBicop::FitControlsBicop(const FitControlsConfig& config)
-    : FitControlsBicop() // Call default constructor
+  : FitControlsBicop() // Call default constructor
 {
-    if (optional::has_value(config.family_set)) {
-        set_family_set(optional::value(config.family_set));
-    }
-    if (optional::has_value(config.parametric_method)) {
-        set_parametric_method(optional::value(config.parametric_method));
-    }
-    if (optional::has_value(config.nonparametric_method)) {
-        set_nonparametric_method(optional::value(config.nonparametric_method));
-    }
-    if (optional::has_value(config.nonparametric_mult)) {
-        set_nonparametric_mult(optional::value(config.nonparametric_mult));
-    }
-    if (optional::has_value(config.selection_criterion)) {
-        set_selection_criterion(optional::value(config.selection_criterion));
-    }
-    if (optional::has_value(config.weights)) {
-        set_weights(optional::value(config.weights));
-    }
-    if (optional::has_value(config.psi0)) {
-        set_psi0(optional::value(config.psi0));
-    }
-    if (optional::has_value(config.preselect_families)) {
-        set_preselect_families(optional::value(config.preselect_families));
-    }
-    if (optional::has_value(config.num_threads)) {
-        set_num_threads(optional::value(config.num_threads));
-    }
-    if (optional::has_value(config.allow_rotations)) {
-        set_allow_rotations(optional::value(config.allow_rotations));
-    }
+  if (optional::has_value(config.family_set)) {
+    set_family_set(optional::value(config.family_set));
+  }
+  if (optional::has_value(config.parametric_method)) {
+    set_parametric_method(optional::value(config.parametric_method));
+  }
+  if (optional::has_value(config.nonparametric_method)) {
+    set_nonparametric_method(optional::value(config.nonparametric_method));
+  }
+  if (optional::has_value(config.nonparametric_mult)) {
+    set_nonparametric_mult(optional::value(config.nonparametric_mult));
+  }
+  if (optional::has_value(config.selection_criterion)) {
+    set_selection_criterion(optional::value(config.selection_criterion));
+  }
+  if (optional::has_value(config.weights)) {
+    set_weights(optional::value(config.weights));
+  }
+  if (optional::has_value(config.psi0)) {
+    set_psi0(optional::value(config.psi0));
+  }
+  if (optional::has_value(config.preselect_families)) {
+    set_preselect_families(optional::value(config.preselect_families));
+  }
+  if (optional::has_value(config.num_threads)) {
+    set_num_threads(optional::value(config.num_threads));
+  }
+  if (optional::has_value(config.allow_rotations)) {
+    set_allow_rotations(optional::value(config.allow_rotations));
+  }
 }
 
 //! @name Sanity checks

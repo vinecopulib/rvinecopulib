@@ -169,7 +169,7 @@ public:
     const size_t trunc_lvl = std::numeric_limits<size_t>::max());
   void truncate(size_t trunc_lvl);
 
-  std::string str(const std::vector<size_t>& trees={}) const;
+  std::string str(const std::vector<size_t>& trees = {}) const;
 
 protected:
   size_t d_;

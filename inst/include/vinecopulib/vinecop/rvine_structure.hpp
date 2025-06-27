@@ -10,6 +10,7 @@
 #include <limits>
 #include <vinecopulib/misc/nlohmann_json.hpp>
 #include <vinecopulib/misc/triangular_array.hpp>
+#include <vinecopulib/vinecop/rvine_trees.hpp>
 
 namespace vinecopulib {
 
@@ -18,16 +19,16 @@ namespace vinecopulib {
 //! RVineStructure objects encode the tree structure of the vine, i.e. the
 //! conditioned/conditioning variables of each edge. It is represented by a
 //! triangular array. An exemplary array is
-//! 
+//!
 //! ```
 //! 4 4 4 4
 //! 3 3 3
 //! 2 2
 //! 1
 //! ```
-//! 
+//!
 //! which encodes the following pair-copulas:
-//! 
+//!
 //! ```
 //! | tree | edge | pair-copulas |
 //! |------|------|--------------|
@@ -38,19 +39,19 @@ namespace vinecopulib {
 //! |      | 1    | (2, 3; 4)    |
 //! | 2    | 0    | (1, 2; 3, 4) |
 //! ```
-//! 
+//!
 //! Denoting by `M[i, j]` the array entry in row `i` and column `j`,
 //! the pair-copula index for edge `e` in tree `t` of a `d` dimensional vine
 //! is `(M[d - 1 - e, e], M[t, e]; M[t - 1, e], ..., M[0, e])`. Less
 //! formally,
 //!
-//!   1. Start with the counter-diagonal element of column `e` 
+//!   1. Start with the counter-diagonal element of column `e`
 //!      (first conditioned variable).
 //!   2. Jump up to the element in row `t` (second conditioned variable).
 //!   3. Gather all entries further up in column `e` (conditioning set).
 //!
-//! Internally, the diagonal is stored separately from the off-diagonal 
-//! elements, which are stored as a triangular array. For instance, the 
+//! Internally, the diagonal is stored separately from the off-diagonal
+//! elements, which are stored as a triangular array. For instance, the
 //! off-diagonal elements off the structure above are stored as
 //!
 //! ```
@@ -68,10 +69,10 @@ namespace vinecopulib {
 //! 4 4 4
 //! 3 3
 //! ```
-//! 
+//!
 //! A valid R-vine array must satisfy several conditions which are checked
 //! when `RVineStructure()` is called:
-//! 
+//!
 //!   1. It only contains numbers between 1 and d.
 //!   2. The diagonal must contain the numbers 1, ..., d.
 //!   3. The diagonal entry of a column must not be contained in any
@@ -100,6 +101,9 @@ public:
     const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& mat,
     bool check = true);
   explicit RVineStructure(
+    const RVineTrees& trees,
+    bool check = true);
+  explicit RVineStructure(
     const std::vector<size_t>& order,
     const size_t& trunc_lvl = std::numeric_limits<size_t>::max(),
     bool check = true);
@@ -110,6 +114,8 @@ public:
   explicit RVineStructure(const std::string& filename, const bool check = true);
   explicit RVineStructure(const nlohmann::json& input, const bool check = true);
 
+
+  bool operator==(const RVineStructure& rhs) const;
   nlohmann::json to_json() const;
   void to_file(const std::string& filename) const;
 
@@ -121,6 +127,7 @@ public:
   TriangularArray<short unsigned> get_needed_hfunc1() const;
   TriangularArray<short unsigned> get_needed_hfunc2() const;
   Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
+  RVineTrees get_trees() const;
 
   size_t struct_array(size_t tree,
                       size_t edge,
@@ -135,6 +142,7 @@ public:
   static RVineStructure simulate(size_t d,
                                  bool natural_order = false,
                                  std::vector<int> seeds = std::vector<int>());
+  
 
 protected:
   size_t find_trunc_lvl(

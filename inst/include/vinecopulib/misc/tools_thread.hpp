@@ -69,7 +69,8 @@ private:
 //! constructs a thread pool with as many workers as there are cores.
 inline ThreadPool::ThreadPool()
   : ThreadPool(std::thread::hardware_concurrency())
-{}
+{
+}
 
 //! constructs a thread pool with `nThreads` threads.
 //! @param nWorkers Number of worker threads to create; if `nThreads = 0`, all
