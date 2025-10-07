@@ -106,4 +106,3 @@ test_that("vine works", {
   pvine(x, fit)
   rvine(10, fit)
 })
-
