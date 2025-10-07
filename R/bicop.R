@@ -176,7 +176,7 @@ bicop <- function(
   )
 
   ## add information about the fit
-  bicop$names <- colnames(data)
+  bicop$names <- colnames(data)[1:2]
   if (keep_data) {
     bicop$data <- data
   }

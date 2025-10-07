@@ -75,9 +75,10 @@ test_that("vinecop works", {
   u <- replicate(3, runif(20))
   u <- cbind(u, u)
   u[, 1] <- ceiling(u[, 1] * 3) / 3
-  u[, 3] <- floor(u[, 3] * 3) / 3
   u[, 2] <- ceiling(u[, 2] * 10) / 10
-  u[, 3] <- floor(u[, 4] * 10) / 10
+  u[, 4] <- floor(u[, 4] * 3) / 3
+  u[, 5] <- floor(u[, 5] * 10) / 10
+  colnames(u) <- paste("x", 1:3) |> rep(2)
   cop <- vinecop(u, var_types = var_types, family = "tll")
   summary(cop)
   expect_identical(cop$var_types, var_types)
@@ -105,3 +106,4 @@ test_that("vine works", {
   pvine(x, fit)
   rvine(10, fit)
 })
+
