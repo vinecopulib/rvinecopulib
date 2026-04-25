@@ -16,6 +16,7 @@ enum class BicopFamily
 {
   indep,    ///< Independence copula
   gaussian, ///< Gaussian copula
+  gaussian_mix, ///< 30/70 mixture of two Gaussian copulas
   student,  ///< Student t copula
   clayton,  ///< Clayton copula
   gumbel,   ///< Gumbel copula
@@ -41,7 +42,8 @@ namespace bicop_families {
 
 //! All implemented families
 const std::vector<BicopFamily> all = {
-  BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
+  BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::gaussian_mix,
+  BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
   BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
   BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn, 
@@ -50,7 +52,8 @@ const std::vector<BicopFamily> all = {
 
 //! All parametric families
 const std::vector<BicopFamily> parametric = {
-  BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
+  BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::gaussian_mix,
+  BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
   BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
   BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn, 
@@ -69,6 +72,7 @@ const std::vector<BicopFamily> one_par = {
 
 //! All two-parameter families
 const std::vector<BicopFamily> two_par = { BicopFamily::student,
+                                           BicopFamily::gaussian_mix,
                                            BicopFamily::bb1,
                                            BicopFamily::bb6,
                                            BicopFamily::bb7,
@@ -106,6 +110,7 @@ const std::vector<BicopFamily> bb = { BicopFamily::bb1,
 //! (because they already cover positive and negative dependence)
 const std::vector<BicopFamily> rotationless = { BicopFamily::indep,
                                                 BicopFamily::gaussian,
+                                                BicopFamily::gaussian_mix,
                                                 BicopFamily::student,
                                                 BicopFamily::frank,
                                                 BicopFamily::tll,

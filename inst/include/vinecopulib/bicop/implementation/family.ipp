@@ -14,6 +14,7 @@ const family_bimap family_names =
   boost::assign::list_of<family_bimap::relation>(
     BicopFamily::indep, "Independence")
     (BicopFamily::gaussian, "Gaussian")
+    (BicopFamily::gaussian_mix, "Gaussian mix (30/70)")
     (BicopFamily::student, "Student")
     (BicopFamily::clayton, "Clayton")
     (BicopFamily::gumbel, "Gumbel")

@@ -13,6 +13,7 @@
 #include <vinecopulib/bicop/clayton.hpp>
 #include <vinecopulib/bicop/frank.hpp>
 #include <vinecopulib/bicop/gaussian.hpp>
+#include <vinecopulib/bicop/gaussian_mix.hpp>
 #include <vinecopulib/bicop/gumbel.hpp>
 #include <vinecopulib/bicop/indep.hpp>
 #include <vinecopulib/bicop/joe.hpp>
@@ -44,6 +45,9 @@ AbstractBicop::create(BicopFamily family, const Eigen::MatrixXd& parameters)
       break;
     case BicopFamily::gaussian:
       new_bicop = BicopPtr(new GaussianBicop());
+      break;
+    case BicopFamily::gaussian_mix:
+      new_bicop = BicopPtr(new GaussianMixBicop());
       break;
     case BicopFamily::student:
       new_bicop = BicopPtr(new StudentBicop());
