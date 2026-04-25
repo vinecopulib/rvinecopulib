@@ -40,6 +40,8 @@ inline BicopFamily to_cpp_family(const std::string& fam)
     bicop_fam = BicopFamily::tawn;
   } else if (fam == "xtd_gumbel") {
     bicop_fam = BicopFamily::xtd_gumbel;
+  } else if (fam == "mixgauss") {
+    bicop_fam = BicopFamily::gaussian_mix;
   } else {
     throw std::runtime_error("family not implemented");
   }
@@ -78,6 +80,8 @@ inline std::string to_r_family(const BicopFamily& fam)
     bicop_fam = "tawn";
   } else if (fam == BicopFamily::xtd_gumbel) {
     bicop_fam = "xtd_gumbel";
+  }else if (fam == BicopFamily::gaussian_mix) {
+    bicop_fam = "mixgauss";
   } else {
     throw std::runtime_error("family not implemented");
   }
