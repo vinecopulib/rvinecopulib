@@ -102,8 +102,8 @@ inline GumbelMixBicop::GumbelMixBicop()
   parameters_lower_bounds_ = Eigen::VectorXd(2);
   parameters_upper_bounds_ = Eigen::VectorXd(2);
   parameters_ << 0, 0;
-  parameters_lower_bounds_ << -20, -20;
-  parameters_upper_bounds_ << 20, 20;
+  parameters_lower_bounds_ << -3, -3;
+  parameters_upper_bounds_ << 3, 3;
 }
 
 inline void
@@ -179,6 +179,8 @@ GumbelMixBicop::tau_to_parameters(const double& tau)
 inline Eigen::VectorXd
 GumbelMixBicop::get_start_parameters(const double)
 {
-  return Eigen::VectorXd::Zero(2);
+  Eigen::VectorXd parameters(2);
+  parameters << 0.5, -0.5;
+  return parameters;
 }
 }

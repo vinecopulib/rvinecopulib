@@ -31,7 +31,8 @@ family_set_onepar <- c(
 family_set_twopar <- c(
   "t",
   family_set_bb,
-  "mixgauss"
+  "mixgauss",
+  "mixgumbel"
 )
 
 family_set_threepar <- c(
