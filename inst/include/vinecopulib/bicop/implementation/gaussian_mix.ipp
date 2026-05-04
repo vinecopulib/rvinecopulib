@@ -100,7 +100,7 @@ GaussianMixBicop::get_start_parameters(const double tau)
 {
   Eigen::VectorXd parameters = this->parameters_;
   const double rho = std::sin(tau * constant::pi / 2);
-  parameters << 0, 0;
+  parameters << rho, rho;
   return parameters;
 }
 }

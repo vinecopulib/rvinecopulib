@@ -17,7 +17,8 @@ enum class BicopFamily
   indep,    ///< Independence copula
   gaussian, ///< Gaussian copula
   gaussian_mix, ///< 30/70 mixture of two Gaussian copulas
-  gumbel_mix, ///< 50/50 mixture of 0deg and 90deg Gumbel copulas
+  gumbel_mix, ///< 50/50 mixture of 0deg/90deg Gumbel copulas; negative
+              ///< parameters rotate corresponding components by 180deg
   student,  ///< Student t copula
   clayton,  ///< Clayton copula
   gumbel,   ///< Gumbel copula

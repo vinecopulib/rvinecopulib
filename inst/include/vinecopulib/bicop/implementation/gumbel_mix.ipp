@@ -93,6 +93,61 @@ gumbel90_hfunc2_component(const Eigen::MatrixXd& u, const double theta)
   Eigen::MatrixXd u_rot = tools_stats::rotate_data(u, 90);
   return 1.0 - gumbel_hfunc1_component(u_rot, theta).array();
 }
+
+inline Eigen::VectorXd
+gumbel180_cdf_component(const Eigen::MatrixXd& u, const double theta)
+{
+  Eigen::MatrixXd u_rot = tools_stats::rotate_data(u, 180);
+  return (u.rowwise().sum().array() - 1.0 + gumbel_cdf_component(u_rot, theta).array())
+    .matrix();
+}
+
+inline Eigen::VectorXd
+gumbel180_pdf_component(const Eigen::MatrixXd& u, const double theta)
+{
+  return gumbel_pdf_component(tools_stats::rotate_data(u, 180), theta);
+}
+
+inline Eigen::VectorXd
+gumbel180_hfunc1_component(const Eigen::MatrixXd& u, const double theta)
+{
+  Eigen::MatrixXd u_rot = tools_stats::rotate_data(u, 180);
+  return 1.0 - gumbel_hfunc1_component(u_rot, theta).array();
+}
+
+inline Eigen::VectorXd
+gumbel180_hfunc2_component(const Eigen::MatrixXd& u, const double theta)
+{
+  Eigen::MatrixXd u_rot = tools_stats::rotate_data(u, 180);
+  return 1.0 - gumbel_hfunc2_component(u_rot, theta).array();
+}
+
+inline Eigen::VectorXd
+gumbel270_cdf_component(const Eigen::MatrixXd& u, const double theta)
+{
+  Eigen::MatrixXd u_rot = tools_stats::rotate_data(u, 270);
+  return (u.col(0).array() - gumbel_cdf_component(u_rot, theta).array()).matrix();
+}
+
+inline Eigen::VectorXd
+gumbel270_pdf_component(const Eigen::MatrixXd& u, const double theta)
+{
+  return gumbel_pdf_component(tools_stats::rotate_data(u, 270), theta);
+}
+
+inline Eigen::VectorXd
+gumbel270_hfunc1_component(const Eigen::MatrixXd& u, const double theta)
+{
+  Eigen::MatrixXd u_rot = tools_stats::rotate_data(u, 270);
+  return 1.0 - gumbel_hfunc2_component(u_rot, theta).array();
+}
+
+inline Eigen::VectorXd
+gumbel270_hfunc2_component(const Eigen::MatrixXd& u, const double theta)
+{
+  Eigen::MatrixXd u_rot = tools_stats::rotate_data(u, 270);
+  return gumbel_hfunc1_component(u_rot, theta);
+}
 } // namespace
 
 inline GumbelMixBicop::GumbelMixBicop()
@@ -115,37 +170,57 @@ GumbelMixBicop::set_parameters(const Eigen::MatrixXd& par)
 inline Eigen::VectorXd
 GumbelMixBicop::pdf_raw(const Eigen::MatrixXd& u)
 {
+  const bool neg0 = parameters_(0) < 0.0;
+  const bool neg90 = parameters_(1) < 0.0;
   const double theta0 = xtd_param_to_theta(parameters_(0));
   const double theta90 = xtd_param_to_theta(parameters_(1));
-  return 0.5 * gumbel_pdf_component(u, theta0) +
-         0.5 * gumbel90_pdf_component(u, theta90);
+  const Eigen::VectorXd comp0 = neg0 ? gumbel180_pdf_component(u, theta0)
+                                     : gumbel_pdf_component(u, theta0);
+  const Eigen::VectorXd comp90 = neg90 ? gumbel270_pdf_component(u, theta90)
+                                       : gumbel90_pdf_component(u, theta90);
+  return 0.5 * comp0 + 0.5 * comp90;
 }
 
 inline Eigen::VectorXd
 GumbelMixBicop::cdf(const Eigen::MatrixXd& u)
 {
+  const bool neg0 = parameters_(0) < 0.0;
+  const bool neg90 = parameters_(1) < 0.0;
   const double theta0 = xtd_param_to_theta(parameters_(0));
   const double theta90 = xtd_param_to_theta(parameters_(1));
-  return 0.5 * gumbel_cdf_component(u, theta0) +
-         0.5 * gumbel90_cdf_component(u, theta90);
+  const Eigen::VectorXd comp0 = neg0 ? gumbel180_cdf_component(u, theta0)
+                                     : gumbel_cdf_component(u, theta0);
+  const Eigen::VectorXd comp90 = neg90 ? gumbel270_cdf_component(u, theta90)
+                                       : gumbel90_cdf_component(u, theta90);
+  return 0.5 * comp0 + 0.5 * comp90;
 }
 
 inline Eigen::VectorXd
 GumbelMixBicop::hfunc1_raw(const Eigen::MatrixXd& u)
 {
+  const bool neg0 = parameters_(0) < 0.0;
+  const bool neg90 = parameters_(1) < 0.0;
   const double theta0 = xtd_param_to_theta(parameters_(0));
   const double theta90 = xtd_param_to_theta(parameters_(1));
-  return 0.5 * gumbel_hfunc1_component(u, theta0) +
-         0.5 * gumbel90_hfunc1_component(u, theta90);
+  const Eigen::VectorXd comp0 = neg0 ? gumbel180_hfunc1_component(u, theta0)
+                                     : gumbel_hfunc1_component(u, theta0);
+  const Eigen::VectorXd comp90 = neg90 ? gumbel270_hfunc1_component(u, theta90)
+                                       : gumbel90_hfunc1_component(u, theta90);
+  return 0.5 * comp0 + 0.5 * comp90;
 }
 
 inline Eigen::VectorXd
 GumbelMixBicop::hfunc2_raw(const Eigen::MatrixXd& u)
 {
+  const bool neg0 = parameters_(0) < 0.0;
+  const bool neg90 = parameters_(1) < 0.0;
   const double theta0 = xtd_param_to_theta(parameters_(0));
   const double theta90 = xtd_param_to_theta(parameters_(1));
-  return 0.5 * gumbel_hfunc2_component(u, theta0) +
-         0.5 * gumbel90_hfunc2_component(u, theta90);
+  const Eigen::VectorXd comp0 = neg0 ? gumbel180_hfunc2_component(u, theta0)
+                                     : gumbel_hfunc2_component(u, theta0);
+  const Eigen::VectorXd comp90 = neg90 ? gumbel270_hfunc2_component(u, theta90)
+                                       : gumbel90_hfunc2_component(u, theta90);
+  return 0.5 * comp0 + 0.5 * comp90;
 }
 
 inline Eigen::VectorXd
