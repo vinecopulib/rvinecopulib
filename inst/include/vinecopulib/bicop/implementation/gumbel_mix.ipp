@@ -180,7 +180,7 @@ inline Eigen::VectorXd
 GumbelMixBicop::get_start_parameters(const double)
 {
   Eigen::VectorXd parameters(2);
-  parameters << 0.5, -0.5;
+  parameters << 0.5, 0.5;
   return parameters;
 }
 }
