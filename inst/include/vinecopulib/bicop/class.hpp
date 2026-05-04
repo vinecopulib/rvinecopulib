@@ -30,6 +30,7 @@ using BicopPtr = std::shared_ptr<AbstractBicop>;
 //! | -             | Independence          | "indep"               |
 //! | Elliptical    | Gaussian              | "gaussian"            |
 //! |               | Gaussian mix (30/70)  | "gaussian_mix"        |
+//! |               | Gumbel mix (50/50)    | "gumbel_mix"          |
 //! |               | Student t             | "student"             |
 //! | Archimedean   | Clayton               | "clayton"             |
 //! |               | Gumbel                | "gumbel"              |

@@ -15,6 +15,7 @@ const family_bimap family_names =
     BicopFamily::indep, "Independence")
     (BicopFamily::gaussian, "Gaussian")
     (BicopFamily::gaussian_mix, "Gaussian mix (30/70)")
+    (BicopFamily::gumbel_mix, "Gumbel mix (50/50)")
     (BicopFamily::student, "Student")
     (BicopFamily::clayton, "Clayton")
     (BicopFamily::gumbel, "Gumbel")
