@@ -9,8 +9,9 @@
 #include <vinecopulib/bicop/parametric.hpp>
 
 namespace vinecopulib {
-//! @brief A fixed 50/50 mixture of 0deg/90deg Gumbel copulas,
-//! with each component rotated by 180deg when its parameter is negative.
+//! @brief A fixed 50/50 mixture of two Gumbel components:
+//! parameter 1 selects 0deg/90deg by sign, parameter 2 selects 180deg/270deg
+//! by sign.
 //!
 //! This class is used in the implementation underlying the Bicop class.
 //! Users should not use AbstractBicop or derived classes directly, but
