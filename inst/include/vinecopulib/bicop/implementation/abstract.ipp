@@ -166,7 +166,7 @@ AbstractBicop::pdf_c_d(const Eigen::MatrixXd& u)
   }
 
   for (Eigen::Index i = 0; i < u.rows(); i++) {
-    if (udiff(i) > 5e-3) {
+    if (udiff(i) > 5e-5) {
       if (var_types_[0] != "c") {
         pdf(i) = (hfunc2_raw(umax.row(i)) - hfunc2_raw(umin.row(i)))(0);
       } else {
@@ -191,15 +191,15 @@ AbstractBicop::pdf_d_d(const Eigen::MatrixXd& u)
   for (Eigen::Index i = 0; i < u.rows(); i++) {
     // the difference quotient can be instable, use derivative if denominator
     // too small
-    if (udiff.row(i).maxCoeff() < 5e-3) {
+    if (udiff.row(i).maxCoeff() < 5e-5) {
       pdf(i) = pdf_raw((umax.row(i) + umin.row(i)) / 2)(0);
-    } else if (udiff(i, 0) < 5e-3) {
-      umax(i, 0) = (umax(i, 0) + umin(i, 0)) / 2;
+    } else if (udiff(i, 0) < 5e-5) {
+       umax(i, 0) = (umax(i, 0) + umin(i, 0)) / 2;
       umin(i, 0) = (umax(i, 0) + umin(i, 0)) / 2;
       pdf(i) = (hfunc1_raw(umax)(0) - hfunc1_raw(umin)(0)) / udiff(i, 1);
-    } else if (udiff(i, 1) < 5e-3) {
-      umax(i, 1) = (umax(i, 1) + umin(i, 0)) / 2;
-      umin(i, 1) = (umax(i, 1) + umin(i, 0)) / 2;
+    } else if (udiff(i, 1) < 5e-5) {
+       umax(i, 1) = (umax(i, 1) + umin(i, 1)) / 2;
+      umin(i, 1) = (umax(i, 1) + umin(i, 1)) / 2;
       pdf(i) = (hfunc2_raw(umax)(0) - hfunc2_raw(umin)(0)) / udiff(i, 0);
     } else {
       pdf(i) = cdf(umax.row(i))(0) + cdf(umin.row(i))(0);
@@ -224,7 +224,7 @@ AbstractBicop::hfunc1(const Eigen::MatrixXd& u)
     // the quotient can be instable, use analytical derivative if denominator
     // too small
     for (Eigen::Index i = 0; i < u.rows(); i++) {
-      if (std::abs(u1diff(i)) > 5e-3) {
+      if (std::abs(u1diff(i)) > 5e-5) {
         h(i) = cdf(uu.row(i).leftCols(2))(0) - cdf(uu.row(i).rightCols(2))(0);
         h(i) /= u1diff(i);
       } else {
@@ -250,7 +250,7 @@ AbstractBicop::hfunc2(const Eigen::MatrixXd& u)
     // the quotient can be instable, use analytical derivative if denominator
     // too small
     for (Eigen::Index i = 0; i < u.rows(); i++) {
-       if (u2diff(i) > 5e-3) {
+       if (u2diff(i) > 5e-5) {
         h(i) = cdf(uu.row(i).leftCols(2))(0) - cdf(uu.row(i).rightCols(2))(0);
         h(i) /= u2diff(i);
       } else {
