@@ -276,7 +276,7 @@ vinecop <- function(
   )
 
   ## add information about the fit
-  vinecop$names <- colnames(data)
+  vinecop$names <- colnames(data)[1:vinecop$structure$d]
   if (keep_data) {
     vinecop$data <- data
   }
