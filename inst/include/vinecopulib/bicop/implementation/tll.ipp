@@ -219,13 +219,13 @@ inline void
 TllBicop::fit(const Eigen::MatrixXd& data,
               std::string method,
               double mult,
+              size_t grid_size,
               const Eigen::VectorXd& weights)
 {
   using namespace tools_interpolation;
 
   // construct default grid (equally spaced on Gaussian scale)
-  size_t m = 30;
-  auto grid_points = this->make_normal_grid(m);
+  auto grid_points = this->make_normal_grid(grid_size);
 
   // expand the interpolation grid; a matrix with two columns where each row
   // contains one combination of the grid points
@@ -256,19 +256,19 @@ TllBicop::fit(const Eigen::MatrixXd& data,
   Eigen::VectorXd c =
     ll_fit.col(0).cwiseQuotient(tools_stats::dnorm(z).rowwise().prod());
   // store values in mxm grid
-  Eigen::MatrixXd values(m, m);
-  values = Eigen::Map<Eigen::MatrixXd>(c.data(), m, m).transpose();
+  Eigen::MatrixXd values(grid_size, grid_size);
+  values =
+    Eigen::Map<Eigen::MatrixXd>(c.data(), grid_size, grid_size).transpose();
 
-  // for interpolation, we shift the limiting gridpoints to 0 and 1
-  grid_points(0) = 0.0;
-  grid_points(m - 1) = 1.0;
+  // create interpolation grid
   interp_grid_ = std::make_shared<InterpolationGrid>(grid_points, values);
 
   // compute effective degrees of freedom via interpolation ---------
   // stabilize interpolation by restricting to plausible range
   Eigen::VectorXd infl_vec = ll_fit.col(1).cwiseMin(1.3).cwiseMax(-0.2);
-  Eigen::MatrixXd infl(m, m);
-  infl = Eigen::Map<Eigen::MatrixXd>(infl_vec.data(), m, m).transpose();
+  Eigen::MatrixXd infl(grid_size, grid_size);
+  infl = Eigen::Map<Eigen::MatrixXd>(infl_vec.data(), grid_size, grid_size)
+           .transpose();
   // don't normalize margins of the EDF! (norm_times = 0)
   auto infl_grid = InterpolationGrid(grid_points, infl, 0);
   if ((var_types_[0] == "d") || (var_types_[1] == "d")) {

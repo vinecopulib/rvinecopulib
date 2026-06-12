@@ -753,7 +753,7 @@ Bicop::flip()
   } else if (rotation_ == 270) {
     rotation_ = 90;
   }
-  // The following implements any changes to the shape beyond the change in 
+  // The following implements any changes to the shape beyond the change in
   // rotation. Formost of our families, it does nothing.
   bicop_->flip();
 }
@@ -854,6 +854,7 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
   bicop_->fit(prep_for_abstract(data_no_nan),
               method,
               controls.get_nonparametric_mult(),
+              controls.get_nonparametric_grid_size(),
               w);
   nobs_ = data_no_nan.rows();
 }
@@ -930,8 +931,9 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
         double npars = cop.get_npars();
 
         new_criterion = -2 * ll + log(n_eff) * npars; // BIC
-        if (controls.get_selection_criterion() == "mbic") {
-          // correction for mBIC
+        if (controls.get_selection_criterion() == "mbic" ||
+            controls.get_selection_criterion() == "mbicv") {
+          // correction for mBIC or mBICV
           bool is_indep = (cop.get_family() == BicopFamily::indep);
           double psi0 = controls.get_psi0();
           double log_prior = static_cast<double>(!is_indep) * log(psi0) +

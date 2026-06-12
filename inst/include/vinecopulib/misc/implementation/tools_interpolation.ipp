@@ -31,6 +31,11 @@ inline InterpolationGrid::InterpolationGrid(const Eigen::VectorXd& grid_points,
 
   grid_points_ = grid_points;
   values_ = values;
+
+  // move boundary points to 0/1, so we don't have to extrapolate
+  grid_points_(0) = 0.0;
+  grid_points_(grid_points.size() - 1) = 1.0;
+
   normalize_margins(norm_times);
 }
 
@@ -236,7 +241,7 @@ InterpolationGrid::integrate_2d(const Eigen::MatrixXd& u)
     upr = u1;
     tmpint = int_on_grid(upr, tmpvals2, grid_points_);
     tmpint1 = int_on_grid(1.0, tmpvals2, grid_points_);
-    return std::min(std::max(tmpint / tmpint1, 1e-10), 1 - 1e-10);
+    return std::min(std::max(tmpint * u2 / tmpint1, 1e-10), 1 - 1e-10);
   };
 
   return tools_eigen::binaryExpr_or_nan(u, f);

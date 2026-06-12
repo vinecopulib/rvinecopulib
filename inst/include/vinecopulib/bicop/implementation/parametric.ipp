@@ -67,6 +67,7 @@ inline void
 ParBicop::fit(const Eigen::MatrixXd& data,
               std::string method,
               double,
+              size_t,
               const Eigen::VectorXd& weights)
 {
   // for independence copula we don't have to do anything

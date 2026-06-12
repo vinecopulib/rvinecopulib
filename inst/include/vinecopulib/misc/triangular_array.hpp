@@ -71,7 +71,8 @@ private:
 template<typename T>
 TriangularArray<T>::TriangularArray(size_t d)
   : TriangularArray(d, d - 1)
-{}
+{
+}
 
 //! @brief Construct a truncated triangular array.
 //!
@@ -208,8 +209,8 @@ TriangularArray<T>::get_trunc_lvl() const
   return trunc_lvl_;
 }
 
-//! @brief Gets the dimension of the underlying vine (the matrix has `d-1` columns and.
-//! `min(trunv_lvl, d-1)` rows).
+//! @brief Gets the dimension of the underlying vine (the matrix has `d-1`
+//! columns and. `min(trunv_lvl, d-1)` rows).
 template<typename T>
 size_t
 TriangularArray<T>::get_dim() const

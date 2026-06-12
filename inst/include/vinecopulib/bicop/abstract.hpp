@@ -11,7 +11,6 @@
 #include <Eigen/Dense>
 #include <vinecopulib/bicop/family.hpp>
 
-
 namespace vinecopulib {
 //! @brief An abstract class for bivariate copula families.
 //!
@@ -54,6 +53,7 @@ protected:
   virtual void fit(const Eigen::MatrixXd& data,
                    std::string method,
                    double mult,
+                   size_t grid_size,
                    const Eigen::VectorXd& weights) = 0;
 
   virtual double get_npars() const = 0;

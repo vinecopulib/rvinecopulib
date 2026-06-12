@@ -179,8 +179,6 @@ protected:
 
   VineTree edges_as_vertices(const VineTree& prev_tree);
 
-  void min_spanning_tree(VineTree& tree);
-
   void add_edge_info(VineTree& tree);
 
   void add_pc_info(const EdgeIterator& e, VineTree& tree);

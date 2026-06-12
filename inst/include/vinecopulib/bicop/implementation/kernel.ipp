@@ -12,15 +12,12 @@ namespace vinecopulib {
 inline KernelBicop::KernelBicop()
 {
   // construct default grid (equally spaced on Gaussian scale)
-  size_t m = 30;
-  auto grid_points = this->make_normal_grid(m);
-
-  // move boundary points to 0/1, so we don't have to extrapolate
-  grid_points(0) = 0.0;
-  grid_points(m - 1) = 1.0;
+  size_t grid_size = 30;
+  auto grid_points = this->make_normal_grid(grid_size);
 
   interp_grid_ = std::make_shared<tools_interpolation::InterpolationGrid>(
-    grid_points, Eigen::MatrixXd::Constant(m, m, 1.0) // independence
+    grid_points,
+    Eigen::MatrixXd::Constant(grid_size, grid_size, 1.0) // independence
   );
   npars_ = 0.0;
 }
@@ -150,13 +147,34 @@ KernelBicop::get_parameters_upper_bounds() const
 inline void
 KernelBicop::set_parameters(const Eigen::MatrixXd& parameters)
 {
+  Eigen::Index rows = parameters.rows();
+  Eigen::Index cols = parameters.cols();
+  if (rows != cols) {
+    std::stringstream message;
+    message << "parameters must be a square matrix, got " << rows
+            << " rows and " << cols << " columns.";
+    throw std::runtime_error(message.str().c_str());
+  }
+  if (rows < 3) {
+    std::stringstream message;
+    message << "parameters must be a square matrix of size at least 3, got "
+            << rows << " rows and " << cols << " columns.";
+    throw std::runtime_error(message.str().c_str());
+  }
   if (parameters.minCoeff() < 0) {
     std::stringstream message;
     message << "density should be larger than 0. ";
     throw std::runtime_error(message.str().c_str());
   }
-  // don't normalize again!
-  interp_grid_->set_values(parameters, 0);
+  if (rows == interp_grid_->get_values().rows()) {
+    // don't normalize again!
+    interp_grid_->set_values(parameters, 0);
+  } else {
+    // create new interpolation grid with new size
+    auto grid_points = this->make_normal_grid(rows);
+    interp_grid_ = std::make_shared<tools_interpolation::InterpolationGrid>(
+      grid_points, parameters, 0);
+  }
 }
 
 inline void

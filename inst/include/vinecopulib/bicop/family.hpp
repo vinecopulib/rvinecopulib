@@ -12,21 +12,63 @@
 namespace vinecopulib {
 
 //! @brief A bivariate copula family identifier.
+//!
+//! The list below summarises each family's parameter count, parameter
+//! range, available rotations, and tail-dependence behaviour. The exact
+//! parameter bounds enforced at fit time are visible via
+//! `Bicop::get_parameters_lower_bounds()` /
+//! `Bicop::get_parameters_upper_bounds()`. The Kendall's-tau column
+//! refers to the closed-form mapping implemented by
+//! `Bicop::parameters_to_tau()` /  `Bicop::tau_to_parameters()`.
 enum class BicopFamily
 {
-  indep,    ///< Independence copula
-  gaussian, ///< Gaussian copula
-  student,  ///< Student t copula
-  clayton,  ///< Clayton copula
-  gumbel,   ///< Gumbel copula
-  frank,    ///< Frank copula
-  joe,      ///< Joe copula
-  bb1,      ///< BB1 copula
-  bb6,      ///< BB6 copula
-  bb7,      ///< BB7 copula
-  bb8,      ///< BB8 copula
-  tawn,     ///< Tawn copula
-  tll       ///< Transformation local likelihood kernel estimator
+  //! Independence copula. 0 parameters; rotationless; no tail dependence;
+  //! Kendall's tau is 0.
+  indep,
+  //! Gaussian copula. 1 parameter (rho in (-1, 1)); rotationless; no tail
+  //! dependence; Kendall's tau is (2 / pi) * arcsin(rho).
+  gaussian,
+  //! Student-t copula. 2 parameters (rho in (-1, 1), df > 2); rotationless;
+  //! symmetric tail dependence; Kendall's tau is (2 / pi) * arcsin(rho).
+  student,
+  //! Clayton copula. 1 parameter (theta > 0); rotations 0 / 90 / 180 / 270
+  //! degrees; lower-tail dependence; Kendall's tau is theta / (theta + 2).
+  clayton,
+  //! Gumbel copula (also extreme-value). 1 parameter (theta >= 1);
+  //! rotations 0 / 90 / 180 / 270 degrees; upper-tail dependence; Kendall's
+  //! tau is 1 - 1 / theta.
+  gumbel,
+  //! Frank copula. 1 parameter (theta in R \ {0}); rotationless; no tail
+  //! dependence; Kendall's tau given by the Debye-function form.
+  frank,
+  //! Joe copula. 1 parameter (theta >= 1); rotations 0 / 90 / 180 / 270
+  //! degrees; upper-tail dependence; Kendall's tau via a series expansion.
+  joe,
+  //! BB1 copula (two-parameter Archimedean). 2 parameters
+  //! (theta > 0, delta >= 1); rotations 0 / 90 / 180 / 270 degrees; both
+  //! lower- and upper-tail dependence; Kendall's tau in closed form.
+  bb1,
+  //! BB6 copula (two-parameter Archimedean). 2 parameters
+  //! (theta >= 1, delta >= 1); rotations 0 / 90 / 180 / 270 degrees;
+  //! upper-tail dependence; Kendall's tau in closed form.
+  bb6,
+  //! BB7 copula (two-parameter Archimedean). 2 parameters
+  //! (theta >= 1, delta > 0); rotations 0 / 90 / 180 / 270 degrees; both
+  //! lower- and upper-tail dependence; Kendall's tau in closed form.
+  bb7,
+  //! BB8 copula (two-parameter Archimedean). 2 parameters
+  //! (theta >= 1, delta in (0, 1]); rotations 0 / 90 / 180 / 270 degrees;
+  //! upper-tail dependence; Kendall's tau in closed form.
+  bb8,
+  //! Tawn copula (extreme-value, asymmetric). 3 parameters; rotations
+  //! 0 / 90 / 180 / 270 degrees; (asymmetric) upper-tail dependence;
+  //! Kendall's tau via the Pickands dependence function.
+  tawn,
+  //! Transformation Local Likelihood (TLL) nonparametric estimator. No
+  //! finite parametric form: the copula density is fit on a grid in the
+  //! inverse-normal-transformed copula space. Data-driven rotation and
+  //! tail behaviour; Kendall's tau is rank-based on the fitted density.
+  tll
 };
 
 std::string
@@ -43,7 +85,7 @@ const std::vector<BicopFamily> all = {
   BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
   BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
-  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn, 
+  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn,
   BicopFamily::tll
 };
 
@@ -73,9 +115,7 @@ const std::vector<BicopFamily> two_par = { BicopFamily::student,
                                            BicopFamily::bb8 };
 
 //! All three-parameter families
-const std::vector<BicopFamily> three_par = {
-  BicopFamily::tawn
-};
+const std::vector<BicopFamily> three_par = { BicopFamily::tawn };
 
 //! All elliptical copulas
 const std::vector<BicopFamily> elliptical = { BicopFamily::gaussian,
@@ -89,9 +129,8 @@ const std::vector<BicopFamily> archimedean = {
 };
 
 //! All Extreme-value copulas
-const std::vector<BicopFamily> extreme_value = {
-  BicopFamily::tawn, BicopFamily::gumbel
-};
+const std::vector<BicopFamily> extreme_value = { BicopFamily::tawn,
+                                                 BicopFamily::gumbel };
 
 //! All BB copulas
 const std::vector<BicopFamily> bb = { BicopFamily::bb1,
@@ -126,7 +165,6 @@ const std::vector<BicopFamily> itau = {
   BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
   BicopFamily::joe
 };
-
 
 } // end of namespace BicopFamilies
 } // end of namespace vinecopulib

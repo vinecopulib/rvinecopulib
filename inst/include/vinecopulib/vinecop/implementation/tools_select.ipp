@@ -10,6 +10,7 @@
 #include <boost/graph/kruskal_min_spanning_tree.hpp>
 #include <boost/graph/prim_minimum_spanning_tree.hpp>
 #include <boost/graph/random_spanning_tree.hpp>
+#include <boost/random.hpp>
 #include <cmath>
 #include <iostream>
 #include <wdm/eigen.hpp>
@@ -156,6 +157,13 @@ VinecopSelector::make_pair_copula_store(size_t d, size_t trunc_lvl)
 inline void
 VinecopSelector::select_all_trees(const Eigen::MatrixXd& data)
 {
+  if (d_ == 1) {
+    loglik_ = 0.0;
+    n_ = data.rows();
+    pair_copulas_ = make_pair_copula_store(d_, controls_.get_trunc_lvl());
+    vine_struct_ = RVineStructure(d_);
+    return;
+  }
   loglik_ = 0.0;
   initialize_new_fit(data);
   for (size_t t = 0; t < d_ - 1; ++t) {
@@ -179,6 +187,15 @@ VinecopSelector::select_all_trees(const Eigen::MatrixXd& data)
 inline void
 VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
 {
+  if (d_ == 1) {
+    loglik_ = 0.0;
+    n_ = data.rows();
+    pair_copulas_ = make_pair_copula_store(d_, controls_.get_trunc_lvl());
+    vine_struct_ = RVineStructure(d_);
+    return;
+  }
+  loglik_ = 0.0;
+
   // family set must be reset after each iteration of the threshold search
   auto family_set = controls_.get_family_set();
   double d = static_cast<double>(d_);
@@ -424,8 +441,85 @@ VinecopSelector::add_allowed_edges(VineTree& vine_tree)
 inline void
 VinecopSelector::select_edges(VineTree& vine_tree)
 {
-  // has no effect if the input is already a tree
-  min_spanning_tree(vine_tree);
+
+  // Early exit: if graph is already a spanning tree, do nothing
+  const size_t V = num_vertices(vine_tree);
+  const size_t E = num_edges(vine_tree);
+  if (V > 0 && E == V - 1) {
+    return;
+  }
+
+  if (controls_.get_tree_algorithm() == "mst_prim") {
+    size_t d = num_vertices(vine_tree);
+    std::vector<size_t> targets(d);
+    prim_minimum_spanning_tree(vine_tree, targets.data());
+    remove_edge_if(
+      [&](const EdgeIterator& e) {
+        auto source = boost::source(e, vine_tree);
+        auto target = boost::target(e, vine_tree);
+        return targets[source] != target && targets[target] != source;
+      },
+      vine_tree);
+  } else if (controls_.get_tree_algorithm() == "mst_kruskal") {
+    std::vector<EdgeIterator> spanning_tree;
+    kruskal_minimum_spanning_tree(vine_tree, std::back_inserter(spanning_tree));
+    // Using a hashmap to make the lookup faster
+    // boost::unordered set is used instead of std::set
+    // because std::pair doesn't have a default hash function
+    boost::unordered_set<std::pair<size_t, size_t>> edges_set;
+    for (auto e : spanning_tree) {
+      edges_set.insert(
+        { boost::source(e, vine_tree), boost::target(e, vine_tree) });
+    }
+    remove_edge_if(
+      [&](const EdgeIterator& e) {
+        auto source = boost::source(e, vine_tree);
+        auto target = boost::target(e, vine_tree);
+        return edges_set.find({ source, target }) == edges_set.end();
+      },
+      vine_tree);
+  } else {
+    size_t d = num_vertices(vine_tree);
+    std::vector<size_t> predecessors(d);
+    boost::mt19937 gen = controls_.get_rng();
+
+    // Randomize root vertex
+    boost::random::uniform_int_distribution<size_t> root_dist(0, d - 1);
+    size_t root = root_dist(gen);
+
+    if (controls_.get_tree_algorithm() == "random_unweighted") {
+      // Here, no weight map is used
+      // So that it's Wilson uniformly over all spanning trees
+      boost::random_spanning_tree(
+        vine_tree,
+        gen,
+        boost::predecessor_map(predecessors.data()).root_vertex(root));
+    } else {
+      // Here we inverse the weights to get a spanning tree
+      // with probability proportional to the product of the weights
+      // (i.e., the higher the weight, the more likely it is to be selected)
+      WeightMap original_weights = get(boost::edge_weight, vine_tree);
+      std::map<EdgeIterator, double> inv_weights;
+      for (auto e : boost::make_iterator_range(edges(vine_tree))) {
+        inv_weights[e] = 1.0 - original_weights[e];
+      }
+      boost::associative_property_map<std::map<EdgeIterator, double>>
+        inv_weight_map(inv_weights);
+      boost::random_spanning_tree(vine_tree,
+                                  gen,
+                                  boost::predecessor_map(predecessors.data())
+                                    .root_vertex(root)
+                                    .weight_map(inv_weight_map));
+    }
+
+    remove_edge_if(
+      [&](const EdgeIterator& e) {
+        auto source = boost::source(e, vine_tree);
+        auto target = boost::target(e, vine_tree);
+        return predecessors[source] != target && predecessors[target] != source;
+      },
+      vine_tree);
+  }
 }
 
 inline void
@@ -894,85 +988,6 @@ VinecopSelector::compute_fit_id(const EdgeProperties& e)
   }
 
   return id;
-}
-
-//! @brief Collapses a graph to the minimum spanning tree.
-//! @param graph The input graph.
-//! @return the input graph with all non-MST edges removed.
-inline void
-VinecopSelector::min_spanning_tree(VineTree& graph)
-{
-  if (controls_.get_tree_algorithm() == "mst_prim") {
-    size_t d = num_vertices(graph);
-    std::vector<size_t> targets(d);
-    prim_minimum_spanning_tree(graph, targets.data());
-    remove_edge_if(
-      [&](const EdgeIterator& e) {
-        auto source = boost::source(e, graph);
-        auto target = boost::target(e, graph);
-        return targets[source] != target && targets[target] != source;
-      },
-      graph);
-  } else if (controls_.get_tree_algorithm() == "mst_kruskal") {
-    std::vector<EdgeIterator> spanning_tree;
-    kruskal_minimum_spanning_tree(graph, std::back_inserter(spanning_tree));
-    // Using a hashmap to make the lookup faster
-    // boost::unordered set is used instead of std::set
-    // because std::pair doesn't have a default hash function
-    boost::unordered_set<std::pair<size_t, size_t>> edges_set;
-    for (auto e : spanning_tree) {
-      edges_set.insert({ boost::source(e, graph), boost::target(e, graph) });
-    }
-    remove_edge_if(
-      [&](const EdgeIterator& e) {
-        auto source = boost::source(e, graph);
-        auto target = boost::target(e, graph);
-        return edges_set.find({ source, target }) == edges_set.end();
-      },
-      graph);
-  } else {
-    size_t d = num_vertices(graph);
-    std::vector<size_t> predecessors(d);
-    boost::mt19937 gen = controls_.get_rng();
-
-    // Randomize root vertex
-    std::uniform_int_distribution<size_t> root_dist(0, d - 1);
-    size_t root = root_dist(gen);
-
-    if (controls_.get_tree_algorithm() == "random_unweighted") {
-      // Here, no weight map is used
-      // So that it's Wilson uniformly over all spanning trees
-      boost::random_spanning_tree(
-        graph,
-        gen,
-        boost::predecessor_map(predecessors.data())
-             .root_vertex(root));
-    } else {
-      // Here we inverse the weights to get a spanning tree
-      // with probability proportional to the product of the weights
-      // (i.e., the higher the weight, the more likely it is to be selected)
-      WeightMap original_weights = get(boost::edge_weight, graph);
-      std::map<EdgeIterator, double> inv_weights;
-      for (auto e : boost::make_iterator_range(edges(graph))) {
-        inv_weights[e] = 1.0 / (original_weights[e] + 1e-10);
-      }
-      boost::associative_property_map<std::map<EdgeIterator, double>> inv_weight_map(inv_weights);
-      boost::random_spanning_tree(
-        graph,
-        gen,
-        boost::predecessor_map(predecessors.data())
-             .root_vertex(root)
-             .weight_map(inv_weight_map));
-    }
-
-    remove_edge_if(
-      [&](const EdgeIterator& e) {
-        auto source = boost::source(e, graph);
-        auto target = boost::target(e, graph);
-        return predecessors[source] != target && predecessors[target] != source;
-      },
-      graph);
-  }
 }
 
 //! @brief Adds conditioned info and data for each edge.

@@ -17,11 +17,11 @@ using BicopPtr = std::shared_ptr<AbstractBicop>;
 
 //! @brief A class for bivariate copula models.
 //!
-//! @details The model is fully characterized by the family, 
-//! rotation (one of `0`, `90`, `180`, `270`), a matrix of parameters, and 
-//! variable types (two strings, one for each variable, either `"c"` 
+//! @details The model is fully characterized by the family,
+//! rotation (one of `0`, `90`, `180`, `270`), a matrix of parameters, and
+//! variable types (two strings, one for each variable, either `"c"`
 //! for continuous or `"d"` for discrete).
-//! 
+//!
 //! Implemented families (see `BicopFamily`):
 //!
 //! ```
@@ -70,30 +70,56 @@ public:
   void to_file(const std::string& filename) const;
 
   // Getters and setters
+
+  //! @return the copula family.
   BicopFamily get_family() const;
 
+  //! @return the human-readable name of the copula family.
   std::string get_family_name() const;
 
+  //! @return the copula rotation in degrees (one of `0`, `90`, `180`, `270`).
   int get_rotation() const;
 
+  //! @return the copula parameter(s) as a matrix (shape depends on the family).
   Eigen::MatrixXd get_parameters() const;
 
+  //! @return Kendall's tau implied by the current parameters.
   double get_tau() const;
 
+  //! @return the number of parameters in the copula model. For nonparametric
+  //! families, this is a conceptually similar effective-parameter count.
   double get_npars() const;
 
+  //! @return the log-likelihood of the data the copula was fitted to.
   double get_loglik() const;
+  //! @return the number of observations used to fit the copula (`0` until
+  //! `fit()` has been called).
   size_t get_nobs() const;
+  //! @return Akaike's information criterion at the fitted parameters.
   double get_aic() const;
+  //! @return the Bayesian information criterion at the fitted parameters.
   double get_bic() const;
+  //! @return the modified Bayesian information criterion at the fitted
+  //! parameters; `psi0` is the prior probability of a non-independence
+  //! copula.
   double get_mbic(const double psi0 = 0.9) const;
 
+  //! Sets the copula rotation.
+  //! @param rotation one of `0`, `90`, `180`, `270`.
   void set_rotation(const int rotation);
 
+  //! Sets the copula parameters.
+  //! @param parameters parameter matrix; shape must match the family's
+  //! expected parameter layout.
   void set_parameters(const Eigen::MatrixXd& parameters);
 
+  //! Sets the variable types.
+  //! @param var_types a length-2 vector with each entry either `"c"`
+  //! (continuous, default) or `"d"` (discrete).
   void set_var_types(const std::vector<std::string>& var_types = { "c", "c" });
 
+  //! @return the variable types of the two variables (each `"c"` for
+  //! continuous or `"d"` for discrete).
   std::vector<std::string> get_var_types() const;
 
   // Stats methods

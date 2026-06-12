@@ -23,7 +23,7 @@ private:
   // pdf, cdf, hfunctions and inverses
   Eigen::VectorXd cdf(const Eigen::MatrixXd& u);
 
-  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd &u);
+  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u);
 
   Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u);
 

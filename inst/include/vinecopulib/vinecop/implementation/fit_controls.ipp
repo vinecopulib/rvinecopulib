@@ -44,8 +44,8 @@ inline FitControlsVinecop::FitControlsVinecop()
 //!     tree (`"tau"`, `"hoeffd"`, `"rho"`, and `"mcor"` implemented so far)
 //!     during the tree-wise structure selection.
 //! @param threshold For thresholded vines (0 = no threshold).
-//! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`
-//!     or `"bic"`) for the pair copula families.
+//! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`,
+//!     `"bic"`, `"mbic"`, or `"mbicv"`) for the pair copula families.
 //! @param weights A vector of weights for the observations.
 //! @param psi0 Only for `selection_criterion = "mbic"`, prior probability of
 //!     non-independence.
@@ -82,6 +82,7 @@ inline FitControlsVinecop::FitControlsVinecop(
   std::string parametric_method,
   std::string nonparametric_method,
   double nonparametric_mult,
+  size_t nonparametric_grid_size,
   size_t trunc_lvl,
   std::string tree_criterion,
   double threshold,
@@ -101,6 +102,7 @@ inline FitControlsVinecop::FitControlsVinecop(
                      parametric_method,
                      nonparametric_method,
                      nonparametric_mult,
+                     nonparametric_grid_size,
                      selection_criterion,
                      weights,
                      psi0,
@@ -364,6 +366,7 @@ FitControlsVinecop::get_fit_controls_bicop() const
                                   get_parametric_method(),
                                   get_nonparametric_method(),
                                   get_nonparametric_mult(),
+                                  get_nonparametric_grid_size(),
                                   get_selection_criterion(),
                                   get_weights(),
                                   get_psi0(),
@@ -377,6 +380,9 @@ FitControlsVinecop::set_fit_controls_bicop(FitControlsBicop controls)
 {
   set_family_set(controls.get_family_set());
   set_parametric_method(controls.get_parametric_method());
+  set_nonparametric_method(controls.get_nonparametric_method());
+  set_nonparametric_mult(controls.get_nonparametric_mult());
+  set_nonparametric_grid_size(controls.get_nonparametric_grid_size());
   set_selection_criterion(get_selection_criterion());
   set_preselect_families(controls.get_preselect_families());
 }
