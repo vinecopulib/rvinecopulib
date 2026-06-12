@@ -200,6 +200,45 @@ Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u,
   return vinecop_wrap(vinecop_r).pdf(u, cores);
 }
 
+inline Rcpp::NumericVector eigen_vector_wrap(const Eigen::VectorXd& x)
+{
+  Rcpp::NumericVector result(x.size());
+  std::copy(x.data(), x.data() + x.size(), result.begin());
+  return result;
+}
+
+inline Rcpp::List vector_triangular_array_wrap(
+    const TriangularArray<Eigen::VectorXd>& x)
+{
+  size_t trunc_lvl = x.get_trunc_lvl();
+  size_t d = x.get_dim();
+  Rcpp::List result(trunc_lvl);
+  for (size_t t = 0; t < trunc_lvl; ++t) {
+    Rcpp::List row(d - t - 1);
+    for (size_t e = 0; e < d - t - 1; ++e) {
+      row[e] = eigen_vector_wrap(x(t, e));
+    }
+    result[t] = row;
+  }
+  return result;
+}
+
+// [[Rcpp::export()]]
+Rcpp::List vinecop_pdf_full_cpp(const Eigen::MatrixXd& u,
+                                const Rcpp::List& vinecop_r,
+                                size_t cores)
+{
+  auto result = vinecop_wrap(vinecop_r).pdf_full(u, cores, true);
+  return Rcpp::List::create(
+    Rcpp::Named("pdf") = eigen_vector_wrap(result.pdf),
+    Rcpp::Named("pdf_edges") = vector_triangular_array_wrap(result.pdf_edges),
+    Rcpp::Named("hfunc1") = vector_triangular_array_wrap(result.hfunc1),
+    Rcpp::Named("hfunc2") = vector_triangular_array_wrap(result.hfunc2),
+    Rcpp::Named("hfunc1_sub") = vector_triangular_array_wrap(result.hfunc1_sub),
+    Rcpp::Named("hfunc2_sub") = vector_triangular_array_wrap(result.hfunc2_sub)
+  );
+}
+
 // [[Rcpp::export()]]
 Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u,
                                 const Rcpp::List& vinecop_r,
@@ -208,6 +247,33 @@ Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u,
                                 std::vector<int> seeds)
 {
   return vinecop_wrap(vinecop_r).cdf(u, N, cores, seeds);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd vinecop_scores_cpp(const Eigen::MatrixXd& u,
+                                   const Rcpp::List& vinecop_r,
+                                   bool step_wise,
+                                   size_t cores)
+{
+  return vinecop_wrap(vinecop_r).scores(u, step_wise, cores);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd vinecop_hessian_cpp(const Eigen::MatrixXd& u,
+                                    const Rcpp::List& vinecop_r,
+                                    bool step_wise,
+                                    size_t cores)
+{
+  return vinecop_wrap(vinecop_r).hessian_avg(u, step_wise, cores);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd vinecop_scores_cov_cpp(const Eigen::MatrixXd& u,
+                                       const Rcpp::List& vinecop_r,
+                                       bool step_wise,
+                                       size_t cores)
+{
+  return vinecop_wrap(vinecop_r).scores_cov(u, step_wise, cores);
 }
 
 // [[Rcpp::export()]]
@@ -331,7 +397,5 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   }
   return fits_r;
 }
-
-
 
 

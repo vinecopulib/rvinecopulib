@@ -5,12 +5,18 @@
 \alias{dvinecop}
 \alias{pvinecop}
 \alias{rvinecop}
+\alias{scores}
+\alias{hessian}
 \alias{dvinecop_dist}
 \alias{pvinecop_dist}
 \alias{rvinecop_dist}
 \title{Vine copula distributions}
 \usage{
-dvinecop(u, vinecop, cores = 1)
+dvinecop(u, vinecop, cores = 1, keep_all = FALSE)
+
+scores(u, vinecop, step_wise = TRUE, cores = 1)
+
+hessian(u, vinecop, step_wise = TRUE, cores = 1)
 
 pvinecop(u, vinecop, n_mc = 10^4, cores = 1)
 
@@ -26,6 +32,13 @@ discrete models, see \emph{Details}.}
 \item{cores}{number of cores to use; if larger than one, computations are
 done in parallel on \code{cores} batches .}
 
+\item{keep_all}{if \code{TRUE}, \code{dvinecop()} returns additional intermediate
+quantities computed during density evaluation.}
+
+\item{step_wise}{if \code{FALSE}, the score/Hessian is computed for the full
+likelihood; if \code{TRUE}, gradients are computed per pair-copula as in
+step-wise estimation.}
+
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 
 \item{n}{number of observations.}
@@ -36,7 +49,11 @@ sequence in higher dimensions (default \code{qrng = FALSE}).}
 }
 \value{
 \code{dvinecop()} gives the density, \code{pvinecop()} gives the distribution function,
-and \code{rvinecop()} generates random deviates.
+\code{rvinecop()} generates random deviates, \code{scores()} gives the observation-wise
+score matrix, and \code{hessian()} gives the average Hessian matrix.
+
+If \code{keep_all = TRUE}, \code{dvinecop()} returns a list with entries \code{pdf},
+\code{pdf_edges}, \code{hfunc1}, \code{hfunc2}, \code{hfunc1_sub}, and \code{hfunc2_sub}.
 
 The length of the result is determined by \code{n} for \code{rvinecop()}, and
 the number of rows in \code{u} for the other functions.

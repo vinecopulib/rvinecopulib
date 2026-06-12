@@ -2,6 +2,27 @@
 expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
 expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
 
+expect_pdf_full_triangular_vectors <- function(x, vc, n) {
+  arrays <- c("pdf_edges", "hfunc1", "hfunc2", "hfunc1_sub", "hfunc2_sub")
+  expect_type(x, "list")
+  expect_type(x$pdf, "double")
+  expect_null(dim(x$pdf))
+  expect_length(x$pdf, n)
+  for (array in arrays) {
+    expect_type(x[[array]], "list")
+    expect_length(x[[array]], dim(vc)["trunc_lvl"])
+    for (tree in seq_along(x[[array]])) {
+      expect_type(x[[array]][[tree]], "list")
+      expect_length(x[[array]][[tree]], dim(vc)[1] - tree)
+      for (edge in seq_along(x[[array]][[tree]])) {
+        expect_type(x[[array]][[tree]][[edge]], "double")
+        expect_null(dim(x[[array]][[tree]][[edge]]))
+        expect_true(length(x[[array]][[tree]][[edge]]) %in% c(0L, n))
+      }
+    }
+  }
+}
+
 context("Class 'vinecop_dist'")
 
 set.seed(0)
@@ -30,8 +51,45 @@ test_that("d/p/r- functions work", {
   set.seed(1)
   expect_true(all(u == rvinecop(50, vc, qrng = TRUE)))
   expect_gte(min(dvinecop(u, vc)), 0)
+  pdf_full <- dvinecop(u, vc, keep_all = TRUE)
+  expect_named(
+    pdf_full,
+    c("pdf", "pdf_edges", "hfunc1", "hfunc2", "hfunc1_sub", "hfunc2_sub")
+  )
+  expect_eql(pdf_full$pdf, dvinecop(u, vc))
+  expect_length(pdf_full$pdf_edges, dim(vc)["trunc_lvl"])
+  expect_length(pdf_full$pdf_edges[[1]], dim(vc)[1] - 1)
+  expect_pdf_full_triangular_vectors(pdf_full, vc, nrow(u))
+  expect_equal(
+    pdf_full$pdf_edges[[1]][[1]] *
+      pdf_full$pdf_edges[[1]][[2]] *
+      pdf_full$pdf_edges[[2]][[1]],
+    pdf_full$pdf
+  )
+  expect_equal(dvinecop(u, vc, cores = 2), dvinecop(u, vc))
+  expect_equal(dvinecop(u, vc, cores = 2, keep_all = TRUE), pdf_full)
   expect_gte(min(pvinecop(u, vc, 100)), 0)
   expect_lte(max(pvinecop(u, vc, 100)), 1)
+})
+
+test_that("scores and hessian work", {
+  u <- rvinecop(10, vc)
+  expect_silent(s <- scores(u, vc))
+  expect_eql(dim(s), c(10L, as.integer(vc$npars)))
+  expect_silent(s_full <- scores(u, vc, step_wise = FALSE))
+  expect_eql(dim(s_full), dim(s))
+  expect_false(anyNA(s))
+  expect_false(anyNA(s_full))
+  expect_silent(h <- hessian(u, vc))
+  expect_eql(dim(h), c(as.integer(vc$npars), as.integer(vc$npars)))
+  expect_silent(h_full <- hessian(u, vc, step_wise = FALSE))
+  expect_eql(dim(h_full), dim(h))
+  expect_false(anyNA(h))
+  expect_false(anyNA(h_full))
+  expect_equal(scores(u, vc, cores = 2), s)
+  expect_equal(hessian(u, vc, cores = 2), h)
+  expect_error(scores(u, vc, step_wise = 1))
+  expect_error(hessian(u, vc, cores = 0))
 })
 
 
@@ -54,6 +112,10 @@ test_that("works with truncated vines", {
   # takes and returns truncated pair_copulas list
   trunc_vine <- vinecop_dist(pcs[-2], mat)
   expect_length(trunc_vine$pair_copulas, 1)
+  u <- rvinecop(5, trunc_vine)
+  pdf_full <- dvinecop(u, trunc_vine, keep_all = TRUE)
+  expect_pdf_full_triangular_vectors(pdf_full, trunc_vine, nrow(u))
+  expect_eql(pdf_full$pdf, dvinecop(u, trunc_vine))
 
   # summary table is truncated too
   expect_s3_class(summary(vinecop_dist(pcs[-2], mat)), "summary_df")

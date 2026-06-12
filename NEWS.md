@@ -6,6 +6,9 @@
   `tree_algorithm` in `vine` and `vinecop`. Options are `"mst_prim"`, `"mst_kruskal"`,
   `"random_weighted"` or `"random_unweighted"` (#307).
 
+* Add `scores()` and `hessian()` for vine copula models and a `keep_all` option
+  to `dvinecop()` for returning intermediate quantities from density evaluation.
+
 ### BUG FIXES
 
 * Decouple edge insertion from criterion computation fix randomness

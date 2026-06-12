@@ -2,6 +2,27 @@
 expect_eql <- function(...) expect_equal(..., check.environment = FALSE)
 expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
 
+expect_pdf_full_triangular_vectors <- function(x, vc, n) {
+  arrays <- c("pdf_edges", "hfunc1", "hfunc2", "hfunc1_sub", "hfunc2_sub")
+  expect_type(x, "list")
+  expect_type(x$pdf, "double")
+  expect_null(dim(x$pdf))
+  expect_length(x$pdf, n)
+  for (array in arrays) {
+    expect_type(x[[array]], "list")
+    expect_length(x[[array]], dim(vc)["trunc_lvl"])
+    for (tree in seq_along(x[[array]])) {
+      expect_type(x[[array]][[tree]], "list")
+      expect_length(x[[array]][[tree]], dim(vc)[1] - tree)
+      for (edge in seq_along(x[[array]][[tree]])) {
+        expect_type(x[[array]][[tree]][[edge]], "double")
+        expect_null(dim(x[[array]][[tree]][[edge]]))
+        expect_true(length(x[[array]][[tree]][[edge]]) %in% c(0L, n))
+      }
+    }
+  }
+}
+
 context("Discrete variables")
 
 set.seed(5)
@@ -68,6 +89,9 @@ test_that("vinecop_dist works", {
 
   # only check for errors
   dvinecop(u, cop)
+  pdf_full <- dvinecop(u, cop, keep_all = TRUE)
+  expect_pdf_full_triangular_vectors(pdf_full, cop, nrow(u))
+  expect_eql(pdf_full$pdf, dvinecop(u, cop))
   pvinecop(u, cop)
 })
 

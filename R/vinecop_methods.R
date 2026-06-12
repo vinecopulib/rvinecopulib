@@ -4,13 +4,16 @@
 #' distribution.
 #'
 #' @name vinecop_distributions
-#' @aliases dvinecop pvinecop rvinecop dvinecop_dist pvinecop_dist rvinecop_dist
+#' @aliases dvinecop pvinecop rvinecop scores hessian dvinecop_dist
+#'   pvinecop_dist rvinecop_dist
 #' @param u matrix of evaluation points; must contain at least d columns, where
 #'   d is the number of variables in the vine. More columns are required for
 #'   discrete models, see *Details*.
 #' @param vinecop an object of class `"vinecop_dist"`.
 #' @param cores number of cores to use; if larger than one, computations are
 #'   done in parallel on `cores` batches .
+#' @param keep_all if `TRUE`, `dvinecop()` returns additional intermediate
+#'   quantities computed during density evaluation.
 #' @details See [vinecop()] for the estimation and construction of vine copula
 #' models.
 #'
@@ -30,7 +33,11 @@
 #'
 #' @return
 #' `dvinecop()` gives the density, `pvinecop()` gives the distribution function,
-#' and `rvinecop()` generates random deviates.
+#' `rvinecop()` generates random deviates, `scores()` gives the observation-wise
+#' score matrix, and `hessian()` gives the average Hessian matrix.
+#'
+#' If `keep_all = TRUE`, `dvinecop()` returns a list with entries `pdf`,
+#' `pdf_edges`, `hfunc1`, `hfunc2`, `hfunc1_sub`, and `hfunc2_sub`.
 #'
 #' The length of the result is determined by `n` for `rvinecop()`, and
 #' the number of rows in `u` for the other functions.
@@ -70,10 +77,48 @@
 #' pairs(rvinecop(200, vc))
 #' @rdname vinecop_methods
 #' @export
-dvinecop <- function(u, vinecop, cores = 1) {
-  assert_that(inherits(vinecop, "vinecop_dist"))
+dvinecop <- function(u, vinecop, cores = 1, keep_all = FALSE) {
+  assert_that(
+    inherits(vinecop, "vinecop_dist"),
+    is.number(cores),
+    cores > 0,
+    is.flag(keep_all)
+  )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
-  vinecop_pdf_cpp(u, vinecop, cores)
+  if (keep_all) {
+    vinecop_pdf_full_cpp(u, vinecop, cores)
+  } else {
+    vinecop_pdf_cpp(u, vinecop, cores)
+  }
+}
+
+#' @rdname vinecop_methods
+#' @param step_wise if `FALSE`, the score/Hessian is computed for the full
+#'   likelihood; if `TRUE`, gradients are computed per pair-copula as in
+#'   step-wise estimation.
+#' @export
+scores <- function(u, vinecop, step_wise = TRUE, cores = 1) {
+  assert_that(
+    inherits(vinecop, "vinecop_dist"),
+    is.flag(step_wise),
+    is.number(cores),
+    cores > 0
+  )
+  u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
+  vinecop_scores_cpp(u, vinecop, step_wise, cores)
+}
+
+#' @rdname vinecop_methods
+#' @export
+hessian <- function(u, vinecop, step_wise = TRUE, cores = 1) {
+  assert_that(
+    inherits(vinecop, "vinecop_dist"),
+    is.flag(step_wise),
+    is.number(cores),
+    cores > 0
+  )
+  u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
+  vinecop_hessian_cpp(u, vinecop, step_wise, cores)
 }
 
 #' @rdname vinecop_methods
