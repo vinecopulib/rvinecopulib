@@ -184,6 +184,10 @@ inline FitControlsVinecop::FitControlsVinecop(const FitControlsConfig& config)
   if (optional::has_value(config.tree_criterion)) {
     set_tree_criterion(optional::value(config.tree_criterion));
   }
+  if (optional::has_value(config.tree_criterion_function)) {
+    set_tree_criterion_function(
+      optional::value(config.tree_criterion_function));
+  }
   if (optional::has_value(config.threshold)) {
     set_threshold(optional::value(config.threshold));
   }
@@ -212,10 +216,11 @@ inline FitControlsVinecop::FitControlsVinecop(const FitControlsConfig& config)
 inline void
 FitControlsVinecop::check_tree_criterion(std::string tree_criterion)
 {
-  if (!tools_stl::is_member(tree_criterion,
-                            { "tau", "rho", "joe", "hoeffd", "mcor" })) {
+  if (!tools_stl::is_member(
+        tree_criterion, { "tau", "rho", "joe", "hoeffd", "mcor", "custom" })) {
     throw std::runtime_error("tree_criterion must be one of "
-                             "'tau', 'rho', 'hoeffd', 'mcor', or 'joe'");
+                             "'tau', 'rho', 'hoeffd', 'mcor', 'joe', or "
+                             "'custom'");
   }
 }
 
@@ -286,6 +291,21 @@ FitControlsVinecop::set_tree_criterion(std::string tree_criterion)
 {
   check_tree_criterion(tree_criterion);
   tree_criterion_ = tree_criterion;
+}
+
+//! @brief Gets the custom criterion function for tree selection.
+inline TreeCriterionFunction
+FitControlsVinecop::get_tree_criterion_function() const
+{
+  return tree_criterion_function_;
+}
+
+//! @brief Sets the custom criterion function for tree selection.
+inline void
+FitControlsVinecop::set_tree_criterion_function(
+  TreeCriterionFunction tree_criterion_function)
+{
+  tree_criterion_function_ = tree_criterion_function;
 }
 
 //! @brief Gets the threshold parameter.

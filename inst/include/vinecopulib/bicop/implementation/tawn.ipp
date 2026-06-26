@@ -20,22 +20,25 @@ inline TawnBicop::TawnBicop()
 }
 
 inline double
-TawnBicop::pickands(const double& t)
+TawnBicop::pickands(const double& t,
+                    const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double psi1 = this->parameters_(0);
-  double psi2 = this->parameters_(1);
-  double theta = this->parameters_(2);
+  double psi1 = parameters(0);
+  double psi2 = parameters(1);
+  double theta = parameters(2);
 
   double temp = std::pow(psi2 * t, theta) + std::pow(psi1 * (1 - t), theta);
   return (1 - psi1) * (1 - t) + (1 - psi2) * t + std::pow(temp, 1 / theta);
 }
 
 inline double
-TawnBicop::pickands_derivative(const double& t)
+TawnBicop::pickands_derivative(
+  const double& t,
+  const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double psi1 = this->parameters_(0);
-  double psi2 = this->parameters_(1);
-  double theta = this->parameters_(2);
+  double psi1 = parameters(0);
+  double psi2 = parameters(1);
+  double theta = parameters(2);
 
   double temp = std::pow(psi2 * t, theta) + std::pow(psi1 * (1 - t), theta);
   double temp2 = psi2 * std::pow(psi2 * t, theta - 1) -
@@ -44,11 +47,13 @@ TawnBicop::pickands_derivative(const double& t)
 }
 
 inline double
-TawnBicop::pickands_derivative2(const double& t)
+TawnBicop::pickands_derivative2(
+  const double& t,
+  const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double psi1 = this->parameters_(0);
-  double psi2 = this->parameters_(1);
-  double theta = this->parameters_(2);
+  double psi1 = parameters(0);
+  double psi2 = parameters(1);
+  double theta = parameters(2);
 
   double temp = std::pow(psi2 * t, theta) + std::pow(psi1 * (1 - t), theta);
   double temp2 = psi2 * std::pow(psi2 * t, theta - 1) -

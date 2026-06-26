@@ -20,37 +20,37 @@ inline GumbelBicop::GumbelBicop()
 }
 
 inline double
-GumbelBicop::generator(const double& u)
+GumbelBicop::generator(const double& u,
+                       const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  return std::pow(std::log(1 / u), this->parameters_(0));
+  return std::pow(std::log(1 / u), parameters(0));
 }
 
 inline double
-GumbelBicop::generator_inv(const double& u)
+GumbelBicop::generator_inv(const double& u,
+                           const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  return std::exp(-std::pow(u, 1 / this->parameters_(0)));
+  return std::exp(-std::pow(u, 1 / parameters(0)));
 }
 
 inline double
-GumbelBicop::generator_derivative(const double& u)
+GumbelBicop::generator_derivative(
+  const double& u,
+  const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double theta = double(this->parameters_(0));
+  double theta = parameters(0);
   return std::pow(std::log(1 / u), theta - 1) * (-theta / u);
 }
 
-// inline double GumbelBicop::generator_derivative2(const double &u)
-//{
-//    double theta = double(this->parameters_(0));
-//    return (theta - 1 - std::log(u)) * std::pow(std::log(1 / u), theta - 2) *
-//           (theta / std::pow(u, 2));
-//}
-
 inline Eigen::VectorXd
-GumbelBicop::pdf_raw(const Eigen::MatrixXd& u)
+GumbelBicop::pdf_raw(const Eigen::MatrixXd& u,
+                     const Eigen::MatrixXd& parameters)
 {
-  double theta = static_cast<double>(parameters_(0));
-  double thetha1 = 1.0 / theta;
-  auto f = [theta, thetha1](const double& u1, const double& u2) {
+  auto f = [](const double& u1,
+              const double& u2,
+              const Eigen::Ref<const Eigen::VectorXd>& par) {
+    double theta = par(0);
+    double thetha1 = 1.0 / theta;
     double t1 = std::pow(-std::log(u1), theta) + std::pow(-std::log(u2), theta);
     double temp = -std::pow(t1, thetha1) + (2 * thetha1 - 2.0) * std::log(t1) +
                   (theta - 1.0) * std::log(std::log(u1) * std::log(u2)) -
@@ -58,21 +58,20 @@ GumbelBicop::pdf_raw(const Eigen::MatrixXd& u)
                   std::log1p((theta - 1.0) * std::pow(t1, -thetha1));
     return std::exp(temp);
   };
-  return tools_eigen::binaryExpr_or_nan(u, f);
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
 }
 
 inline Eigen::VectorXd
-GumbelBicop::hinv1_raw(const Eigen::MatrixXd& u)
+GumbelBicop::hinv1_raw(const Eigen::MatrixXd& u,
+                       const Eigen::MatrixXd& parameters)
 {
-  double theta = double(this->parameters_(0));
-
-  // Define the lambda function for qcondgum
-  auto qcondgum_func = [&theta](const double& u1, const double& u2) -> double {
-    return qcondgum(u2, u1, theta);
+  auto qcondgum_func =
+    [](const double& u1,
+       const double& u2,
+       const Eigen::Ref<const Eigen::VectorXd>& par) -> double {
+    return qcondgum(u2, u1, par(0));
   };
-
-  // Use binaryExpr_or_nan to compute hinv
-  return tools_eigen::binaryExpr_or_nan(u, qcondgum_func);
+  return tools_eigen::binaryExpr_or_nan(u, parameters, qcondgum_func);
 }
 
 inline Eigen::MatrixXd

@@ -25,10 +25,13 @@ using namespace tools_stl;
 //! @param data Observations.
 //! @param tree_criterion The criterion.
 //! @param weights Vector of weights for each observation (can be empty).
+//! @param tree_criterion_function Custom criterion function, used when
+//!   `tree_criterion == "custom"`.
 inline double
 calculate_criterion(const Eigen::MatrixXd& data,
                     std::string tree_criterion,
-                    Eigen::VectorXd weights)
+                    Eigen::VectorXd weights,
+                    const TreeCriterionFunction& tree_criterion_function)
 {
   double w = 0.0;
   Eigen::MatrixXd data_no_nan = data;
@@ -36,7 +39,14 @@ calculate_criterion(const Eigen::MatrixXd& data,
   double freq =
     static_cast<double>(data_no_nan.rows()) / static_cast<double>(data.rows());
   if (data_no_nan.rows() > 10) {
-    if (tree_criterion == "mcor") {
+    if (tree_criterion == "custom") {
+      if (!tree_criterion_function) {
+        throw std::runtime_error(
+          "tree_criterion = \"custom\" requires a tree_criterion_function "
+          "callable");
+      }
+      w = tree_criterion_function(data_no_nan, weights);
+    } else if (tree_criterion == "mcor") {
       w = tools_stats::pairwise_mcor(data_no_nan, weights);
     } else if (tree_criterion == "joe") {
       // mutual information for Gaussian copula
@@ -51,32 +61,6 @@ calculate_criterion(const Eigen::MatrixXd& data,
     }
   }
   return std::fabs(w) * std::sqrt(freq);
-}
-
-//! @brief Evaluates maximal criterion for tree selection.
-//! @param data Observations.
-//! @param tree_criterion The criterion.
-//! @param weights Vector of weights for each observation (can be empty).
-inline Eigen::MatrixXd
-calculate_criterion_matrix(const Eigen::MatrixXd& data,
-                           const std::string& tree_criterion,
-                           const Eigen::VectorXd& weights)
-{
-  size_t n = data.rows();
-  size_t d = data.cols();
-  Eigen::MatrixXd mat(d, d);
-  mat.diagonal() = Eigen::VectorXd::Constant(d, 1.0);
-  Eigen::MatrixXd pair_data(n, 2);
-  for (size_t i = 1; i < d; ++i) {
-    for (size_t j = 0; j < i; ++j) {
-      pair_data.col(0) = data.col(i);
-      pair_data.col(1) = data.col(j);
-      Eigen::VectorXd pair_w = weights;
-      mat(i, j) = calculate_criterion(pair_data, tree_criterion, pair_w);
-      mat(j, i) = mat(i, j);
-    }
-  }
-  return mat;
 }
 
 //! computes
@@ -400,7 +384,10 @@ VinecopSelector::add_allowed_edges(VineTree& vine_tree)
 
       auto pc_data = get_pc_data(v0, v1, vine_tree);
       double crit =
-        calculate_criterion(pc_data, tree_criterion, controls_.get_weights());
+        calculate_criterion(pc_data,
+                            tree_criterion,
+                            controls_.get_weights(),
+                            controls_.get_tree_criterion_function());
       double w = 1.0 - static_cast<double>(crit >= threshold) * crit;
 
       {
@@ -424,8 +411,11 @@ VinecopSelector::add_allowed_edges(VineTree& vine_tree)
         size_t v1 = vine_struct_.min_array(tree, v0) - 1;
         Eigen::MatrixXd pc_data = get_pc_data(v0, v1, vine_tree);
         EdgeIterator e = boost::add_edge(v0, v1, 1.0, vine_tree).first;
-        double crit = calculate_criterion(
-          pc_data.leftCols(2), tree_criterion, controls_.get_weights());
+        double crit =
+          calculate_criterion(pc_data.leftCols(2),
+                              tree_criterion,
+                              controls_.get_weights(),
+                              controls_.get_tree_criterion_function());
         vine_tree[e].weight = 1.0;
         vine_tree[e].crit = crit;
       }

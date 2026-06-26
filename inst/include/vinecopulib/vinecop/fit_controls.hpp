@@ -71,8 +71,12 @@ public:
   size_t get_trunc_lvl() const;
 
   //! @return the edge-weighting criterion used to grow the structure
-  //! (one of `"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`).
+  //! (one of `"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`, `"joe"`, `"custom"`).
   std::string get_tree_criterion() const;
+
+  //! @return the custom edge-weight function used when `tree_criterion` is
+  //! `"custom"` (empty otherwise).
+  TreeCriterionFunction get_tree_criterion_function() const;
 
   //! @return the absolute-dependence threshold below which pair copulas
   //! are set to independence during structure selection (`0` disables).
@@ -118,6 +122,13 @@ public:
 
   void set_tree_criterion(std::string tree_criterion);
 
+  //! Sets the custom edge-weight function used when `tree_criterion` is
+  //! `"custom"`.
+  //! @param tree_criterion_function a callable mapping a two-column matrix of
+  //! pair-copula data and a vector of weights to a scalar dependence value.
+  void set_tree_criterion_function(
+    TreeCriterionFunction tree_criterion_function);
+
   void set_threshold(double threshold);
 
   void set_show_trace(bool show_trace);
@@ -139,14 +150,18 @@ public:
   std::string str() const;
 
 private:
-  size_t trunc_lvl_;
-  std::string tree_criterion_;
-  double threshold_;
-  bool show_trace_;
-  bool select_trunc_lvl_;
-  bool select_threshold_;
-  bool select_families_;
-  std::string tree_algorithm_;
+  // In-class defaults so that construction from a partial `FitControlsConfig`
+  // (which only assigns the fields present in the config) leaves every member
+  // in a well-defined state.
+  size_t trunc_lvl_ = std::numeric_limits<size_t>::max();
+  std::string tree_criterion_ = "tau";
+  TreeCriterionFunction tree_criterion_function_ = {};
+  double threshold_ = 0.0;
+  bool show_trace_ = false;
+  bool select_trunc_lvl_ = false;
+  bool select_threshold_ = false;
+  bool select_families_ = true;
+  std::string tree_algorithm_ = "mst_prim";
   std::vector<int> seeds_;
   boost::random::mt19937 rng_;
 

@@ -24,17 +24,18 @@ public:
   GaussianBicop();
 
 private:
-  // PDF
-  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u);
+  // evaluation leaves (`parameters` is m x 1, m in {1, n})
+  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u,
+                          const Eigen::MatrixXd& parameters);
 
-  // CDF
-  Eigen::VectorXd cdf(const Eigen::MatrixXd& u);
+  Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
+                      const Eigen::MatrixXd& parameters);
 
-  // hfunction
-  Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters);
 
-  // inverse hfunction
-  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u,
+                            const Eigen::MatrixXd& parameters);
 
   Eigen::MatrixXd tau_to_parameters(const double& tau);
 

@@ -135,6 +135,35 @@ public:
 
   Eigen::VectorXd hinv2(const Eigen::MatrixXd& u) const;
 
+  // Stats methods with per-row parameters (parametric families only)
+  Eigen::VectorXd pdf(const Eigen::MatrixXd& u,
+                      const Eigen::MatrixXd& parameters,
+                      const size_t num_threads = 1) const;
+
+  Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
+                      const Eigen::MatrixXd& parameters,
+                      const size_t num_threads = 1) const;
+
+  Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u,
+                         const Eigen::MatrixXd& parameters,
+                         const size_t num_threads = 1) const;
+
+  Eigen::VectorXd hfunc2(const Eigen::MatrixXd& u,
+                         const Eigen::MatrixXd& parameters,
+                         const size_t num_threads = 1) const;
+
+  Eigen::VectorXd hinv1(const Eigen::MatrixXd& u,
+                        const Eigen::MatrixXd& parameters,
+                        const size_t num_threads = 1) const;
+
+  Eigen::VectorXd hinv2(const Eigen::MatrixXd& u,
+                        const Eigen::MatrixXd& parameters,
+                        const size_t num_threads = 1) const;
+
+  double loglik(const Eigen::MatrixXd& u,
+                const Eigen::MatrixXd& parameters,
+                const size_t num_threads) const;
+
   Eigen::MatrixXd simulate(
     const size_t& n,
     const bool qrng = false,
@@ -178,6 +207,16 @@ private:
   void rotate_data(Eigen::MatrixXd& u) const;
 
   Eigen::MatrixXd prep_for_abstract(const Eigen::MatrixXd& u) const;
+
+  Eigen::MatrixXd format_parameters(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters) const;
+
+  Eigen::VectorXd eval_in_batches(
+    const Eigen::MatrixXd& u,
+    const Eigen::MatrixXd& parameters_t,
+    const size_t num_threads,
+    const std::function<Eigen::VectorXd(const Eigen::MatrixXd&,
+                                        const Eigen::MatrixXd&)>& f) const;
 
   void check_rotation(int rotation) const;
 

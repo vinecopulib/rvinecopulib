@@ -7,11 +7,19 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <functional>
 #include <string>
 #include <vector>
 #include <vinecopulib/misc/tools_optional.hpp>
 
 namespace vinecopulib {
+
+//! @brief A custom edge-weight function for vine structure selection.
+//!
+//! Maps a two-column matrix of pair-copula data and a vector of weights to a
+//! scalar dependence value. Used when `tree_criterion` is set to `"custom"`.
+using TreeCriterionFunction =
+  std::function<double(const Eigen::MatrixXd&, const Eigen::VectorXd&)>;
 
 //! Configuration options for initializing a FitControlsVinecop object.
 //!
@@ -61,6 +69,10 @@ struct FitControlsConfig
 
   //! The criterion for selecting the maximum spanning tree. Default: "tau".
   optional::optional<std::string> tree_criterion;
+
+  //! A custom edge-weight function for the spanning tree. Required when
+  //! `tree_criterion` is set to `"custom"`.
+  optional::optional<TreeCriterionFunction> tree_criterion_function;
 
   //! Threshold for thresholded vines. Default: 0.
   optional::optional<double> threshold;

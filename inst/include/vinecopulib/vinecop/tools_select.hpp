@@ -35,12 +35,8 @@ namespace tools_select {
 double
 calculate_criterion(const Eigen::MatrixXd& data,
                     std::string tree_criterion,
-                    Eigen::VectorXd weights);
-
-Eigen::MatrixXd
-calculate_criterion_matrix(const Eigen::MatrixXd& data,
-                           const std::string& tree_criterion,
-                           const Eigen::VectorXd& weights);
+                    Eigen::VectorXd weights,
+                    const TreeCriterionFunction& tree_criterion_function = {});
 
 std::vector<size_t>
 get_disc_cols(std::vector<std::string> var_types);

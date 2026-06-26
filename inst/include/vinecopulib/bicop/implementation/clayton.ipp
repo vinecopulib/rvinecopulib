@@ -19,66 +19,66 @@ inline ClaytonBicop::ClaytonBicop()
 }
 
 inline double
-ClaytonBicop::generator(const double& u)
+ClaytonBicop::generator(const double& u,
+                        const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double theta = double(this->parameters_(0));
+  double theta = parameters(0);
   return (std::pow(u, -theta) - 1) / theta;
 }
 
 inline double
-ClaytonBicop::generator_inv(const double& u)
+ClaytonBicop::generator_inv(const double& u,
+                            const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double theta = double(this->parameters_(0));
+  double theta = parameters(0);
   return std::pow(1 + theta * u, -1 / theta);
 }
 
 inline double
-ClaytonBicop::generator_derivative(const double& u)
+ClaytonBicop::generator_derivative(
+  const double& u,
+  const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  return (-1) * std::pow(u, -1 - this->parameters_(0));
+  return (-1) * std::pow(u, -1 - parameters(0));
 }
 
-// inline double ClaytonBicop::generator_derivative2(const double &u)
-//{
-//    double theta = double(this->parameters_(0));
-//    return (1 + theta) * std::pow(u, -2 - theta);
-//}
-
 inline Eigen::VectorXd
-ClaytonBicop::pdf_raw(const Eigen::MatrixXd& u)
+ClaytonBicop::pdf_raw(const Eigen::MatrixXd& u,
+                      const Eigen::MatrixXd& parameters)
 {
-  double theta = static_cast<double>(parameters_(0));
-  // avoid numerical issues when copula is too close to independence
-  if (theta < 1e-10) {
-    auto f = [](const double&, const double&) { return 1.0; };
-    return tools_eigen::binaryExpr_or_nan(u, f);
-  }
-
-  auto f = [theta](const double& u1, const double& u2) {
+  auto f = [](const double& u1,
+              const double& u2,
+              const Eigen::Ref<const Eigen::VectorXd>& par) {
+    double theta = par(0);
+    // avoid numerical issues when copula is too close to independence
+    if (theta < 1e-10) {
+      return 1.0;
+    }
     double temp = std::log1p(theta) - (1.0 + theta) * std::log(u1 * u2);
     temp = temp - (2.0 + 1.0 / (theta)) *
                     std::log(std::pow(u1, -theta) + std::pow(u2, -theta) - 1.0);
     return std::exp(temp);
   };
-  return tools_eigen::binaryExpr_or_nan(u, f);
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
 }
 
 inline Eigen::VectorXd
-ClaytonBicop::hinv1_raw(const Eigen::MatrixXd& u)
+ClaytonBicop::hinv1_raw(const Eigen::MatrixXd& u,
+                        const Eigen::MatrixXd& parameters)
 {
-  double theta = double(this->parameters_(0));
-  Eigen::VectorXd hinv = u.col(0).array().pow(theta + 1.0);
-  if (theta < 75) {
-    hinv = u.col(1).cwiseProduct(hinv);
-    hinv = hinv.array().pow(-theta / (theta + 1.0));
-    Eigen::VectorXd x = u.col(0);
-    x = x.array().pow(-theta);
-    hinv = hinv - x + Eigen::VectorXd::Ones(x.size());
-    hinv = hinv.array().pow(-1 / theta);
-  } else {
-    hinv = hinv1_num(u);
-  }
-  return hinv;
+  // theta is bounded above by 28 < 75, so the closed form is always used
+  const Eigen::Index n = u.rows();
+  Eigen::ArrayXd theta =
+    tools_eigen::parameter_as_vector(parameters, 0, n).array();
+  Eigen::ArrayXd u0 = u.col(0).array();
+  Eigen::ArrayXd u1 = u.col(1).array();
+  Eigen::ArrayXd hinv = u0.pow(theta + 1.0);
+  hinv = u1 * hinv;
+  hinv = hinv.pow(-theta / (theta + 1.0));
+  Eigen::ArrayXd x = u0.pow(-theta);
+  hinv = hinv - x + 1.0;
+  hinv = hinv.pow(-1.0 / theta);
+  return hinv.matrix();
 }
 
 inline Eigen::MatrixXd
