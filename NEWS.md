@@ -10,8 +10,8 @@ The main changes on the R end are:
   evaluation,
 
 * added support for vectorized `parameters` in `dbicop()`, `pbicop()`, and
-  `hbicop()`, including `bicop_dist()` objects (vectorized parameters are not
-  supported for `rbicop()`),
+  `hbicop()` when parameters are passed directly (vectorized parameters are not
+  supported for `bicop_dist()` objects or for `rbicop()`),
 
 * aligned the R frontend with the updated vinecopulib 0.8.0 API and tests,
   including the new per-row bicop parameter interface.

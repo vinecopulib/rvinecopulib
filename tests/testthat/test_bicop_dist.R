@@ -155,21 +155,14 @@ test_that("vectorized parameters work for dbicop/pbicop/hbicop", {
   expect_equal(hi_vec, hi_row)
 })
 
-test_that("vectorized parameters also work via bicop_dist object", {
+test_that("vectorized parameters are rejected by bicop_dist objects", {
   set.seed(8)
   n <- 40
-  u <- matrix(runif(2 * n), ncol = 2)
   pars <- cbind(seq(1.1, 4, length.out = n), seq(1.05, 1.9, length.out = n))
-  dist <- bicop_dist("bb1", 0, pars)
-
-  d_vec <- dbicop(u, dist)
-  d_row <- vapply(
-    seq_len(n),
-    function(i) dbicop(u[i, ], "bb1", 0, pars[i, , drop = FALSE]),
-    numeric(1)
+  expect_error(
+    bicop_dist("bb1", 0, pars),
+    "not supported by 'bicop_dist' objects"
   )
-
-  expect_equal(d_vec, d_row)
 })
 
 test_that("vectorized parameter sanity checks are enforced", {
