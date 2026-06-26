@@ -79,6 +79,20 @@ test_that("as.bicop works", {
   expect_s3_class(as.bicop(object), "bicop_dist")
   object$var_types <- c("d", "d")
   expect_eql(unlist(as.bicop(object)), unlist(object))
+
+  vec_object <- list(
+    family = "gaussian",
+    rotation = 0,
+    parameters = matrix(seq(-0.5, 0.5, length.out = 10), ncol = 1),
+    npars = 10
+  )
+  expect_error(
+    as.bicop(vec_object),
+    "not supported by 'bicop_dist' objects"
+  )
+  unchecked <- as.bicop(vec_object, check = FALSE)
+  expect_s3_class(unchecked, "bicop_dist")
+  expect_equal(unchecked$parameters, vec_object$parameters)
 })
 
 

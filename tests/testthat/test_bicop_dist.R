@@ -165,6 +165,51 @@ test_that("vectorized parameters are rejected by bicop_dist objects", {
   )
 })
 
+test_that("vectorized parameters work for rotated two-parameter families", {
+  set.seed(10)
+  n <- 24
+  u <- matrix(runif(2 * n), ncol = 2)
+  pars <- cbind(seq(1.1, 3.5, length.out = n), seq(1.05, 1.8, length.out = n))
+
+  d_vec <- dbicop(u, "bb1", 270, pars)
+  p_vec <- pbicop(u, "bb1", 270, pars)
+  h_vec <- hbicop(u, 2, "bb1", 270, pars)
+  hi_vec <- hbicop(u, 1, "bb1", 270, pars, inverse = TRUE)
+
+  d_row <- vapply(
+    seq_len(n),
+    function(i) dbicop(u[i, ], "bb1", 270, pars[i, , drop = FALSE]),
+    numeric(1)
+  )
+  p_row <- vapply(
+    seq_len(n),
+    function(i) pbicop(u[i, ], "bb1", 270, pars[i, , drop = FALSE]),
+    numeric(1)
+  )
+  h_row <- vapply(
+    seq_len(n),
+    function(i) hbicop(u[i, ], 2, "bb1", 270, pars[i, , drop = FALSE]),
+    numeric(1)
+  )
+  hi_row <- vapply(
+    seq_len(n),
+    function(i) hbicop(
+      u[i, ],
+      1,
+      "bb1",
+      270,
+      pars[i, , drop = FALSE],
+      inverse = TRUE
+    ),
+    numeric(1)
+  )
+
+  expect_equal(d_vec, d_row)
+  expect_equal(p_vec, p_row)
+  expect_equal(h_vec, h_row)
+  expect_equal(hi_vec, hi_row)
+})
+
 test_that("vectorized parameter sanity checks are enforced", {
   set.seed(9)
   u <- matrix(runif(20), ncol = 2)
