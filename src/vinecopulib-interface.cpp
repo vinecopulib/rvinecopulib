@@ -322,15 +322,6 @@ Eigen::MatrixXd vinecop_hessian_cpp(const Eigen::MatrixXd& u,
 }
 
 // [[Rcpp::export()]]
-Eigen::MatrixXd vinecop_scores_cov_cpp(const Eigen::MatrixXd& u,
-                                       const Rcpp::List& vinecop_r,
-                                       bool step_wise,
-                                       size_t cores)
-{
-  return vinecop_wrap(vinecop_r).scores_cov(u, step_wise, cores);
-}
-
-// [[Rcpp::export()]]
 Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd &data,
                               Rcpp::List &structure,
                               std::vector<std::string> family_set,

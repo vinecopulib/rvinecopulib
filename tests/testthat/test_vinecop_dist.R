@@ -136,9 +136,10 @@ test_that("print/summary/dim generics work", {
 test_that("plot functions work", {
   pcs <- lapply(
     1:4,
-    function(j)
+    function(j) {
       # pair-copulas in tree j
       lapply(runif(5 - j), function(cor) bicop_dist("gaussian", 0, cor))
+    }
   )
   mat <- matrix(
     c(

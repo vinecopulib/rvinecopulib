@@ -200,8 +200,9 @@ summary.vinecop_dist <- function(
       mdf$family[k] <- pc$family
       mdf$rotation[k] <- pc$rotation
       mdf$parameters[k] <- list(pc$parameters)
-      if (pc$family %in% setdiff(family_set_nonparametric, "indep"))
+      if (pc$family %in% setdiff(family_set_nonparametric, "indep")) {
         mdf$parameters[k] <- list("[30x30 grid]")
+      }
       mdf$df[k] <- pc$npars
       mdf$tau[k] <- par_to_ktau(pc)
       k <- k + 1
