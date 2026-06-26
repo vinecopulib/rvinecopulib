@@ -109,3 +109,85 @@ test_that("works with TLL family", {
   expect_error(bicop_dist("tll", 0, par[-1, ]))
   expect_warning(bicop_dist("tll", 0, 2 * par))
 })
+
+test_that("vectorized parameters work for dbicop/pbicop/hbicop", {
+  set.seed(7)
+  n <- 60
+  u <- matrix(runif(2 * n), ncol = 2)
+  pars <- cbind(seq(-0.8, 0.8, length.out = n))
+
+  d_vec <- dbicop(u, "gaussian", 0, pars)
+  p_vec <- pbicop(u, "gaussian", 0, pars)
+  h_vec <- hbicop(u, 1, "gaussian", 0, pars)
+  hi_vec <- hbicop(u, 2, "gaussian", 0, pars, inverse = TRUE)
+
+  d_row <- vapply(
+    seq_len(n),
+    function(i) dbicop(u[i, ], "gaussian", 0, pars[i, , drop = FALSE]),
+    numeric(1)
+  )
+  p_row <- vapply(
+    seq_len(n),
+    function(i) pbicop(u[i, ], "gaussian", 0, pars[i, , drop = FALSE]),
+    numeric(1)
+  )
+  h_row <- vapply(
+    seq_len(n),
+    function(i) hbicop(u[i, ], 1, "gaussian", 0, pars[i, , drop = FALSE]),
+    numeric(1)
+  )
+  hi_row <- vapply(
+    seq_len(n),
+    function(i) hbicop(
+      u[i, ],
+      2,
+      "gaussian",
+      0,
+      pars[i, , drop = FALSE],
+      inverse = TRUE
+    ),
+    numeric(1)
+  )
+
+  expect_equal(d_vec, d_row)
+  expect_equal(p_vec, p_row)
+  expect_equal(h_vec, h_row)
+  expect_equal(hi_vec, hi_row)
+})
+
+test_that("vectorized parameters also work via bicop_dist object", {
+  set.seed(8)
+  n <- 40
+  u <- matrix(runif(2 * n), ncol = 2)
+  pars <- cbind(seq(1.1, 4, length.out = n), seq(1.05, 1.9, length.out = n))
+  dist <- bicop_dist("bb1", 0, pars)
+
+  d_vec <- dbicop(u, dist)
+  d_row <- vapply(
+    seq_len(n),
+    function(i) dbicop(u[i, ], "bb1", 0, pars[i, , drop = FALSE]),
+    numeric(1)
+  )
+
+  expect_equal(d_vec, d_row)
+})
+
+test_that("vectorized parameter sanity checks are enforced", {
+  set.seed(9)
+  u <- matrix(runif(20), ncol = 2)
+  pars_bad_n <- matrix(seq(-0.5, 0.5, length.out = nrow(u) - 1), ncol = 1)
+  pars_sim <- matrix(c(-0.3, 0.1), ncol = 1)
+
+  expect_error(
+    dbicop(u, "gaussian", 0, pars_bad_n),
+    "parameters\\.rows\\(\\) must equal u\\.rows\\(\\)"
+  )
+  expect_error(
+    hbicop(u, 1, "gaussian", 0, pars_bad_n),
+    "parameters\\.rows\\(\\) must equal u\\.rows\\(\\)"
+  )
+  expect_error(
+    rbicop(10, "gaussian", 0, pars_sim),
+    "not simulation"
+  )
+})

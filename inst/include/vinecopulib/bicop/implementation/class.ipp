@@ -13,7 +13,6 @@
 #include <vinecopulib/misc/tools_serialization.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
-#include <vinecopulib/misc/tools_thread.hpp>
 
 //! Tools for bivariate and vine copula modeling
 namespace vinecopulib {

@@ -3,6 +3,29 @@
 
 using namespace vinecopulib;
 
+inline Eigen::MatrixXd get_bicop_parameters(const Rcpp::List& bicop_r)
+{
+  return bicop_r["parameters"];
+}
+
+inline bool has_vectorized_bicop_parameters(const Bicop& bicop_cpp,
+                                            const Eigen::MatrixXd& parameters)
+{
+  if (!tools_stl::is_member(bicop_cpp.get_family(), bicop_families::parametric) ||
+      (parameters.size() == 0)) {
+    return false;
+  }
+
+  const Eigen::Index p = bicop_cpp.get_parameters().rows();
+  if (parameters.cols() == 1) {
+    // n x 1 is vectorized only for one-parameter families.
+    return (p == 1) && (parameters.rows() > 1);
+  }
+
+  return (parameters.cols() == p) && (parameters.rows() > 1);
+}
+
+
 // tools exports -------------------------------------------
 
 // [[Rcpp::export]]
@@ -60,42 +83,72 @@ Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
 Eigen::VectorXd bicop_pdf_cpp(const Eigen::MatrixXd& u,
                               const Rcpp::List& bicop_r)
 {
-  return bicop_wrap(bicop_r).pdf(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.pdf(u, parameters);
+  }
+  return bicop_cpp.pdf(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_cdf_cpp(const Eigen::MatrixXd& u,
                               const Rcpp::List& bicop_r)
 {
-  return bicop_wrap(bicop_r).cdf(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.cdf(u, parameters);
+  }
+  return bicop_cpp.cdf(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hfunc1_cpp(const Eigen::MatrixXd& u,
                                  const Rcpp::List& bicop_r)
 {
-  return bicop_wrap(bicop_r).hfunc1(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.hfunc1(u, parameters);
+  }
+  return bicop_cpp.hfunc1(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hfunc2_cpp(const Eigen::MatrixXd& u,
                                  const Rcpp::List& bicop_r)
 {
-  return bicop_wrap(bicop_r).hfunc2(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.hfunc2(u, parameters);
+  }
+  return bicop_cpp.hfunc2(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hinv1_cpp(const Eigen::MatrixXd& u,
                                 const Rcpp::List& bicop_r)
 {
-  return bicop_wrap(bicop_r).hinv1(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.hinv1(u, parameters);
+  }
+  return bicop_cpp.hinv1(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hinv2_cpp(const Eigen::MatrixXd& u,
                                 const Rcpp::List& bicop_r)
 {
-  return bicop_wrap(bicop_r).hinv2(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.hinv2(u, parameters);
+  }
+  return bicop_cpp.hinv2(u);
 }
 
 // [[Rcpp::export()]]
@@ -104,7 +157,8 @@ Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r,
                               const bool qrng,
                               std::vector<int> seeds)
 {
-  return bicop_wrap(bicop_r).simulate(n, qrng, seeds);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  return bicop_cpp.simulate(n, qrng, seeds);
 }
 
 // [[Rcpp::export()]]

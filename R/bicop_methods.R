@@ -85,14 +85,16 @@
 #' @rdname bicop_methods
 #' @export
 dbicop <- function(u, family, rotation, parameters, var_types = c("c", "c")) {
+  u <- if_vec_to_matrix(u)
   bicop <- args2bicop(family, rotation, parameters, var_types)
-  bicop_pdf_cpp(if_vec_to_matrix(u), bicop)
+  bicop_pdf_cpp(u, bicop)
 }
 #' @rdname bicop_methods
 #' @export
 pbicop <- function(u, family, rotation, parameters, var_types = c("c", "c")) {
+  u <- if_vec_to_matrix(u)
   bicop <- args2bicop(family, rotation, parameters, var_types)
-  bicop_cdf_cpp(if_vec_to_matrix(u), bicop)
+  bicop_cdf_cpp(u, bicop)
 }
 
 #' @param n number of observations. If `length(n) > 1``, the length is taken to
@@ -111,6 +113,17 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
   assert_that(is.flag(qrng))
 
   bicop <- args2bicop(family, rotation, parameters)
+  pars <- as.matrix(bicop$parameters)
+  is_vectorized_pars <- (bicop$family %in% family_set_parametric) &&
+    (nrow(pars) > 1) &&
+    (((ncol(pars) == 1) && (bicop$family %in% c("gaussian", "clayton", "gumbel", "frank", "joe"))) ||
+      (ncol(pars) > 1))
+  if (is_vectorized_pars) {
+    stop(
+      "rbicop: vectorized 'parameters' are not simulation-compatible.",
+      call. = FALSE
+    )
+  }
   U <- bicop_sim_cpp(bicop, n, qrng, get_seeds())
   if (!is.null(bicop$names)) {
     colnames(U) <- bicop$names
