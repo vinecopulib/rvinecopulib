@@ -114,9 +114,11 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
 
   bicop <- args2bicop(family, rotation, parameters)
   pars <- as.matrix(bicop$parameters)
-  if ((bicop$family %in% family_set_parametric) &&
+  if (
+    (bicop$family %in% family_set_parametric) &&
       (nrow(pars) > 1) &&
-      ((ncol(pars) > 1) || (bicop$family %in% family_set_onepar))) {
+      ((ncol(pars) > 1) || (bicop$family %in% family_set_onepar))
+  ) {
     stop(
       "rbicop: vectorized 'parameters' are not simulation-compatible.",
       call. = FALSE

@@ -217,7 +217,9 @@ as.bicop <- function(object, check = TRUE) {
   if (is.null(object$var_types)) {
     object$var_types <- c("c", "c")
   }
-  if (check && is_vectorized_bicop_parameters(object$parameters, object$family)) {
+  if (
+    check && is_vectorized_bicop_parameters(object$parameters, object$family)
+  ) {
     stop(
       "vectorized 'parameters' are not supported by 'bicop_dist' objects."
     )

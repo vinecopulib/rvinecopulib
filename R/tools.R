@@ -63,9 +63,11 @@ args2bicop <- function(family, rotation, parameters, var_types = c("c", "c")) {
 
 is_vectorized_bicop_parameters <- function(parameters, family) {
   parameters <- as.matrix(parameters)
-  if (!(family %in% setdiff(family_set_parametric, "indep")) ||
+  if (
+    !(family %in% setdiff(family_set_parametric, "indep")) ||
       (length(parameters) == 0) ||
-      (nrow(parameters) <= 1)) {
+      (nrow(parameters) <= 1)
+  ) {
     return(FALSE)
   }
 

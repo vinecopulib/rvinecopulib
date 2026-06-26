@@ -138,14 +138,16 @@ test_that("vectorized parameters work for dbicop/pbicop/hbicop", {
   )
   hi_row <- vapply(
     seq_len(n),
-    function(i) hbicop(
-      u[i, ],
-      2,
-      "gaussian",
-      0,
-      pars[i, , drop = FALSE],
-      inverse = TRUE
-    ),
+    function(i) {
+      hbicop(
+        u[i, ],
+        2,
+        "gaussian",
+        0,
+        pars[i, , drop = FALSE],
+        inverse = TRUE
+      )
+    },
     numeric(1)
   )
 
@@ -193,14 +195,16 @@ test_that("vectorized parameters work for rotated two-parameter families", {
   )
   hi_row <- vapply(
     seq_len(n),
-    function(i) hbicop(
-      u[i, ],
-      1,
-      "bb1",
-      270,
-      pars[i, , drop = FALSE],
-      inverse = TRUE
-    ),
+    function(i) {
+      hbicop(
+        u[i, ],
+        1,
+        "bb1",
+        270,
+        pars[i, , drop = FALSE],
+        inverse = TRUE
+      )
+    },
     numeric(1)
   )
 
