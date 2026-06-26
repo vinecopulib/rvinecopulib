@@ -1,3 +1,21 @@
+# rvinecopulib 0.8.0.1.0
+
+Update following an upgrade of the C++ backend vinecopulib to 0.8.0, see
+https://github.com/vinecopulib/vinecopulib/blob/main/NEWS.md.
+
+The main changes on the R end are:
+
+* added `scores()` and `hessian()` for vine copula models, and a `keep_all`
+  option to `dvinecop()` for returning intermediate quantities from density
+  evaluation,
+
+* added support for vectorized `parameters` in `dbicop()`, `pbicop()`, and
+  `hbicop()`, including `bicop_dist()` objects (vectorized parameters are not
+  supported for `rbicop()`),
+
+* aligned the R frontend with the updated vinecopulib 0.8.0 API and tests,
+  including the new per-row bicop parameter interface.
+
 # rvinecopulib 0.7.3.1.0
 
 ### NEW FEATURES
@@ -5,9 +23,6 @@
 * Allow for random spanning trees as alternatives to the MST-based structure selection using
   `tree_algorithm` in `vine` and `vinecop`. Options are `"mst_prim"`, `"mst_kruskal"`,
   `"random_weighted"` or `"random_unweighted"` (#307).
-
-* Add `scores()` and `hessian()` for vine copula models and a `keep_all` option
-  to `dvinecop()` for returning intermediate quantities from density evaluation.
 
 ### BUG FIXES
 
