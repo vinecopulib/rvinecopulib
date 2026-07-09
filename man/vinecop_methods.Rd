@@ -99,6 +99,14 @@ pairs(u)
 dvinecop(u[1, ], vc)
 pvinecop(u[1, ], vc)
 
+# evaluate derivatives of the log-likelihood
+scores(u, vc)
+hessian(u, vc)
+
+# derivatives can also be computed for the full likelihood
+scores(u, vc, step_wise = FALSE)
+hessian(u, vc, step_wise = FALSE)
+
 ## Discrete models
 vc$var_types <- rep("d", 5)  # convert model to discrete
 
