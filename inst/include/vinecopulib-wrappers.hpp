@@ -112,26 +112,25 @@ inline Bicop bicop_wrap(const Rcpp::List& bicop_r)
   if (par.size() == 0) {
     bicop_cpp = Bicop(family, rotation);
   } else {
-    Eigen::MatrixXd pars = par;
     if (tools_stl::is_member(family, bicop_families::parametric)) {
       // Parametric constructors expect one parameter set in p x 1 layout.
       // For vectorized input (n x p), keep only the first row and transpose.
       const size_t p = expected_npars(family);
-      if (pars.cols() == 1) {
-        if ((p == 1) && (pars.rows() > 1)) {
-          pars = pars.topRows(1);
+      if (par.cols() == 1) {
+        if ((p == 1) && (par.rows() > 1)) {
+          par = par.topRows(1);
         }
       } else {
-        if ((p > 0) && (static_cast<size_t>(pars.cols()) == p)) {
-          Eigen::MatrixXd first_par = pars.topRows(1).transpose().eval();
-          pars = first_par;
+        if ((p > 0) && (static_cast<size_t>(par.cols()) == p)) {
+          Eigen::MatrixXd first_par = par.topRows(1).transpose().eval();
+          par = first_par;
         }
       }
     }
     bicop_cpp = Bicop(
       family,
       rotation,
-             pars
+      par
     );
   }
   bicop_cpp.set_var_types(bicop_r["var_types"]);
