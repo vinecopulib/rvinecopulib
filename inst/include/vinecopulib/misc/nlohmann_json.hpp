@@ -17015,7 +17015,17 @@ private:
   StringType& str;
 };
 
-template<typename CharType, typename StringType = std::basic_string<CharType>>
+template<typename CharType>
+struct is_standard_char_type : std::integral_constant<
+  bool,
+  std::is_same<CharType, char>::value ||
+    std::is_same<CharType, wchar_t>::value ||
+    std::is_same<CharType, char16_t>::value ||
+    std::is_same<CharType, char32_t>::value>
+{
+};
+
+template<typename CharType, typename StringType = void>
 class output_adapter
 {
 public:
@@ -17024,13 +17034,28 @@ public:
   {
   }
 
-  output_adapter(std::basic_ostream<CharType>& s)
-    : oa(std::make_shared<output_stream_adapter<CharType>>(s))
+  template<
+    typename CompatibleCharType,
+    enable_if_t<
+      is_standard_char_type<CompatibleCharType>::value &&
+        std::is_same<CompatibleCharType, CharType>::value,
+      int> = 0>
+  output_adapter(std::basic_ostream<CompatibleCharType>& s)
+    : oa(std::make_shared<output_stream_adapter<CompatibleCharType>>(s))
   {
   }
 
-  output_adapter(StringType& s)
-    : oa(std::make_shared<output_string_adapter<CharType, StringType>>(s))
+  template<
+    typename CompatibleStringType = StringType,
+    enable_if_t<
+      !std::is_same<CompatibleStringType, void>::value &&
+        is_standard_char_type<CharType>::value &&
+        std::is_same<typename CompatibleStringType::value_type,
+                     CharType>::value,
+      int> = 0>
+  output_adapter(CompatibleStringType& s)
+    : oa(std::make_shared<
+          output_string_adapter<CharType, CompatibleStringType>>(s))
   {
   }
 
