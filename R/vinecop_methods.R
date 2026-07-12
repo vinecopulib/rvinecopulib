@@ -4,8 +4,7 @@
 #' distribution.
 #'
 #' @name vinecop_distributions
-#' @aliases dvinecop pvinecop rvinecop scores hessian dvinecop_dist
-#'   pvinecop_dist rvinecop_dist
+#' @aliases dvinecop pvinecop rvinecop scores hessian dvinecop_dist pvinecop_dist rvinecop_dist
 #' @param u matrix of evaluation points; must contain at least d columns, where
 #'   d is the number of variables in the vine. More columns are required for
 #'   discrete models, see *Details*.
@@ -328,7 +327,7 @@ logLik.vinecop <- function(object, ...) {
 #' @references Nagler, T., Bumann, C., Czado, C. (2019). Model selection for
 #'   sparse high-dimensional vine copulas with application to portfolio risk.
 #'   *Journal of Multivariate Analysis, in press*
-#'   (\url{http://arxiv.org/pdf/1801.09739})
+#'   (\url{https://arxiv.org/pdf/1801.09739})
 #'
 #' @export mBICV
 #' @examples

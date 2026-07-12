@@ -4,8 +4,7 @@
 #' inverses) for the bivariate copula distribution.
 #'
 #' @name bicop_distributions
-#' @aliases dbicop pbicop rbicop hbicop dbicop_dist pbicop_dist rbicop_dist
-#'   hbicop_dist
+#' @aliases dbicop pbicop rbicop hbicop dbicop_dist pbicop_dist rbicop_dist hbicop_dist
 #'
 #' @param u evaluation points, a matrix with at least two columns, see
 #'   *Details*.
