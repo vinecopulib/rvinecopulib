@@ -11,9 +11,7 @@ expect_pdf_full_triangular_vectors <- function(x, vc, n) {
   expect_length(x$pdf, n)
   for (array in arrays) {
     expect_type(x[[array]], "list")
-    expected_length <- if (
-      array %in% sub_arrays && all(vc$var_types == "c")
-    ) {
+    expected_length <- if (array %in% sub_arrays && all(vc$var_types == "c")) {
       0L
     } else {
       dim(vc)["trunc_lvl"]

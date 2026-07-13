@@ -344,11 +344,16 @@ summary.bicop <- function(object, ...) {
   print_bicop_dep_measures(object)
   info <- bicop_fit_info(object)
   cat(
-    "Fit: n = ", object$nobs,
-    "; logLik = ", format_bicop_number(info$logLik),
-    "; df = ", format_bicop_number(info$npars),
-    "; AIC = ", format_bicop_number(info$AIC),
-    "; BIC = ", format_bicop_number(info$BIC),
+    "Fit: n = ",
+    object$nobs,
+    "; logLik = ",
+    format_bicop_number(info$logLik),
+    "; df = ",
+    format_bicop_number(info$npars),
+    "; AIC = ",
+    format_bicop_number(info$AIC),
+    "; BIC = ",
+    format_bicop_number(info$BIC),
     "\n",
     sep = ""
   )
@@ -429,9 +434,12 @@ bicop_dep_measures <- function(bc) {
 print_bicop_dep_measures <- function(bc) {
   dep <- bicop_dep_measures(bc)
   cat(
-    "Dependence: tau = ", format_bicop_number(dep$kendalls_tau),
-    "; beta = ", format_bicop_number(dep$blomqvist_beta),
-    "; tail dependence: ", format_bicop_tail_dep(dep$tail_dep),
+    "Dependence: tau = ",
+    format_bicop_number(dep$kendalls_tau),
+    "; beta = ",
+    format_bicop_number(dep$blomqvist_beta),
+    "; tail dependence: ",
+    format_bicop_tail_dep(dep$tail_dep),
     "\n",
     sep = ""
   )

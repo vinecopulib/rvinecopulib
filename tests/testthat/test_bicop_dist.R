@@ -87,10 +87,13 @@ test_that("dependence measures are computed", {
   dist <- bicop_dist("clayton", 0, 2)
   td <- tail_dep(dist)
 
-  expect_identical(dimnames(td), list(
-    variable1 = c("lower", "upper"),
-    variable2 = c("lower", "upper")
-  ))
+  expect_identical(
+    dimnames(td),
+    list(
+      variable1 = c("lower", "upper"),
+      variable2 = c("lower", "upper")
+    )
+  )
   expect_eql(td["lower", "lower"], 2^(-1 / 2))
   expect_eql(td["upper", "upper"], 0)
   expect_eql(blomqvist_beta(dist), 4 / sqrt(7) - 1)
