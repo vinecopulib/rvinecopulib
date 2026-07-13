@@ -83,10 +83,30 @@ test_that("parameter <-> tau conversion works", {
   ktau_to_par("frank", -0.5)
 })
 
+test_that("dependence measures are computed", {
+  dist <- bicop_dist("clayton", 0, 2)
+  td <- tail_dep(dist)
+
+  expect_identical(dimnames(td), list(
+    variable1 = c("lower", "upper"),
+    variable2 = c("lower", "upper")
+  ))
+  expect_eql(td["lower", "lower"], 2^(-1 / 2))
+  expect_eql(td["upper", "upper"], 0)
+  expect_eql(blomqvist_beta(dist), 4 / sqrt(7) - 1)
+})
+
 test_that("print method produces output", {
   dist <- bicop_dist("indep")
   expect_output(print(dist))
-  expect_output(summary(dist))
+  expect_output(
+    summary(dist),
+    "Dependence: tau = 0.00; beta = 0.00; tail dependence: none"
+  )
+  expect_output(
+    summary(bicop_dist("clayton", 0, 2)),
+    "tail dependence: LL = 0.71"
+  )
 })
 
 test_that("getters work", {

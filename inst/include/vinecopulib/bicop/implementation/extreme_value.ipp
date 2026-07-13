@@ -104,4 +104,15 @@ ExtremeValueBicop::parameters_to_tau(const Eigen::MatrixXd& par)
   };
   return tools_integration::integrate_zero_to_one(f);
 }
+
+inline Eigen::MatrixXd
+ExtremeValueBicop::parameters_to_taildep(const Eigen::MatrixXd& par)
+{
+  // extreme-value copulas have no lower tail dependence; the upper tail
+  // dependence coefficient is 2 * (1 - A(0.5)), where A is the Pickands
+  // dependence function.
+  Eigen::MatrixXd taildep = Eigen::MatrixXd::Zero(2, 2);
+  taildep(1, 1) = 2 * (1 - pickands(0.5, par.col(0)));
+  return taildep;
+}
 }

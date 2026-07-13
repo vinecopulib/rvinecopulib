@@ -62,6 +62,14 @@ protected:
 
   virtual double parameters_to_tau(const Eigen::MatrixXd& parameters) = 0;
 
+  // following two are non-pure: tail dependence defaults to NaN ("not
+  // implemented") and Blomqvist's beta has a generic implementation via the
+  // cdf.
+  virtual Eigen::MatrixXd parameters_to_taildep(
+    const Eigen::MatrixXd& parameters);
+
+  virtual double parameters_to_beta(const Eigen::MatrixXd& parameters);
+
   virtual void flip() = 0;
 
   // following are virtual so they can be overriden by KernelBicop

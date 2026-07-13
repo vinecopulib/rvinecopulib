@@ -45,6 +45,14 @@ bicop_par_to_tau_cpp <- function(bicop_r) {
     .Call(`_rvinecopulib_bicop_par_to_tau_cpp`, bicop_r)
 }
 
+bicop_tail_dep_cpp <- function(bicop_r) {
+    .Call(`_rvinecopulib_bicop_tail_dep_cpp`, bicop_r)
+}
+
+bicop_beta_cpp <- function(bicop_r) {
+    .Call(`_rvinecopulib_bicop_beta_cpp`, bicop_r)
+}
+
 bicop_tau_to_par_cpp <- function(bicop_r, tau) {
     .Call(`_rvinecopulib_bicop_tau_to_par_cpp`, bicop_r, tau)
 }

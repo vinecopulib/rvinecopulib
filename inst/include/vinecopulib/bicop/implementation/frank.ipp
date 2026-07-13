@@ -94,6 +94,12 @@ FrankBicop::get_start_parameters(const double tau)
   return par;
 }
 
+inline Eigen::MatrixXd
+FrankBicop::parameters_to_taildep(const Eigen::MatrixXd&)
+{
+  return Eigen::MatrixXd::Zero(2, 2);
+}
+
 //! @brief computes the Debye function of order 1.
 //! @param x the argument and upper limit of the integral. x>=0.
 //! @return the Debye function. Zero if x<=0.

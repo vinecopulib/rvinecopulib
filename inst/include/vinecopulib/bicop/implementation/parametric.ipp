@@ -176,15 +176,16 @@ ParBicop::adjust_parameters_bounds(Eigen::MatrixXd& lb,
   }
 
   // refine search interval for Brent algorithm
+  double eps = (var_types_ == std::vector<std::string>{ "c", "c" }) ? 0.1 : 0.6;
   if (tools_stl::is_member(family_, bicop_families::one_par)) {
     auto lb2 = lb;
     auto ub2 = ub;
     if (tools_stl::is_member(family_, bicop_families::rotationless)) {
-      lb = tau_to_parameters(std::max(tau - 0.1, -0.99));
-      ub = tau_to_parameters(std::min(tau + 0.1, 0.99));
+      lb = tau_to_parameters(std::max(tau - eps, -0.99));
+      ub = tau_to_parameters(std::min(tau + eps, 0.99));
     } else {
-      lb = tau_to_parameters(std::max(std::fabs(tau) - 0.1, 1e-10));
-      ub = tau_to_parameters(std::min(std::fabs(tau) + 0.1, 0.95));
+      lb = tau_to_parameters(std::max(std::fabs(tau) - eps, 1e-10));
+      ub = tau_to_parameters(std::min(std::fabs(tau) + eps, 0.95));
     }
     // make sure that parameter bounds are respected
     lb = lb2.cwiseMax(lb);

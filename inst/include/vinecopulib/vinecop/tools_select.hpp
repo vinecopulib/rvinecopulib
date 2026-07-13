@@ -34,8 +34,8 @@ namespace tools_select {
 
 double
 calculate_criterion(const Eigen::MatrixXd& data,
-                    std::string tree_criterion,
-                    Eigen::VectorXd weights,
+                    const std::string& tree_criterion,
+                    const Eigen::VectorXd& weights,
                     const TreeCriterionFunction& tree_criterion_function = {});
 
 std::vector<size_t>
@@ -144,10 +144,12 @@ protected:
 
   Eigen::MatrixXd get_pc_data(size_t v0, size_t v1, const VineTree& tree);
 
-  Eigen::VectorXd get_hfunc(const VertexProperties& vertex_data, bool is_first);
+  static const Eigen::VectorXd& get_hfunc(const VertexProperties& vertex_data,
+                                          bool is_first);
 
-  Eigen::VectorXd get_hfunc_sub(const VertexProperties& vertex_data,
-                                bool is_first);
+  static const Eigen::VectorXd& get_hfunc_sub(
+    const VertexProperties& vertex_data,
+    bool is_first);
 
   ptrdiff_t find_common_neighbor(size_t v0, size_t v1, const VineTree& tree);
 
@@ -173,7 +175,7 @@ protected:
   // functions for manipulation of trees ----------------
   VineTree make_base_tree(const Eigen::MatrixXd& data);
 
-  VineTree edges_as_vertices(const VineTree& prev_tree);
+  VineTree edges_as_vertices(VineTree& prev_tree);
 
   void add_edge_info(VineTree& tree);
 
@@ -184,7 +186,8 @@ protected:
   void remove_vertex_data(VineTree& tree);
 
   void select_pair_copulas(VineTree& tree,
-                           const VineTree& tree_opt = VineTree());
+                           const VineTree& tree_opt = VineTree(),
+                           bool last_tree = false);
 
   FoundEdge find_old_fit(double fit_id, const VineTree& old_graph);
 

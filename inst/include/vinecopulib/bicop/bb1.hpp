@@ -43,6 +43,8 @@ private:
   // link between Kendall's tau and the par_bicop parameter
   double parameters_to_tau(const Eigen::MatrixXd& par);
 
+  Eigen::MatrixXd parameters_to_taildep(const Eigen::MatrixXd& par);
+
   Eigen::MatrixXd tau_to_parameters(const double& tau);
 };
 }

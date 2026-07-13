@@ -88,6 +88,14 @@ GumbelBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
   return (parameters(0) - 1) / parameters(0);
 }
 
+inline Eigen::MatrixXd
+GumbelBicop::parameters_to_taildep(const Eigen::MatrixXd& parameters)
+{
+  Eigen::MatrixXd taildep = Eigen::MatrixXd::Zero(2, 2);
+  taildep(1, 1) = 2 - std::pow(2.0, 1.0 / parameters(0)); // upper tail dep.
+  return taildep;
+}
+
 inline Eigen::VectorXd
 GumbelBicop::get_start_parameters(const double tau)
 {

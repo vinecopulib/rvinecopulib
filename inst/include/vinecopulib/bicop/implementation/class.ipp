@@ -104,15 +104,17 @@ inline Bicop::Bicop(const nlohmann::json& input)
   }
 }
 
-//! @brief Instantiates from a JSON file.
+//! @brief Instantiates from a JSON or CBOR file.
 //!
-//! @details The input file contains four attributes:
+//! @details Files ending in `.cbor` are read as CBOR. All other filenames are
+//! read as JSON for backwards compatibility. The input contains four
+//! attributes:
 //! `"fam"`, `"rot"`, `"par"`, `"vt"` respectively a
 //! string for the family name, an integer for the rotation, and a numeric
 //! matrix for the parameters, and a list of two strings for the variable
 //! types.
 //!
-//! @param filename The name of the JSON file to read.
+//! @param filename The name of the file to read.
 inline Bicop::Bicop(const std::string& filename)
   : Bicop(tools_serialization::file_to_json(filename))
 {
@@ -142,9 +144,11 @@ Bicop::to_json() const
   return output;
 }
 
-//! @brief Write the copula object into a JSON file.
+//! @brief Writes the copula object into a JSON or CBOR file.
 //!
-//! @details The written file contains four attributes:
+//! @details Filenames ending in `.cbor` are written as CBOR. All other
+//! filenames are written as JSON for backwards compatibility. The written
+//! representation contains four attributes:
 //! `"fam"`, `"rot"`, `"par"`, `"vt"`, `"nobs"`, `"ll"`, `"npars"`
 //! respectively a string for the family name, an integer for the rotation, and
 //! a numeric matrix for the parameters, a list of two strings for the
@@ -847,6 +851,81 @@ Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters) const
   return tau;
 }
 
+//! @brief Converts the copula parameters to the tail dependence coefficients.
+//!
+//! @details The result is a \f$ 2 \times 2 \f$ matrix \f$ M \f$ collecting the
+//! tail dependence coefficients in the four corners of the unit square:
+//! \f$ M(i, j) \f$ is the coefficient as \f$ U_1 \to i \f$ and
+//! \f$ U_2 \to j \f$, with \f$ i, j \in \{0, 1\} \f$ (0 = lower, 1 = upper).
+//! Thus \f$ M(0, 0) \f$ is the classical lower and \f$ M(1, 1) \f$ the
+//! classical upper tail dependence coefficient.
+//!
+//! For the unrotated family, the lower \f$ \lambda_L = M(0, 0) \f$ and upper
+//! \f$ \lambda_U = M(1, 1) \f$ coefficients are:
+//!
+//! | Family | Lower \f$ \lambda_L \f$ | Upper \f$ \lambda_U \f$ |
+//! | --- | --- | --- |
+//! | Independence, Gaussian, Frank | \f$ 0 \f$ | \f$ 0 \f$ |
+//! | Student t | \f$ \lambda_t \f$ (see below) | \f$ \lambda_t \f$ |
+//! | Clayton | \f$ 2^{-1/\theta} \f$ | \f$ 0 \f$ |
+//! | Gumbel | \f$ 0 \f$ | \f$ 2 - 2^{1/\theta} \f$ |
+//! | Joe | \f$ 0 \f$ | \f$ 2 - 2^{1/\theta} \f$ |
+//! | BB1 | \f$ 2^{-1/(\theta\delta)} \f$ | \f$ 2 - 2^{1/\delta} \f$ |
+//! | BB6 | \f$ 0 \f$ | \f$ 2 - 2^{1/(\theta\delta)} \f$ |
+//! | BB7 | \f$ 2^{-1/\delta} \f$ | \f$ 2 - 2^{1/\theta} \f$ |
+//! | BB8 | \f$ 0 \f$ | \f$ 2 - 2^{1/\theta} \f$ if \f$ \delta=1 \f$, else 0 |
+//! | Tawn (extreme-value) | \f$ 0 \f$ | \f$ 2 (1 - A(1/2)) \f$ |
+//! | TLL (nonparametric) | \c NaN | \c NaN |
+//!
+//! Here \f$ \theta \f$ (and \f$ \delta \f$ for two-parameter families) denote
+//! the copula parameters and \f$ A \f$ the Pickands dependence function. For
+//! the Student t copula, with correlation \f$ \rho \f$, degrees of freedom
+//! \f$ \nu \f$, and \f$ t_{\nu+1} \f$ the Student t cdf,
+//! \f$ \lambda_t = 2\, t_{\nu+1}(-\sqrt{(\nu+1)(1-\rho)/(1+\rho)}) \f$; it
+//! additionally has equal dependence in the two off-diagonal (discordant)
+//! corners, obtained by replacing \f$ \rho \f$ with \f$ -\rho \f$. All other
+//! parametric families have zero off-diagonal coefficients. Rotations permute
+//! the corners: 180 degrees swaps lower/upper, while 90/270 degrees move
+//! dependence to the off-diagonal corners.
+//!
+//! @param parameters The parameters (must be a valid parametrization of
+//!     the current family).
+inline Eigen::MatrixXd
+Bicop::parameters_to_taildep(const Eigen::MatrixXd& parameters) const
+{
+  Eigen::MatrixXd m = bicop_->parameters_to_taildep(parameters);
+  // rotate the 2x2 matrix like a grid, counter-clockwise, to match the
+  // (counter-clockwise) rotation applied to the data in `rotate_data`.
+  switch (rotation_) {
+    case 90:
+      return m.transpose().colwise().reverse();
+    case 180:
+      return m.reverse();
+    case 270:
+      return m.transpose().rowwise().reverse();
+    default:
+      return m;
+  }
+}
+
+//! @brief Converts the copula parameters to Blomqvist's \f$ \beta \f$.
+//!
+//! @details Blomqvist's beta is computed from the copula cdf as
+//! \f$ \beta = 4\, C(0.5, 0.5) - 1 \f$, using the same formula for every
+//! family (including the nonparametric `tll`).
+//!
+//! @param parameters The parameters (must be a valid parametrization of
+//!     the current family).
+inline double
+Bicop::parameters_to_beta(const Eigen::MatrixXd& parameters) const
+{
+  double beta = bicop_->parameters_to_beta(parameters);
+  if (tools_stl::is_member(rotation_, { 90, 270 })) {
+    beta *= -1;
+  }
+  return beta;
+}
+
 //! @name Getters and setters
 //!
 //! @{
@@ -935,6 +1014,23 @@ inline double
 Bicop::get_tau() const
 {
   return parameters_to_tau(bicop_->get_parameters());
+}
+
+//! @brief Gets the tail dependence coefficients.
+//!
+//! @details See Bicop::parameters_to_taildep() for the layout of the returned
+//! \f$ 2 \times 2 \f$ matrix.
+inline Eigen::MatrixXd
+Bicop::get_taildep() const
+{
+  return parameters_to_taildep(bicop_->get_parameters());
+}
+
+//! @brief Gets Blomqvist's beta.
+inline double
+Bicop::get_beta() const
+{
+  return parameters_to_beta(bicop_->get_parameters());
 }
 
 //! @brief Sets the rotation.

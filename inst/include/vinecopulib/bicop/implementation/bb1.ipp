@@ -93,6 +93,17 @@ Bb1Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
 }
 
 inline Eigen::MatrixXd
+Bb1Bicop::parameters_to_taildep(const Eigen::MatrixXd& par)
+{
+  double theta = par(0);
+  double delta = par(1);
+  Eigen::MatrixXd taildep = Eigen::MatrixXd::Zero(2, 2);
+  taildep(0, 0) = std::pow(2.0, -1.0 / (theta * delta)); // lower tail dep.
+  taildep(1, 1) = 2 - std::pow(2.0, 1.0 / delta);        // upper tail dep.
+  return taildep;
+}
+
+inline Eigen::MatrixXd
 Bb1Bicop::tau_to_parameters(const double& tau)
 {
   return no_tau_to_parameters(tau);

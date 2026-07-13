@@ -104,6 +104,20 @@ Bb8Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
 }
 
 inline Eigen::MatrixXd
+Bb8Bicop::parameters_to_taildep(const Eigen::MatrixXd& par)
+{
+  double theta = par(0);
+  double delta = par(1);
+  Eigen::MatrixXd taildep = Eigen::MatrixXd::Zero(2, 2);
+  // BB8 only has upper tail dependence in the limiting case delta = 1
+  // (where it reduces to the Joe copula), and none otherwise.
+  if (delta >= 1.0) {
+    taildep(1, 1) = 2 - std::pow(2.0, 1.0 / theta);
+  }
+  return taildep;
+}
+
+inline Eigen::MatrixXd
 Bb8Bicop::tau_to_parameters(const double& tau)
 {
   return no_tau_to_parameters(tau);

@@ -7,7 +7,7 @@
 #pragma once
 
 #include <vinecopulib/bicop/fit_controls.hpp>
-#include <vinecopulib/misc/nlohmann_json.hpp>
+#include <vinecopulib/misc/tools_serialization.hpp>
 
 namespace vinecopulib {
 
@@ -85,6 +85,13 @@ public:
 
   //! @return Kendall's tau implied by the current parameters.
   double get_tau() const;
+
+  //! @return the tail dependence coefficients implied by the current
+  //! parameters, as a 2x2 matrix; see parameters_to_taildep().
+  Eigen::MatrixXd get_taildep() const;
+
+  //! @return Blomqvist's beta implied by the current parameters.
+  double get_beta() const;
 
   //! @return the number of parameters in the copula model. For nonparametric
   //! families, this is a conceptually similar effective-parameter count.
@@ -190,6 +197,11 @@ public:
   std::string str() const;
 
   double parameters_to_tau(const Eigen::MatrixXd& parameters) const;
+
+  Eigen::MatrixXd parameters_to_taildep(
+    const Eigen::MatrixXd& parameters) const;
+
+  double parameters_to_beta(const Eigen::MatrixXd& parameters) const;
 
   Eigen::MatrixXd tau_to_parameters(const double& tau) const;
 

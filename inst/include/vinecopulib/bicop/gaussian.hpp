@@ -39,6 +39,9 @@ private:
 
   Eigen::MatrixXd tau_to_parameters(const double& tau);
 
+  // the Gaussian copula has no tail dependence in any corner
+  Eigen::MatrixXd parameters_to_taildep(const Eigen::MatrixXd& parameters);
+
   Eigen::VectorXd get_start_parameters(const double tau);
 };
 }

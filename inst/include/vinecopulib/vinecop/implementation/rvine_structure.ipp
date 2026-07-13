@@ -145,19 +145,20 @@ inline RVineStructure::RVineStructure(
 //!      a valid R-vine structure.
 inline RVineStructure::RVineStructure(const nlohmann::json& input,
                                       const bool check)
-  : RVineStructure(
-      tools_serialization::json_to_vector<size_t>(input["order"]),
-      tools_serialization::json_to_triangular_array<size_t>(input["array"]),
-      check)
+  : RVineStructure(tools_serialization::json_to_vector<size_t>(input["order"]),
+                   TriangularArray<size_t>(input["array"]),
+                   check)
 {
 }
 
-//! @brief Instantiates an RVineStructure from a JSON file.
+//! @brief Instantiates an RVineStructure from a JSON or CBOR file.
 //!
-//! @details The file needs to contain two values: `"array"` for the
-//! structure triangular array and `"order"` for the order vector.
+//! @details Files ending in `.cbor` are read as CBOR. All other filenames are
+//! read as JSON for backwards compatibility. The file needs to contain two
+//! values: `"array"` for the structure triangular array and `"order"` for the
+//! order vector.
 //!
-//! @param filename The name of the JSON file to read.
+//! @param filename The name of the file to read.
 //! @param check Whether to check if the input represents
 //!      a valid R-vine matrix.
 inline RVineStructure::RVineStructure(const std::string& filename,
@@ -176,19 +177,18 @@ inline nlohmann::json
 RVineStructure::to_json() const
 {
   nlohmann::json output;
-  auto array_json =
-    tools_serialization::triangular_array_to_json(struct_array_);
-  output["array"] = array_json;
-  auto order_json = tools_serialization::vector_to_json(order_);
-  output["order"] = order_json;
+  output["array"] = struct_array_.to_json();
+  output["order"] = tools_serialization::vector_to_json(order_);
 
   return output;
 }
 
-//! @brief Write the structure into a JSON file.
+//! @brief Writes the structure into a JSON or CBOR file.
 //!
-//! @details The written file contains two values: `"array"` for the structure
-//! triangular array and `"order"` for the order vector.
+//! @details Filenames ending in `.cbor` are written as CBOR. All other
+//! filenames are written as JSON for backwards compatibility. The written file
+//! contains two values: `"array"` for the structure triangular array and
+//! `"order"` for the order vector.
 //!
 //! @param filename The name of the file to write.
 inline void

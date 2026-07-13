@@ -104,17 +104,17 @@ TllBicop::fit_local_likelihood(const Eigen::MatrixXd& x,
   Eigen::Matrix2d S(B);
   Eigen::MatrixXd zz(n, 2), zz2(n, 2);
   for (size_t k = 0; k < m; ++k) {
-    zz = z_data - z.row(k).replicate(n, 1);
+    zz = z_data.rowwise() - z.row(k);
     kernels = gaussian_kernel_2d(zz) * det_irB;
     if (weights.size() > 0)
       kernels = kernels.cwiseProduct(weights);
     double f0 = kernels.mean();
     if (method != "constant") {
       zz = (irB * zz.transpose()).transpose();
-      f1 = zz.cwiseProduct(kernels.replicate(1, 2)).colwise().mean();
+      f1 = (zz.array().colwise() * kernels.array()).colwise().mean();
       b = f1 / f0;
       if (method == "quadratic") {
-        zz2 = zz.cwiseProduct(kernels.replicate(1, 2)) /
+        zz2 = (zz.array().colwise() * kernels.array()).matrix() /
               (f0 * static_cast<double>(n));
         b = B * b;
         S = (B * (zz.transpose() * zz2) * B - b * b.transpose()).inverse();
@@ -159,17 +159,25 @@ TllBicop::calculate_infl(const size_t& n,
                          const std::string& method,
                          const double& weight)
 {
-  Eigen::MatrixXd M;
+  // the Gaussian kernel at zero; static so it is computed only once
+  static const double kernel0 =
+    gaussian_kernel_2d(Eigen::MatrixXd::Zero(1, 2))(0);
+
   if (method == "constant") {
-    M = Eigen::MatrixXd::Constant(1, 1, f0);
-  } else if (method == "linear") {
-    M = Eigen::MatrixXd(3, 3);
+    // the 1x1 "matrix inverse" is just the reciprocal
+    return kernel0 * det_irB / f0 * weight / static_cast<double>(n);
+  }
+
+  double m_inv_00;
+  if (method == "linear") {
+    Eigen::Matrix3d M;
     M(0, 0) = f0;
     M.col(0).tail(2) = B * b * f0;
     M.row(0).tail(2) = M.col(0).tail(2);
     M.block(1, 1, 2, 2) = f0 * B + f0 * B * b * b.transpose() * B;
-  } else if (method == "quadratic") {
-    M = Eigen::MatrixXd::Zero(6, 6);
+    m_inv_00 = M.inverse()(0, 0);
+  } else {
+    Eigen::Matrix<double, 6, 6> M = Eigen::Matrix<double, 6, 6>::Zero();
     M(0, 0) = f0;
     M.col(0).segment(1, 2) = f0 * b;
     M.row(0).segment(1, 2) = M.col(0).segment(1, 2);
@@ -208,11 +216,10 @@ TllBicop::calculate_infl(const size_t& n,
     M(5, 4) += 3.0 * Si(1, 1) * b(0) * b(1) + b(0) * std::pow(b(1), 3);
     M(5, 4) *= 0.5 * f0;
     M(4, 5) = M(5, 4);
+    m_inv_00 = M.inverse()(0, 0);
   }
 
-  double infl = gaussian_kernel_2d(Eigen::MatrixXd::Zero(1, 2))(0) * det_irB;
-  infl *= M.inverse()(0, 0) * weight / static_cast<double>(n);
-  return infl;
+  return kernel0 * det_irB * m_inv_00 * weight / static_cast<double>(n);
 }
 
 inline void

@@ -169,6 +169,18 @@ double bicop_par_to_tau_cpp(const Rcpp::List& bicop_r)
 }
 
 // [[Rcpp::export()]]
+Eigen::MatrixXd bicop_tail_dep_cpp(const Rcpp::List& bicop_r)
+{
+  return bicop_wrap(bicop_r).get_taildep();
+}
+
+// [[Rcpp::export()]]
+double bicop_beta_cpp(const Rcpp::List& bicop_r)
+{
+  return bicop_wrap(bicop_r).get_beta();
+}
+
+// [[Rcpp::export()]]
 Eigen::MatrixXd bicop_tau_to_par_cpp(const Rcpp::List& bicop_r,
                                      const double& tau)
 {
@@ -318,7 +330,7 @@ Eigen::MatrixXd vinecop_hessian_cpp(const Eigen::MatrixXd& u,
                                     bool step_wise,
                                     size_t cores)
 {
-  return vinecop_wrap(vinecop_r).hessian_avg(u, step_wise, cores);
+  return vinecop_wrap(vinecop_r).hessian(u, step_wise, cores);
 }
 
 // [[Rcpp::export()]]
@@ -442,5 +454,4 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   }
   return fits_r;
 }
-
 

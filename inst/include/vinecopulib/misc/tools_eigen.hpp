@@ -8,6 +8,7 @@
 
 #include <Eigen/Dense>
 #include <functional>
+#include <vector>
 
 namespace vinecopulib {
 
@@ -16,31 +17,50 @@ namespace tools_eigen {
 //! An `Eigen::Matrix` containing `bool`s (similar to `Eigen::MatrixXd`).
 typedef Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> MatrixXb;
 
+//! A reference to a constant `Eigen::MatrixXd`; binds blocks (e.g.
+//! `u.leftCols(2)`) and full matrices without copying.
+typedef Eigen::Ref<const Eigen::MatrixXd> ConstMatRef;
+
 template<typename T>
 Eigen::MatrixXd
-unaryExpr_or_nan(const Eigen::MatrixXd& x, const T& func)
+unaryExpr_or_nan(const tools_eigen::ConstMatRef& x, const T& func)
 {
-  return x.unaryExpr([&func](const double& y) {
-    if ((std::isnan)(y)) {
-      return std::numeric_limits<double>::quiet_NaN();
-    } else {
-      return func(y);
+  // raw-pointer loop: coefficient access through the Ref's dynamic strides
+  // is measurably slower in the hot per-element paths
+  const Eigen::Index n = x.rows();
+  Eigen::MatrixXd out(n, x.cols());
+  for (Eigen::Index j = 0; j < x.cols(); ++j) {
+    const double* p = x.data() + j * x.outerStride();
+    double* q = out.data() + j * n;
+    for (Eigen::Index i = 0; i < n; ++i) {
+      if ((std::isnan)(p[i])) {
+        q[i] = std::numeric_limits<double>::quiet_NaN();
+      } else {
+        q[i] = func(p[i]);
+      }
     }
-  });
+  }
+  return out;
 }
 
 template<typename T>
 Eigen::VectorXd
-binaryExpr_or_nan(const Eigen::MatrixXd& u, const T& func)
+binaryExpr_or_nan(const tools_eigen::ConstMatRef& u, const T& func)
 {
-  auto func_or_nan = [&func](const double& u1, const double& u2) {
-    if ((std::isnan)(u1) || (std::isnan)(u2)) {
-      return std::numeric_limits<double>::quiet_NaN();
+  // raw-pointer loop: coefficient access through the Ref's dynamic strides
+  // is measurably slower in the hot per-element paths
+  const Eigen::Index n = u.rows();
+  const double* p0 = u.data();
+  const double* p1 = u.data() + u.outerStride();
+  Eigen::VectorXd out(n);
+  for (Eigen::Index i = 0; i < n; ++i) {
+    if ((std::isnan)(p0[i]) || (std::isnan)(p1[i])) {
+      out(i) = std::numeric_limits<double>::quiet_NaN();
     } else {
-      return func(u1, u2);
+      out(i) = func(p0[i], p1[i]);
     }
-  };
-  return u.col(0).binaryExpr(u.col(1), func_or_nan);
+  }
+  return out;
 }
 
 //! @brief Applies a bivariate function row-wise with per-observation
@@ -55,8 +75,8 @@ binaryExpr_or_nan(const Eigen::MatrixXd& u, const T& func)
 //!   double`.
 template<typename T>
 Eigen::VectorXd
-binaryExpr_or_nan(const Eigen::MatrixXd& u,
-                  const Eigen::MatrixXd& parameters,
+binaryExpr_or_nan(const tools_eigen::ConstMatRef& u,
+                  const tools_eigen::ConstMatRef& parameters,
                   const T& func)
 {
   const Eigen::Index n = u.rows();
@@ -65,10 +85,12 @@ binaryExpr_or_nan(const Eigen::MatrixXd& u,
   // single-parameter (state-based) path does not rebuild it on every row
   const Eigen::VectorXd par0 =
     broadcast ? parameters.row(0).transpose() : Eigen::VectorXd();
+  const double* p0 = u.data();
+  const double* p1 = u.data() + u.outerStride();
   Eigen::VectorXd out(n);
   for (Eigen::Index i = 0; i < n; ++i) {
-    const double u1 = u(i, 0);
-    const double u2 = u(i, 1);
+    const double u1 = p0[i];
+    const double u2 = p1[i];
     if ((std::isnan)(u1) || (std::isnan)(u2)) {
       out(i) = std::numeric_limits<double>::quiet_NaN();
     } else if (broadcast) {
@@ -89,7 +111,7 @@ binaryExpr_or_nan(const Eigen::MatrixXd& u,
 //! @param k The index of the parameter to extract.
 //! @param n The desired output length.
 inline Eigen::VectorXd
-parameter_as_vector(const Eigen::MatrixXd& parameters,
+parameter_as_vector(const tools_eigen::ConstMatRef& parameters,
                     const Eigen::Index k,
                     const Eigen::Index n)
 {
@@ -130,6 +152,23 @@ invert_f(const Eigen::VectorXd& x,
          const double lb = 1e-20,
          const double ub = 1 - 1e-20,
          int n_iter = 35);
+
+//! evaluates the function and its derivative at the active rows only.
+//! Given the still-unconverged row indices and their current values, it fills
+//! the (same-length) outputs with \f$ f \f$ and \f$ f' \f$ at those rows.
+using NewtonEval =
+  std::function<void(const std::vector<Eigen::Index>& active_rows,
+                     const Eigen::VectorXd& v_active,
+                     Eigen::VectorXd& f_out,
+                     Eigen::VectorXd& fprime_out)>;
+
+Eigen::VectorXd
+invert_f_newton(const Eigen::VectorXd& x,
+                const NewtonEval& eval,
+                const double lb = 1e-20,
+                const double ub = 1 - 1e-20,
+                const double tol = 1e-10,
+                int n_iter = 50);
 
 Eigen::MatrixXd
 expand_grid(const Eigen::VectorXd& grid_points);

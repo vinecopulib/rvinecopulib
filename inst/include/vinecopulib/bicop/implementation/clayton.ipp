@@ -96,6 +96,14 @@ ClaytonBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
   return parameters(0) / (2 + std::fabs(parameters(0)));
 }
 
+inline Eigen::MatrixXd
+ClaytonBicop::parameters_to_taildep(const Eigen::MatrixXd& parameters)
+{
+  Eigen::MatrixXd taildep = Eigen::MatrixXd::Zero(2, 2);
+  taildep(0, 0) = std::pow(2.0, -1.0 / parameters(0)); // lower tail dependence
+  return taildep;
+}
+
 inline Eigen::VectorXd
 ClaytonBicop::get_start_parameters(const double tau)
 {

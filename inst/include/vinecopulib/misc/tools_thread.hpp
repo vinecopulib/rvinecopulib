@@ -110,7 +110,9 @@ ThreadPool::push(F&& f, Args&&... args)
     std::lock_guard<std::mutex> lk(m_tasks_);
     if (stopped_)
       throw std::runtime_error("cannot push to joined thread pool");
-    jobs_.emplace([f, args...] { f(args...); });
+    // bind moves/copies the decayed arguments instead of capturing them by
+    // value a second time
+    jobs_.emplace(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
   }
   // signal a waiting worker that there's a new job
   cv_tasks_.notify_one();

@@ -67,6 +67,12 @@ IndepBicop::parameters_to_tau(const Eigen::MatrixXd&)
   return 0.0;
 }
 
+inline Eigen::MatrixXd
+IndepBicop::parameters_to_taildep(const Eigen::MatrixXd&)
+{
+  return Eigen::MatrixXd::Zero(2, 2);
+}
+
 inline Eigen::VectorXd
 IndepBicop::get_start_parameters(const double tau)
 {

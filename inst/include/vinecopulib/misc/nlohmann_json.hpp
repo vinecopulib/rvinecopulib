@@ -12792,6 +12792,7 @@ private:
           default:              // LCOV_EXCL_LINE
             JSON_ASSERT(false); // LCOV_EXCL_LINE
         }
+        return false; // LCOV_EXCL_LINE
       }
 
       case 0xF4: // false

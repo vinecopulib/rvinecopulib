@@ -48,6 +48,9 @@ private:
 
   double parameters_to_tau(const Eigen::MatrixXd&);
 
+  // the independence copula has no tail dependence in any corner
+  Eigen::MatrixXd parameters_to_taildep(const Eigen::MatrixXd& parameters);
+
   void flip();
 
   Eigen::VectorXd get_start_parameters(const double tau);

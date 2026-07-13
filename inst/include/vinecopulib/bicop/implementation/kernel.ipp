@@ -82,17 +82,17 @@ KernelBicop::hfunc2(const Eigen::MatrixXd& u)
 }
 
 inline Eigen::VectorXd
-KernelBicop::hinv1_raw(const Eigen::MatrixXd& u,
-                       const Eigen::MatrixXd& parameters)
+KernelBicop::hinv1_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
-  return hinv1_num_raw(u, parameters);
+  // direct inversion of the interpolated conditional cdf; replaces the
+  // generic bisection (which re-integrated the grid 35 times per point)
+  return interp_grid_->inverse_integrate_1d(u, 1);
 }
 
 inline Eigen::VectorXd
-KernelBicop::hinv2_raw(const Eigen::MatrixXd& u,
-                       const Eigen::MatrixXd& parameters)
+KernelBicop::hinv2_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
-  return hinv2_num_raw(u, parameters);
+  return interp_grid_->inverse_integrate_1d(u, 2);
 }
 
 inline double

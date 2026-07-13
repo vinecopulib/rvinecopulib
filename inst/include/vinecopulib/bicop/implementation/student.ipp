@@ -155,4 +155,24 @@ StudentBicop::tau_to_parameters(const double& tau)
 {
   return no_tau_to_parameters(tau);
 }
+
+inline Eigen::MatrixXd
+StudentBicop::parameters_to_taildep(const Eigen::MatrixXd& parameters)
+{
+  double rho = parameters(0);
+  double nu = parameters(1);
+  // the t-copula has tail dependence in all four corners; the concordant
+  // (lower-lower, upper-upper) corners use rho, the discordant (lower-upper,
+  // upper-lower) corners use -rho.
+  Eigen::MatrixXd arg(2, 1);
+  arg(0) = -std::sqrt((nu + 1.0) * (1.0 - rho) / (1.0 + rho));
+  arg(1) = -std::sqrt((nu + 1.0) * (1.0 + rho) / (1.0 - rho));
+  Eigen::MatrixXd lambda = 2.0 * tools_stats::pt(arg, nu + 1.0);
+  Eigen::MatrixXd taildep(2, 2);
+  taildep(0, 0) = lambda(0); // lower-lower
+  taildep(1, 1) = lambda(0); // upper-upper
+  taildep(0, 1) = lambda(1); // lower-upper
+  taildep(1, 0) = lambda(1); // upper-lower
+  return taildep;
+}
 }

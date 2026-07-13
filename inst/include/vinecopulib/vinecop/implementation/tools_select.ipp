@@ -27,40 +27,64 @@ using namespace tools_stl;
 //! @param weights Vector of weights for each observation (can be empty).
 //! @param tree_criterion_function Custom criterion function, used when
 //!   `tree_criterion == "custom"`.
+//! (internal) criterion dispatch on clean (NaN-free) data.
 inline double
-calculate_criterion(const Eigen::MatrixXd& data,
-                    std::string tree_criterion,
-                    Eigen::VectorXd weights,
-                    const TreeCriterionFunction& tree_criterion_function)
+calculate_criterion_clean(const Eigen::MatrixXd& data,
+                          const std::string& tree_criterion,
+                          const Eigen::VectorXd& weights,
+                          const TreeCriterionFunction& tree_criterion_function)
 {
   double w = 0.0;
-  Eigen::MatrixXd data_no_nan = data;
-  tools_eigen::remove_nans(data_no_nan, weights);
-  double freq =
-    static_cast<double>(data_no_nan.rows()) / static_cast<double>(data.rows());
-  if (data_no_nan.rows() > 10) {
+  if (data.rows() > 10) {
     if (tree_criterion == "custom") {
       if (!tree_criterion_function) {
         throw std::runtime_error(
           "tree_criterion = \"custom\" requires a tree_criterion_function "
           "callable");
       }
-      w = tree_criterion_function(data_no_nan, weights);
+      w = tree_criterion_function(data, weights);
     } else if (tree_criterion == "mcor") {
-      w = tools_stats::pairwise_mcor(data_no_nan, weights);
+      w = tools_stats::pairwise_mcor(data, weights);
     } else if (tree_criterion == "joe") {
       // mutual information for Gaussian copula
-      w = wdm::wdm(tools_stats::qnorm(data_no_nan), "pearson", weights)(0, 1);
+      w = wdm::wdm(tools_stats::qnorm(data), "pearson", weights)(0, 1);
       w = -0.5 * std::log(1 - w * w);
     } else {
-      w = wdm::wdm(data_no_nan, tree_criterion, weights)(0, 1);
+      w = wdm::wdm(data, tree_criterion, weights)(0, 1);
     }
 
     if (std::isnan(w)) {
       w = 0.0;
     }
   }
-  return std::fabs(w) * std::sqrt(freq);
+  return std::fabs(w);
+}
+
+inline double
+calculate_criterion(const Eigen::MatrixXd& data,
+                    const std::string& tree_criterion,
+                    const Eigen::VectorXd& weights,
+                    const TreeCriterionFunction& tree_criterion_function)
+{
+  // fast path (the common case): no NaNs and no zero weights, so the
+  // copy + compaction can be skipped altogether
+  bool clean = !data.array().isNaN().any();
+  if (clean && (weights.size() > 0)) {
+    clean = !(weights.array().isNaN().any() || (weights.array() == 0.0).any());
+  }
+  if (clean) {
+    return calculate_criterion_clean(
+      data, tree_criterion, weights, tree_criterion_function);
+  }
+
+  Eigen::MatrixXd data_no_nan = data;
+  Eigen::VectorXd weights_no_nan = weights;
+  tools_eigen::remove_nans(data_no_nan, weights_no_nan);
+  double freq =
+    static_cast<double>(data_no_nan.rows()) / static_cast<double>(data.rows());
+  double w = calculate_criterion_clean(
+    data_no_nan, tree_criterion, weights_no_nan, tree_criterion_function);
+  return w * std::sqrt(freq);
 }
 
 //! computes
@@ -363,7 +387,12 @@ VinecopSelector::get_next_threshold(std::vector<double>& thresholded_crits)
 inline void
 VinecopSelector::add_allowed_edges(VineTree& vine_tree)
 {
-  std::string tree_criterion = controls_.get_tree_criterion();
+  // hoist loop invariants: the getters return by value, so calling them
+  // per candidate edge would copy the weights vector every time
+  const std::string tree_criterion = controls_.get_tree_criterion();
+  const Eigen::VectorXd weights = controls_.get_weights();
+  const TreeCriterionFunction criterion_fun =
+    controls_.get_tree_criterion_function();
   if (structure_unknown_) {
     std::vector<std::pair<size_t, size_t>> edge_list;
     for (size_t v0 = 0; v0 < num_vertices(vine_tree); ++v0) {
@@ -384,10 +413,7 @@ VinecopSelector::add_allowed_edges(VineTree& vine_tree)
 
       auto pc_data = get_pc_data(v0, v1, vine_tree);
       double crit =
-        calculate_criterion(pc_data,
-                            tree_criterion,
-                            controls_.get_weights(),
-                            controls_.get_tree_criterion_function());
+        calculate_criterion(pc_data, tree_criterion, weights, criterion_fun);
       double w = 1.0 - static_cast<double>(crit >= threshold) * crit;
 
       {
@@ -411,11 +437,8 @@ VinecopSelector::add_allowed_edges(VineTree& vine_tree)
         size_t v1 = vine_struct_.min_array(tree, v0) - 1;
         Eigen::MatrixXd pc_data = get_pc_data(v0, v1, vine_tree);
         EdgeIterator e = boost::add_edge(v0, v1, 1.0, vine_tree).first;
-        double crit =
-          calculate_criterion(pc_data.leftCols(2),
-                              tree_criterion,
-                              controls_.get_weights(),
-                              controls_.get_tree_criterion_function());
+        double crit = calculate_criterion(
+          pc_data.leftCols(2), tree_criterion, weights, criterion_fun);
         vine_tree[e].weight = 1.0;
         vine_tree[e].crit = crit;
       }
@@ -677,7 +700,7 @@ VinecopSelector::add_pc_info(const EdgeIterator& e, VineTree& tree)
   tree[e].all_indices = cat(tree[e].conditioned, tree[e].conditioning);
 }
 
-inline Eigen::VectorXd
+inline const Eigen::VectorXd&
 VinecopSelector::get_hfunc(const VertexProperties& vertex_data, bool is_first)
 {
   if (is_first) {
@@ -687,7 +710,7 @@ VinecopSelector::get_hfunc(const VertexProperties& vertex_data, bool is_first)
   }
 }
 
-inline Eigen::VectorXd
+inline const Eigen::VectorXd&
 VinecopSelector::get_hfunc_sub(const VertexProperties& vertex_data,
                                bool is_first)
 {
@@ -757,10 +780,20 @@ VinecopSelector::select_tree(size_t t)
       // adjust prior probability to tree level
       controls_.set_psi0(std::pow(psi0_, t + 1));
     }
-    if (trees_opt_.size() > t + 1) {
-      select_pair_copulas(new_tree, trees_opt_[t + 1]);
+    // h-functions of this tree's edges are only consumed when another tree
+    // is selected afterwards; skip them for the final tree. In sparse mode
+    // the loop selects one extra tree (index == trunc_lvl) for the mbicv
+    // comparison, in regular mode it stops after tree trunc_lvl - 1.
+    bool last_tree = (t + 1 >= d_ - 1);
+    if (controls_.needs_sparse_select()) {
+      last_tree = last_tree || (t >= controls_.get_trunc_lvl());
     } else {
-      select_pair_copulas(new_tree);
+      last_tree = last_tree || (t + 1 >= controls_.get_trunc_lvl());
+    }
+    if (trees_opt_.size() > t + 1) {
+      select_pair_copulas(new_tree, trees_opt_[t + 1], last_tree);
+    } else {
+      select_pair_copulas(new_tree, VineTree(), last_tree);
     }
   }
   // make sure there is space for new tree
@@ -861,6 +894,12 @@ inline void
 VinecopSelector::set_current_fit_as_opt(const double& loglik)
 {
   threshold_ = controls_.get_threshold();
+  // the bulky per-edge data is not needed in the snapshot (nor in trees_
+  // afterwards): later iterations only read fit_id, crit, and pair_copula,
+  // and h-functions are always recomputed in select_pair_copulas
+  for (auto& tree : trees_) {
+    remove_edge_data(tree);
+  }
   trees_opt_ = trees_;
   loglik_ = loglik;
 }
@@ -917,19 +956,21 @@ VinecopSelector::make_base_tree(const Eigen::MatrixXd& data)
 //! @return A edge-less graph of vertices, each representing one edge of the
 //!     previous tree.
 inline VineTree
-VinecopSelector::edges_as_vertices(const VineTree& prev_tree)
+VinecopSelector::edges_as_vertices(VineTree& prev_tree)
 {
   // start with full graph
   size_t d = num_edges(prev_tree);
   VineTree new_tree(d);
 
-  // copy & paste information from previous tree
+  // copy & paste information from previous tree; the h-function vectors are
+  // moved because the previous tree's edge data is discarded right after
+  // this call (see select_tree)
   int i = 0;
   for (auto e : boost::edges(prev_tree)) {
-    new_tree[i].hfunc1 = prev_tree[e].hfunc1;
-    new_tree[i].hfunc2 = prev_tree[e].hfunc2;
-    new_tree[i].hfunc1_sub = prev_tree[e].hfunc1_sub;
-    new_tree[i].hfunc2_sub = prev_tree[e].hfunc2_sub;
+    new_tree[i].hfunc1 = std::move(prev_tree[e].hfunc1);
+    new_tree[i].hfunc2 = std::move(prev_tree[e].hfunc2);
+    new_tree[i].hfunc1_sub = std::move(prev_tree[e].hfunc1_sub);
+    new_tree[i].hfunc2_sub = std::move(prev_tree[e].hfunc2_sub);
     new_tree[i].conditioned = prev_tree[e].conditioned;
     new_tree[i].conditioning = prev_tree[e].conditioning;
     new_tree[i].all_indices = prev_tree[e].all_indices;
@@ -1026,7 +1067,9 @@ VinecopSelector::remove_vertex_data(VineTree& tree)
 //! @param tree_opt The current optimal tree (used only for sparse
 //!     selection).
 inline void
-VinecopSelector::select_pair_copulas(VineTree& tree, const VineTree& tree_opt)
+VinecopSelector::select_pair_copulas(VineTree& tree,
+                                     const VineTree& tree_opt,
+                                     bool last_tree)
 {
   auto select_pc = [&](EdgeIterator e) -> void {
     tools_interface::check_user_interrupt();
@@ -1052,23 +1095,27 @@ VinecopSelector::select_pair_copulas(VineTree& tree, const VineTree& tree_opt)
       }
     }
 
-    tree[e].hfunc1 = tree[e].pair_copula.hfunc1(tree[e].pc_data);
-    tree[e].hfunc2 = tree[e].pair_copula.hfunc2(tree[e].pc_data);
-    if (tree[e].var_types[1] == "d") {
-      auto sub_data = tree[e].pc_data;
-      sub_data.col(1) = sub_data.col(3);
-      tree[e].hfunc1_sub = tree[e].pair_copula.hfunc1(sub_data);
-    }
-    if (tree[e].var_types[0] == "d") {
-      auto sub_data = tree[e].pc_data;
-      sub_data.col(0) = sub_data.col(2);
-      tree[e].hfunc2_sub = tree[e].pair_copula.hfunc2(sub_data);
+    // h-functions are only consumed by the selection of the next tree
+    if (!last_tree) {
+      tree[e].hfunc1 = tree[e].pair_copula.hfunc1(tree[e].pc_data);
+      tree[e].hfunc2 = tree[e].pair_copula.hfunc2(tree[e].pc_data);
+      if (tree[e].var_types[1] == "d") {
+        auto sub_data = tree[e].pc_data;
+        sub_data.col(1) = sub_data.col(3);
+        tree[e].hfunc1_sub = tree[e].pair_copula.hfunc1(sub_data);
+      }
+      if (tree[e].var_types[0] == "d") {
+        auto sub_data = tree[e].pc_data;
+        sub_data.col(0) = sub_data.col(2);
+        tree[e].hfunc2_sub = tree[e].pair_copula.hfunc2(sub_data);
+      }
     }
   };
 
   // make sure that Bicop.select() doesn't spawn too many new threads
   size_t num_threads = controls_.get_num_threads();
-  controls_.set_num_threads(num_threads / boost::num_edges(tree));
+  controls_.set_num_threads(std::max<size_t>(
+    1, num_threads / std::max<size_t>(1, boost::num_edges(tree))));
   pool_.map(select_pc, boost::edges(tree));
   pool_.wait();
   controls_.set_num_threads(num_threads);

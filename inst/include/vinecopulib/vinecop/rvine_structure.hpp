@@ -8,7 +8,7 @@
 
 #include <Eigen/Dense>
 #include <limits>
-#include <vinecopulib/misc/nlohmann_json.hpp>
+#include <vinecopulib/misc/tools_serialization.hpp>
 #include <vinecopulib/misc/triangular_array.hpp>
 
 namespace vinecopulib {

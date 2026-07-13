@@ -157,6 +157,10 @@ inline Vinecop::Vinecop(const nlohmann::json& input, const bool check)
   try {
     var_types_ =
       tools_serialization::json_to_vector<std::string>(input["var_types"]);
+    n_discrete_ = 0;
+    for (const auto& t : var_types_) {
+      n_discrete_ += (t == "d");
+    }
     nobs_ = static_cast<size_t>(input["nobs_"]);
     threshold_ = static_cast<double>(input["threshold"]);
     loglik_ = static_cast<double>(input["loglik"]);
@@ -164,18 +168,20 @@ inline Vinecop::Vinecop(const nlohmann::json& input, const bool check)
   }
 }
 
-//! @brief Instantiates from a JSON file.
+//! @brief Instantiates from a JSON or CBOR file.
 //!
-//! @details The input file contains 2 attributes : `"structure"` for the vine
-//! structure, which itself contains attributes `"array"` for the structure
-//! triangular array and `"order"` for the order vector, and `"pair copulas"`.
+//! @details Files ending in `.cbor` are read as CBOR. All other filenames are
+//! read as JSON for backwards compatibility. The input contains 2 attributes:
+//! `"structure"` for the vine structure, which itself contains attributes
+//! `"array"` for the structure triangular array and `"order"` for the order
+//! vector, and `"pair copulas"`.
 //! `"pair copulas"` contains a list of attributes for the trees
 //! (`"tree1"`, `"tree2"`, etc), each containing
 //! a list of attributes for the edges (`"pc1"`, `"pc2"`, etc).
 //! See the corresponding method of `Bicop` objects for the encoding of
 //! pair-copulas.
 //!
-//! @param filename The name of the JSON file to read.
+//! @param filename The name of the file to read.
 //! @param check Whether to check if the `"structure"` node of the input
 //! represents a valid R-vine structure.
 inline Vinecop::Vinecop(const std::string& filename, const bool check)
@@ -220,11 +226,13 @@ Vinecop::to_json() const
   return output;
 }
 
-//! @brief Writes the copula object into a JSON file.
+//! @brief Writes the copula object into a JSON or CBOR file.
 //!
-//! @details The output file contains 2 attributes : `"structure"` for the vine
-//! structure, which itself contains attributes `"array"` for the structure
-//! triangular array and `"order"` for the order vector, and `"pair copulas"`.
+//! @details Filenames ending in `.cbor` are written as CBOR. All other
+//! filenames are written as JSON for backwards compatibility. The output
+//! contains 2 attributes: `"structure"` for the vine structure, which itself
+//! contains attributes `"array"` for the structure triangular array and
+//! `"order"` for the order vector, and `"pair copulas"`.
 //! `"pair copulas"` contains a list of attributes for the trees
 //! (`"tree1"`, `"tree2"`, etc), each containing
 //! a list of attributes for the edges (`"pc1"`, `"pc2"`, etc).
@@ -396,6 +404,13 @@ Vinecop::fit(const Eigen::MatrixXd& data,
 
   for (size_t tree = 0; tree < trunc_lvl; ++tree) {
     tools_interface::check_user_interrupt();
+    // scale down the per-fit thread budget: the edges of this tree already
+    // run concurrently on the pool, so nested threading would oversubscribe
+    FitControlsBicop tree_controls = controls;
+    if (num_threads > 1) {
+      tree_controls.set_num_threads(
+        std::max<size_t>(1, num_threads / std::max<size_t>(1, d_ - tree - 1)));
+    }
     auto fit_edge = [&](size_t edge) {
       tools_interface::check_user_interrupt(edge % 5 == 0);
       // extract evaluation point from hfunction matrices (have been
@@ -404,7 +419,7 @@ Vinecop::fit(const Eigen::MatrixXd& data,
       auto var_types = edge_copula->get_var_types();
       size_t m = rvine_structure_.min_array(tree, edge);
 
-      auto u_e = Eigen::MatrixXd(n, 2), u_e_sub = Eigen::MatrixXd(n, 2);
+      Eigen::MatrixXd u_e(n, 2), u_e_sub;
       u_e.col(0) = hfunc2.col(edge);
       if (m == rvine_structure_.struct_array(tree, edge, true)) {
         u_e.col(1) = hfunc2.col(m - 1);
@@ -422,7 +437,7 @@ Vinecop::fit(const Eigen::MatrixXd& data,
         }
       }
 
-      edge_copula->fit(u_e, controls);
+      edge_copula->fit(u_e, tree_controls);
 
       // h-functions are only evaluated if needed in next tree
       if (rvine_structure_.needed_hfunc1(tree, edge)) {
@@ -851,14 +866,19 @@ inline void
 Vinecop::set_var_types_internal(const std::vector<std::string>& var_types) const
 {
   var_types_ = var_types;
+  n_discrete_ = 0;
+  for (const auto& t : var_types_) {
+    n_discrete_ += (t == "d");
+  }
   if (pair_copulas_.size() == 0) {
     return;
   }
 
   // set new var_types for all pair-copulas
+  const auto order = rvine_structure_.get_order();
   std::vector<std::string> natural_types(d_), pair_types(2);
   for (size_t j = 0; j < d_; ++j) {
-    natural_types[j] = var_types[rvine_structure_.get_order()[j] - 1];
+    natural_types[j] = var_types[order[j] - 1];
   }
   // we set the first tree explicitly and deduce later trees
   for (size_t e = 0; e < d_ - 1; ++e) {
@@ -934,12 +954,13 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
                   const bool keep_all) const
 {
   check_data(u);
-  u = collapse_data(u);
+  collapse_data_inplace(u);
 
   // info about the vine structure (reverse rows (!) for more natural indexing)
   size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
   auto order = rvine_structure_.get_order();
   auto disc_cols = tools_select::get_disc_cols(var_types_);
+  const bool discrete = is_discrete();
 
   PdfWithHfuncsResult result;
 
@@ -947,18 +968,24 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
     result.pdf_edges = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
     result.hfunc1 = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
     result.hfunc2 = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
-    result.hfunc1_sub = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
-    result.hfunc2_sub = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
+    if (discrete) {
+      result.hfunc1_sub = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
+      result.hfunc2_sub = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
+    }
     for (size_t tree = 0; tree < trunc_lvl; ++tree) {
       for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
         result.pdf_edges(tree, edge) = Eigen::VectorXd::Zero(u.rows());
         if (rvine_structure_.needed_hfunc1(tree, edge)) {
           result.hfunc1(tree, edge) = Eigen::VectorXd::Zero(u.rows());
-          result.hfunc1_sub(tree, edge) = Eigen::VectorXd::Zero(u.rows());
+          if (discrete) {
+            result.hfunc1_sub(tree, edge) = Eigen::VectorXd::Zero(u.rows());
+          }
         }
         if (rvine_structure_.needed_hfunc2(tree, edge)) {
           result.hfunc2(tree, edge) = Eigen::VectorXd::Zero(u.rows());
-          result.hfunc2_sub(tree, edge) = Eigen::VectorXd::Zero(u.rows());
+          if (discrete) {
+            result.hfunc2_sub(tree, edge) = Eigen::VectorXd::Zero(u.rows());
+          }
         }
       }
     }
@@ -972,7 +999,7 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
     Eigen::MatrixXd hfunc1, hfunc2, u_e, hfunc1_sub, hfunc2_sub, u_e_sub;
     hfunc1 = Eigen::MatrixXd::Zero(b.size, d_);
     hfunc2 = Eigen::MatrixXd::Zero(b.size, d_);
-    if (is_discrete()) {
+    if (discrete) {
       hfunc1_sub = hfunc1;
       hfunc2_sub = hfunc2;
     }
@@ -998,7 +1025,7 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
         auto var_types = edge_copula->get_var_types();
         size_t m = rvine_structure_.min_array(tree, edge);
 
-        u_e = Eigen::MatrixXd(b.size, 2);
+        u_e.resize(b.size, 2);
         u_e.col(0) = hfunc2.col(edge);
         if (m == rvine_structure_.struct_array(tree, edge, true)) {
           u_e.col(1) = hfunc2.col(m - 1);
@@ -1043,14 +1070,18 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
           if (rvine_structure_.needed_hfunc1(tree, edge)) {
             result.hfunc1(tree, edge).segment(b.begin, b.size) =
               hfunc1.col(edge);
-            result.hfunc1_sub(tree, edge).segment(b.begin, b.size) =
-              is_discrete() ? hfunc1_sub.col(edge) : hfunc1.col(edge);
+            if (discrete) {
+              result.hfunc1_sub(tree, edge).segment(b.begin, b.size) =
+                hfunc1_sub.col(edge);
+            }
           }
           if (rvine_structure_.needed_hfunc2(tree, edge)) {
             result.hfunc2(tree, edge).segment(b.begin, b.size) =
               hfunc2.col(edge);
-            result.hfunc2_sub(tree, edge).segment(b.begin, b.size) =
-              is_discrete() ? hfunc2_sub.col(edge) : hfunc2.col(edge);
+            if (discrete) {
+              result.hfunc2_sub(tree, edge).segment(b.begin, b.size) =
+                hfunc2_sub.col(edge);
+            }
           }
         }
       }
@@ -1256,7 +1287,7 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 
 //! @brief Evaluates the hessian per observation.
 //!
-//! Hessian is meant losely as "gradients of each component of the score
+//! Hessian is meant loosely as "gradients of each component of the score
 //! function".
 //!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
@@ -1268,7 +1299,9 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
 inline TriangularArray<std::vector<Eigen::MatrixXd>>
-Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
+Vinecop::hessian_full(Eigen::MatrixXd u,
+                      bool step_wise,
+                      const size_t num_threads)
 {
   check_data(u);
   u = collapse_data(u);
@@ -1304,10 +1337,12 @@ Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
   return hess;
 }
 
-//! @brief Evaluates the average hessian.
+//! @brief Evaluates the averaged Hessian of the log-likelihood.
 //!
-//! Hessian is meant losely as "gradients of each component of the score
-//! function". The Hessian is averaged over all samples in `u`.
+//! Hessian is meant loosely as "gradients of each component of the score
+//! function". The Hessian is averaged over all samples in `u`, yielding an
+//! \f$ \mathrm{npars} \times \mathrm{npars} \f$ matrix (use `hessian_full()`
+//! for the per-observation decomposition).
 //!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
@@ -1318,11 +1353,9 @@ Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
 inline Eigen::MatrixXd
-Vinecop::hessian_avg(Eigen::MatrixXd u,
-                     bool step_wise,
-                     const size_t num_threads)
+Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 {
-  auto hess = this->hessian(u, step_wise, num_threads);
+  auto hess = this->hessian_full(u, step_wise, num_threads);
   size_t npars = static_cast<size_t>(this->get_npars());
   Eigen::MatrixXd H(npars, npars);
 
@@ -1343,6 +1376,10 @@ Vinecop::hessian_avg(Eigen::MatrixXd u,
 
 //! @brief Computes the covariance matrix of scores.
 //!
+//! Returns the (mean-centered, divided by `n`) covariance of the
+//! per-observation scores as an \f$ \mathrm{npars} \times \mathrm{npars} \f$
+//! matrix. Together with `hessian()` this forms the sandwich estimator of the
+//! asymptotic covariance.
 //!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
@@ -1356,7 +1393,9 @@ inline Eigen::MatrixXd
 Vinecop::scores_cov(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 {
   auto s = this->scores(u, step_wise, num_threads);
-  auto sc = s.rowwise() - s.colwise().mean();
+  // materialize the centered scores; a lazy expression would be evaluated
+  // twice by the product below
+  Eigen::MatrixXd sc = s.rowwise() - s.colwise().mean();
   return (sc.adjoint() * sc) / static_cast<double>(s.rows());
 }
 
@@ -1407,14 +1446,19 @@ Vinecop::cdf(const Eigen::MatrixXd& u,
 
   size_t n = u.rows();
   Eigen::VectorXd vine_distribution(n);
-  Eigen::ArrayXXd x(N, 1);
-  Eigen::RowVectorXd temp(d_);
-  for (size_t i = 0; i < n; i++) {
-    tools_interface::check_user_interrupt(i % 1000 == 0);
-    temp = u.block(i, 0, 1, d_);
-    x = (u_sim.rowwise() - temp).rowwise().maxCoeff().array();
-    vine_distribution(i) = static_cast<double>((x <= 0.0).count());
-  }
+  auto do_batch = [&](const tools_batch::Batch& b) {
+    // lazy dominance count per query point (no N-sized temporary)
+    Eigen::RowVectorXd temp(d_);
+    for (size_t i = b.begin; i < b.begin + b.size; i++) {
+      tools_interface::check_user_interrupt(i % 1000 == 0);
+      temp = u.block(i, 0, 1, d_);
+      vine_distribution(i) = static_cast<double>(
+        ((u_sim.rowwise() - temp).rowwise().maxCoeff().array() <= 0.0).count());
+    }
+  };
+  tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
+  pool.map(do_batch, tools_batch::create_batches(n, num_threads));
+  pool.join();
   return vine_distribution / static_cast<double>(N);
 }
 
@@ -1615,7 +1659,7 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
                     std::vector<int> seeds) const
 {
   check_data(u);
-  u = collapse_data(u);
+  collapse_data_inplace(u);
 
   size_t d = d_;
   size_t n = u.rows();
@@ -1628,8 +1672,7 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
 
   // fill first row of hfunc2 matrix with evaluation points;
   // points have to be reordered to correspond to natural order
-  Eigen::MatrixXd hfunc1(n, d), hfunc2(n, d), hfunc1_sub(n, d),
-    hfunc2_sub(n, d);
+  Eigen::MatrixXd hfunc1(n, d), hfunc2(n, d), hfunc1_sub, hfunc2_sub;
   for (size_t j = 0; j < d; ++j) {
     hfunc2.col(j) = u.col(order[j] - 1);
   }
@@ -1637,14 +1680,10 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
   if (is_discrete()) {
     hfunc1_sub = hfunc1;
     hfunc2_sub = hfunc2;
-  }
-
-  // fill first row of hfunc2 matrix with evaluation points;
-  // points have to be reordered to correspond to natural order
-  for (size_t j = 0; j < d_; ++j) {
-    hfunc2.col(j) = u.col(order[j] - 1);
-    if (var_types_[order[j] - 1] == "d") {
-      hfunc2_sub.col(j) = u.col(d_ + disc_cols[order[j] - 1]);
+    for (size_t j = 0; j < d_; ++j) {
+      if (var_types_[order[j] - 1] == "d") {
+        hfunc2_sub.col(j) = u.col(d_ + disc_cols[order[j] - 1]);
+      }
     }
   }
 
@@ -1661,7 +1700,7 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
         auto var_types = edge_copula->get_var_types();
         size_t m = rvine_structure_.min_array(tree, edge);
 
-        u_e = Eigen::MatrixXd(b.size, 2);
+        u_e.resize(b.size, 2);
         u_e.col(0) = hfunc2.block(b.begin, edge, b.size, 1);
         if (m == rvine_structure_.struct_array(tree, edge, true)) {
           u_e.col(1) = hfunc2.block(b.begin, m - 1, b.size, 1);
@@ -1799,6 +1838,7 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
     // temporary storage objects for (inverse) h-functions
     TriangularArray<Eigen::VectorXd> hinv2(d + 1, trunc_lvl + 1);
     TriangularArray<Eigen::VectorXd> hfunc1(d + 1, trunc_lvl + 1);
+    Eigen::MatrixXd U_e(b.size, 2);
 
     // initialize with independent uniforms (corresponding to natural
     // order)
@@ -1814,10 +1854,11 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
         static_cast<double>(n) * static_cast<double>(d) > 1e5);
       size_t tree_start = std::min(trunc_lvl - 1, d - var - 2);
       for (ptrdiff_t tree = tree_start; tree >= 0; --tree) {
-        Bicop edge_copula = pair_copulas_[tree][var].as_continuous();
+        // var types have already been set to continuous above, so no copy
+        // via as_continuous() is needed
+        const Bicop& edge_copula = pair_copulas_[tree][var];
 
         // extract data for conditional pair
-        Eigen::MatrixXd U_e(b.size, 2);
         size_t m = rvine_structure_.min_array(tree, var);
         U_e.col(0) = hinv2(tree + 1, var);
         if (m == rvine_structure_.struct_array(tree, var, true)) {
@@ -2005,17 +2046,13 @@ Vinecop::set_continuous_var_types() const
 inline int
 Vinecop::get_n_discrete() const
 {
-  int n_discrete = 0;
-  for (auto t : var_types_) {
-    n_discrete += (t == "d");
-  }
-  return n_discrete;
+  return n_discrete_;
 }
 
 inline bool
 Vinecop::is_discrete() const
 {
-  return get_n_discrete() > 0;
+  return n_discrete_ > 0;
 }
 
 //! @brief Removes superfluous columns for continuous data.
@@ -2034,6 +2071,16 @@ Vinecop::collapse_data(const Eigen::MatrixXd& u) const
     }
   }
   return u_new;
+}
+
+//! @brief Removes superfluous columns for continuous data, avoiding the
+//! copy when the data is already in collapsed format.
+inline void
+Vinecop::collapse_data_inplace(Eigen::MatrixXd& u) const
+{
+  if (static_cast<size_t>(u.cols()) != d_ + get_n_discrete()) {
+    u = collapse_data(u);
+  }
 }
 
 //! @brief Summarizes the model into a string (can be used for printing).

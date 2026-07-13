@@ -97,6 +97,31 @@ AbstractBicop::no_tau_to_parameters(const double&)
   throw std::runtime_error("Method not implemented for this family");
 }
 
+//! Default tail dependence: not implemented for this family, so all four
+//! corners are reported as NaN. Families with a closed form override this
+//! (including those that genuinely have zero tail dependence, e.g. `indep`,
+//! `gaussian`, `frank`).
+inline Eigen::MatrixXd
+AbstractBicop::parameters_to_taildep(const Eigen::MatrixXd&)
+{
+  return Eigen::MatrixXd::Constant(2, 2, NAN);
+}
+
+//! Blomqvist's beta computed generically from the copula cdf as
+//! \f$ \beta = 4 C(0.5, 0.5) - 1 \f$. Works for all families (including the
+//! nonparametric kernel estimator).
+inline double
+AbstractBicop::parameters_to_beta(const Eigen::MatrixXd& parameters)
+{
+  Eigen::MatrixXd u(1, 2);
+  u << 0.5, 0.5;
+  // the cdf leaf expects an (m x p) parameter matrix (one row per evaluation
+  // point); parameters is a (p x 1) column, so transpose it to a single row.
+  Eigen::MatrixXd par_row =
+    (parameters.cols() == 1) ? parameters.transpose() : parameters;
+  return 4.0 * this->cdf(u, par_row)(0) - 1.0;
+}
+
 //! Getters and setters.
 //! @{
 inline BicopFamily

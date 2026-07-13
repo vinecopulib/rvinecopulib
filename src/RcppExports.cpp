@@ -153,6 +153,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// bicop_tail_dep_cpp
+Eigen::MatrixXd bicop_tail_dep_cpp(const Rcpp::List& bicop_r);
+RcppExport SEXP _rvinecopulib_bicop_tail_dep_cpp(SEXP bicop_rSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type bicop_r(bicop_rSEXP);
+    rcpp_result_gen = Rcpp::wrap(bicop_tail_dep_cpp(bicop_r));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bicop_beta_cpp
+double bicop_beta_cpp(const Rcpp::List& bicop_r);
+RcppExport SEXP _rvinecopulib_bicop_beta_cpp(SEXP bicop_rSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type bicop_r(bicop_rSEXP);
+    rcpp_result_gen = Rcpp::wrap(bicop_beta_cpp(bicop_r));
+    return rcpp_result_gen;
+END_RCPP
+}
 // bicop_tau_to_par_cpp
 Eigen::MatrixXd bicop_tau_to_par_cpp(const Rcpp::List& bicop_r, const double& tau);
 RcppExport SEXP _rvinecopulib_bicop_tau_to_par_cpp(SEXP bicop_rSEXP, SEXP tauSEXP) {
@@ -418,6 +440,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_bicop_hinv2_cpp", (DL_FUNC) &_rvinecopulib_bicop_hinv2_cpp, 2},
     {"_rvinecopulib_bicop_sim_cpp", (DL_FUNC) &_rvinecopulib_bicop_sim_cpp, 4},
     {"_rvinecopulib_bicop_par_to_tau_cpp", (DL_FUNC) &_rvinecopulib_bicop_par_to_tau_cpp, 1},
+    {"_rvinecopulib_bicop_tail_dep_cpp", (DL_FUNC) &_rvinecopulib_bicop_tail_dep_cpp, 1},
+    {"_rvinecopulib_bicop_beta_cpp", (DL_FUNC) &_rvinecopulib_bicop_beta_cpp, 1},
     {"_rvinecopulib_bicop_tau_to_par_cpp", (DL_FUNC) &_rvinecopulib_bicop_tau_to_par_cpp, 2},
     {"_rvinecopulib_rvine_structure_cpp", (DL_FUNC) &_rvinecopulib_rvine_structure_cpp, 3},
     {"_rvinecopulib_rvine_structure_check_cpp", (DL_FUNC) &_rvinecopulib_rvine_structure_check_cpp, 2},
