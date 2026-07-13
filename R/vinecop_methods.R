@@ -36,7 +36,9 @@
 #' score matrix, and `hessian()` gives the average Hessian matrix.
 #'
 #' If `keep_all = TRUE`, `dvinecop()` returns a list with entries `pdf`,
-#' `pdf_edges`, `hfunc1`, `hfunc2`, `hfunc1_sub`, and `hfunc2_sub`.
+#' `pdf_edges`, `hfunc1`, `hfunc2`, `hfunc1_sub`, and `hfunc2_sub`. The `_sub`
+#' entries contain h-functions evaluated at left-sided limits when the model
+#' contains discrete variables; they are empty for fully continuous models.
 #'
 #' The length of the result is determined by `n` for `rvinecop()`, and
 #' the number of rows in `u` for the other functions.

@@ -53,7 +53,9 @@ sequence in higher dimensions (default \code{qrng = FALSE}).}
 score matrix, and \code{hessian()} gives the average Hessian matrix.
 
 If \code{keep_all = TRUE}, \code{dvinecop()} returns a list with entries \code{pdf},
-\code{pdf_edges}, \code{hfunc1}, \code{hfunc2}, \code{hfunc1_sub}, and \code{hfunc2_sub}.
+\code{pdf_edges}, \code{hfunc1}, \code{hfunc2}, \code{hfunc1_sub}, and \code{hfunc2_sub}. The \verb{_sub}
+entries contain h-functions evaluated at left-sided limits when the model
+contains discrete variables; they are empty for fully continuous models.
 
 The length of the result is determined by \code{n} for \code{rvinecop()}, and
 the number of rows in \code{u} for the other functions.
