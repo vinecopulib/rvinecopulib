@@ -180,6 +180,63 @@ test_that("vectorized parameters work for dbicop/pbicop/hbicop", {
   expect_equal(hi_vec, hi_row)
 })
 
+test_that("vectorized parameters work for every one-parameter family (#320)", {
+  # Regression guard for the Eigen self-aliasing bug in bicop_wrap(): the
+  # earlier Gaussian-only test could not catch it because Gaussian's lower
+  # bound (-1) swallows the subnormal garbage, whereas clayton/gumbel/joe
+  # (positive lower bounds) throw "parameters exceed lower bound". Loop over
+  # all one-parameter families, generating valid per-row parameters generically
+  # from a grid of Kendall's taus via ktau_to_par().
+  set.seed(11)
+  n <- 40
+  u <- matrix(runif(2 * n), ncol = 2)
+  taus <- seq(0.1, 0.7, length.out = n)
+
+  for (fam in family_set_onepar) {
+    pars <- matrix(
+      vapply(taus, function(tt) as.numeric(ktau_to_par(fam, tt)), numeric(1)),
+      ncol = 1
+    )
+
+    d_vec <- dbicop(u, fam, 0, pars)
+    p_vec <- pbicop(u, fam, 0, pars)
+    h1_vec <- hbicop(u, 1, fam, 0, pars)
+    h2_vec <- hbicop(u, 2, fam, 0, pars)
+    hi1_vec <- hbicop(u, 1, fam, 0, pars, inverse = TRUE)
+    hi2_vec <- hbicop(u, 2, fam, 0, pars, inverse = TRUE)
+
+    by_row <- function(f) vapply(seq_len(n), f, numeric(1))
+    d_row <- by_row(function(i) dbicop(u[i, ], fam, 0, pars[i, , drop = FALSE]))
+    p_row <- by_row(function(i) pbicop(u[i, ], fam, 0, pars[i, , drop = FALSE]))
+    h1_row <- by_row(function(i) hbicop(u[i, ], 1, fam, 0, pars[i, , drop = FALSE]))
+    h2_row <- by_row(function(i) hbicop(u[i, ], 2, fam, 0, pars[i, , drop = FALSE]))
+    hi1_row <- by_row(function(i) {
+      hbicop(u[i, ], 1, fam, 0, pars[i, , drop = FALSE], inverse = TRUE)
+    })
+    hi2_row <- by_row(function(i) {
+      hbicop(u[i, ], 2, fam, 0, pars[i, , drop = FALSE], inverse = TRUE)
+    })
+
+    expect_eql(d_vec, d_row, info = fam)
+    expect_eql(p_vec, p_row, info = fam)
+    expect_eql(h1_vec, h1_row, info = fam)
+    expect_eql(h2_vec, h2_row, info = fam)
+    expect_eql(hi1_vec, hi1_row, info = fam)
+    expect_eql(hi2_vec, hi2_row, info = fam)
+    expect_true(all(is.finite(d_vec)), info = fam)
+  }
+})
+
+test_that("reported Clayton vectorized-parameter crash is fixed (#320)", {
+  set.seed(123)
+  n <- 10
+  u <- matrix(runif(n * 2), ncol = 2)
+  par <- matrix(runif(n, 2, 3), ncol = 1)
+  res <- dbicop(u = u, family = "clayton", parameters = par)
+  expect_length(res, n)
+  expect_true(all(is.finite(res)))
+})
+
 test_that("vectorized parameters are rejected by bicop_dist objects", {
   set.seed(8)
   n <- 40
