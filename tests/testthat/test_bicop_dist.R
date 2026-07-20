@@ -208,8 +208,12 @@ test_that("vectorized parameters work for every one-parameter family (#320)", {
     by_row <- function(f) vapply(seq_len(n), f, numeric(1))
     d_row <- by_row(function(i) dbicop(u[i, ], fam, 0, pars[i, , drop = FALSE]))
     p_row <- by_row(function(i) pbicop(u[i, ], fam, 0, pars[i, , drop = FALSE]))
-    h1_row <- by_row(function(i) hbicop(u[i, ], 1, fam, 0, pars[i, , drop = FALSE]))
-    h2_row <- by_row(function(i) hbicop(u[i, ], 2, fam, 0, pars[i, , drop = FALSE]))
+    h1_row <- by_row(function(i) {
+      hbicop(u[i, ], 1, fam, 0, pars[i, , drop = FALSE])
+    })
+    h2_row <- by_row(function(i) {
+      hbicop(u[i, ], 2, fam, 0, pars[i, , drop = FALSE])
+    })
     hi1_row <- by_row(function(i) {
       hbicop(u[i, ], 1, fam, 0, pars[i, , drop = FALSE], inverse = TRUE)
     })
