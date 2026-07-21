@@ -283,9 +283,10 @@ AbstractBicop::pdf_c_d(const Eigen::MatrixXd& u,
     udiff = (u.col(1) - u.col(3)).cwiseAbs();
   }
 
-  const bool bc = (parameters.rows() == 1);
+  const bool bc = (parameters.rows() != u.rows());
   for (Eigen::Index i = 0; i < u.rows(); i++) {
-    const Eigen::MatrixXd par_i = parameters.row(bc ? 0 : i);
+    const Eigen::MatrixXd par_i =
+        parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
     if (udiff(i) > 5e-5) {
       if (var_types_[0] != "c") {
         pdf(i) =
@@ -311,9 +312,10 @@ AbstractBicop::pdf_d_d(const Eigen::MatrixXd& u,
   Eigen::MatrixXd umin = u.rightCols(2);
   Eigen::MatrixXd udiff = (umax - umin).cwiseAbs();
 
-  const bool bc = (parameters.rows() == 1);
+  const bool bc = (parameters.rows() != u.rows());
   for (Eigen::Index i = 0; i < u.rows(); i++) {
-    const Eigen::MatrixXd par_i = parameters.row(bc ? 0 : i);
+    const Eigen::MatrixXd par_i =
+        parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
     // the difference quotient can be instable, use derivative if denominator
     // too small
     if (udiff.row(i).maxCoeff() < 5e-5) {
@@ -351,9 +353,10 @@ AbstractBicop::hfunc1(const Eigen::MatrixXd& u,
     auto u1diff = (uu.col(0) - uu.col(2)).cwiseAbs();
     Eigen::VectorXd h(u.rows());
 
-    const bool bc = (parameters.rows() == 1);
+    const bool bc = (parameters.rows() != u.rows());
     for (Eigen::Index i = 0; i < u.rows(); i++) {
-      const Eigen::MatrixXd par_i = parameters.row(bc ? 0 : i);
+      const Eigen::MatrixXd par_i =
+        parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
       if (std::abs(u1diff(i)) > 5e-5) {
         h(i) = cdf(uu.row(i).leftCols(2), par_i)(0) -
                cdf(uu.row(i).rightCols(2), par_i)(0);
@@ -379,9 +382,10 @@ AbstractBicop::hfunc2(const Eigen::MatrixXd& u,
     auto u2diff = (uu.col(1) - uu.col(3)).cwiseAbs();
     Eigen::VectorXd h(u.rows());
 
-    const bool bc = (parameters.rows() == 1);
+    const bool bc = (parameters.rows() != u.rows());
     for (Eigen::Index i = 0; i < u.rows(); i++) {
-      const Eigen::MatrixXd par_i = parameters.row(bc ? 0 : i);
+      const Eigen::MatrixXd par_i =
+        parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
       if (u2diff(i) > 5e-5) {
         h(i) = cdf(uu.row(i).leftCols(2), par_i)(0) -
                cdf(uu.row(i).rightCols(2), par_i)(0);

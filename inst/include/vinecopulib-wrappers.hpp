@@ -118,7 +118,9 @@ inline Bicop bicop_wrap(const Rcpp::List& bicop_r)
       const size_t p = expected_npars(family);
       if (par.cols() == 1) {
         if ((p == 1) && (par.rows() > 1)) {
-          par = par.topRows(1);
+          // .eval() materializes the first row before the self-aliased resize
+          // reallocates par's buffer (see the two-parameter branch below).
+          par = par.topRows(1).eval();
         }
       } else {
         if ((p > 0) && (static_cast<size_t>(par.cols()) == p)) {

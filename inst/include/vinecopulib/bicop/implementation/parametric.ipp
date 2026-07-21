@@ -214,23 +214,25 @@ ParBicop::check_parameters(const Eigen::MatrixXd& parameters)
 inline void
 ParBicop::check_parameters_size(const Eigen::MatrixXd& parameters)
 {
-  if (parameters.size() != parameters_.size()) {
-    if (parameters.rows() != parameters_.rows()) {
-      std::stringstream message;
-      message << "parameters have has wrong number of rows "
-              << "for " << get_family_name() << " copula; "
-              << "expected: " << parameters_.rows() << ", "
-              << "actual: " << parameters.rows() << std::endl;
-      throw std::runtime_error(message.str().c_str());
-    }
-    if (parameters.cols() != parameters_.cols()) {
-      std::stringstream message;
-      message << "parameters have wrong number of columns "
-              << "for " << get_family_name() << " copula; "
-              << "expected: " << parameters_.cols() << ", "
-              << "actual: " << parameters.cols() << std::endl;
-      throw std::runtime_error(message.str().c_str());
-    }
+  // Validate rows and cols unconditionally: a same-size-but-transposed shape
+  // (e.g. 1 x p vs p x 1) would otherwise slip through and reach the
+  // coefficient-wise bound comparisons in check_parameters_lower/_upper with
+  // mismatched shapes (an out-of-bounds read under NDEBUG).
+  if (parameters.rows() != parameters_.rows()) {
+    std::stringstream message;
+    message << "parameters have has wrong number of rows "
+            << "for " << get_family_name() << " copula; "
+            << "expected: " << parameters_.rows() << ", "
+            << "actual: " << parameters.rows() << std::endl;
+    throw std::runtime_error(message.str().c_str());
+  }
+  if (parameters.cols() != parameters_.cols()) {
+    std::stringstream message;
+    message << "parameters have wrong number of columns "
+            << "for " << get_family_name() << " copula; "
+            << "expected: " << parameters_.cols() << ", "
+            << "actual: " << parameters.cols() << std::endl;
+    throw std::runtime_error(message.str().c_str());
   }
 }
 
