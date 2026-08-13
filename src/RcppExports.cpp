@@ -375,8 +375,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // vinecop_select_cpp
-Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data, Rcpp::List& structure, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, const Eigen::VectorXd& weights, double psi0, bool select_truncation_level, bool select_threshold, bool preselect_families, bool select_families, bool allow_rotations, bool show_trace, size_t num_threads, std::vector<std::string> var_types, std::string tree_algorithm, std::vector<int> seeds, std::vector<size_t> conditioning_set);
-RcppExport SEXP _rvinecopulib_vinecop_select_cpp(SEXP dataSEXP, SEXP structureSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP select_truncation_levelSEXP, SEXP select_thresholdSEXP, SEXP preselect_familiesSEXP, SEXP select_familiesSEXP, SEXP allow_rotationsSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP, SEXP var_typesSEXP, SEXP tree_algorithmSEXP, SEXP seedsSEXP, SEXP conditioning_setSEXP) {
+Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd& data, Rcpp::List& structure, std::vector<std::string> family_set, std::string par_method, std::string nonpar_method, double mult, int truncation_level, std::string tree_criterion, double threshold, std::string selection_criterion, const Eigen::VectorXd& weights, double psi0, bool select_truncation_level, bool select_threshold, bool preselect_families, bool select_families, bool allow_rotations, bool show_trace, size_t num_threads, std::vector<std::string> var_types, std::string tree_algorithm, std::vector<int> seeds, std::vector<size_t> conditioning_set, SEXP tree_criterion_function);
+RcppExport SEXP _rvinecopulib_vinecop_select_cpp(SEXP dataSEXP, SEXP structureSEXP, SEXP family_setSEXP, SEXP par_methodSEXP, SEXP nonpar_methodSEXP, SEXP multSEXP, SEXP truncation_levelSEXP, SEXP tree_criterionSEXP, SEXP thresholdSEXP, SEXP selection_criterionSEXP, SEXP weightsSEXP, SEXP psi0SEXP, SEXP select_truncation_levelSEXP, SEXP select_thresholdSEXP, SEXP preselect_familiesSEXP, SEXP select_familiesSEXP, SEXP allow_rotationsSEXP, SEXP show_traceSEXP, SEXP num_threadsSEXP, SEXP var_typesSEXP, SEXP tree_algorithmSEXP, SEXP seedsSEXP, SEXP conditioning_setSEXP, SEXP tree_criterion_functionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -403,7 +403,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type tree_algorithm(tree_algorithmSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type seeds(seedsSEXP);
     Rcpp::traits::input_parameter< std::vector<size_t> >::type conditioning_set(conditioning_setSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_select_cpp(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds, conditioning_set));
+    Rcpp::traits::input_parameter< SEXP >::type tree_criterion_function(tree_criterion_functionSEXP);
+    rcpp_result_gen = Rcpp::wrap(vinecop_select_cpp(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds, conditioning_set, tree_criterion_function));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -476,7 +477,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_cdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_cdf_cpp, 5},
     {"_rvinecopulib_vinecop_scores_cpp", (DL_FUNC) &_rvinecopulib_vinecop_scores_cpp, 4},
     {"_rvinecopulib_vinecop_hessian_cpp", (DL_FUNC) &_rvinecopulib_vinecop_hessian_cpp, 4},
-    {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 23},
+    {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 24},
     {"_rvinecopulib_vinecop_fit_cpp", (DL_FUNC) &_rvinecopulib_vinecop_fit_cpp, 10},
     {"_rvinecopulib_fit_margins_cpp", (DL_FUNC) &_rvinecopulib_fit_margins_cpp, 9},
     {NULL, NULL, 0}

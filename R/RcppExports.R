@@ -113,8 +113,8 @@ vinecop_hessian_cpp <- function(u, vinecop_r, step_wise, cores) {
     .Call(`_rvinecopulib_vinecop_hessian_cpp`, u, vinecop_r, step_wise, cores)
 }
 
-vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds, conditioning_set) {
-    .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds, conditioning_set)
+vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds, conditioning_set, tree_criterion_function) {
+    .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds, conditioning_set, tree_criterion_function)
 }
 
 vinecop_fit_cpp <- function(data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads, tree_algorithm, seeds) {

@@ -21,7 +21,10 @@
 #' @param tree_crit the criterion for tree selection, one of `"tau"`, `"rho"`,
 #'   `"hoeffd"`, `"mcor"`, or `"joe"` for Kendall's \eqn{\tau}, Spearman's
 #'   \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation, or logarithm of
-#'   the partial correlation, respectively.
+#'   the partial correlation, respectively. Alternatively, a function with
+#'   arguments `data` (a two-column matrix) and `weights` (normalized to have
+#'   mean one, or `numeric(0)` when no weights were supplied) that returns one
+#'   numeric dependence value. Custom functions require `cores = 1`.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the
 #'   threshold should be selected automatically by [mBICV()].
 #' @param vinecop_object a `vinecop` object to be updated; if provided, only the
@@ -201,7 +204,7 @@ vinecop <- function(
     is.flag(presel),
     is.flag(allow_rotations),
     is.scalar(trunc_lvl),
-    is.string(tree_crit),
+    is.string(tree_crit) || is.function(tree_crit),
     is.scalar(threshold),
     is.flag(keep_data),
     is.number(cores),
@@ -240,6 +243,24 @@ vinecop <- function(
         call. = FALSE
       )
     }
+  }
+
+  tree_crit_control <- tree_crit
+  tree_crit_function <- NULL
+  if (is.function(tree_crit)) {
+    if (cores != 1) {
+      stop("custom 'tree_crit' functions require 'cores = 1'.", call. = FALSE)
+    }
+    if (!is.null(vinecop_object)) {
+      stop(
+        "custom 'tree_crit' functions cannot be used when refitting a model.",
+        call. = FALSE
+      )
+    }
+    tree_crit_function <- tree_crit
+    tree_crit <- "custom"
+  } else if (identical(tree_crit, "custom")) {
+    stop("'tree_crit = \"custom\"' requires a function.", call. = FALSE)
   }
 
   seeds <- get_seeds()
@@ -294,6 +315,7 @@ vinecop <- function(
         .Machine$integer.max
       ),
       tree_criterion = tree_crit,
+      tree_criterion_function = tree_crit_function,
       threshold = threshold,
       select_truncation_level = is.na(trunc_lvl),
       select_threshold = is.na(threshold),
@@ -329,7 +351,7 @@ vinecop <- function(
     presel = presel,
     allow_rotations = allow_rotations,
     trunc_lvl = trunc_lvl,
-    tree_crit = tree_crit,
+    tree_crit = tree_crit_control,
     threshold = threshold,
     tree_algorithm = tree_algorithm,
     conditioning_set = conditioning_set

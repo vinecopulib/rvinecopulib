@@ -82,7 +82,10 @@ automatically by \code{\link[=mBICV]{mBICV()}}.}
 \item{tree_crit}{the criterion for tree selection, one of \code{"tau"}, \code{"rho"},
 \code{"hoeffd"}, \code{"mcor"}, or \code{"joe"} for Kendall's \eqn{\tau}, Spearman's
 \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation, or logarithm of
-the partial correlation, respectively.}
+the partial correlation, respectively. Alternatively, a function with
+arguments \code{data} (a two-column matrix) and \code{weights} (normalized to have
+mean one, or \code{numeric(0)} when no weights were supplied) that returns one
+numeric dependence value. Custom functions require \code{cores = 1}.}
 
 \item{threshold}{for thresholded vine copulas; \code{NA} indicates that the
 threshold should be selected automatically by \code{\link[=mBICV]{mBICV()}}.}

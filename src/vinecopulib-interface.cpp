@@ -2,6 +2,7 @@
 #include "kde1d-wrappers.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 using namespace vinecopulib;
 
@@ -388,7 +389,8 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd &data,
                               std::vector<std::string> var_types,
                               std::string tree_algorithm,
                               std::vector<int> seeds,
-                              std::vector<size_t> conditioning_set)
+                              std::vector<size_t> conditioning_set,
+                              SEXP tree_criterion_function)
 {
   std::vector<BicopFamily> fam_set(family_set.size());
   for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
@@ -408,6 +410,28 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd &data,
   fit_controls.set_num_threads(num_threads);
   fit_controls.set_trunc_lvl(truncation_level);
   fit_controls.set_tree_criterion(tree_criterion);
+  if (!Rf_isNull(tree_criterion_function)) {
+    Rcpp::Function criterion(tree_criterion_function);
+    fit_controls.set_tree_criterion_function(
+      [criterion](const Eigen::MatrixXd& criterion_data,
+                  const Eigen::VectorXd& criterion_weights) {
+        Rcpp::RObject result = criterion(
+          Rcpp::wrap(criterion_data),
+          Rcpp::wrap(criterion_weights)
+        );
+        if (!Rf_isNumeric(result) || Rf_xlength(result) != 1) {
+          Rcpp::stop("custom 'tree_crit' must return one numeric value.");
+        }
+        const double value = Rcpp::as<double>(result);
+        if (!std::isfinite(value)) {
+          Rcpp::stop(
+            "custom 'tree_crit' must return a finite numeric value."
+          );
+        }
+        return value;
+      }
+    );
+  }
   fit_controls.set_threshold(threshold);
   fit_controls.set_select_threshold(select_threshold);
   fit_controls.set_select_trunc_lvl(select_truncation_level);

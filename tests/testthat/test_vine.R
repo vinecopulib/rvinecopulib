@@ -111,6 +111,28 @@ test_that("weights work", {
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
 })
 
+test_that("custom tree criteria are available through vine", {
+  n_calls <- 0L
+  custom_criterion <- function(data, weights) {
+    n_calls <<- n_calls + 1L
+    abs(cor(data[, 1], data[, 2]))
+  }
+  fit_custom <- vine(
+    as.data.frame(u[, 1:3]),
+    copula_controls = list(
+      family_set = "indep",
+      tree_crit = custom_criterion
+    )
+  )
+
+  expect_s3_class(fit_custom, "vine")
+  expect_gt(n_calls, 0L)
+  expect_identical(
+    fit_custom$copula_controls$tree_crit,
+    custom_criterion
+  )
+})
+
 test_that("d = 1 works", {
   vc <- vine(runif(20))
   expect_eql(dim(summary(vc)$margins)[1], 1)
