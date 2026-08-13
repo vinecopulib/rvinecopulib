@@ -403,3 +403,96 @@ test_that("rbicop validates vectorized simulation inputs", {
     "out of bounds"
   )
 })
+
+test_that("scores and hessian work for bivariate models", {
+  set.seed(13)
+  u_deriv <- matrix(runif(80, 0.1, 0.9), ncol = 2)
+  cop <- bicop_dist("gaussian", parameters = 0.4)
+
+  s <- scores(u_deriv, cop)
+  h <- hessian(u_deriv, cop)
+  expect_equal(dim(s), c(nrow(u_deriv), 1L))
+  expect_equal(dim(h), c(1L, 1L))
+  expect_equal(scores(u_deriv, cop, cores = 2), s)
+  expect_equal(hessian(u_deriv, cop, cores = 2), h)
+
+  eps <- 1e-5
+  log_density <- function(par) log(dbicop(u_deriv, "gaussian", 0, par))
+  s_fd <- (log_density(0.4 + eps) - log_density(0.4 - eps)) / (2 * eps)
+  h_fd <- mean(
+    (log_density(0.4 + eps) - 2 * log_density(0.4) + log_density(0.4 - eps)) /
+      eps^2
+  )
+  expect_equal(drop(s), s_fd, tolerance = 1e-7)
+  expect_equal(drop(h), h_fd, tolerance = 1e-5)
+})
+
+test_that("bivariate derivatives support per-observation parameters", {
+  set.seed(14)
+  n <- 30
+  u_deriv <- matrix(runif(2 * n, 0.1, 0.9), ncol = 2)
+  pars <- matrix(seq(-0.7, 0.7, length.out = n), ncol = 1)
+  cop <- bicop_dist("gaussian", parameters = 0)
+
+  s <- scores(u_deriv, cop, parameters = pars)
+  h <- hessian(u_deriv, cop, parameters = pars)
+  s_row <- vapply(
+    seq_len(n),
+    function(i) {
+      scores(
+        u_deriv[i, ],
+        bicop_dist("gaussian", parameters = pars[i, 1])
+      )
+    },
+    numeric(1)
+  )
+  h_row <- vapply(
+    seq_len(n),
+    function(i) {
+      hessian(
+        u_deriv[i, ],
+        bicop_dist("gaussian", parameters = pars[i, 1])
+      )
+    },
+    numeric(1)
+  )
+
+  expect_equal(drop(s), s_row)
+  expect_equal(drop(h), mean(h_row))
+})
+
+test_that("bivariate derivative safeguards are enforced", {
+  u_deriv <- matrix(c(0.2, 0.3, 0.7, 0.8), ncol = 2)
+  cop <- bicop_dist("gaussian", parameters = 0.4)
+
+  expect_error(scores(u_deriv, cop, cores = 0), "not greater than 0")
+  expect_error(hessian(u_deriv, cop, cores = 0), "not greater than 0")
+  expect_error(scores(u_deriv, cop, parameters = "bad"), "not a numeric")
+  expect_error(
+    scores(u_deriv, cop, parameters = matrix(0.2, 1, 1)),
+    "one row per row of u"
+  )
+  expect_error(
+    hessian(u_deriv, cop, parameters = matrix(c(0.2, NA), 2, 1)),
+    "must not contain NaN or Inf"
+  )
+  expect_error(
+    scores(u_deriv, cop, parameters = matrix(c(0.2, 1.1), 2, 1)),
+    "out of bounds"
+  )
+  expect_error(
+    scores(
+      cbind(u_deriv, u_deriv[, 1] - 0.01),
+      bicop_dist(
+        "gaussian",
+        parameters = 0.4,
+        var_types = c("d", "c")
+      )
+    ),
+    "continuous"
+  )
+  expect_error(
+    hessian(u_deriv, bicop_dist("tll")),
+    "not implemented for the TLL"
+  )
+})

@@ -174,6 +174,32 @@ Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r,
 }
 
 // [[Rcpp::export()]]
+Eigen::MatrixXd bicop_scores_cpp(const Eigen::MatrixXd& u,
+                                 const Rcpp::List& bicop_r,
+                                 const Eigen::MatrixXd& parameters,
+                                 const size_t cores)
+{
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  if (parameters.size() > 0) {
+    return bicop_cpp.scores(u, parameters, cores);
+  }
+  return bicop_cpp.scores(u);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd bicop_hessian_cpp(const Eigen::MatrixXd& u,
+                                  const Rcpp::List& bicop_r,
+                                  const Eigen::MatrixXd& parameters,
+                                  const size_t cores)
+{
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  if (parameters.size() > 0) {
+    return bicop_cpp.hessian(u, parameters, cores);
+  }
+  return bicop_cpp.hessian(u);
+}
+
+// [[Rcpp::export()]]
 double bicop_par_to_tau_cpp(const Rcpp::List& bicop_r)
 {
   Bicop bicop_cpp = bicop_wrap(bicop_r);
@@ -360,19 +386,29 @@ Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u,
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_scores_cpp(const Eigen::MatrixXd& u,
                                    const Rcpp::List& vinecop_r,
+                                   const Eigen::MatrixXd& parameters,
                                    bool step_wise,
                                    size_t cores)
 {
-  return vinecop_wrap(vinecop_r).scores(u, step_wise, cores);
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (parameters.size() > 0) {
+    return vinecop_cpp.scores(u, parameters, step_wise, cores);
+  }
+  return vinecop_cpp.scores(u, step_wise, cores);
 }
 
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_hessian_cpp(const Eigen::MatrixXd& u,
                                     const Rcpp::List& vinecop_r,
+                                    const Eigen::MatrixXd& parameters,
                                     bool step_wise,
                                     size_t cores)
 {
-  return vinecop_wrap(vinecop_r).hessian(u, step_wise, cores);
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (parameters.size() > 0) {
+    return vinecop_cpp.hessian(u, parameters, step_wise, cores);
+  }
+  return vinecop_cpp.hessian(u, step_wise, cores);
 }
 
 // [[Rcpp::export()]]

@@ -10,13 +10,19 @@
 \alias{dvinecop_dist}
 \alias{pvinecop_dist}
 \alias{rvinecop_dist}
+\alias{scores.vinecop_dist}
+\alias{hessian.vinecop_dist}
 \title{Vine copula distributions}
 \usage{
 dvinecop(u, vinecop, cores = 1, keep_all = FALSE)
 
-scores(u, vinecop, step_wise = TRUE, cores = 1)
+scores(u, vinecop, ...)
 
-hessian(u, vinecop, step_wise = TRUE, cores = 1)
+\method{scores}{vinecop_dist}(u, vinecop, parameters = NULL, step_wise = TRUE, cores = 1, ...)
+
+hessian(u, vinecop, ...)
+
+\method{hessian}{vinecop_dist}(u, vinecop, parameters = NULL, step_wise = TRUE, cores = 1, ...)
 
 pvinecop(u, vinecop, n_mc = 10^4, cores = 1)
 
@@ -41,6 +47,13 @@ done in parallel on \code{cores} batches .}
 
 \item{keep_all}{if \code{TRUE}, \code{dvinecop()} returns additional intermediate
 quantities computed during density evaluation.}
+
+\item{...}{unused.}
+
+\item{parameters}{optional matrix of observation-specific parameters, with
+one row per observation. For bivariate models, columns are family
+parameters; for vine copulas, columns follow the \verb{(tree, edge, parameter)}
+order of \code{scores()}. Only continuous parametric models are supported.}
 
 \item{step_wise}{if \code{FALSE}, the score/Hessian is computed for the full
 likelihood; if \code{TRUE}, gradients are computed per pair-copula as in

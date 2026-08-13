@@ -290,6 +290,37 @@ test_that("scores and hessian work", {
   expect_error(scores(u, vc, cores = 0))
   expect_error(hessian(u, vc, step_wise = 1))
   expect_error(hessian(u, vc, cores = 0))
+
+  parameters <- matrix(
+    rep(unlist(get_all_parameters(vc)), each = nrow(u)),
+    nrow = nrow(u)
+  )
+  expect_equal(scores(u, vc, parameters = parameters), s)
+  expect_equal(hessian(u, vc, parameters = parameters), h)
+  expect_equal(scores(u, vc, parameters = parameters, cores = 2), s)
+  expect_equal(hessian(u, vc, parameters = parameters, cores = 2), h)
+
+  expect_error(scores(u, vc, parameters = "bad"), "not a numeric")
+  expect_error(
+    scores(u, vc, parameters = parameters[-1, , drop = FALSE]),
+    "one row per row of u"
+  )
+  expect_error(
+    hessian(u, vc, parameters = parameters[, -1, drop = FALSE]),
+    "get_npars.*columns"
+  )
+  parameters_na <- parameters
+  parameters_na[1, 1] <- NA_real_
+  expect_error(
+    scores(u, vc, parameters = parameters_na),
+    "must not contain NaN or Inf"
+  )
+  vc_discrete <- vc
+  vc_discrete$var_types[1] <- "d"
+  expect_error(
+    hessian(u, vc_discrete, parameters = parameters),
+    "continuous"
+  )
 })
 
 
