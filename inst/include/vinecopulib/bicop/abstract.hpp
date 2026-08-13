@@ -12,6 +12,34 @@
 #include <vinecopulib/bicop/family.hpp>
 
 namespace vinecopulib {
+
+//! @brief Utilities for parsing derivative selectors.
+//!
+//! A selector is a concatenation of components `"par<k>"` (k-th parameter,
+//! 1-based; `"par"` is short for `"par1"`), `"u1"`, and `"u2"`. Components
+//! are encoded as integers: the 0-based parameter index for parameters, `-1`
+//! for `"u1"`, and `-2` for `"u2"`.
+namespace tools_deriv {
+
+std::vector<int>
+parse_components(const std::string& deriv);
+
+std::string
+comp_to_string(int comp);
+
+std::string
+components_to_string(std::vector<int> comps);
+
+std::string
+canonicalize(const std::string& deriv, size_t order, size_t npars);
+
+std::string
+swap_args(const std::string& deriv);
+
+bool
+is_u2_only(const std::string& deriv);
+}
+
 //! @brief An abstract class for bivariate copula families.
 //!
 //! This class is used in the implementation underlying the Bicop class.
@@ -121,6 +149,49 @@ protected:
 
   virtual Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u,
                                     const Eigen::MatrixXd& parameters) = 0;
+
+  // Derivative leaves. `deriv` is a canonical selector (see tools_deriv):
+  // first order `"par1"`, `"par2"`, ..., `"u1"`, `"u2"`; second order a
+  // sorted concatenation like `"par1u1"` (parameters first, then `"u1"`,
+  // then `"u2"`). The facade canonicalizes user input and resolves rotations
+  // before calling these, so implementations only see canonical selectors
+  // and 0-degree-rotation data. The defaults here throw (nonparametric
+  // families); ParBicop overrides them with central finite differences so
+  // every parametric family works; families with closed forms override
+  // those in turn. The logpdf defaults compose the pdf leaves by the
+  // quotient rule; families override the parameter selectors where dedicated
+  // closed forms exist.
+  virtual Eigen::VectorXd pdf_deriv_raw(const Eigen::MatrixXd& u,
+                                        const Eigen::MatrixXd& parameters,
+                                        const std::string& deriv);
+
+  virtual Eigen::VectorXd pdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                         const Eigen::MatrixXd& parameters,
+                                         const std::string& deriv);
+
+  virtual Eigen::VectorXd hfunc1_deriv_raw(const Eigen::MatrixXd& u,
+                                           const Eigen::MatrixXd& parameters,
+                                           const std::string& deriv);
+
+  virtual Eigen::VectorXd hfunc1_deriv2_raw(const Eigen::MatrixXd& u,
+                                            const Eigen::MatrixXd& parameters,
+                                            const std::string& deriv);
+
+  virtual Eigen::VectorXd hfunc2_deriv_raw(const Eigen::MatrixXd& u,
+                                           const Eigen::MatrixXd& parameters,
+                                           const std::string& deriv);
+
+  virtual Eigen::VectorXd hfunc2_deriv2_raw(const Eigen::MatrixXd& u,
+                                            const Eigen::MatrixXd& parameters,
+                                            const std::string& deriv);
+
+  virtual Eigen::VectorXd logpdf_deriv_raw(const Eigen::MatrixXd& u,
+                                           const Eigen::MatrixXd& parameters,
+                                           const std::string& deriv);
+
+  virtual Eigen::VectorXd logpdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                            const Eigen::MatrixXd& parameters,
+                                            const std::string& deriv);
 
   virtual Eigen::MatrixXd tau_to_parameters(const double& tau) = 0;
   Eigen::MatrixXd no_tau_to_parameters(const double&);

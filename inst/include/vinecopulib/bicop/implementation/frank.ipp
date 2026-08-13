@@ -100,6 +100,503 @@ FrankBicop::parameters_to_taildep(const Eigen::MatrixXd&)
   return Eigen::MatrixXd::Zero(2, 2);
 }
 
+inline Eigen::VectorXd
+FrankBicop::pdf_deriv_raw(const Eigen::MatrixXd& u,
+                          const Eigen::MatrixXd& parameters,
+                          const std::string& deriv)
+{
+  // exchangeability: route "u2"-flavored selectors through a swap
+  if (tools_deriv::is_u2_only(deriv)) {
+    return pdf_deriv_raw(
+      tools_eigen::swap_cols(u), parameters, tools_deriv::swap_args(deriv));
+  }
+
+  if (deriv == "par1") {
+    // ported from VineCopula deriv.c diffPDF (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t2 = std::exp(theta);
+      double t3 = t2 - 1.0;
+      double t4 = theta * u2;
+      double t5 = theta * u1;
+      double t7 = std::exp(t4 + t5 + theta);
+      double t10 = std::exp(t4 + t5);
+      double t12 = std::exp(t4 + theta);
+      double t14 = std::exp(t5 + theta);
+      double t15 = t10 - t12 - t14 + t2;
+      double t16 = t15 * t15;
+      double t17 = 1.0 / t16;
+      double t21 = theta * t3;
+      return t3 * t7 * t17 + theta * t2 * t7 * t17 +
+             t21 * (u2 + u1 + 1.0) * t7 * t17 -
+             2.0 * t21 * t7 / t15 / t16 *
+               ((u2 + u1) * t10 - (u2 + 1.0) * t12 - (u1 + 1.0) * t14 + t2);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  } else if (deriv == "u1") {
+    // ported from VineCopula deriv.c diffPDF_u (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = theta * theta;
+      double t2 = std::exp(theta);
+      double t3 = t2 - 1.0;
+      double t5 = theta * u2;
+      double t6 = theta * u1;
+      double t8 = std::exp(t5 + t6 + theta);
+      double t10 = std::exp(t5 + t6);
+      double t12 = std::exp(t5 + theta);
+      double t14 = std::exp(t6 + theta);
+      double t15 = t10 - t12 - t14 + t2;
+      double t16 = t15 * t15;
+      return t1 * t3 * t8 / t16 -
+             2.0 * theta * t3 * t8 / t16 / t15 * (theta * t10 - theta * t14);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  }
+  throw std::runtime_error("unexpected derivative selector: " + deriv);
+}
+
+inline Eigen::VectorXd
+FrankBicop::pdf_deriv2_raw(const Eigen::MatrixXd& u,
+                           const Eigen::MatrixXd& parameters,
+                           const std::string& deriv)
+{
+  // exchangeability: route "u2"-flavored selectors through a swap
+  if (tools_deriv::is_u2_only(deriv)) {
+    return pdf_deriv2_raw(
+      tools_eigen::swap_cols(u), parameters, tools_deriv::swap_args(deriv));
+  }
+
+  if (deriv == "par1par1") {
+    // ported from VineCopula deriv2.c diff2PDF (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = std::exp(theta);
+      double t2 = theta * u2;
+      double t3 = theta * u1;
+      double t5 = std::exp(t2 + t3 + theta);
+      double t8 = std::exp(t2 + t3);
+      double t10 = std::exp(t2 + theta);
+      double t12 = std::exp(t3 + theta);
+      double t13 = t8 - t10 - t12 + t1;
+      double t14 = t13 * t13;
+      double t15 = 1.0 / t14;
+      double t18 = t1 - 1.0;
+      double t19 = u2 + u1 + 1.0;
+      double t21 = t5 * t15;
+      double t26 = 1.0 / t14 / t13;
+      double t27 = u2 + u1;
+      double t29 = u2 + 1.0;
+      double t31 = u1 + 1.0;
+      double t33 = t27 * t8 - t29 * t10 - t31 * t12 + t1;
+      double t37 = theta * t1;
+      double t43 = t5 * t26;
+      double t44 = t43 * t33;
+      double t47 = theta * t18;
+      double t48 = t19 * t19;
+      double t11 = t14 * t14;
+      double t9 = t33 * t33;
+      double t7 = t27 * t27;
+      double t6 = t29 * t29;
+      double t4 = t31 * t31;
+      return 2.0 * t1 * t5 * t15 + 2.0 * t18 * t19 * t21 -
+             4.0 * t18 * t5 * t26 * t33 + t37 * t21 +
+             2.0 * t37 * t19 * t5 * t15 - 4.0 * t37 * t44 +
+             t47 * t48 * t5 * t15 - 4.0 * t47 * t19 * t44 +
+             6.0 * t47 * t5 / t11 * t9 -
+             2.0 * t47 * t43 * (t7 * t8 - t6 * t10 - t4 * t12 + t1);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  } else if (deriv == "par1u1") {
+    // ported from VineCopula deriv2.c diff2PDF_par_u (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = std::exp(theta);
+      double t2 = t1 - 1.0;
+      double t3 = theta * t2;
+      double t4 = theta * u2;
+      double t5 = theta * u1;
+      double t7 = std::exp(t4 + t5 + theta);
+      double t9 = std::exp(t4 + t5);
+      double t11 = std::exp(t4 + theta);
+      double t13 = std::exp(t5 + theta);
+      double t14 = t9 - t11 - t13 + t1;
+      double t15 = t14 * t14;
+      double t16 = 1.0 / t15;
+      double t17 = t7 * t16;
+      double t22 = 1.0 / t15 / t14;
+      double t25 = theta * t9 - theta * t13;
+      double t29 = theta * theta;
+      double t33 = t7 * t22;
+      double t34 = t33 * t25;
+      double t37 = t29 * t2;
+      double t38 = u2 + u1 + 1.0;
+      double t46 = u2 + u1;
+      double t49 = u1 + 1.0;
+      double t51 = t46 * t9 - (u2 + 1.0) * t11 - t49 * t13 + t1;
+      double t56 = t15 * t15;
+      return 2.0 * t3 * t17 - 2.0 * t2 * t7 * t22 * t25 + t29 * t1 * t17 -
+             2.0 * theta * t1 * t34 + t37 * t38 * t7 * t16 -
+             2.0 * t3 * t38 * t34 - 2.0 * t37 * t33 * t51 +
+             6.0 * t3 * t7 / t56 * t51 * t25 -
+             2.0 * t3 * t33 * (t9 + t46 * theta * t9 - t13 - t49 * theta * t13);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  } else if (deriv == "u1u1") {
+    // ported from VineCopula deriv2.c diff2PDF_u (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = theta * theta;
+      double t3 = std::exp(theta);
+      double t4 = t3 - 1.0;
+      double t6 = theta * u2;
+      double t7 = theta * u1;
+      double t9 = std::exp(t6 + t7 + theta);
+      double t11 = std::exp(t6 + t7);
+      double t13 = std::exp(t6 + theta);
+      double t15 = std::exp(t7 + theta);
+      double t16 = t11 - t13 - t15 + t3;
+      double t17 = t16 * t16;
+      double t24 = t9 / t17 / t16;
+      double t27 = theta * t11 - theta * t15;
+      double t31 = theta * t4;
+      double t32 = t17 * t17;
+      double t35 = t27 * t27;
+      return t1 * theta * t4 * t9 / t17 - 4.0 * t1 * t4 * t24 * t27 +
+             6.0 * t31 * t9 / t32 * t35 -
+             2.0 * t31 * t24 * (t1 * t11 - t1 * t15);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  } else if (deriv == "u1u2") {
+    // ported from VineCopula deriv2.c diff2PDF_u_v (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = theta * theta;
+      double t3 = std::exp(theta);
+      double t4 = t3 - 1.0;
+      double t5 = t1 * theta * t4;
+      double t6 = theta * u2;
+      double t7 = theta * u1;
+      double t9 = std::exp(t6 + t7 + theta);
+      double t11 = std::exp(t6 + t7);
+      double t13 = std::exp(t6 + theta);
+      double t15 = std::exp(t7 + theta);
+      double t16 = t11 - t13 - t15 + t3;
+      double t17 = t16 * t16;
+      double t21 = t1 * t4;
+      double t24 = t9 / t17 / t16;
+      double t25 = theta * t11;
+      double t27 = t25 - theta * t13;
+      double t32 = t25 - theta * t15;
+      double t38 = t17 * t17;
+      return t5 * t9 / t17 - 2.0 * t21 * t24 * t27 - 2.0 * t21 * t24 * t32 +
+             6.0 * theta * t4 * t9 / t38 * t32 * t27 - 2.0 * t5 * t24 * t11;
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  }
+  throw std::runtime_error("unexpected derivative selector: " + deriv);
+}
+
+inline Eigen::VectorXd
+FrankBicop::hfunc1_deriv_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters,
+                             const std::string& deriv)
+{
+  // the VineCopula kernels differentiate h(u|v) = dC/dv; our
+  // hfunc1(u1, u2) = dC/du1, so their u := our u2 and their v := our u1
+  if (deriv == "par1") {
+    // ported from VineCopula hfuncderiv.c diffhfunc (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = std::exp(theta);
+      double t2 = theta * u2;
+      double t3 = std::exp(t2);
+      double t5 = t1 * (t3 - 1.0);
+      double t6 = theta * u1;
+      double t8 = std::exp(t6 + t2);
+      double t9 = std::exp(t6 + theta);
+      double t10 = std::exp(t2 + theta);
+      double t11 = t8 - t9 - t10 + t1;
+      double t14 = 1.0 / t11;
+      double t18 = t11 * t11;
+      return -t5 * t14 - t1 * u2 * t3 * t14 +
+             t5 / t18 *
+               ((u1 + u2) * t8 - (u1 + 1.0) * t9 - (u2 + 1.0) * t10 + t1);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  } else if (deriv == "u1") {
+    // ported from VineCopula hfuncderiv.c diffhfunc_v (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = std::exp(theta);
+      double t2 = theta * u2;
+      double t3 = std::exp(t2);
+      double t6 = theta * u1;
+      double t8 = std::exp(t6 + t2);
+      double t10 = std::exp(t6 + theta);
+      double t12 = std::exp(t2 + theta);
+      double t13 = std::pow(t8 - t10 - t12 + t1, 2.0);
+      return t1 * (t3 - 1.0) / t13 * (theta * t8 - theta * t10);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  }
+  throw std::runtime_error("unexpected derivative selector: " + deriv);
+}
+
+inline Eigen::VectorXd
+FrankBicop::hfunc1_deriv2_raw(const Eigen::MatrixXd& u,
+                              const Eigen::MatrixXd& parameters,
+                              const std::string& deriv)
+{
+  // same argument convention as hfunc1_deriv_raw: their u := our u2,
+  // their v := our u1
+  if (deriv == "par1par1") {
+    // ported from VineCopula hfuncderiv2.c diff2hfunc (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = std::exp(theta);
+      double t2 = theta * u2;
+      double t3 = std::exp(t2);
+      double t5 = t1 * (t3 - 1.0);
+      double t6 = theta * u1;
+      double t8 = std::exp(t6 + t2);
+      double t10 = std::exp(t6 + theta);
+      double t12 = std::exp(t2 + theta);
+      double t13 = t8 - t10 - t12 + t1;
+      double t14 = 1.0 / t13;
+      double t16 = t1 * u2;
+      double t18 = t3 * t14;
+      double t20 = t13 * t13;
+      double t21 = 1.0 / t20;
+      double t23 = u1 + u2;
+      double t25 = u1 + 1.0;
+      double t26 = u2 + 1.0;
+      double t28 = t23 * t8 - t25 * t10 - t26 * t12 + t1;
+      double t32 = u2 * u2;
+      double t42 = t28 * t28;
+      double t44 = t23 * t23;
+      double t47 = t25 * t25;
+      double t49 = t26 * t26;
+      return -t5 * t14 - 2.0 * t16 * t18 + 2.0 * t5 * t21 * t28 -
+             t1 * t32 * t18 + 2.0 * t16 * t3 * t21 * t28 -
+             2.0 * t5 / t20 / t13 * t42 +
+             t5 * t21 * (t44 * t8 - t47 * t10 - t49 * t12 + t1);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  } else if (deriv == "par1u1") {
+    // ported from VineCopula hfuncderiv2.c diff2hfunc_par_v (family 5
+    // branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = std::exp(theta);
+      double t2 = theta * u2;
+      double t3 = std::exp(t2);
+      double t5 = t1 * (t3 - 1.0);
+      double t6 = theta * u1;
+      double t8 = std::exp(t6 + t2);
+      double t10 = std::exp(t6 + theta);
+      double t12 = std::exp(t2 + theta);
+      double t13 = t8 - t10 - t12 + t1;
+      double t14 = t13 * t13;
+      double t15 = 1.0 / t14;
+      double t18 = theta * t8 - theta * t10;
+      double t28 = u1 + u2;
+      double t29 = u1 + 1.0;
+      return t5 * t15 * t18 + t1 * u2 * t3 * t15 * t18 -
+             2.0 * t5 / t14 / t13 *
+               (t28 * t8 - t29 * t10 - (u2 + 1.0) * t12 + t1) * t18 +
+             t5 * t15 * (t8 + t28 * theta * t8 - t10 - t29 * theta * t10);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  } else if (deriv == "u1u1") {
+    // ported from VineCopula hfuncderiv2.c diff2hfunc_v (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = std::exp(theta);
+      double t2 = theta * u2;
+      double t3 = std::exp(t2);
+      double t5 = t1 * (t3 - 1.0);
+      double t6 = theta * u1;
+      double t8 = std::exp(t6 + t2);
+      double t10 = std::exp(t6 + theta);
+      double t12 = std::exp(t2 + theta);
+      double t13 = t8 - t10 - t12 + t1;
+      double t14 = t13 * t13;
+      double t20 = std::pow(theta * t8 - theta * t10, 2.0);
+      double t24 = theta * theta;
+      return -2.0 * t5 / t14 / t13 * t20 + t5 / t14 * (t24 * t8 - t24 * t10);
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  }
+  throw std::runtime_error("unexpected derivative selector: " + deriv);
+}
+
+inline Eigen::VectorXd
+FrankBicop::logpdf_deriv_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters,
+                             const std::string& deriv)
+{
+  // fused single-pass form kept for performance: the base
+  // logpdf_deriv*_raw would compose this as (pdf_deriv)/pdf, recomputing the
+  // shared pdf temporaries 2-3x; this leaf is on the scores/Hessian hot paths.
+  if (deriv == "par1") {
+    // ported from VineCopula logderiv.c difflPDF (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = std::exp(-theta);
+      double t2 = 1.0 - t1;
+      double t3 = u1 + u2;
+      double t5 = std::exp(-theta * t3);
+      double t8 = std::exp(-theta * u1);
+      double t9 = 1.0 - t8;
+      double t11 = std::exp(-theta * u2);
+      double t12 = 1.0 - t11;
+      double t14 = 1.0 - t1 - t9 * t12;
+      double t15 = t14 * t14;
+      double t16 = 1.0 / t15;
+      double t17 = theta * t2;
+      return (t2 * t5 * t16 + theta * t1 * t5 * t16 - t17 * t3 * t5 * t16 -
+              2.0 * t17 * t5 / t15 / t14 *
+                (t1 - u1 * t8 * t12 - t9 * u2 * t11)) /
+             theta / t2 / t5 * t15;
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  }
+  return AbstractBicop::logpdf_deriv_raw(u, parameters, deriv);
+}
+
+inline Eigen::VectorXd
+FrankBicop::logpdf_deriv2_raw(const Eigen::MatrixXd& u,
+                              const Eigen::MatrixXd& parameters,
+                              const std::string& deriv)
+{
+  // fused single-pass form kept for performance: the base
+  // logpdf_deriv*_raw would compose this as (pdf_deriv)/pdf, recomputing the
+  // shared pdf temporaries 2-3x; this leaf is on the scores/Hessian hot paths.
+  if (deriv == "par1par1") {
+    // ported from VineCopula logderiv.c diff2lPDF (family 5 branch)
+    auto f = [](const double& u1,
+                const double& u2,
+                const Eigen::Ref<const Eigen::VectorXd>& par) {
+      double theta = par(0);
+      // theta -> 0 is a 0/0 form; clamp |theta| >= 1e-5 preserving sign,
+      // consistent with parameters_to_tau()
+      theta = (theta >= 0) ? std::max(theta, 1e-5) : std::min(theta, -1e-5);
+      double t1 = std::exp(theta);
+      double t2 = theta * u2;
+      double t3 = theta * u1;
+      double t5 = std::exp(t2 + t3 + theta);
+      double t8 = std::exp(t2 + t3);
+      double t10 = std::exp(t2 + theta);
+      double t12 = std::exp(t3 + theta);
+      double t13 = t8 - t10 - t12 + t1;
+      double t14 = t13 * t13;
+      double t15 = 1.0 / t14;
+      double t18 = t1 - 1.0;
+      double t19 = u2 + u1 + 1.0;
+      double t21 = t5 * t15;
+      double t24 = t18 * t5;
+      double t26 = 1.0 / t14 / t13;
+      double t27 = u2 + u1;
+      double t29 = u2 + 1.0;
+      double t31 = u1 + 1.0;
+      double t33 = t27 * t8 - t29 * t10 - t31 * t12 + t1;
+      double t37 = theta * t1;
+      double t38 = t37 * t21;
+      double t40 = t19 * t5 * t15;
+      double t43 = t5 * t26;
+      double t44 = t43 * t33;
+      double t47 = theta * t18;
+      double t48 = t19 * t19;
+      double t55 = t14 * t14;
+      double t58 = t33 * t33;
+      double t62 = t27 * t27;
+      double t64 = t29 * t29;
+      double t66 = t31 * t31;
+      double t73 = 1.0 / theta;
+      double t75 = 1.0 / t18;
+      double t76 = 1.0 / t5;
+      double t78 = t75 * t76 * t14;
+      double t84 = t24 * t15 + t38 + t47 * t40 - 2.0 * t47 * t44;
+      double t85 = theta * theta;
+      double t89 = t84 * t73;
+      double t90 = t18 * t18;
+      double t93 = t76 * t14;
+      double t96 = t89 * t75;
+      return (2.0 * t1 * t5 * t15 + 2.0 * t18 * t19 * t21 -
+              4.0 * t24 * t26 * t33 + t38 + 2.0 * t37 * t40 - 4.0 * t37 * t44 +
+              t47 * t48 * t5 * t15 - 4.0 * t47 * t19 * t44 +
+              6.0 * t47 * t5 / t55 * t58 -
+              2.0 * t47 * t43 * (t62 * t8 - t64 * t10 - t66 * t12 + t1)) *
+               t73 * t78 -
+             t84 / t85 * t78 - t89 / t90 * t93 * t1 - t96 * t93 * t19 +
+             2.0 * t96 * t76 * t13 * t33;
+    };
+    return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+  }
+  return AbstractBicop::logpdf_deriv2_raw(u, parameters, deriv);
+}
+
 //! @brief computes the Debye function of order 1.
 //! @param x the argument and upper limit of the integral. x>=0.
 //! @return the Debye function. Zero if x<=0.

@@ -94,6 +94,12 @@ struct FitControlsConfig
 
   //! A vector of random seeds for the random number generator
   optional::optional<std::vector<int>> seeds;
+
+  //! Conditioning set for conditioning-aware structure selection: 1-based
+  //! variable indices to place at the tail of the vine order (so they can be
+  //! conditioned on with `Vinecop::simulate_conditional()`). Default: empty
+  //! (unconditional selection).
+  optional::optional<std::vector<size_t>> conditioning_set;
 };
 
 }

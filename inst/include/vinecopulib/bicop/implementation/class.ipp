@@ -617,6 +617,789 @@ Bicop::loglik(const Eigen::MatrixXd& u,
 }
 //! @}
 
+//! @name Derivatives of the density and h-functions
+//!
+//! @details These methods evaluate partial derivatives of the copula density
+//! \f$ c(u_1, u_2; \theta) \f$, its logarithm, and the h-functions with
+//! respect to the parameters and/or the arguments. The derivative is chosen
+//! by the selector `deriv`, a concatenation of the components `"par1"`,
+//! `"par2"`, ... (the k-th parameter, in the family's natural parameterization
+//! as returned by `get_parameters()`), `"u1"`, and `"u2"`. First-order
+//! methods take one component (`"par"` is short for `"par1"`); second-order
+//! methods take two in any order (a single component means differentiating
+//! twice, so `"par"` is short for `"par1par1"`).
+//!
+//! Rotations are handled internally via the chain rule, so derivatives are
+//! always w.r.t. the arguments and (positive, natural) parameters of the
+//! rotated copula. Closed-form expressions are used for the families in
+//! `bicop_families::analytic_derivs`; other parametric families fall back to
+//! central finite differences of the corresponding function. Derivatives
+//! require continuous variable types; nonparametric families throw.
+//!
+//! The per-row-parameter overloads evaluate the derivative at a different
+//! parameter set per row of `u` (see the corresponding `pdf()` overload for
+//! the layout and validation rules).
+//!
+//! @param u An \f$ n \times 2 \f$ matrix of observations contained in
+//!   \f$ (0, 1)^2 \f$.
+//! @param deriv The derivative selector.
+//! @return A length n vector of derivatives evaluated at `u`.
+//! @{
+
+//! @brief Evaluates a first derivative of the copula density.
+//!
+//! @details `deriv` is one of `"par1"`, `"par2"`, ... (short form `"par"`),
+//! `"u1"`, or `"u2"`.
+inline Eigen::VectorXd
+Bicop::pdf_deriv(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto spec = map_pdf_deriv(tools_deriv::canonicalize(deriv, 1, deriv_npars()));
+  return spec.sign * bicop_->pdf_deriv_raw(prep_for_abstract(u).leftCols(2),
+                                           bicop_->get_parameters().transpose(),
+                                           spec.deriv);
+}
+
+//! @brief Evaluates a second derivative of the copula density.
+//!
+//! @details `deriv` combines two first-order components, e.g. `"par1par1"`,
+//! `"par1u1"`, `"u1u2"`; a single component means differentiating twice.
+inline Eigen::VectorXd
+Bicop::pdf_deriv2(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto spec = map_pdf_deriv(tools_deriv::canonicalize(deriv, 2, deriv_npars()));
+  return spec.sign *
+         bicop_->pdf_deriv2_raw(prep_for_abstract(u).leftCols(2),
+                                bicop_->get_parameters().transpose(),
+                                spec.deriv);
+}
+
+//! @brief Evaluates a first derivative of the first h-function
+//! \f$ h_1(u_1, u_2) = P(U_2 \le u_2 | U_1 = u_1) \f$.
+//!
+//! @details `deriv` is one of `"par1"`, `"par2"`, ... (short form `"par"`),
+//! `"u1"` (the conditioning argument), or `"u2"` (which equals the copula
+//! density).
+inline Eigen::VectorXd
+Bicop::hfunc1_deriv(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  if (canonical == "u2") {
+    return pdf(u); // dh1/du2 = c, at every rotation
+  }
+  auto spec = map_hfunc_deriv(canonical, true);
+  Eigen::MatrixXd u_r = prep_for_abstract(u).leftCols(2);
+  Eigen::MatrixXd pars = bicop_->get_parameters().transpose();
+  if (spec.swap_hfunc) {
+    return spec.sign * bicop_->hfunc2_deriv_raw(u_r, pars, spec.deriv);
+  }
+  return spec.sign * bicop_->hfunc1_deriv_raw(u_r, pars, spec.deriv);
+}
+
+//! @brief Evaluates a second derivative of the first h-function.
+//!
+//! @details `deriv` combines two first-order components; any selector
+//! containing `"u2"` reduces to a density derivative (e.g. `"par1u2"` equals
+//! `pdf_deriv(u, "par1")`).
+inline Eigen::VectorXd
+Bicop::hfunc1_deriv2(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[1] == -2) { // sorted, so "u2" can only be the last component
+    // dh1/du2 = c: reduce to a first derivative of the density
+    return pdf_deriv(u, tools_deriv::comp_to_string(comps[0]));
+  }
+  auto spec = map_hfunc_deriv(canonical, true);
+  Eigen::MatrixXd u_r = prep_for_abstract(u).leftCols(2);
+  Eigen::MatrixXd pars = bicop_->get_parameters().transpose();
+  if (spec.swap_hfunc) {
+    return spec.sign * bicop_->hfunc2_deriv2_raw(u_r, pars, spec.deriv);
+  }
+  return spec.sign * bicop_->hfunc1_deriv2_raw(u_r, pars, spec.deriv);
+}
+
+//! @brief Evaluates a first derivative of the second h-function
+//! \f$ h_2(u_1, u_2) = P(U_1 \le u_1 | U_2 = u_2) \f$.
+//!
+//! @details `deriv` is one of `"par1"`, `"par2"`, ... (short form `"par"`),
+//! `"u2"` (the conditioning argument), or `"u1"` (which equals the copula
+//! density).
+inline Eigen::VectorXd
+Bicop::hfunc2_deriv(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  if (canonical == "u1") {
+    return pdf(u); // dh2/du1 = c, at every rotation
+  }
+  auto spec = map_hfunc_deriv(canonical, false);
+  Eigen::MatrixXd u_r = prep_for_abstract(u).leftCols(2);
+  Eigen::MatrixXd pars = bicop_->get_parameters().transpose();
+  if (spec.swap_hfunc) {
+    return spec.sign * bicop_->hfunc1_deriv_raw(u_r, pars, spec.deriv);
+  }
+  return spec.sign * bicop_->hfunc2_deriv_raw(u_r, pars, spec.deriv);
+}
+
+//! @brief Evaluates a second derivative of the second h-function.
+//!
+//! @details `deriv` combines two first-order components; any selector
+//! containing `"u1"` reduces to a density derivative (e.g. `"par1u1"` equals
+//! `pdf_deriv(u, "par1")`).
+inline Eigen::VectorXd
+Bicop::hfunc2_deriv2(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if ((comps[0] == -1) || (comps[1] == -1)) {
+    // dh2/du1 = c: reduce to a first derivative of the density
+    int other = (comps[0] == -1) ? comps[1] : comps[0];
+    return pdf_deriv(u, tools_deriv::comp_to_string(other));
+  }
+  auto spec = map_hfunc_deriv(canonical, false);
+  Eigen::MatrixXd u_r = prep_for_abstract(u).leftCols(2);
+  Eigen::MatrixXd pars = bicop_->get_parameters().transpose();
+  if (spec.swap_hfunc) {
+    return spec.sign * bicop_->hfunc1_deriv2_raw(u_r, pars, spec.deriv);
+  }
+  return spec.sign * bicop_->hfunc2_deriv2_raw(u_r, pars, spec.deriv);
+}
+
+//! @brief Evaluates a first derivative of the log-density
+//! \f$ \partial \log c / \partial \cdot \f$.
+//!
+//! @details For parameter selectors, dedicated closed forms are used where
+//! available (numerically stabler than `pdf_deriv() / pdf()` when the
+//! density is small); argument selectors are composed by the quotient rule.
+inline Eigen::VectorXd
+Bicop::logpdf_deriv(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[0] >= 0) {
+    // parameter selectors are rotation-invariant
+    return bicop_->logpdf_deriv_raw(prep_for_abstract(u).leftCols(2),
+                                    bicop_->get_parameters().transpose(),
+                                    canonical);
+  }
+  // pdf() is trimmed to [DBL_MIN, DBL_MAX], so the denominator is positive
+  Eigen::ArrayXd c = pdf(u).array();
+  return (pdf_deriv(u, canonical).array() / c).matrix();
+}
+
+//! @brief Evaluates a second derivative of the log-density.
+//!
+//! @details See `logpdf_deriv()`; selectors involving the arguments are
+//! composed from density derivatives by the quotient rule.
+inline Eigen::VectorXd
+Bicop::logpdf_deriv2(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[1] >= 0) { // sorted, so both components are parameters
+    return bicop_->logpdf_deriv2_raw(prep_for_abstract(u).leftCols(2),
+                                     bicop_->get_parameters().transpose(),
+                                     canonical);
+  }
+  // pdf() is trimmed to [DBL_MIN, DBL_MAX], so the denominator is positive
+  Eigen::ArrayXd c = pdf(u).array();
+  Eigen::ArrayXd c_xy = pdf_deriv2(u, canonical).array();
+  Eigen::ArrayXd c_x =
+    pdf_deriv(u, tools_deriv::comp_to_string(comps[0])).array();
+  Eigen::ArrayXd c_y =
+    (comps[0] == comps[1])
+      ? c_x
+      : pdf_deriv(u, tools_deriv::comp_to_string(comps[1])).array();
+  return (c_xy / c - (c_x / c) * (c_y / c)).matrix();
+}
+
+//! @brief Evaluates a first derivative of the copula density with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::pdf_deriv(const Eigen::MatrixXd& u,
+                 const std::string& deriv,
+                 const Eigen::MatrixXd& parameters,
+                 const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto spec = map_pdf_deriv(tools_deriv::canonicalize(deriv, 1, deriv_npars()));
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      return spec.sign * bicop_->pdf_deriv_raw(
+                           prep_for_abstract(ub).leftCols(2), pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a second derivative of the copula density with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::pdf_deriv2(const Eigen::MatrixXd& u,
+                  const std::string& deriv,
+                  const Eigen::MatrixXd& parameters,
+                  const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto spec = map_pdf_deriv(tools_deriv::canonicalize(deriv, 2, deriv_npars()));
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      return spec.sign * bicop_->pdf_deriv2_raw(
+                           prep_for_abstract(ub).leftCols(2), pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a first derivative of the first h-function with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::hfunc1_deriv(const Eigen::MatrixXd& u,
+                    const std::string& deriv,
+                    const Eigen::MatrixXd& parameters,
+                    const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  if (canonical == "u2") {
+    return pdf(u, parameters, num_threads);
+  }
+  auto spec = map_hfunc_deriv(canonical, true);
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::MatrixXd u_r = prep_for_abstract(ub).leftCols(2);
+      if (spec.swap_hfunc) {
+        return spec.sign * bicop_->hfunc2_deriv_raw(u_r, pb, spec.deriv);
+      }
+      return spec.sign * bicop_->hfunc1_deriv_raw(u_r, pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a second derivative of the first h-function with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::hfunc1_deriv2(const Eigen::MatrixXd& u,
+                     const std::string& deriv,
+                     const Eigen::MatrixXd& parameters,
+                     const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[1] == -2) {
+    return pdf_deriv(
+      u, tools_deriv::comp_to_string(comps[0]), parameters, num_threads);
+  }
+  auto spec = map_hfunc_deriv(canonical, true);
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::MatrixXd u_r = prep_for_abstract(ub).leftCols(2);
+      if (spec.swap_hfunc) {
+        return spec.sign * bicop_->hfunc2_deriv2_raw(u_r, pb, spec.deriv);
+      }
+      return spec.sign * bicop_->hfunc1_deriv2_raw(u_r, pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a first derivative of the second h-function with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::hfunc2_deriv(const Eigen::MatrixXd& u,
+                    const std::string& deriv,
+                    const Eigen::MatrixXd& parameters,
+                    const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  if (canonical == "u1") {
+    return pdf(u, parameters, num_threads);
+  }
+  auto spec = map_hfunc_deriv(canonical, false);
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::MatrixXd u_r = prep_for_abstract(ub).leftCols(2);
+      if (spec.swap_hfunc) {
+        return spec.sign * bicop_->hfunc1_deriv_raw(u_r, pb, spec.deriv);
+      }
+      return spec.sign * bicop_->hfunc2_deriv_raw(u_r, pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a second derivative of the second h-function with
+//! per-row parameters.
+inline Eigen::VectorXd
+Bicop::hfunc2_deriv2(const Eigen::MatrixXd& u,
+                     const std::string& deriv,
+                     const Eigen::MatrixXd& parameters,
+                     const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if ((comps[0] == -1) || (comps[1] == -1)) {
+    int other = (comps[0] == -1) ? comps[1] : comps[0];
+    return pdf_deriv(
+      u, tools_deriv::comp_to_string(other), parameters, num_threads);
+  }
+  auto spec = map_hfunc_deriv(canonical, false);
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::MatrixXd u_r = prep_for_abstract(ub).leftCols(2);
+      if (spec.swap_hfunc) {
+        return spec.sign * bicop_->hfunc1_deriv2_raw(u_r, pb, spec.deriv);
+      }
+      return spec.sign * bicop_->hfunc2_deriv2_raw(u_r, pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a first derivative of the log-density with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::logpdf_deriv(const Eigen::MatrixXd& u,
+                    const std::string& deriv,
+                    const Eigen::MatrixXd& parameters,
+                    const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[0] >= 0) {
+    Eigen::MatrixXd par_t = format_parameters(u, parameters);
+    return eval_in_batches(
+      u,
+      par_t,
+      num_threads,
+      [this, canonical](const Eigen::MatrixXd& ub,
+                        const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+        return bicop_->logpdf_deriv_raw(
+          prep_for_abstract(ub).leftCols(2), pb, canonical);
+      });
+  }
+  Eigen::ArrayXd c = pdf(u, parameters, num_threads).array();
+  return (pdf_deriv(u, canonical, parameters, num_threads).array() / c)
+    .matrix();
+}
+
+//! @brief Evaluates a second derivative of the log-density with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::logpdf_deriv2(const Eigen::MatrixXd& u,
+                     const std::string& deriv,
+                     const Eigen::MatrixXd& parameters,
+                     const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[1] >= 0) {
+    Eigen::MatrixXd par_t = format_parameters(u, parameters);
+    return eval_in_batches(
+      u,
+      par_t,
+      num_threads,
+      [this, canonical](const Eigen::MatrixXd& ub,
+                        const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+        return bicop_->logpdf_deriv2_raw(
+          prep_for_abstract(ub).leftCols(2), pb, canonical);
+      });
+  }
+  Eigen::ArrayXd c = pdf(u, parameters, num_threads).array();
+  Eigen::ArrayXd c_xy =
+    pdf_deriv2(u, canonical, parameters, num_threads).array();
+  Eigen::ArrayXd c_x =
+    pdf_deriv(u, tools_deriv::comp_to_string(comps[0]), parameters, num_threads)
+      .array();
+  Eigen::ArrayXd c_y =
+    (comps[0] == comps[1])
+      ? c_x
+      : pdf_deriv(
+          u, tools_deriv::comp_to_string(comps[1]), parameters, num_threads)
+          .array();
+  return (c_xy / c - (c_x / c) * (c_y / c)).matrix();
+}
+//! @}
+
+//! @brief Assembles an \f$ n \times p \f$ score matrix from a per-parameter
+//! column evaluator (`col(k)` returns column `k`). Shared by the fixed- and
+//! per-row-parameter `scores()` overloads so each keeps its own optimal
+//! `logpdf_deriv()` path (broadcast vs. per-row) while the loop lives once.
+inline Eigen::MatrixXd
+assemble_scores(Eigen::Index n,
+                Eigen::Index p,
+                const std::function<Eigen::VectorXd(Eigen::Index)>& col)
+{
+  Eigen::MatrixXd s(n, p);
+  for (Eigen::Index k = 0; k < p; ++k) {
+    s.col(k) = col(k);
+  }
+  return s;
+}
+
+//! @brief Assembles the averaged, symmetric \f$ p \times p \f$ Hessian from a
+//! per-\f$ (a, b) \f$ second-derivative column evaluator (upper triangle only).
+inline Eigen::MatrixXd
+assemble_hessian(
+  Eigen::Index p,
+  const std::function<Eigen::VectorXd(Eigen::Index, Eigen::Index)>& col)
+{
+  Eigen::MatrixXd h(p, p);
+  for (Eigen::Index a = 0; a < p; ++a) {
+    for (Eigen::Index b = a; b < p; ++b) {
+      h(a, b) = col(a, b).mean();
+      h(b, a) = h(a, b);
+    }
+  }
+  return h;
+}
+
+//! @brief Assembles the per-observation, symmetric \f$ p \times p \f$ Hessians
+//! (one per row of `u`) from the same per-\f$ (a, b) \f$ column evaluator.
+inline std::vector<Eigen::MatrixXd>
+assemble_hessian_full(
+  Eigen::Index n,
+  Eigen::Index p,
+  const std::function<Eigen::VectorXd(Eigen::Index, Eigen::Index)>& col)
+{
+  std::vector<Eigen::MatrixXd> hess(static_cast<size_t>(n),
+                                    Eigen::MatrixXd(p, p));
+  for (Eigen::Index a = 0; a < p; ++a) {
+    for (Eigen::Index b = a; b < p; ++b) {
+      Eigen::VectorXd d = col(a, b);
+      for (Eigen::Index i = 0; i < n; ++i) {
+        hess[static_cast<size_t>(i)](a, b) = d(i);
+        hess[static_cast<size_t>(i)](b, a) = d(i);
+      }
+    }
+  }
+  return hess;
+}
+
+//! @name Scores, gradient, and Hessian of the log-likelihood
+//!
+//! @details These methods aggregate the log-density parameter derivatives into
+//! the score (the gradient of each observation's log-density contribution), its
+//! observation-average (`gradient`), and the Hessian. They are thin wrappers
+//! around `logpdf_deriv()` / `logpdf_deriv2()`: with `p = get_parameters()`
+//! parameters, the score of observation `i` w.r.t. parameter `k` is
+//! \f$ \partial \log c(u_i; \theta) / \partial \theta_k \f$, and the (per-obs
+//! and averaged) Hessians collect the second log-density derivatives. Like the
+//! derivatives they build on, they require parametric families and continuous
+//! variable types; nonparametric or discrete models throw.
+//!
+//! The per-row-parameter overloads evaluate at a different parameter set per
+//! row of `u` (see the corresponding `pdf()` overload for the layout and
+//! validation rules).
+//!
+//! @param u An \f$ n \times 2 \f$ matrix of observations contained in
+//!   \f$ (0, 1)^2 \f$.
+//! @{
+
+//! @brief Evaluates the per-observation scores.
+//!
+//! @return An \f$ n \times p \f$ matrix whose column `k` is
+//! \f$ \partial \log c / \partial \theta_{k+1} \f$.
+inline Eigen::MatrixXd
+Bicop::scores(const Eigen::MatrixXd& u) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  return assemble_scores(
+    u.rows(), static_cast<Eigen::Index>(deriv_npars()), [&](Eigen::Index k) {
+      return logpdf_deriv(u, "par" + std::to_string(k + 1));
+    });
+}
+
+//! @brief Evaluates the gradient of the average log-likelihood.
+//!
+//! @return The observation-average of `scores()`, a vector of length `p`.
+inline Eigen::VectorXd
+Bicop::gradient(const Eigen::MatrixXd& u) const
+{
+  return scores(u).colwise().mean().transpose();
+}
+
+//! @brief Evaluates the Hessian of the average log-likelihood.
+//!
+//! @return A symmetric \f$ p \times p \f$ matrix whose entry \f$ (a, b) \f$ is
+//! the observation-average of
+//! \f$ \partial^2 \log c / \partial \theta_{a+1} \partial \theta_{b+1} \f$.
+inline Eigen::MatrixXd
+Bicop::hessian(const Eigen::MatrixXd& u) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  return assemble_hessian(
+    static_cast<Eigen::Index>(deriv_npars()),
+    [&](Eigen::Index a, Eigen::Index b) {
+      return logpdf_deriv2(
+        u, "par" + std::to_string(a + 1) + "par" + std::to_string(b + 1));
+    });
+}
+
+//! @brief Evaluates the per-observation Hessians.
+//!
+//! @return A vector of `n` symmetric \f$ p \times p \f$ matrices; entry `i`'s
+//! \f$ (a, b) \f$ element is
+//! \f$ \partial^2 \log c(u_i; \theta) / \partial \theta_{a+1} \partial
+//! \theta_{b+1} \f$.
+inline std::vector<Eigen::MatrixXd>
+Bicop::hessian_full(const Eigen::MatrixXd& u) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  return assemble_hessian_full(
+    u.rows(),
+    static_cast<Eigen::Index>(deriv_npars()),
+    [&](Eigen::Index a, Eigen::Index b) {
+      return logpdf_deriv2(
+        u, "par" + std::to_string(a + 1) + "par" + std::to_string(b + 1));
+    });
+}
+
+//! @brief Computes the covariance matrix of the scores.
+//!
+//! @return The mean-centered, divided-by-`n` covariance of `scores()`, a
+//! \f$ p \times p \f$ matrix.
+inline Eigen::MatrixXd
+Bicop::scores_cov(const Eigen::MatrixXd& u) const
+{
+  Eigen::MatrixXd s = scores(u);
+  // materialize the centered scores; a lazy expression would be evaluated
+  // twice by the product below
+  Eigen::MatrixXd sc = s.rowwise() - s.colwise().mean();
+  return (sc.adjoint() * sc) / static_cast<double>(s.rows());
+}
+
+//! @brief Evaluates the scores, bundled in a `ScoresResult`.
+//!
+//! @details Provided for parity with `Vinecop::scores_full()`; a single pair
+//! copula has no cascade caches, so the result only carries the score matrix.
+inline Bicop::ScoresResult
+Bicop::scores_full(const Eigen::MatrixXd& u) const
+{
+  ScoresResult result;
+  result.scores = scores(u);
+  return result;
+}
+
+//! @brief Evaluates the per-observation scores with per-row parameters.
+inline Eigen::MatrixXd
+Bicop::scores(const Eigen::MatrixXd& u,
+              const Eigen::MatrixXd& parameters,
+              const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  return assemble_scores(
+    u.rows(), static_cast<Eigen::Index>(deriv_npars()), [&](Eigen::Index k) {
+      return logpdf_deriv(
+        u, "par" + std::to_string(k + 1), parameters, num_threads);
+    });
+}
+
+//! @brief Evaluates the gradient of the average log-likelihood with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::gradient(const Eigen::MatrixXd& u,
+                const Eigen::MatrixXd& parameters,
+                const size_t num_threads) const
+{
+  return scores(u, parameters, num_threads).colwise().mean().transpose();
+}
+
+//! @brief Evaluates the Hessian of the average log-likelihood with per-row
+//! parameters.
+inline Eigen::MatrixXd
+Bicop::hessian(const Eigen::MatrixXd& u,
+               const Eigen::MatrixXd& parameters,
+               const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  return assemble_hessian(static_cast<Eigen::Index>(deriv_npars()),
+                          [&](Eigen::Index a, Eigen::Index b) {
+                            return logpdf_deriv2(u,
+                                                 "par" + std::to_string(a + 1) +
+                                                   "par" +
+                                                   std::to_string(b + 1),
+                                                 parameters,
+                                                 num_threads);
+                          });
+}
+
+//! @brief Evaluates the per-observation Hessians with per-row parameters.
+inline std::vector<Eigen::MatrixXd>
+Bicop::hessian_full(const Eigen::MatrixXd& u,
+                    const Eigen::MatrixXd& parameters,
+                    const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  return assemble_hessian_full(u.rows(),
+                               static_cast<Eigen::Index>(deriv_npars()),
+                               [&](Eigen::Index a, Eigen::Index b) {
+                                 return logpdf_deriv2(
+                                   u,
+                                   "par" + std::to_string(a + 1) + "par" +
+                                     std::to_string(b + 1),
+                                   parameters,
+                                   num_threads);
+                               });
+}
+
+//! @brief Computes the covariance matrix of the scores with per-row parameters.
+inline Eigen::MatrixXd
+Bicop::scores_cov(const Eigen::MatrixXd& u,
+                  const Eigen::MatrixXd& parameters,
+                  const size_t num_threads) const
+{
+  Eigen::MatrixXd s = scores(u, parameters, num_threads);
+  Eigen::MatrixXd sc = s.rowwise() - s.colwise().mean();
+  return (sc.adjoint() * sc) / static_cast<double>(s.rows());
+}
+
+//! @brief Evaluates the scores with per-row parameters, bundled in a
+//! `ScoresResult`.
+inline Bicop::ScoresResult
+Bicop::scores_full(const Eigen::MatrixXd& u,
+                   const Eigen::MatrixXd& parameters,
+                   const size_t num_threads) const
+{
+  ScoresResult result;
+  result.scores = scores(u, parameters, num_threads);
+  return result;
+}
+//! @}
+
+//! checks that derivatives are available for the model (parametric family,
+//! continuous variable types).
+inline void
+Bicop::check_deriv_preconditions() const
+{
+  if (!tools_stl::is_member(get_family(), bicop_families::parametric)) {
+    throw std::runtime_error("derivatives are not implemented for the " +
+                             get_family_name() + " copula");
+  }
+  if (var_types_ != std::vector<std::string>{ "c", "c" }) {
+    throw std::runtime_error(
+      "derivatives are only available for continuous variable types");
+  }
+}
+
+//! the number of parameters used to validate derivative selectors.
+inline size_t
+Bicop::deriv_npars() const
+{
+  return static_cast<size_t>(bicop_->get_parameters().size());
+}
+
+//! @brief Resolves the rotation for a density-derivative selector.
+//!
+//! @details The rotated density is the unrotated one at transformed
+//! arguments (90: \f$ (u_2, 1 - u_1) \f$, 180: \f$ (1 - u_1, 1 - u_2) \f$,
+//! 270: \f$ (1 - u_2, u_1) \f$), so parameter components pass through
+//! unchanged while argument components map to the leaf's argument slot and
+//! pick up the chain-rule sign of the transform.
+inline Bicop::DerivSpec
+Bicop::map_pdf_deriv(const std::string& canonical) const
+{
+  auto comps = tools_deriv::parse_components(canonical);
+  double sign = 1.0;
+  for (auto& comp : comps) {
+    if (comp >= 0) {
+      continue;
+    }
+    switch (rotation_) {
+      default:
+        break;
+      case 90:
+        sign *= (comp == -1) ? -1.0 : 1.0;
+        comp = (comp == -1) ? -2 : -1;
+        break;
+      case 180:
+        sign *= -1.0;
+        break;
+      case 270:
+        sign *= (comp == -2) ? -1.0 : 1.0;
+        comp = (comp == -1) ? -2 : -1;
+        break;
+    }
+  }
+  return { tools_deriv::components_to_string(comps), sign, false };
+}
+
+//! @brief Resolves the rotation for an h-function-derivative selector.
+//!
+//! @details Under 90/270 rotations the rotated h-function is built from the
+//! *other* h-function's leaf (`swap_hfunc`), mirroring `hfunc1()`/`hfunc2()`.
+//! The sign is the product of the `1 - h` output flip (180/270 for the first
+//! h-function, 90/180 for the second) and one argument chain-rule factor per
+//! conditioning-argument component; parameter components pass through
+//! unchanged. Selectors containing the conditioned argument must be reduced
+//! to density derivatives before calling this.
+inline Bicop::DerivSpec
+Bicop::map_hfunc_deriv(const std::string& canonical, bool first_hfunc) const
+{
+  auto comps = tools_deriv::parse_components(canonical);
+  bool swap = (rotation_ == 90) || (rotation_ == 270);
+  double sign, chain;
+  if (first_hfunc) {
+    sign = ((rotation_ == 180) || (rotation_ == 270)) ? -1.0 : 1.0;
+    chain = ((rotation_ == 90) || (rotation_ == 180)) ? -1.0 : 1.0;
+  } else {
+    sign = ((rotation_ == 90) || (rotation_ == 180)) ? -1.0 : 1.0;
+    chain = ((rotation_ == 180) || (rotation_ == 270)) ? -1.0 : 1.0;
+  }
+  for (auto& comp : comps) {
+    if (comp >= 0) {
+      continue;
+    }
+    sign *= chain;
+    if (swap) {
+      comp = (comp == -1) ? -2 : -1;
+    }
+  }
+  return { tools_deriv::components_to_string(comps), sign, swap };
+}
+
 //! @brief Validates per-row parameters (the internal leaves use the same
 //! `n x p` layout as the public API, one parameter set per row).
 inline Eigen::MatrixXd

@@ -51,6 +51,17 @@ intersect(std::vector<T> x, std::vector<T> y)
   return common;
 }
 
+//! @brief Inserts `x` into the sorted vector `v`, keeping it sorted and unique
+//! (mirrors `std::set::insert`).
+template<class T>
+void
+insert_sorted(std::vector<T>& v, const T& x)
+{
+  auto it = std::lower_bound(v.begin(), v.end(), x);
+  if (it == v.end() || *it != x)
+    v.insert(it, x);
+}
+
 template<class T>
 size_t
 find_position(T x, const std::vector<T>& vec)

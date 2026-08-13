@@ -29,6 +29,16 @@ private:
   Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u,
                             const Eigen::MatrixXd& parameters);
 
+  // elliptical copulas are exchangeable: the second h-function derivatives
+  // are the first ones at swapped arguments/selectors
+  Eigen::VectorXd hfunc2_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv);
+
+  Eigen::VectorXd hfunc2_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv);
+
   // link between Kendall's tau and the par_bicop parameter
   double parameters_to_tau(const Eigen::MatrixXd& parameters);
 };

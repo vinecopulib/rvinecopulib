@@ -38,6 +38,74 @@ private:
   Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u,
                             const Eigen::MatrixXd& parameters);
 
+  // analytic derivative leaves (canonical selectors; see tools_deriv),
+  // ported from the VineCopula C sources (tcopuladeriv.c,
+  // tcopuladeriv_new.c, logderiv.c)
+  Eigen::VectorXd pdf_deriv_raw(const Eigen::MatrixXd& u,
+                                const Eigen::MatrixXd& parameters,
+                                const std::string& deriv);
+
+  Eigen::VectorXd pdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                 const Eigen::MatrixXd& parameters,
+                                 const std::string& deriv);
+
+  Eigen::VectorXd hfunc1_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv);
+
+  Eigen::VectorXd hfunc1_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv);
+
+  Eigen::VectorXd logpdf_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv);
+
+  Eigen::VectorXd logpdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv);
+
+  // applies a scalar kernel to each row of `u` with per-row parameters
+  static Eigen::VectorXd apply_kernel(
+    const Eigen::MatrixXd& u,
+    const Eigen::MatrixXd& parameters,
+    double (*kernel)(double, double, double, double));
+
+  // scalar derivative kernels backing the leaves above; arguments follow
+  // vinecopulib conventions (`hfunc1` conditions on `u1`, so the
+  // VineCopula h-kernels are called with their `u := u2`, `v := u1`)
+  static double pdf_scalar(double u1, double u2, double rho, double nu);
+  static double diff_lpdf_rho(double u1, double u2, double rho, double nu);
+  static double diff_lpdf_nu(double u1, double u2, double rho, double nu);
+  static double diff2_lpdf_rho(double u1, double u2, double rho, double nu);
+  static double diff2_lpdf_nu(double u1, double u2, double rho, double nu);
+  static double diff2_lpdf_rho_nu(double u1, double u2, double rho, double nu);
+  static double diff_pdf_rho(double u1, double u2, double rho, double nu);
+  static double diff_pdf_nu(double u1, double u2, double rho, double nu);
+  static double diff_pdf_u1(double u1, double u2, double rho, double nu);
+  static double diff2_pdf_rho(double u1, double u2, double rho, double nu);
+  static double diff2_pdf_nu(double u1, double u2, double rho, double nu);
+  static double diff2_pdf_rho_nu(double u1, double u2, double rho, double nu);
+  static double diff2_pdf_rho_u1(double u1, double u2, double rho, double nu);
+  static double diff2_pdf_nu_u1(double u1, double u2, double rho, double nu);
+  static double diff2_pdf_u1(double u1, double u2, double rho, double nu);
+  static double diff2_pdf_u1_u2(double u1, double u2, double rho, double nu);
+  static double diff_hfunc1_rho(double u1, double u2, double rho, double nu);
+  static double diff_hfunc1_nu(double u1, double u2, double rho, double nu);
+  static double diff_hfunc1_u1(double u1, double u2, double rho, double nu);
+  static double diff2_hfunc1_rho(double u1, double u2, double rho, double nu);
+  static double diff2_hfunc1_nu(double u1, double u2, double rho, double nu);
+  static double diff2_hfunc1_rho_nu(double u1,
+                                    double u2,
+                                    double rho,
+                                    double nu);
+  static double diff2_hfunc1_rho_u1(double u1,
+                                    double u2,
+                                    double rho,
+                                    double nu);
+  static double diff2_hfunc1_nu_u1(double u1, double u2, double rho, double nu);
+  static double diff2_hfunc1_u1(double u1, double u2, double rho, double nu);
+
   // single source of truth for the math (shared by the state-based and
   // parameter-aware leaves)
   static Eigen::VectorXd pdf_impl(const Eigen::MatrixXd& u,

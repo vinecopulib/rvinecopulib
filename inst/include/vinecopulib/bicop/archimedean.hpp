@@ -37,6 +37,16 @@ private:
   Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u,
                             const Eigen::MatrixXd& parameters);
 
+  // Archimedean copulas are exchangeable: the second h-function derivatives
+  // are the first ones at swapped arguments/selectors
+  Eigen::VectorXd hfunc2_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv);
+
+  Eigen::VectorXd hfunc2_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv);
+
   // generator, its inverse and derivative; `parameters` is a single parameter
   // set (a p x 1 column)
   virtual double generator(

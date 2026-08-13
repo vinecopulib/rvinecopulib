@@ -37,6 +37,31 @@ private:
   Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u,
                             const Eigen::MatrixXd& parameters);
 
+  // analytic derivative leaves (see tools_deriv for the selector encoding)
+  Eigen::VectorXd pdf_deriv_raw(const Eigen::MatrixXd& u,
+                                const Eigen::MatrixXd& parameters,
+                                const std::string& deriv);
+
+  Eigen::VectorXd pdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                 const Eigen::MatrixXd& parameters,
+                                 const std::string& deriv);
+
+  Eigen::VectorXd hfunc1_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv);
+
+  Eigen::VectorXd hfunc1_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv);
+
+  Eigen::VectorXd logpdf_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv);
+
+  Eigen::VectorXd logpdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv);
+
   Eigen::MatrixXd tau_to_parameters(const double& tau);
 
   // the Gaussian copula has no tail dependence in any corner

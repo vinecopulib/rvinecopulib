@@ -4,8 +4,10 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <utility>
 #include <vinecopulib/misc/tools_stl.hpp>
 
 namespace vinecopulib {

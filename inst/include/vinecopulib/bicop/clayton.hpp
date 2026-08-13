@@ -39,6 +39,31 @@ private:
   Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u,
                           const Eigen::MatrixXd& parameters);
 
+  // analytic derivatives (ported from the VineCopula R package)
+  Eigen::VectorXd pdf_deriv_raw(const Eigen::MatrixXd& u,
+                                const Eigen::MatrixXd& parameters,
+                                const std::string& deriv);
+
+  Eigen::VectorXd pdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                 const Eigen::MatrixXd& parameters,
+                                 const std::string& deriv);
+
+  Eigen::VectorXd hfunc1_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv);
+
+  Eigen::VectorXd hfunc1_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv);
+
+  Eigen::VectorXd logpdf_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv);
+
+  Eigen::VectorXd logpdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv);
+
   // inverse hfunction
   Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u,
                             const Eigen::MatrixXd& parameters);

@@ -335,6 +335,12 @@ Vinecop::select(const Eigen::MatrixXd& data, const FitControlsVinecop& controls)
       nobs_ = data.rows();
       return;
     }
+
+    auto conditioning_set = controls.get_conditioning_set();
+    if (!conditioning_set.empty()) {
+      check_conditioning_set(conditioning_set, controls);
+    }
+
     Eigen::MatrixXd u = collapse_data(data);
 
     tools_select::VinecopSelector selector(
@@ -345,9 +351,146 @@ Vinecop::select(const Eigen::MatrixXd& data, const FitControlsVinecop& controls)
       selector.select_all_trees(u);
     }
     finalize_fit(selector);
+
+    // Relabel the fitted vine (a value-preserving re-orientation, no re-fit) so
+    // the conditioning set becomes the tail of the order and can be conditioned
+    // on with simulate_conditional(). The constrained first tree makes this
+    // achievable.
+    if (!conditioning_set.empty()) {
+      reorient(conditioning_set);
+    }
   } else {
     fit(data, controls.get_fit_controls_bicop(), controls.get_num_threads());
   }
+}
+
+//! @brief Validates the conditioning set against the vine dimension and
+//! selection controls (called from `select()` where `d_` is known).
+inline void
+Vinecop::check_conditioning_set(const std::vector<size_t>& conditioning_set,
+                                const FitControlsVinecop& controls) const
+{
+  if (conditioning_set.size() >= d_) {
+    throw std::runtime_error(
+      "conditioning_set must contain at most d - 1 variables.");
+  }
+  for (auto v : conditioning_set) {
+    if ((v < 1) || (v > d_)) {
+      throw std::runtime_error(
+        "conditioning_set entries must be in 1, ..., d.");
+    }
+  }
+  auto algo = controls.get_tree_algorithm();
+  if ((algo != "mst_prim") && (algo != "mst_kruskal")) {
+    throw std::runtime_error(
+      "conditioning-aware selection requires an MST tree_algorithm "
+      "('mst_prim' or 'mst_kruskal').");
+  }
+  // v1: re-orientation operates on the full R-vine matrix, so structural
+  // truncation is not supported (thresholding, which keeps the structure full,
+  // is fine).
+  if (controls.get_select_trunc_lvl() || (controls.get_trunc_lvl() < d_ - 1)) {
+    throw std::runtime_error(
+      "conditioning-aware selection does not support truncation "
+      "(trunc_lvl / select_trunc_lvl) in this version.");
+  }
+}
+
+//! @brief Relabels the vine to an equivalent one whose order tail equals
+//! `conditioning_set`.
+//!
+//! @details A value-preserving re-orientation: the fitted model is unchanged
+//! (both the density `pdf` and the log-likelihood `loglik` are invariant), only
+//! its sampling-order representation changes, so that the variables in
+//! `conditioning_set` are drawn first and can be conditioned on with
+//! `simulate_conditional`. It chooses, per tree, which conditioned variable
+//! sits on the matrix diagonal, and flips each pair copula whose stored
+//! orientation no longer matches its new position. Throws if the current
+//! structure admits no sampling order ending in `conditioning_set` (fit with a
+//! conditioning set via `FitControlsVinecop` to guarantee one exists).
+//!
+//! @param conditioning_set 1-based variable indices to place at the tail of the
+//! variable order.
+inline void
+Vinecop::reorient(const std::vector<size_t>& conditioning_set)
+{
+  size_t k = conditioning_set.size();
+
+  // ---- validation ----
+  if ((k == 0) || (k >= d_)) {
+    throw std::runtime_error(
+      "conditioning_set must contain between 1 and d - 1 variables.");
+  }
+  auto sorted = conditioning_set;
+  std::sort(sorted.begin(), sorted.end());
+  if (std::adjacent_find(sorted.begin(), sorted.end()) != sorted.end()) {
+    throw std::runtime_error("conditioning_set must not contain duplicates.");
+  }
+  if ((sorted.front() < 1) || (sorted.back() > d_)) {
+    throw std::runtime_error("conditioning_set entries must be in 1, ..., d.");
+  }
+  if (rvine_structure_.get_trunc_lvl() != d_ - 1) {
+    throw std::runtime_error(
+      "reorient() requires a non-truncated vine (trunc_lvl == d - 1).");
+  }
+
+  std::vector<char> in_b(d_ + 1, 0);
+  for (auto v : conditioning_set)
+    in_b[v] = 1;
+
+  auto tail_is_b = [&](const std::vector<size_t>& order) {
+    for (size_t i = d_ - k; i < d_; ++i)
+      if (!in_b[order[i]])
+        return false;
+    return true;
+  };
+
+  // early no-op: the conditioning set is already the tail of the order
+  if (tail_is_b(rvine_structure_.get_order())) {
+    return;
+  }
+
+  // Re-orient via the shared RVineTrees primitive: decompose the fitted vine
+  // into its tree list (carrying pair copulas), then peel it back into a
+  // matrix while steering the diagonal so the conditioning set lands at the
+  // tail. For the leading columns we put a non-conditioning leaf on the
+  // diagonal, for the trailing columns a conditioning one. Because the
+  // conditioning set forms a self-contained sub-vine block (guaranteed when
+  // fitted via `set_conditioning_set()`), the required leaf is always present;
+  // the tail check + `RVineStructure` validation below guard the general case.
+  auto to_tail =
+    [&](size_t col,
+        const std::vector<std::vector<size_t>>& leaf_edges) -> size_t {
+    bool want_cond = (col >= d_ - k);
+    for (const auto& options : leaf_edges)
+      for (auto v : options)
+        if (want_cond ? (in_b[v] != 0) : (in_b[v] == 0))
+          return v;
+    return leaf_edges.front().front();
+  };
+
+  std::vector<size_t> new_order;
+  TriangularArray<size_t> new_struct_array(d_, d_ - 1);
+  std::vector<std::vector<Bicop>> new_pair_copulas;
+  bool ok = true;
+  try {
+    auto dec = get_trees().to_struct_array(to_tail);
+    new_order = std::move(dec.order);
+    new_struct_array = std::move(dec.struct_array);
+    new_pair_copulas = std::move(dec.pair_copulas);
+  } catch (const std::exception&) {
+    ok = false; // infeasible (proximity / no admissible leaf)
+  }
+  if (!ok || !tail_is_b(new_order)) {
+    throw std::runtime_error(
+      "conditioning set is not admissible as a sampling-order tail of this "
+      "vine; fit with FitControlsVinecop::set_conditioning_set() or condition "
+      "on an admissible set.");
+  }
+
+  // full R-vine validation (proximity etc.); loglik/threshold/nobs invariant
+  rvine_structure_ = RVineStructure(new_order, new_struct_array, false, true);
+  pair_copulas_ = std::move(new_pair_copulas);
 }
 
 //! @brief Fits the parameters of a pre-specified vine copula model.
@@ -725,6 +868,18 @@ Vinecop::get_struct_array(bool natural_order) const
   return rvine_structure_.get_struct_array(natural_order);
 }
 
+//! @brief Gets the vine as a list-of-trees decomposition, each edge carrying
+//! its fitted pair-copula (stored with its first argument on the diagonal).
+inline RVineTrees
+Vinecop::get_trees() const
+{
+  // decompose in original labels: the diagonal `get_order()`, the original-
+  // label structure array, and the pair-copulas share the same labelling.
+  return RVineTrees(rvine_structure_.get_order(),
+                    rvine_structure_.get_struct_array(false),
+                    pair_copulas_);
+}
+
 //! @brief Gets the log-likelihood (throws an error if model has not been.
 //! fitted to data).
 inline double
@@ -953,8 +1108,31 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
                   const size_t num_threads,
                   const bool keep_all) const
 {
+  return pdf_full(std::move(u), Eigen::MatrixXd(), num_threads, keep_all);
+}
+
+//! @brief Evaluates the copula density (and per-edge quantities) with
+//! per-observation parameters.
+//!
+//! Same as `pdf_full()`, but each observation uses its own full-vine parameter
+//! vector, supplied as an \f$ n \times \mathrm{npars} \f$ matrix `parameters`
+//! whose columns follow the (tree, edge, parameter) order of `scores()`.
+//! Continuous, all-parametric models only (discrete variables and nonparametric
+//! pair copulas are rejected).
+inline Vinecop::PdfWithHfuncsResult
+Vinecop::pdf_full(Eigen::MatrixXd u,
+                  const Eigen::MatrixXd& parameters,
+                  const size_t num_threads,
+                  const bool keep_all) const
+{
   check_data(u);
   collapse_data_inplace(u);
+
+  const bool per_obs = parameters.size() > 0;
+  if (per_obs) {
+    check_parametric("pdf()/loglik() with per-observation parameters");
+    check_per_obs_params(u, parameters);
+  }
 
   // info about the vine structure (reverse rows (!) for more natural indexing)
   size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
@@ -1014,6 +1192,10 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
       }
     }
 
+    // running column offset of the current edge's parameters within the flat
+    // (tree, edge, parameter) order of `parameters` (per-observation path only)
+    size_t par_offset = 0;
+
     for (size_t tree = 0; tree < trunc_lvl; ++tree) {
       tools_interface::check_user_interrupt(
         static_cast<double>(u.rows()) * static_cast<double>(d_) > 1e5);
@@ -1043,13 +1225,37 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
           }
         }
 
-        Eigen::VectorXd edge_pdf = edge_copula->pdf(u_e);
+        // per-edge dispatch: on the per-observation path each helper slices
+        // this edge's n x np parameter block and routes to the per-row Bicop
+        // overload; on the fixed path it calls the stored-parameter method
+        // unchanged. Discrete never arises here (per-observation requires
+        // continuous), so the _sub h-functions stay on the scalar path.
+        Eigen::MatrixXd pars_e;
+        if (per_obs) {
+          size_t np = static_cast<size_t>(edge_copula->get_parameters().size());
+          pars_e = parameters.block(b.begin, par_offset, b.size, np);
+          par_offset += np;
+        }
+        auto ec_pdf = [&]() {
+          return per_obs ? edge_copula->pdf(u_e, pars_e)
+                         : edge_copula->pdf(u_e);
+        };
+        auto ec_hfunc1 = [&]() {
+          return per_obs ? edge_copula->hfunc1(u_e, pars_e)
+                         : edge_copula->hfunc1(u_e);
+        };
+        auto ec_hfunc2 = [&]() {
+          return per_obs ? edge_copula->hfunc2(u_e, pars_e)
+                         : edge_copula->hfunc2(u_e);
+        };
+
+        Eigen::VectorXd edge_pdf = ec_pdf();
         result.pdf.segment(b.begin, b.size) =
           result.pdf.segment(b.begin, b.size).cwiseProduct(edge_pdf);
 
         // h-functions are only evaluated if needed in next step
         if (rvine_structure_.needed_hfunc1(tree, edge)) {
-          hfunc1.col(edge) = edge_copula->hfunc1(u_e);
+          hfunc1.col(edge) = ec_hfunc1();
           if (var_types[1] == "d") {
             u_e_sub = u_e;
             u_e_sub.col(1) = u_e.col(3);
@@ -1057,7 +1263,7 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
           }
         }
         if (rvine_structure_.needed_hfunc2(tree, edge)) {
-          hfunc2.col(edge) = edge_copula->hfunc2(u_e);
+          hfunc2.col(edge) = ec_hfunc2();
           if (var_types[0] == "d") {
             u_e_sub = u_e;
             u_e_sub.col(0) = u_e.col(2);
@@ -1125,21 +1331,344 @@ Vinecop::pdf(Eigen::MatrixXd u, const size_t num_threads) const
   return pdf_full(std::move(u), num_threads, false).pdf;
 }
 
-//! @brief Evaluates the score function.
+//! @brief Evaluates the copula density with per-observation parameters.
+//!
+//! Per-observation counterpart of `pdf()`; see the per-observation
+//! `pdf_full()` overload for the `parameters` layout and restrictions.
+inline Eigen::VectorXd
+Vinecop::pdf(Eigen::MatrixXd u,
+             const Eigen::MatrixXd& parameters,
+             const size_t num_threads) const
+{
+  return pdf_full(std::move(u), parameters, num_threads, false).pdf;
+}
+
+//! throws if the model has a nonparametric pair copula (see scores()).
+inline void
+Vinecop::check_parametric(const char* fn) const
+{
+  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  for (size_t t = 0; t < trunc_lvl; t++) {
+    for (size_t e = 0; e < d_ - 1 - t; e++) {
+      if (!tools_stl::is_member(pair_copulas_[t][e].get_family(),
+                                bicop_families::parametric)) {
+        throw std::runtime_error(
+          std::string(fn) +
+          " is only available for models with parametric pair copulas");
+      }
+    }
+  }
+}
+
+//! validates a per-observation parameter matrix: the analytic cascade requires
+//! continuous variables (discrete would need finite differences that mutate
+//! shared parameters), and `parameters` must be n x npars, one full-vine
+//! parameter vector per observation in the (tree, edge, param) order of
+//! scores().
+inline void
+Vinecop::check_per_obs_params(const Eigen::MatrixXd& u,
+                              const Eigen::MatrixXd& per_obs_params) const
+{
+  if (get_n_discrete() > 0) {
+    throw std::runtime_error(
+      "per-observation parameters are only supported for continuous "
+      "variables");
+  }
+  if (per_obs_params.rows() != u.rows()) {
+    throw std::runtime_error("parameters must have one row per row of u "
+                             "(parameters.rows() must equal u.rows()).");
+  }
+  if (per_obs_params.cols() != static_cast<Eigen::Index>(this->get_npars())) {
+    throw std::runtime_error(
+      "parameters must have get_npars() columns, in the (tree, edge, "
+      "parameter) order of scores().");
+  }
+}
+
+//! first-order chain-rule push-forward of an argument perturbation through
+//! an h-function output: `∂h/∂u1 · v1 + ∂h/∂u2 · v2` (shared by the gradient
+//! cascade and the Hessian's hat/til propagations).
+inline Eigen::VectorXd
+propagate_first_order(const Eigen::VectorXd& du1,
+                      const Eigen::VectorXd& du2,
+                      const Eigen::VectorXd& v1,
+                      const Eigen::VectorXd& v2)
+{
+  return du1.cwiseProduct(v1) + du2.cwiseProduct(v2);
+}
+
+//! @brief Builds the per-edge derivative caches by one forward walk over the
+//! rows `[begin, begin + size)` of `u`.
+//!
+//! This is the single forward pass shared by the analytic gradient, joint
+//! Hessian, and step-wise Hessian: it assembles each edge's arguments `u_e`
+//! from the previous tree's h-functions and evaluates the pair copulas'
+//! derivative leaves. Continuous, all-parametric models only (the callers
+//! reject nonparametric families and route discrete/step-wise=true to finite
+//! differences). Second-order leaves are computed only when `second_order`.
+inline TriangularArray<Vinecop::DerivCache>
+Vinecop::build_deriv_cache(const Eigen::MatrixXd& u,
+                           size_t begin,
+                           size_t size,
+                           bool second_order,
+                           const Eigen::MatrixXd& per_obs_params) const
+{
+  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  auto order = rvine_structure_.get_order();
+  const size_t m = size;
+  TriangularArray<DerivCache> cache(d_, trunc_lvl);
+
+  Eigen::MatrixXd hfunc1 = Eigen::MatrixXd::Zero(m, d_);
+  Eigen::MatrixXd hfunc2 = Eigen::MatrixXd::Zero(m, d_);
+  for (size_t j = 0; j < d_; ++j) {
+    hfunc2.col(j) = u.block(begin, order[j] - 1, m, 1);
+  }
+  auto sel = [](size_t p) { return "par" + std::to_string(p + 1); };
+
+  // per-observation parameters: when supplied, each edge reads its own n x np
+  // column block (in the same (t, e) order the flat scores() index follows);
+  // `par_offset` tracks that column start. Empty => fixed-parameter fast path.
+  const bool per_obs = per_obs_params.size() > 0;
+  size_t par_offset = 0;
+
+  Eigen::MatrixXd u_e;
+  for (size_t t = 0; t < trunc_lvl; ++t) {
+    tools_interface::check_user_interrupt(
+      static_cast<double>(u.rows()) * static_cast<double>(d_) > 1e3);
+    for (size_t e = 0; e < d_ - 1 - t; ++e) {
+      tools_interface::check_user_interrupt(e % 100 == 0);
+      const Bicop& ec = pair_copulas_[t][e]; // const ref: no per-edge copy
+      DerivCache& ce = cache(t, e);
+      size_t np = static_cast<size_t>(ec.get_parameters().size());
+      ce.np = np;
+      ce.arg2_col = rvine_structure_.min_array(t, e);
+      ce.arg2_is_h2 =
+        (ce.arg2_col == rvine_structure_.struct_array(t, e, true));
+
+      u_e = Eigen::MatrixXd(m, 2);
+      u_e.col(0) = hfunc2.col(e);
+      u_e.col(1) = ce.arg2_is_h2 ? hfunc2.col(ce.arg2_col - 1)
+                                 : hfunc1.col(ce.arg2_col - 1);
+
+      // per-edge dispatch: on the fixed path (per_obs == false) each helper
+      // calls the pair copula's stored-parameter method exactly as before; on
+      // the per-observation path it forwards this edge's n x np parameter slice
+      // to the matching per-row overload. Every evaluation (density,
+      // h-functions, and their derivatives) must use the slice so the deeper
+      // trees see pseudo-observations consistent with the per-obs parameters.
+      Eigen::MatrixXd pars_e;
+      if (per_obs) {
+        pars_e = per_obs_params.block(begin, par_offset, m, np);
+      }
+      auto ec_pdf = [&]() {
+        return per_obs ? ec.pdf(u_e, pars_e) : ec.pdf(u_e);
+      };
+      auto ec_logpdf_deriv = [&](const std::string& s) {
+        return per_obs ? ec.logpdf_deriv(u_e, s, pars_e)
+                       : ec.logpdf_deriv(u_e, s);
+      };
+      auto ec_pdf_deriv = [&](const std::string& s) {
+        return per_obs ? ec.pdf_deriv(u_e, s, pars_e) : ec.pdf_deriv(u_e, s);
+      };
+      auto ec_logpdf_deriv2 = [&](const std::string& s) {
+        return per_obs ? ec.logpdf_deriv2(u_e, s, pars_e)
+                       : ec.logpdf_deriv2(u_e, s);
+      };
+      auto ec_hfunc1 = [&]() {
+        return per_obs ? ec.hfunc1(u_e, pars_e) : ec.hfunc1(u_e);
+      };
+      auto ec_hfunc2 = [&]() {
+        return per_obs ? ec.hfunc2(u_e, pars_e) : ec.hfunc2(u_e);
+      };
+      auto ec_hfunc1_deriv = [&](const std::string& s) {
+        return per_obs ? ec.hfunc1_deriv(u_e, s, pars_e)
+                       : ec.hfunc1_deriv(u_e, s);
+      };
+      auto ec_hfunc2_deriv = [&](const std::string& s) {
+        return per_obs ? ec.hfunc2_deriv(u_e, s, pars_e)
+                       : ec.hfunc2_deriv(u_e, s);
+      };
+      auto ec_hfunc1_deriv2 = [&](const std::string& s) {
+        return per_obs ? ec.hfunc1_deriv2(u_e, s, pars_e)
+                       : ec.hfunc1_deriv2(u_e, s);
+      };
+      auto ec_hfunc2_deriv2 = [&](const std::string& s) {
+        return per_obs ? ec.hfunc2_deriv2(u_e, s, pars_e)
+                       : ec.hfunc2_deriv2(u_e, s);
+      };
+
+      ce.c = ec_pdf();
+      ce.du1 = ec_logpdf_deriv("u1");
+      ce.du2 = ec_logpdf_deriv("u2");
+      ce.dpar.resize(np);
+      for (size_t p = 0; p < np; ++p) {
+        ce.dpar[p] = ec_logpdf_deriv(sel(p));
+      }
+
+      // ∂c/∂u1, ∂c/∂u2, ∂c/∂θ are shared by the two h-outputs' 2nd-order
+      // fields (via ∂h2/∂u1 = ∂h1/∂u2 = c); only needed for second order
+      Eigen::VectorXd c_u1, c_u2;
+      std::vector<Eigen::VectorXd> c_par;
+      if (second_order) {
+        c_u1 = ec_pdf_deriv("u1");
+        c_u2 = ec_pdf_deriv("u2");
+        c_par.resize(np);
+        for (size_t p = 0; p < np; ++p) {
+          c_par[p] = ec_pdf_deriv(sel(p));
+        }
+        ce.du1u1 = ec_logpdf_deriv2("u1u1");
+        ce.du1u2 = ec_logpdf_deriv2("u1u2");
+        ce.du2u2 = ec_logpdf_deriv2("u2u2");
+        ce.dpar_u1.resize(np);
+        ce.dpar_u2.resize(np);
+        ce.dpar_par.assign(np, std::vector<Eigen::VectorXd>(np));
+        for (size_t p = 0; p < np; ++p) {
+          ce.dpar_u1[p] = ec_logpdf_deriv2(sel(p) + "u1");
+          ce.dpar_u2[p] = ec_logpdf_deriv2(sel(p) + "u2");
+          for (size_t q = p; q < np; ++q) {
+            ce.dpar_par[p][q] = ec_logpdf_deriv2(sel(p) + sel(q));
+            ce.dpar_par[q][p] = ce.dpar_par[p][q];
+          }
+        }
+      }
+
+      bool has_deeper_tree = (t + 1 < trunc_lvl);
+      // hfunc2 output: ∂h2/∂u1 = c (identity), ∂h2/∂u2 conditioning
+      if (has_deeper_tree && rvine_structure_.needed_hfunc2(t, e)) {
+        DerivLeaf& leaf = ce.h2;
+        leaf.active = true;
+        leaf.du1 = ce.c;
+        leaf.du2 = ec_hfunc2_deriv("u2");
+        leaf.dpar.resize(np);
+        for (size_t p = 0; p < np; ++p) {
+          leaf.dpar[p] = ec_hfunc2_deriv(sel(p));
+        }
+        if (second_order) {
+          leaf.du1u1 = c_u1;
+          leaf.du1u2 = c_u2;
+          leaf.du2u2 = ec_hfunc2_deriv2("u2u2");
+          leaf.dpar_u1.resize(np);
+          leaf.dpar_u2.resize(np);
+          leaf.dpar_par.assign(np, std::vector<Eigen::VectorXd>(np));
+          for (size_t p = 0; p < np; ++p) {
+            leaf.dpar_u1[p] = c_par[p]; // ∂²h2/∂θ∂u1 = ∂c/∂θ
+            leaf.dpar_u2[p] = ec_hfunc2_deriv2(sel(p) + "u2");
+            for (size_t q = p; q < np; ++q) {
+              leaf.dpar_par[p][q] = ec_hfunc2_deriv2(sel(p) + sel(q));
+              leaf.dpar_par[q][p] = leaf.dpar_par[p][q];
+            }
+          }
+        }
+      }
+      // hfunc1 output: ∂h1/∂u2 = c (identity), ∂h1/∂u1 conditioning
+      if (has_deeper_tree && rvine_structure_.needed_hfunc1(t, e)) {
+        DerivLeaf& leaf = ce.h1;
+        leaf.active = true;
+        leaf.du1 = ec_hfunc1_deriv("u1");
+        leaf.du2 = ce.c;
+        leaf.dpar.resize(np);
+        for (size_t p = 0; p < np; ++p) {
+          leaf.dpar[p] = ec_hfunc1_deriv(sel(p));
+        }
+        if (second_order) {
+          leaf.du1u1 = ec_hfunc1_deriv2("u1u1");
+          leaf.du1u2 = c_u1; // ∂²h1/∂u1∂u2 = ∂c/∂u1
+          leaf.du2u2 = c_u2; // ∂²h1/∂u2²   = ∂c/∂u2
+          leaf.dpar_u1.resize(np);
+          leaf.dpar_u2.resize(np);
+          leaf.dpar_par.assign(np, std::vector<Eigen::VectorXd>(np));
+          for (size_t p = 0; p < np; ++p) {
+            leaf.dpar_u1[p] = ec_hfunc1_deriv2(sel(p) + "u1");
+            leaf.dpar_u2[p] = c_par[p]; // ∂²h1/∂θ∂u2 = ∂c/∂θ
+            for (size_t q = p; q < np; ++q) {
+              leaf.dpar_par[p][q] = ec_hfunc1_deriv2(sel(p) + sel(q));
+              leaf.dpar_par[q][p] = leaf.dpar_par[p][q];
+            }
+          }
+        }
+      }
+
+      if (rvine_structure_.needed_hfunc1(t, e)) {
+        hfunc1.col(e) = ec_hfunc1();
+      }
+      if (rvine_structure_.needed_hfunc2(t, e)) {
+        hfunc2.col(e) = ec_hfunc2();
+      }
+
+      par_offset += np;
+    }
+  }
+  return cache;
+}
+
+//! @brief Evaluates the score function together with the per-edge
+//! derivative caches.
 //!
 //! The score function is defined as the gradient of the log-likelihood
 //! with respect to the parameters.
+//!
+//! The scores are computed analytically from the pair copulas' derivatives
+//! (`Bicop::logpdf_deriv()` and, for the full gradient, the h-function
+//! derivatives propagated through the vine by the chain rule); models with
+//! discrete variables use central finite differences instead (in which case
+//! the caches below stay empty). Models with nonparametric pair copulas are
+//! rejected (differentiating w.r.t. the interpolation grid is meaningless).
 //!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
-//!   score function of the step-wise MLE (gradients computed per pair-copula).
+//!   score function of the step-wise MLE (gradients computed per pair-copula,
+//!   treating the pseudo-observations as fixed).
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
-inline Eigen::MatrixXd
-Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
+//! @param keep_all Whether to keep and return the per-edge derivative caches.
+//! @return A struct containing:
+//!   - `scores`: the \f$ n \times \mathrm{npars} \f$ matrix of
+//!     per-observation scores.
+//! If `keep_all = true` and the analytic path applies, the struct also
+//! contains triangular arrays of per-edge quantities (indexed by tree and
+//! edge, evaluated at the edge's pseudo-observations):
+//!   - `pdf_edges`: the edge densities (full gradient only);
+//!   - `logpdf_deriv_pars`: the log-density derivative w.r.t. each of the
+//!     edge's parameters (= the step-wise scores);
+//!   - `hfunc1_deriv_pars`, `hfunc2_deriv_pars`: the h-function derivatives
+//!     w.r.t. each parameter, where a deeper tree consumes them (full
+//!     gradient only);
+//!   - `logpdf_deriv_u1`, `logpdf_deriv_u2`: the log-density derivatives
+//!     w.r.t. the edge's arguments (full gradient only, trees > 0);
+//!   - `hfunc1_deriv_u1`, `hfunc2_deriv_u2`: the h-function derivatives
+//!     w.r.t. their conditioning argument, where a deeper tree consumes
+//!     them (full gradient only).
+//!
+//! @literature
+//! Stoeber, J. and Schepsmeier, U. (2013). Estimating standard errors in
+//! regular vine copula models. Computational Statistics, 28 (6), 2679-2707.
+inline Vinecop::ScoresResult
+Vinecop::scores_full(Eigen::MatrixXd u,
+                     bool step_wise,
+                     const size_t num_threads,
+                     const bool keep_all)
+{
+  return scores_full(
+    std::move(u), Eigen::MatrixXd(), step_wise, num_threads, keep_all);
+}
+
+//! @brief Evaluates the score function with per-observation parameters.
+//!
+//! Same as `scores_full()`, but each observation uses its own full-vine
+//! parameter vector, supplied as an \f$ n \times \mathrm{npars} \f$ matrix
+//! `parameters` whose columns follow the (tree, edge, parameter) order of
+//! `scores()`. Continuous, all-parametric models only; discrete variables are
+//! rejected (they would require finite differences that mutate shared
+//! parameters).
+inline Vinecop::ScoresResult
+Vinecop::scores_full(Eigen::MatrixXd u,
+                     const Eigen::MatrixXd& per_obs_params,
+                     bool step_wise,
+                     const size_t num_threads,
+                     const bool keep_all)
 {
   check_data(u);
   u = collapse_data(u);
@@ -1148,40 +1677,269 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
   size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
   auto order = rvine_structure_.get_order();
   auto disc_cols = tools_select::get_disc_cols(var_types_);
+  const size_t n = static_cast<size_t>(u.rows());
 
-  Eigen::MatrixXd scores(u.rows(), static_cast<size_t>(this->get_npars()));
-  scores.setZero();
+  check_parametric("scores()");
+
+  const bool per_obs = per_obs_params.size() > 0;
+  if (per_obs) {
+    check_per_obs_params(u, per_obs_params);
+  }
+
+  ScoresResult result;
+  result.scores =
+    Eigen::MatrixXd::Zero(n, static_cast<size_t>(this->get_npars()));
+  if (trunc_lvl == 0) {
+    return result;
+  }
 
   if (!step_wise) {
-    size_t ipar = 0;
-    for (size_t t = 0; t < trunc_lvl; t++) {
-      for (size_t e = 0; e < d_ - 1 - t; e++) {
-        auto pars = pair_copulas_[t][e].get_parameters();
-        auto ub = pair_copulas_[t][e].get_parameters_upper_bounds();
-        auto lb = pair_copulas_[t][e].get_parameters_lower_bounds();
-        for (size_t p = 0; p < static_cast<size_t>(pars.size()); p++) {
-          auto pars_tmp = pars;
-          double eps = 0;
+    // the analytic cascade requires continuous variables (nonparametric
+    // families are already rejected above); discrete variables keep the
+    // finite-difference path
+    bool analytic_ok = (get_n_discrete() == 0);
 
-          pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
-          eps += pars_tmp(p) - pars(p);
-          pair_copulas_[t][e].set_parameters(pars_tmp);
-          Eigen::VectorXd f1 =
-            this->pdf(u, num_threads).array().max(1e-20).log();
+    if (!analytic_ok) {
+      // fall back to finite differences of the whole-vine log-density
+      size_t ipar = 0;
+      for (size_t t = 0; t < trunc_lvl; t++) {
+        for (size_t e = 0; e < d_ - 1 - t; e++) {
+          auto pars = pair_copulas_[t][e].get_parameters();
+          auto ub = pair_copulas_[t][e].get_parameters_upper_bounds();
+          auto lb = pair_copulas_[t][e].get_parameters_lower_bounds();
+          for (size_t p = 0; p < static_cast<size_t>(pars.size()); p++) {
+            auto pars_tmp = pars;
+            double eps = 0;
 
-          pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
-          eps -= pars_tmp(p) - pars(p);
-          pair_copulas_[t][e].set_parameters(pars_tmp);
-          Eigen::VectorXd f2 =
-            this->pdf(u, num_threads).array().max(1e-20).log();
+            pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
+            eps += pars_tmp(p) - pars(p);
+            pair_copulas_[t][e].set_parameters(pars_tmp);
+            Eigen::VectorXd f1 =
+              this->pdf(u, num_threads).array().max(1e-20).log();
 
-          scores.col(ipar++) = (f1 - f2) / eps;
-          pair_copulas_[t][e].set_parameters(pars);
+            pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
+            eps -= pars_tmp(p) - pars(p);
+            pair_copulas_[t][e].set_parameters(pars_tmp);
+            Eigen::VectorXd f2 =
+              this->pdf(u, num_threads).array().max(1e-20).log();
+
+            result.scores.col(ipar++) = (f1 - f2) / eps;
+            pair_copulas_[t][e].set_parameters(pars);
+          }
+        }
+      }
+
+      return result;
+    }
+
+    // Analytic full gradient: the log-density of the vine is a sum over
+    // edges whose arguments are h-functions of earlier trees, so a
+    // parameter of edge (t0, e0) also enters all deeper edges fed by it.
+    // A parameter's cascade seeds the perturbation of its own edge's
+    // h-functions (dh/dtheta) and propagates it to deeper edges by the chain
+    // rule, accumulating
+    //   score      += (dc/du1)/c * darg1 + (dc/du2)/c * darg2,
+    //   v_h2' = c * darg1 + (dh2/du2) * darg2,
+    //   v_h1' = (dh1/du1) * darg1 + c * darg2,
+    // where dh1(u2|u1)/du2 = dh2(u1|u2)/du1 = c was used. All per-edge
+    // derivatives come from build_deriv_cache().
+    //
+    // Reference: Stoeber, J. and U. Schepsmeier (2013), Estimating standard
+    // errors in regular vine copula models, Computational Statistics, 28
+    // (6), 2679-2707 (the C implementation is VineCopula's rvinederiv.c).
+    if (keep_all) {
+      // per-edge caches returned to the caller (filled per batch below);
+      // argument log-derivatives exist only for trees > 0 (where a
+      // perturbation can arrive) and h-function derivatives only where a
+      // deeper non-truncated tree consumes the output
+      result.pdf_edges = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
+      result.logpdf_deriv_pars =
+        TriangularArray<std::vector<Eigen::VectorXd>>(d_, trunc_lvl);
+      result.hfunc1_deriv_pars =
+        TriangularArray<std::vector<Eigen::VectorXd>>(d_, trunc_lvl);
+      result.hfunc2_deriv_pars =
+        TriangularArray<std::vector<Eigen::VectorXd>>(d_, trunc_lvl);
+      result.logpdf_deriv_u1 = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
+      result.logpdf_deriv_u2 = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
+      result.hfunc1_deriv_u1 = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
+      result.hfunc2_deriv_u2 = TriangularArray<Eigen::VectorXd>(d_, trunc_lvl);
+      for (size_t t = 0; t < trunc_lvl; ++t) {
+        for (size_t e = 0; e < d_ - 1 - t; ++e) {
+          size_t np =
+            static_cast<size_t>(pair_copulas_[t][e].get_parameters().size());
+          result.pdf_edges(t, e) = Eigen::VectorXd(n);
+          result.logpdf_deriv_pars(t, e).resize(np);
+          result.hfunc1_deriv_pars(t, e).resize(np);
+          result.hfunc2_deriv_pars(t, e).resize(np);
+          for (size_t p = 0; p < np; ++p) {
+            result.logpdf_deriv_pars(t, e)[p] = Eigen::VectorXd(n);
+          }
+          if (t > 0) {
+            result.logpdf_deriv_u1(t, e) = Eigen::VectorXd(n);
+            result.logpdf_deriv_u2(t, e) = Eigen::VectorXd(n);
+          }
+          bool has_deeper_tree = (t + 1 < trunc_lvl);
+          if (has_deeper_tree && rvine_structure_.needed_hfunc1(t, e)) {
+            result.hfunc1_deriv_u1(t, e) = Eigen::VectorXd(n);
+            for (size_t p = 0; p < np; ++p) {
+              result.hfunc1_deriv_pars(t, e)[p] = Eigen::VectorXd(n);
+            }
+          }
+          if (has_deeper_tree && rvine_structure_.needed_hfunc2(t, e)) {
+            result.hfunc2_deriv_u2(t, e) = Eigen::VectorXd(n);
+            for (size_t p = 0; p < np; ++p) {
+              result.hfunc2_deriv_pars(t, e)[p] = Eigen::VectorXd(n);
+            }
+          }
         }
       }
     }
 
-    return scores;
+    auto do_batch = [&](const tools_batch::Batch& b) {
+      auto cache = build_deriv_cache(u, b.begin, b.size, false, per_obs_params);
+
+      if (keep_all) {
+        for (size_t t = 0; t < trunc_lvl; ++t) {
+          for (size_t e = 0; e < d_ - 1 - t; ++e) {
+            const DerivCache& ce = cache(t, e);
+            result.pdf_edges(t, e).segment(b.begin, b.size) = ce.c;
+            if (t > 0) {
+              result.logpdf_deriv_u1(t, e).segment(b.begin, b.size) = ce.du1;
+              result.logpdf_deriv_u2(t, e).segment(b.begin, b.size) = ce.du2;
+            }
+            for (size_t p = 0; p < ce.np; ++p) {
+              result.logpdf_deriv_pars(t, e)[p].segment(b.begin, b.size) =
+                ce.dpar[p];
+            }
+            if (ce.h1.active) {
+              result.hfunc1_deriv_u1(t, e).segment(b.begin, b.size) = ce.h1.du1;
+              for (size_t p = 0; p < ce.np; ++p) {
+                result.hfunc1_deriv_pars(t, e)[p].segment(b.begin, b.size) =
+                  ce.h1.dpar[p];
+              }
+            }
+            if (ce.h2.active) {
+              result.hfunc2_deriv_u2(t, e).segment(b.begin, b.size) = ce.h2.du2;
+              for (size_t p = 0; p < ce.np; ++p) {
+                result.hfunc2_deriv_pars(t, e)[p].segment(b.begin, b.size) =
+                  ce.h2.dpar[p];
+              }
+            }
+          }
+        }
+      }
+
+      // Per-parameter cascade over the cache: for each parameter θ (of edge
+      // (t0, e0)), walk the deeper trees and accumulate the full score
+      // ∂/∂θ Σ_edges log c via the chain rule.
+      //
+      // State per tree level, indexed by storage column e:
+      //  - dh1.col(e) / dh2.col(e): the current first-order
+      //    perturbations ∂hfunc1/∂θ and ∂hfunc2/∂θ of column e's h-function
+      //    values (hfunc1 and hfunc2, as in the pdf
+      //    pass). They are seeded with ∂h/∂θ at the parameter's own edge
+      //    and updated tree by tree via ce.h1/ce.h2 (the edge's output
+      //    derivative leaves).
+      //  - h1_affected[e] / h2_affected[e]: flags marking whether column e's
+      //    hfunc1/hfunc2 values are affected by θ at the current level
+      //    (i.e. whether the corresponding tilde column is valid). Edges
+      //    whose two input columns are both unaffected are skipped and
+      //    contribute nothing.
+      Eigen::MatrixXd dh1(b.size, d_), dh2(b.size, d_);
+      std::vector<char> h1_affected(d_), h2_affected(d_);
+      size_t ipar = 0;
+      for (size_t t0 = 0; t0 < trunc_lvl; ++t0) {
+        for (size_t e0 = 0; e0 < d_ - t0 - 1; ++e0) {
+          const DerivCache& seed = cache(t0, e0);
+          for (size_t p = 0; p < seed.np; ++p) {
+            Eigen::VectorXd score = seed.dpar[p];
+            std::fill(h1_affected.begin(), h1_affected.end(), 0);
+            std::fill(h2_affected.begin(), h2_affected.end(), 0);
+            if (seed.h1.active) {
+              dh1.col(e0) = seed.h1.dpar[p];
+              h1_affected[e0] = 1;
+            }
+            if (seed.h2.active) {
+              dh2.col(e0) = seed.h2.dpar[p];
+              h2_affected[e0] = 1;
+            }
+
+            for (size_t t = t0 + 1; t < trunc_lvl; ++t) {
+              for (size_t e = 0; e < d_ - t - 1; ++e) {
+                const DerivCache& ce = cache(t, e);
+                size_t arg2_col = ce.arg2_col;
+                // is either input argument of this edge perturbed by θ?
+                // (first argument = column e's hfunc2; second argument =
+                // column arg2_col - 1's hfunc2 or hfunc1, depending on
+                // `arg2_is_h2`). The proximity condition guarantees arg2_col -
+                // 1 > e, so columns read here are not yet overwritten at this
+                // tree level.
+                bool arg1_affected = (h2_affected[e] != 0);
+                bool arg2_affected = ce.arg2_is_h2
+                                       ? (h2_affected[arg2_col - 1] != 0)
+                                       : (h1_affected[arg2_col - 1] != 0);
+                if (!arg1_affected && !arg2_affected) {
+                  // θ does not reach this edge; its outputs are unperturbed
+                  h1_affected[e] = 0;
+                  h2_affected[e] = 0;
+                  continue;
+                }
+                // darg1/darg2 = ∂(arg1)/∂θ and ∂(arg2)/∂θ for this edge
+                Eigen::VectorXd darg1 = Eigen::VectorXd::Zero(b.size);
+                Eigen::VectorXd darg2 = Eigen::VectorXd::Zero(b.size);
+                if (arg1_affected) {
+                  darg1 = dh2.col(e);
+                  // chain rule: this edge's log-density term responds to
+                  // the perturbation of its first argument
+                  score += ce.du1.cwiseProduct(darg1);
+                }
+                if (arg2_affected) {
+                  darg2 = ce.arg2_is_h2 ? dh2.col(arg2_col - 1)
+                                        : dh1.col(arg2_col - 1);
+                  score += ce.du2.cwiseProduct(darg2);
+                }
+                // has_deeper_tree the argument perturbations through this
+                // edge's h-function outputs for the next tree level: ∂h/∂θ =
+                // ∂h/∂u1 · darg1 + ∂h/∂u2 · darg2
+                if (ce.h2.active) {
+                  dh2.col(e) =
+                    propagate_first_order(ce.h2.du1, ce.h2.du2, darg1, darg2);
+                }
+                if (ce.h1.active) {
+                  dh1.col(e) =
+                    propagate_first_order(ce.h1.du1, ce.h1.du2, darg1, darg2);
+                }
+                h1_affected[e] = ce.h1.active ? 1 : 0;
+                h2_affected[e] = ce.h2.active ? 1 : 0;
+              }
+            }
+            result.scores.col(ipar++).segment(b.begin, b.size) = score;
+          }
+        }
+      }
+    };
+
+    tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
+    pool.map(do_batch, tools_batch::create_batches(n, num_threads));
+    pool.join();
+
+    return result;
+  }
+
+  // step-wise scores: only the per-edge log-density derivatives are needed
+  if (keep_all) {
+    result.logpdf_deriv_pars =
+      TriangularArray<std::vector<Eigen::VectorXd>>(d_, trunc_lvl);
+    for (size_t t = 0; t < trunc_lvl; ++t) {
+      for (size_t e = 0; e < d_ - 1 - t; ++e) {
+        size_t npars =
+          static_cast<size_t>(pair_copulas_[t][e].get_parameters().size());
+        result.logpdf_deriv_pars(t, e).resize(npars);
+        for (size_t p = 0; p < npars; ++p) {
+          result.logpdf_deriv_pars(t, e)[p] = Eigen::VectorXd(n);
+        }
+      }
+    }
   }
 
   auto do_batch = [&](const tools_batch::Batch& b) {
@@ -1235,29 +1993,64 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
         }
 
         auto pars = edge_copula.get_parameters();
-        auto ub = edge_copula.get_parameters_upper_bounds();
-        auto lb = edge_copula.get_parameters_lower_bounds();
-        for (size_t p = 0; p < static_cast<size_t>(pars.size()); p++) {
-          auto pars_tmp = pars;
-          double eps = 0;
+        // this edge's per-observation parameter slice (its columns start at the
+        // current flat index `ipar`, which equals edge_par0(tree, edge) here)
+        Eigen::MatrixXd pars_e;
+        if (per_obs) {
+          pars_e = per_obs_params.block(b.begin, ipar, b.size, pars.size());
+        }
+        if (var_types == std::vector<std::string>{ "c", "c" }) {
+          // analytic per-edge gradient of the log-density (closed forms for
+          // bicop_families::analytic_derivs, internal finite differences of
+          // the density otherwise); nonparametric edges were rejected above
+          for (size_t p = 0; p < static_cast<size_t>(pars.size()); p++) {
+            Eigen::VectorXd col =
+              per_obs
+                ? edge_copula.logpdf_deriv(
+                    u_e, "par" + std::to_string(p + 1), pars_e)
+                : edge_copula.logpdf_deriv(u_e, "par" + std::to_string(p + 1));
+            result.scores.col(ipar).segment(b.begin, b.size) = col;
+            if (keep_all) {
+              result.logpdf_deriv_pars(tree, edge)[p].segment(b.begin, b.size) =
+                col;
+            }
+            ipar++;
+          }
+        } else {
+          // discrete edges: finite differences of the edge log-density
+          auto ub = edge_copula.get_parameters_upper_bounds();
+          auto lb = edge_copula.get_parameters_lower_bounds();
+          for (size_t p = 0; p < static_cast<size_t>(pars.size()); p++) {
+            auto pars_tmp = pars;
+            double eps = 0;
 
-          pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
-          eps += pars_tmp(p) - pars(p);
-          edge_copula.set_parameters(pars_tmp);
-          Eigen::VectorXd f1 = edge_copula.pdf(u_e).array().max(1e-20).log();
+            pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
+            eps += pars_tmp(p) - pars(p);
+            edge_copula.set_parameters(pars_tmp);
+            Eigen::VectorXd f1 = edge_copula.pdf(u_e).array().max(1e-20).log();
 
-          pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
-          eps -= pars_tmp(p) - pars(p);
-          edge_copula.set_parameters(pars_tmp);
-          Eigen::VectorXd f2 = edge_copula.pdf(u_e).array().max(1e-20).log();
+            pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
+            eps -= pars_tmp(p) - pars(p);
+            edge_copula.set_parameters(pars_tmp);
+            Eigen::VectorXd f2 = edge_copula.pdf(u_e).array().max(1e-20).log();
 
-          scores.col(ipar++).segment(b.begin, b.size) = (f1 - f2) / eps;
-          edge_copula.set_parameters(pars);
+            Eigen::VectorXd col = (f1 - f2) / eps;
+            result.scores.col(ipar).segment(b.begin, b.size) = col;
+            if (keep_all) {
+              result.logpdf_deriv_pars(tree, edge)[p].segment(b.begin, b.size) =
+                col;
+            }
+            ipar++;
+            edge_copula.set_parameters(pars);
+          }
         }
 
-        // h-functions are only evaluated if needed in next step
+        // h-functions are only evaluated if needed in next step (per_obs uses
+        // the edge slice so deeper trees stay consistent; discrete sub-columns
+        // never arise on the per_obs path, which requires continuous variables)
         if (rvine_structure_.needed_hfunc1(tree, edge)) {
-          hfunc1.col(edge) = edge_copula.hfunc1(u_e);
+          hfunc1.col(edge) =
+            per_obs ? edge_copula.hfunc1(u_e, pars_e) : edge_copula.hfunc1(u_e);
           if (var_types[1] == "d") {
             u_e_sub = u_e;
             u_e_sub.col(1) = u_e.col(3);
@@ -1265,7 +2058,8 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
           }
         }
         if (rvine_structure_.needed_hfunc2(tree, edge)) {
-          hfunc2.col(edge) = edge_copula.hfunc2(u_e);
+          hfunc2.col(edge) =
+            per_obs ? edge_copula.hfunc2(u_e, pars_e) : edge_copula.hfunc2(u_e);
           if (var_types[0] == "d") {
             u_e_sub = u_e;
             u_e_sub.col(0) = u_e.col(2);
@@ -1276,19 +2070,99 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
     }
   };
 
-  if (trunc_lvl > 0) {
-    tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
-    pool.map(do_batch, tools_batch::create_batches(u.rows(), num_threads));
-    pool.join();
-  }
+  tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
+  pool.map(do_batch, tools_batch::create_batches(n, num_threads));
+  pool.join();
 
-  return scores;
+  return result;
+}
+
+//! @brief Evaluates the score function.
+//!
+//! The score function is defined as the gradient of the log-likelihood
+//! with respect to the parameters. This is a thin wrapper around
+//! `scores_full()`; see there for the computational details.
+//!
+//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//!   evaluation points, where \f$ k \f$ is the number of discrete variables
+//!   (see `select()`).
+//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
+//!   score function of the step-wise MLE (gradients computed per pair-copula,
+//!   treating the pseudo-observations as fixed).
+//! @param num_threads The number of threads to use for computations; if greater
+//!   than 1, the function will be applied concurrently to `num_threads` batches
+//!   of `u`.
+inline Eigen::MatrixXd
+Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
+{
+  return scores_full(std::move(u), step_wise, num_threads, false).scores;
+}
+
+//! @brief Evaluates the score function with per-observation parameters.
+//!
+//! Per-observation counterpart of `scores()`; see the per-observation
+//! `scores_full()` overload for the `parameters` layout and restrictions.
+inline Eigen::MatrixXd
+Vinecop::scores(Eigen::MatrixXd u,
+                const Eigen::MatrixXd& parameters,
+                bool step_wise,
+                const size_t num_threads)
+{
+  return scores_full(std::move(u), parameters, step_wise, num_threads, false)
+    .scores;
+}
+
+//! @brief Evaluates the gradient of the average log-likelihood.
+//!
+//! Returns the observation-average of `scores()` as a vector of length
+//! `npars`, mirroring how `hessian()` averages `hessian_full()`.
+//!
+//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//!   evaluation points, where \f$ k \f$ is the number of discrete variables
+//!   (see `select()`).
+//! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
+//!   score function of the step-wise MLE (gradients computed per pair-copula,
+//!   treating the pseudo-observations as fixed).
+//! @param num_threads The number of threads to use for computations; if greater
+//!   than 1, the function will be applied concurrently to `num_threads` batches
+//!   of `u`.
+inline Eigen::VectorXd
+Vinecop::gradient(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
+{
+  return this->scores(std::move(u), step_wise, num_threads)
+    .colwise()
+    .mean()
+    .transpose();
+}
+
+//! @brief Evaluates the gradient of the average log-likelihood with
+//! per-observation parameters.
+//!
+//! Per-observation counterpart of `gradient()`; the return is the
+//! observation-average of the per-observation `scores()`.
+inline Eigen::VectorXd
+Vinecop::gradient(Eigen::MatrixXd u,
+                  const Eigen::MatrixXd& parameters,
+                  bool step_wise,
+                  const size_t num_threads)
+{
+  return this->scores(std::move(u), parameters, step_wise, num_threads)
+    .colwise()
+    .mean()
+    .transpose();
 }
 
 //! @brief Evaluates the hessian per observation.
 //!
 //! Hessian is meant loosely as "gradients of each component of the score
-//! function".
+//! function", i.e. `hess(t, e)[p](i, a) = ∂² log-likelihood_i / (∂θ_{t,e,p}
+//! ∂θ_a)`. For a continuous model it is computed analytically from the pair
+//! copulas' first and second derivatives: the joint (non-step-wise) Hessian
+//! by a second-order cascade through the vine (the second derivative of the
+//! RVineGrad-style gradient cascade in `scores()`), and the step-wise Hessian
+//! by a first-order cascade of the step-wise score's argument derivatives.
+//! Models with discrete variables use central finite differences of
+//! `scores()` instead; models with nonparametric pair copulas are rejected.
 //!
 //! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
@@ -1298,8 +2172,26 @@ Vinecop::scores(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
+//!
+//! @literature
+//! Stoeber, J. and Schepsmeier, U. (2013). Estimating standard errors in
+//! regular vine copula models. Computational Statistics, 28 (6), 2679-2707.
 inline TriangularArray<std::vector<Eigen::MatrixXd>>
 Vinecop::hessian_full(Eigen::MatrixXd u,
+                      bool step_wise,
+                      const size_t num_threads)
+{
+  return hessian_full(std::move(u), Eigen::MatrixXd(), step_wise, num_threads);
+}
+
+//! @brief Evaluates the per-observation Hessians with per-observation
+//! parameters.
+//!
+//! Per-observation counterpart of `hessian_full()`; see the per-observation
+//! `scores_full()` overload for the `parameters` layout and restrictions.
+inline TriangularArray<std::vector<Eigen::MatrixXd>>
+Vinecop::hessian_full(Eigen::MatrixXd u,
+                      const Eigen::MatrixXd& per_obs_params,
                       bool step_wise,
                       const size_t num_threads)
 {
@@ -1307,31 +2199,294 @@ Vinecop::hessian_full(Eigen::MatrixXd u,
   u = collapse_data(u);
 
   size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+
+  check_parametric("hessian()");
+
+  const bool per_obs = per_obs_params.size() > 0;
+  if (per_obs) {
+    check_per_obs_params(u, per_obs_params);
+  }
+
   TriangularArray<std::vector<Eigen::MatrixXd>> hess(d_);
-  for (size_t t = 0; t < trunc_lvl; t++) {
-    for (size_t e = 0; e < d_ - 1 - t; e++) {
-      auto pars = pair_copulas_[t][e].get_parameters();
-      auto ub = pair_copulas_[t][e].get_parameters_upper_bounds();
-      auto lb = pair_copulas_[t][e].get_parameters_lower_bounds();
-      hess(t, e).resize(pars.size());
-      for (size_t p = 0; p < static_cast<size_t>(pars.size()); p++) {
-        auto pars_tmp = pars;
-        double eps = 0;
 
-        pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
-        eps += pars_tmp(p) - pars(p);
-        pair_copulas_[t][e].set_parameters(pars_tmp);
-        Eigen::MatrixXd f1 = this->scores(u, step_wise, num_threads);
+  if (get_n_discrete() > 0) {
+    // central finite differences of the (analytic-where-possible) scores;
+    // used for models with discrete variables (both step-wise and joint)
+    for (size_t t = 0; t < trunc_lvl; t++) {
+      for (size_t e = 0; e < d_ - 1 - t; e++) {
+        auto pars = pair_copulas_[t][e].get_parameters();
+        auto ub = pair_copulas_[t][e].get_parameters_upper_bounds();
+        auto lb = pair_copulas_[t][e].get_parameters_lower_bounds();
+        hess(t, e).resize(pars.size());
+        for (size_t p = 0; p < static_cast<size_t>(pars.size()); p++) {
+          auto pars_tmp = pars;
+          double eps = 0;
 
-        pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
-        eps -= pars_tmp(p) - pars(p);
-        pair_copulas_[t][e].set_parameters(pars_tmp);
-        Eigen::MatrixXd f2 = this->scores(u, step_wise, num_threads);
+          pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
+          eps += pars_tmp(p) - pars(p);
+          pair_copulas_[t][e].set_parameters(pars_tmp);
+          Eigen::MatrixXd f1 = this->scores(u, step_wise, num_threads);
 
-        hess(t, e)[p] = (f1 - f2) / eps;
-        pair_copulas_[t][e].set_parameters(pars);
+          pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
+          eps -= pars_tmp(p) - pars(p);
+          pair_copulas_[t][e].set_parameters(pars_tmp);
+          Eigen::MatrixXd f2 = this->scores(u, step_wise, num_threads);
+
+          hess(t, e)[p] = (f1 - f2) / eps;
+          pair_copulas_[t][e].set_parameters(pars);
+        }
       }
     }
+    return hess;
+  }
+
+  // Analytic Hessian (continuous, all-parametric). Both variants use the
+  // per-edge derivative caches from build_deriv_cache() and the shared
+  // first-order propagation; see hessian_full()'s @literature reference.
+  const size_t npars = static_cast<size_t>(this->get_npars());
+
+  // flat parameter index <-> (tree, edge, param), the first flat index of
+  // each edge, and the per-edge per-observation output blocks
+  std::vector<std::array<size_t, 3>> par_of(npars);
+  TriangularArray<size_t> edge_par0(d_, trunc_lvl);
+  {
+    size_t idx = 0;
+    for (size_t t = 0; t < trunc_lvl; t++) {
+      for (size_t e = 0; e < d_ - 1 - t; e++) {
+        edge_par0(t, e) = idx;
+        size_t np =
+          static_cast<size_t>(pair_copulas_[t][e].get_parameters().size());
+        hess(t, e).resize(np);
+        for (size_t p = 0; p < np; p++) {
+          hess(t, e)[p] = Eigen::MatrixXd::Zero(u.rows(), npars);
+          par_of[idx++] = { t, e, p };
+        }
+      }
+    }
+  }
+
+  if (step_wise) {
+    // Analytic step-wise Hessian: the step-wise score of edge e', parameter
+    // p', is s = ∂logc_{e'}/∂θ_{p'} evaluated at fixed pseudo-observations,
+    // so its derivative w.r.t. a parameter α of edge (tα, eα) is only
+    //   ∂²logc_{eα}/∂θ_p∂θ_{p'}          (α's own edge, u_e fixed), or
+    //   ∂²logc_{e'}/∂θ_{p'}∂u1 · P^α + ∂²logc/∂θ_{p'}∂u2 · Q^α   (deeper e'),
+    // where P^α, Q^α are the first-order perturbations of e''s arguments,
+    // propagated by the same cascade as the gradient. No second-order
+    // ("bar") propagation is needed. Upper-triangular in the flat order.
+    auto do_batch = [&](const tools_batch::Batch& b) {
+      const size_t m = b.size;
+      auto cache = build_deriv_cache(u, b.begin, m, true, per_obs_params);
+
+      // dh1/dh2 and h1_affected/h2_affected play the same role as in the
+      // gradient cascade of scores_full: per storage column, the current
+      // first-order perturbations of the column's hfunc1/hfunc2 values w.r.t.
+      // the parameter, and flags marking which columns are affected (see the
+      // DerivLeaf/DerivCache documentation in class.hpp)
+      Eigen::MatrixXd dh1(m, d_), dh2(m, d_);
+      std::vector<char> h1_affected(d_), h2_affected(d_);
+      for (size_t a = 0; a < npars; ++a) {
+        size_t ta = par_of[a][0], ea = par_of[a][1], pa = par_of[a][2];
+        const DerivCache& seed = cache(ta, ea);
+
+        // own edge: ∂ s_{(ta,ea,cp)} / ∂θ_{(ta,ea,pa)} = ∂²logc/∂θ_pa∂θ_cp
+        for (size_t cp = 0; cp < seed.np; ++cp) {
+          hess(ta, ea)[pa].block(b.begin, edge_par0(ta, ea) + cp, m, 1) =
+            seed.dpar_par[pa][cp];
+        }
+
+        // propagate α's first-order perturbation to the deeper edges
+        std::fill(h1_affected.begin(), h1_affected.end(), 0);
+        std::fill(h2_affected.begin(), h2_affected.end(), 0);
+        if (seed.h1.active) {
+          dh1.col(ea) = seed.h1.dpar[pa];
+          h1_affected[ea] = 1;
+        }
+        if (seed.h2.active) {
+          dh2.col(ea) = seed.h2.dpar[pa];
+          h2_affected[ea] = 1;
+        }
+        for (size_t t = ta + 1; t < trunc_lvl; ++t) {
+          for (size_t e = 0; e < d_ - t - 1; ++e) {
+            const DerivCache& ce = cache(t, e);
+            size_t arg2_col = ce.arg2_col;
+            bool arg1_affected = (h2_affected[e] != 0);
+            bool arg2_affected = ce.arg2_is_h2
+                                   ? (h2_affected[arg2_col - 1] != 0)
+                                   : (h1_affected[arg2_col - 1] != 0);
+            if (!arg1_affected && !arg2_affected) {
+              h1_affected[e] = 0;
+              h2_affected[e] = 0;
+              continue;
+            }
+            Eigen::VectorXd darg1 = Eigen::VectorXd::Zero(m);
+            Eigen::VectorXd darg2 = Eigen::VectorXd::Zero(m);
+            if (arg1_affected) {
+              darg1 = dh2.col(e);
+            }
+            if (arg2_affected) {
+              darg2 =
+                ce.arg2_is_h2 ? dh2.col(arg2_col - 1) : dh1.col(arg2_col - 1);
+            }
+            for (size_t cp = 0; cp < ce.np; ++cp) {
+              hess(ta, ea)[pa].block(b.begin, edge_par0(t, e) + cp, m, 1) =
+                ce.dpar_u1[cp].cwiseProduct(darg1) +
+                ce.dpar_u2[cp].cwiseProduct(darg2);
+            }
+            if (ce.h2.active) {
+              dh2.col(e) =
+                propagate_first_order(ce.h2.du1, ce.h2.du2, darg1, darg2);
+            }
+            if (ce.h1.active) {
+              dh1.col(e) =
+                propagate_first_order(ce.h1.du1, ce.h1.du2, darg1, darg2);
+            }
+            h1_affected[e] = ce.h1.active ? 1 : 0;
+            h2_affected[e] = ce.h2.active ? 1 : 0;
+          }
+        }
+      }
+    };
+
+    if (trunc_lvl > 0) {
+      tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
+      pool.map(do_batch, tools_batch::create_batches(u.rows(), num_threads));
+      pool.join();
+    }
+    return hess;
+  }
+
+  // Analytic joint Hessian: differentiate the gradient cascade a second
+  // time. For a parameter pair (α, β) a forward walk propagates the first
+  // derivatives of each edge's arguments w.r.t. α ("hat") and β ("tilde")
+  // and their mixed second derivative ("bar"), accumulating
+  //   H_αβ = Σ_e [ ∂²logc/∂p²·P^α P^β + ∂²logc/∂p∂q·(P^α Q^β + Q^α P^β)
+  //               + ∂²logc/∂q²·Q^α Q^β + ∂logc/∂p·P^{αβ} + ∂logc/∂q·Q^{αβ}
+  //               + θ-argument cross terms and the ∂²logc/∂θ² seed ],
+  // where the bar quantities propagate with the h-function's own second
+  // derivatives.
+  auto do_batch = [&](const tools_batch::Batch& b) {
+    const size_t m = b.size;
+    // one forward walk fills every per-edge first- and second-order leaf
+    auto cache = build_deriv_cache(u, b.begin, m, true, per_obs_params);
+
+    // Second-order cascade for each parameter pair (only the upper triangle;
+    // H is symmetric). Per storage column e (suffix 1 = the column's hfunc1
+    // values, 2 = its hfunc2 values, as in the gradient cascade):
+    //   hat*[e] = ∂(column value)/∂α,
+    //   til*[e] = ∂(column value)/∂β,
+    //   bar*[e] = ∂²(column value)/∂α∂β,
+    // seeded at the two parameters' own edges and pushed through each
+    // deeper edge's output leaves ce.h1/ce.h2 (see class.hpp). There are no
+    // aff flags here; unaffected columns simply carry zero vectors.
+    std::vector<Eigen::VectorXd> dh1_a(d_), dh2_a(d_), dh1_b(d_), dh2_b(d_),
+      d2h1(d_), d2h2(d_);
+    for (size_t a = 0; a < npars; ++a) {
+      size_t ta = par_of[a][0], ea = par_of[a][1], pa = par_of[a][2];
+      for (size_t bfl = a; bfl < npars; ++bfl) {
+        size_t tb = par_of[bfl][0], eb = par_of[bfl][1], pb = par_of[bfl][2];
+
+        for (size_t col = 0; col < d_; ++col) {
+          dh1_a[col] = Eigen::VectorXd::Zero(m);
+          dh2_a[col] = Eigen::VectorXd::Zero(m);
+          dh1_b[col] = Eigen::VectorXd::Zero(m);
+          dh2_b[col] = Eigen::VectorXd::Zero(m);
+          d2h1[col] = Eigen::VectorXd::Zero(m);
+          d2h2[col] = Eigen::VectorXd::Zero(m);
+        }
+        Eigen::VectorXd H_ab = Eigen::VectorXd::Zero(m);
+
+        for (size_t t = 0; t < trunc_lvl; ++t) {
+          for (size_t e = 0; e < d_ - 1 - t; ++e) {
+            const DerivCache& ce = cache(t, e);
+            size_t arg2_col = ce.arg2_col;
+            bool arg2_is_h2 = ce.arg2_is_h2;
+            bool is_edge_a = (t == ta) && (e == ea);
+            bool is_edge_b = (t == tb) && (e == eb);
+
+            // input-argument perturbations (p_e from column e's hfunc2,
+            // q_e from column arg2_col-1's hfunc2/hfunc1). p_e's column is
+            // overwritten by the propagation below, so copy it by value;
+            // q_e's column (arg2_col-1 > e) is untouched this step.
+            Eigen::VectorXd darg1_a = dh2_a[e];
+            Eigen::VectorXd darg1_b = dh2_b[e];
+            Eigen::VectorXd d2arg1 = d2h2[e];
+            const Eigen::VectorXd& darg2_a =
+              arg2_is_h2 ? dh2_a[arg2_col - 1] : dh1_a[arg2_col - 1];
+            const Eigen::VectorXd& darg2_b =
+              arg2_is_h2 ? dh2_b[arg2_col - 1] : dh1_b[arg2_col - 1];
+            const Eigen::VectorXd& d2arg2 =
+              arg2_is_h2 ? d2h2[arg2_col - 1] : d2h1[arg2_col - 1];
+
+            // accumulate the Hessian contribution of this edge
+            H_ab += ce.du1u1.cwiseProduct(darg1_a).cwiseProduct(darg1_b);
+            H_ab += ce.du1u2.cwiseProduct(darg1_a.cwiseProduct(darg2_b) +
+                                          darg2_a.cwiseProduct(darg1_b));
+            H_ab += ce.du2u2.cwiseProduct(darg2_a).cwiseProduct(darg2_b);
+            H_ab += ce.du1.cwiseProduct(d2arg1) + ce.du2.cwiseProduct(d2arg2);
+            if (is_edge_a) {
+              H_ab += ce.dpar_u1[pa].cwiseProduct(darg1_b) +
+                      ce.dpar_u2[pa].cwiseProduct(darg2_b);
+            }
+            if (is_edge_b) {
+              H_ab += ce.dpar_u1[pb].cwiseProduct(darg1_a) +
+                      ce.dpar_u2[pb].cwiseProduct(darg2_a);
+            }
+            if (is_edge_a && is_edge_b) {
+              H_ab += ce.dpar_par[pa][pb];
+            }
+
+            // propagate the perturbations to this edge's h-function outputs:
+            // hat/til are first order (propagate_first_order), bar is second
+            auto propagate = [&](const DerivLeaf& leaf,
+                                 Eigen::VectorXd& out_a,
+                                 Eigen::VectorXd& out_b,
+                                 Eigen::VectorXd& out_ab) {
+              out_a =
+                propagate_first_order(leaf.du1, leaf.du2, darg1_a, darg2_a);
+              out_b =
+                propagate_first_order(leaf.du1, leaf.du2, darg1_b, darg2_b);
+              out_ab = leaf.du1u1.cwiseProduct(darg1_a).cwiseProduct(darg1_b) +
+                       leaf.du1u2.cwiseProduct(darg1_a.cwiseProduct(darg2_b) +
+                                               darg2_a.cwiseProduct(darg1_b)) +
+                       leaf.du2u2.cwiseProduct(darg2_a).cwiseProduct(darg2_b) +
+                       leaf.du1.cwiseProduct(d2arg1) +
+                       leaf.du2.cwiseProduct(d2arg2);
+              if (is_edge_a) {
+                out_a += leaf.dpar[pa];
+                out_ab += leaf.dpar_u1[pa].cwiseProduct(darg1_b) +
+                          leaf.dpar_u2[pa].cwiseProduct(darg2_b);
+              }
+              if (is_edge_b) {
+                out_b += leaf.dpar[pb];
+                out_ab += leaf.dpar_u1[pb].cwiseProduct(darg1_a) +
+                          leaf.dpar_u2[pb].cwiseProduct(darg2_a);
+              }
+              if (is_edge_a && is_edge_b) {
+                out_ab += leaf.dpar_par[pa][pb];
+              }
+            };
+            if (ce.h2.active) {
+              propagate(ce.h2, dh2_a[e], dh2_b[e], d2h2[e]);
+            }
+            if (ce.h1.active) {
+              propagate(ce.h1, dh1_a[e], dh1_b[e], d2h1[e]);
+            }
+          }
+        }
+
+        hess(ta, ea)[pa].block(b.begin, bfl, m, 1) = H_ab;
+        if (a != bfl) {
+          hess(tb, eb)[pb].block(b.begin, a, m, 1) = H_ab;
+        }
+      }
+    }
+  };
+
+  if (trunc_lvl > 0) {
+    tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
+    pool.map(do_batch, tools_batch::create_batches(u.rows(), num_threads));
+    pool.join();
   }
 
   return hess;
@@ -1355,23 +2510,62 @@ Vinecop::hessian_full(Eigen::MatrixXd u,
 inline Eigen::MatrixXd
 Vinecop::hessian(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 {
-  auto hess = this->hessian_full(u, step_wise, num_threads);
-  size_t npars = static_cast<size_t>(this->get_npars());
-  Eigen::MatrixXd H(npars, npars);
+  return hessian(std::move(u), Eigen::MatrixXd(), step_wise, num_threads);
+}
 
+//! @brief Evaluates the averaged Hessian with per-observation parameters.
+//!
+//! Per-observation counterpart of `hessian()`; see the per-observation
+//! `scores_full()` overload for the `parameters` layout and restrictions.
+inline Eigen::MatrixXd
+Vinecop::hessian(Eigen::MatrixXd u,
+                 const Eigen::MatrixXd& parameters,
+                 bool step_wise,
+                 const size_t num_threads)
+{
+  const bool per_obs = parameters.size() > 0;
+  // validate up front so the per-chunk parameters.middleRows() slices below
+  // are always in range (hessian_full re-validates each chunk, but only after
+  // the slice is taken)
+  if (per_obs) {
+    check_per_obs_params(u, parameters);
+  }
+  const size_t npars = static_cast<size_t>(this->get_npars());
+  Eigen::MatrixXd H = Eigen::MatrixXd::Zero(npars, npars);
+  const size_t n = static_cast<size_t>(u.rows());
+  if (n == 0 || npars == 0) {
+    return H;
+  }
   size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
-  size_t ipar = 0;
-  for (size_t t = 0; t < trunc_lvl; t++) {
-    for (size_t e = 0; e < d_ - 1 - t; e++) {
-      for (size_t p = 0;
-           p < static_cast<size_t>(pair_copulas_[t][e].get_parameters().size());
-           p++) {
-        H.row(ipar++) = hess(t, e)[p].colwise().mean();
+
+  // ponytail: process observations in row-chunks so peak memory is
+  // O(chunk * npars^2) rather than O(n * npars^2) -- hessian_full()
+  // materialises the per-observation Hessian, which hessian() only needs in
+  // aggregate. The chunk caps that at ~4M doubles; call hessian_full()
+  // directly (or raise the cap) if you need the full per-observation tensor.
+  // The overall analytic cascade is O(n * d^6) (npars^2 pairs x O(d^2)
+  // edges) for one-parameter families.
+  const size_t chunk =
+    std::max<size_t>(1, 4000000 / std::max<size_t>(1, npars * npars));
+  for (size_t begin = 0; begin < n; begin += chunk) {
+    size_t size = std::min(chunk, n - begin);
+    auto hess =
+      per_obs
+        ? this->hessian_full(u.middleRows(begin, size),
+                             parameters.middleRows(begin, size),
+                             step_wise,
+                             num_threads)
+        : this->hessian_full(u.middleRows(begin, size), step_wise, num_threads);
+    size_t ipar = 0;
+    for (size_t t = 0; t < trunc_lvl; t++) {
+      for (size_t e = 0; e < d_ - 1 - t; e++) {
+        for (size_t p = 0; p < hess(t, e).size(); p++) {
+          H.row(ipar++) += hess(t, e)[p].colwise().sum();
+        }
       }
     }
   }
-
-  return H;
+  return H / static_cast<double>(n);
 }
 
 //! @brief Computes the covariance matrix of scores.
@@ -1395,6 +2589,22 @@ Vinecop::scores_cov(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
   auto s = this->scores(u, step_wise, num_threads);
   // materialize the centered scores; a lazy expression would be evaluated
   // twice by the product below
+  Eigen::MatrixXd sc = s.rowwise() - s.colwise().mean();
+  return (sc.adjoint() * sc) / static_cast<double>(s.rows());
+}
+
+//! @brief Computes the covariance matrix of scores with per-observation
+//! parameters.
+//!
+//! Per-observation counterpart of `scores_cov()`; see the per-observation
+//! `scores_full()` overload for the `parameters` layout and restrictions.
+inline Eigen::MatrixXd
+Vinecop::scores_cov(Eigen::MatrixXd u,
+                    const Eigen::MatrixXd& parameters,
+                    bool step_wise,
+                    const size_t num_threads)
+{
+  auto s = this->scores(u, parameters, step_wise, num_threads);
   Eigen::MatrixXd sc = s.rowwise() - s.colwise().mean();
   return (sc.adjoint() * sc) / static_cast<double>(s.rows());
 }
@@ -1488,6 +2698,134 @@ Vinecop::simulate(const size_t n,
   ;
 }
 
+//! @brief Simulates from the conditional distribution of a subset of variables
+//! given fixed values of the remaining variables.
+//!
+//! @details The conditioning variables are the last `k` variables of the vine
+//! order (they are drawn first by the vine and form a self-contained sub-vine).
+//! Each row of `u_cond` is one
+//! conditioning point; the corresponding output row is drawn from the
+//! remaining variables' distribution conditional on that point. It is
+//! implemented as a Rosenblatt transform of the conditioning variables
+//! followed by an inverse Rosenblatt transform (see `rosenblatt()` /
+//! `inverse_rosenblatt()`).
+//!
+//! Discrete conditioning variables are supported. As for the other data-taking
+//! methods, a discrete variable requires its left-limit CDF \f$ F(x^-) \f$ in
+//! addition to \f$ F(x) \f$; `u_cond` therefore carries one extra column per
+//! discrete conditioning variable (see the `u_cond` layout below). The
+//! conditioned variables are then drawn using the randomized transform of
+//! `rosenblatt()` (see its `randomize_discrete` note).
+//!
+//! @param u_cond An \f$ n \times (k + k_d) \f$ matrix of conditioning values,
+//!   where `k` is the number of conditioning variables and `k_d` the number of
+//!   discrete ones among them. Row `j` is the conditioning point for output
+//!   sample `j` (`n` is the number of rows of `u_cond`). The first `k` columns
+//!   hold the values \f$ F(x) \f$; column `i` corresponds to the
+//!   `(d - k + i)`-th variable of the vine order, i.e. the columns correspond,
+//!   left to right, to the last `k` entries of the order. The next `k_d`
+//!   columns hold the left-limits \f$ F(x^-) \f$ of the discrete conditioning
+//!   variables, in the order those variables appear among the first `k`
+//!   columns. For all-continuous conditioning this is simply an
+//!   \f$ n \times k \f$ matrix. `k` is inferred from the column count;
+//!   supplying only `k` columns when a conditioning variable is discrete may be
+//!   silently reinterpreted as a different `k`. To draw many samples at a
+//!   single conditioning point, pass that point repeated over `n` rows.
+//! @param qrng Set to true for quasi-random numbers (over the conditioned
+//!   variables).
+//! @param num_threads The number of threads to use for computations.
+//! @param seeds Seeds of the random number generator; if empty (default),
+//!   the random number generator is seeded randomly.
+//! @return An \f$ n \times d \f$ matrix; the remaining columns are draws from
+//!   the conditional distribution. The conditioning columns reproduce `u_cond`
+//!   exactly for continuous variables. A discrete conditioning variable is
+//!   reproduced up to its atom (the column lands in \f$ [F(x^-), F(x)] \f$);
+//!   with several discrete conditioning variables the later-drawn ones may land
+//!   slightly outside their atom, but the draws of the remaining (conditioned)
+//!   variables remain correct.
+inline Eigen::MatrixXd
+Vinecop::simulate_conditional(const Eigen::MatrixXd& u_cond,
+                              const bool qrng,
+                              const size_t num_threads,
+                              const std::vector<int>& seeds) const
+{
+  size_t n = static_cast<size_t>(u_cond.rows());
+  size_t n_cols = static_cast<size_t>(u_cond.cols());
+  auto order = rvine_structure_.get_order();
+
+  // ---- recover the number of conditioning variables `k` from the column
+  //      count. `u_cond` has `k` value columns plus one left-limit column
+  //      F(x^-) per discrete conditioning variable, i.e.
+  //      `n_cols = k + #discrete(order[d-k..d-1])`. This is strictly increasing
+  //      in `k`, so the match is unique. The conditioning variables are the
+  //      last `k` of the vine order (drawn first, a self-contained sub-vine).
+  size_t k = 0;
+  bool found = false;
+  for (size_t kk = 1; (kk <= d_ - 1) && !found; ++kk) {
+    size_t kd = 0;
+    for (size_t i = 0; i < kk; ++i)
+      if (var_types_[order[d_ - kk + i] - 1] == "d")
+        ++kd;
+    if (n_cols == kk + kd) {
+      k = kk;
+      found = true;
+    }
+  }
+  if (!found) {
+    throw std::runtime_error(
+      "u_cond has an invalid number of columns; expected k + (number of "
+      "discrete conditioning variables) columns for some number of "
+      "conditioning variables k in 1, ..., d - 1.");
+  }
+  if (!tools_eigen::check_if_in_unit_cube(u_cond)) {
+    throw std::runtime_error("all elements of u_cond must be in (0, 1).");
+  }
+
+  // ---- algorithm (reuse the tested Rosenblatt primitives) ----
+  // 1. Embed the conditioning values into a full data matrix in the collapsed
+  //    `n x (d + n_discrete)` layout: value columns F(x), plus a left-limit
+  //    column F(x^-) for each discrete conditioning variable. The fillers are
+  //    irrelevant: the conditioning block is self-contained, so its Rosenblatt
+  //    transform depends only on the conditioning values.
+  auto disc_cols = tools_select::get_disc_cols(var_types_);
+  Eigen::MatrixXd u_completed =
+    Eigen::MatrixXd::Constant(n, d_ + get_n_discrete(), 0.5);
+  size_t kd_seen = 0;
+  for (size_t i = 0; i < k; ++i) {
+    size_t var = order[d_ - k + i] - 1;
+    u_completed.col(var) = u_cond.col(i); // F(x)
+    if (var_types_[var] == "d") {
+      if ((u_cond.col(k + kd_seen).array() > u_cond.col(i).array()).any()) {
+        throw std::runtime_error(
+          "for discrete conditioning variables, the left-limit columns of "
+          "u_cond (F(x^-)) must not exceed the value columns (F(x)).");
+      }
+      u_completed.col(d_ + disc_cols[var]) = u_cond.col(k + kd_seen); // F(x^-)
+      ++kd_seen;
+    }
+  }
+
+  // 2. Recover the independent-uniform seeds of the conditioning block.
+  //    `randomize_discrete = true` is required: for a discrete conditioning
+  //    value the seed is drawn across the atom's [F(x^-), F(x)] interval
+  //    (Brockwell), so the conditioned draws are unbiased. It is a no-op for
+  //    continuous models.
+  Eigen::MatrixXd w = rosenblatt(u_completed, num_threads, true, seeds);
+
+  // 3. Assemble the seed matrix: conditioning seeds + fresh uniforms for the
+  //    conditioned variables.
+  Eigen::MatrixXd u = tools_stats::simulate_uniform(n, d_, qrng, seeds);
+  for (size_t i = 0; i < k; ++i) {
+    size_t col = order[d_ - k + i] - 1;
+    u.col(col) = w.col(col);
+  }
+
+  // 4. Inverse Rosenblatt: reproduces the conditioning values (exactly for
+  //    continuous variables, up to the atom for discrete ones) and draws the
+  //    remaining variables from their conditional distribution.
+  return inverse_rosenblatt(u, num_threads);
+}
+
 //! @brief Evaluates the log-likelihood.
 //!
 //! @details The log-likelihood is defined as
@@ -1509,6 +2847,20 @@ Vinecop::loglik(const Eigen::MatrixXd& u, const size_t num_threads) const
   } else {
     return pdf(u, num_threads).array().log().sum();
   }
+}
+
+//! @brief Evaluates the log-likelihood with per-observation parameters.
+//!
+//! Per-observation counterpart of `loglik()`: the sum over observations of
+//! \f$ \log c(u_i; \theta_i) \f$, where row `i` of `parameters` is
+//! \f$ \theta_i \f$. See the per-observation `pdf_full()` overload for the
+//! `parameters` layout and restrictions.
+inline double
+Vinecop::loglik(const Eigen::MatrixXd& u,
+                const Eigen::MatrixXd& parameters,
+                const size_t num_threads) const
+{
+  return pdf(u, parameters, num_threads).array().log().sum();
 }
 
 //! @brief Evaluates the Akaike information criterion (AIC).
@@ -1815,7 +3167,7 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
   size_t d = d_;
 
   Eigen::MatrixXd U_vine = u.leftCols(d); // output matrix
-  //                   (direct + indirect)    (U_vine)       (info matrices)
+  //                   (hfunc1 + hfunc2)      (U_vine)       (info matrices)
   size_t bytes_required = (8 * 2 * n * d * d) + (8 * n * d) + (4 * 4 * d * d);
   // if the problem is too large (requires more than 1 GB memory), split
   // the data into two halves and call simulate on the reduced data.

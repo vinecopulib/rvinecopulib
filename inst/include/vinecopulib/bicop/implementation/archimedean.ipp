@@ -56,6 +56,24 @@ ArchimedeanBicop::hfunc2_raw(const Eigen::MatrixXd& u,
 }
 
 inline Eigen::VectorXd
+ArchimedeanBicop::hfunc2_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv)
+{
+  return hfunc1_deriv_raw(
+    tools_eigen::swap_cols(u), parameters, tools_deriv::swap_args(deriv));
+}
+
+inline Eigen::VectorXd
+ArchimedeanBicop::hfunc2_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv)
+{
+  return hfunc1_deriv2_raw(
+    tools_eigen::swap_cols(u), parameters, tools_deriv::swap_args(deriv));
+}
+
+inline Eigen::VectorXd
 ArchimedeanBicop::hinv1_raw(const Eigen::MatrixXd& u,
                             const Eigen::MatrixXd& parameters)
 {

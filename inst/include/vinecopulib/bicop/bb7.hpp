@@ -39,6 +39,31 @@ private:
   Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u,
                           const Eigen::MatrixXd& parameters);
 
+  // analytic derivatives (per-selector closed forms; see bb7.ipp)
+  Eigen::VectorXd pdf_deriv_raw(const Eigen::MatrixXd& u,
+                                const Eigen::MatrixXd& parameters,
+                                const std::string& deriv);
+
+  Eigen::VectorXd pdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                 const Eigen::MatrixXd& parameters,
+                                 const std::string& deriv);
+
+  Eigen::VectorXd hfunc1_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv);
+
+  Eigen::VectorXd hfunc1_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv);
+
+  Eigen::VectorXd logpdf_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv);
+
+  Eigen::VectorXd logpdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv);
+
   // link between Kendall's tau and the par_bicop parameter
   double parameters_to_tau(const Eigen::MatrixXd& par);
 

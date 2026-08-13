@@ -4,6 +4,7 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <algorithm>
 #include <stdexcept>
 
 #include <vinecopulib/bicop/bb1.hpp>
@@ -286,7 +287,7 @@ AbstractBicop::pdf_c_d(const Eigen::MatrixXd& u,
   const bool bc = (parameters.rows() != u.rows());
   for (Eigen::Index i = 0; i < u.rows(); i++) {
     const Eigen::MatrixXd par_i =
-        parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
+      parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
     if (udiff(i) > 5e-5) {
       if (var_types_[0] != "c") {
         pdf(i) =
@@ -315,7 +316,7 @@ AbstractBicop::pdf_d_d(const Eigen::MatrixXd& u,
   const bool bc = (parameters.rows() != u.rows());
   for (Eigen::Index i = 0; i < u.rows(); i++) {
     const Eigen::MatrixXd par_i =
-        parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
+      parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
     // the difference quotient can be instable, use derivative if denominator
     // too small
     if (udiff.row(i).maxCoeff() < 5e-5) {
@@ -475,4 +476,219 @@ AbstractBicop::hinv2_num_raw(const Eigen::MatrixXd& u,
   return tools_eigen::invert_f(u.col(0), h1);
 }
 //! @}
+
+//! @name Derivative leaves (defaults)
+//!
+//! Nonparametric families have no analytical derivatives; ParBicop overrides
+//! these with finite-difference fallbacks and analytic families override
+//! those in turn.
+//! @{
+
+inline Eigen::VectorXd
+AbstractBicop::pdf_deriv_raw(const Eigen::MatrixXd&,
+                             const Eigen::MatrixXd&,
+                             const std::string&)
+{
+  throw std::runtime_error("derivatives are not implemented for the " +
+                           get_family_name() + " copula");
+}
+
+inline Eigen::VectorXd
+AbstractBicop::pdf_deriv2_raw(const Eigen::MatrixXd&,
+                              const Eigen::MatrixXd&,
+                              const std::string&)
+{
+  throw std::runtime_error("derivatives are not implemented for the " +
+                           get_family_name() + " copula");
+}
+
+inline Eigen::VectorXd
+AbstractBicop::hfunc1_deriv_raw(const Eigen::MatrixXd&,
+                                const Eigen::MatrixXd&,
+                                const std::string&)
+{
+  throw std::runtime_error("derivatives are not implemented for the " +
+                           get_family_name() + " copula");
+}
+
+inline Eigen::VectorXd
+AbstractBicop::hfunc1_deriv2_raw(const Eigen::MatrixXd&,
+                                 const Eigen::MatrixXd&,
+                                 const std::string&)
+{
+  throw std::runtime_error("derivatives are not implemented for the " +
+                           get_family_name() + " copula");
+}
+
+inline Eigen::VectorXd
+AbstractBicop::hfunc2_deriv_raw(const Eigen::MatrixXd&,
+                                const Eigen::MatrixXd&,
+                                const std::string&)
+{
+  throw std::runtime_error("derivatives are not implemented for the " +
+                           get_family_name() + " copula");
+}
+
+inline Eigen::VectorXd
+AbstractBicop::hfunc2_deriv2_raw(const Eigen::MatrixXd&,
+                                 const Eigen::MatrixXd&,
+                                 const std::string&)
+{
+  throw std::runtime_error("derivatives are not implemented for the " +
+                           get_family_name() + " copula");
+}
+
+inline Eigen::VectorXd
+AbstractBicop::logpdf_deriv_raw(const Eigen::MatrixXd& u,
+                                const Eigen::MatrixXd& parameters,
+                                const std::string& deriv)
+{
+  Eigen::ArrayXd c = pdf_raw(u, parameters).array().max(DBL_MIN);
+  return (pdf_deriv_raw(u, parameters, deriv).array() / c).matrix();
+}
+
+inline Eigen::VectorXd
+AbstractBicop::logpdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                 const Eigen::MatrixXd& parameters,
+                                 const std::string& deriv)
+{
+  auto comps = tools_deriv::parse_components(deriv);
+  Eigen::ArrayXd c = pdf_raw(u, parameters).array().max(DBL_MIN);
+  Eigen::ArrayXd c_xy = pdf_deriv2_raw(u, parameters, deriv).array();
+  Eigen::ArrayXd c_x =
+    pdf_deriv_raw(u, parameters, tools_deriv::comp_to_string(comps[0])).array();
+  Eigen::ArrayXd c_y =
+    (comps[0] == comps[1])
+      ? c_x
+      : pdf_deriv_raw(u, parameters, tools_deriv::comp_to_string(comps[1]))
+          .array();
+  return (c_xy / c - (c_x / c) * (c_y / c)).matrix();
+}
+//! @}
+
+namespace tools_deriv {
+
+//! splits a derivative selector into components; the encoding is the 0-based
+//! parameter index for `"par<k>"`, `-1` for `"u1"`, and `-2` for `"u2"`.
+inline std::vector<int>
+parse_components(const std::string& deriv)
+{
+  std::vector<int> comps;
+  size_t pos = 0;
+  while (pos < deriv.size()) {
+    if (deriv.compare(pos, 1, "u") == 0) {
+      if ((pos + 1 >= deriv.size()) ||
+          ((deriv[pos + 1] != '1') && (deriv[pos + 1] != '2'))) {
+        throw std::runtime_error("invalid derivative selector: '" + deriv +
+                                 "'");
+      }
+      comps.push_back((deriv[pos + 1] == '1') ? -1 : -2);
+      pos += 2;
+    } else if (deriv.compare(pos, 3, "par") == 0) {
+      pos += 3;
+      size_t k = 0;
+      size_t num_digits = 0;
+      while ((pos < deriv.size()) && (deriv[pos] >= '0') &&
+             (deriv[pos] <= '9')) {
+        k = 10 * k + static_cast<size_t>(deriv[pos] - '0');
+        pos++;
+        num_digits++;
+      }
+      if (num_digits == 0) {
+        k = 1; // "par" is short for "par1"
+      }
+      if ((k < 1) || (num_digits > 3)) {
+        throw std::runtime_error("invalid derivative selector: '" + deriv +
+                                 "'");
+      }
+      comps.push_back(static_cast<int>(k) - 1);
+    } else {
+      throw std::runtime_error("invalid derivative selector: '" + deriv + "'");
+    }
+  }
+  if (comps.empty()) {
+    throw std::runtime_error("derivative selector cannot be empty");
+  }
+  return comps;
+}
+
+inline std::string
+comp_to_string(int comp)
+{
+  if (comp == -1) {
+    return "u1";
+  } else if (comp == -2) {
+    return "u2";
+  }
+  return "par" + std::to_string(comp + 1);
+}
+
+//! sorts components canonically (parameters by index, then u1, then u2) and
+//! concatenates them.
+inline std::string
+components_to_string(std::vector<int> comps)
+{
+  auto rank = [](int comp) { return (comp >= 0) ? comp : 1000 - comp; };
+  std::sort(comps.begin(), comps.end(), [&](int lhs, int rhs) {
+    return rank(lhs) < rank(rhs);
+  });
+  std::string str;
+  for (auto comp : comps) {
+    str += comp_to_string(comp);
+  }
+  return str;
+}
+
+//! validates a user-facing selector against the derivative order and the
+//! number of parameters and returns its canonical form; a single component
+//! in a second-order selector means differentiating twice w.r.t. it.
+inline std::string
+canonicalize(const std::string& deriv, size_t order, size_t npars)
+{
+  auto comps = parse_components(deriv);
+  if ((comps.size() == 1) && (order == 2)) {
+    comps.push_back(comps[0]);
+  }
+  if (comps.size() != order) {
+    throw std::runtime_error("derivative selector '" + deriv + "' has " +
+                             std::to_string(comps.size()) +
+                             " components; expected " + std::to_string(order));
+  }
+  for (auto comp : comps) {
+    if (comp >= static_cast<int>(npars)) {
+      throw std::runtime_error(
+        "derivative selector '" + deriv + "' refers to parameter " +
+        std::to_string(comp + 1) + ", but the family has " +
+        std::to_string(npars) + " parameter(s)");
+    }
+  }
+  return components_to_string(comps);
+}
+
+//! swaps `"u1"` and `"u2"` in a selector (for exchangeable families).
+inline std::string
+swap_args(const std::string& deriv)
+{
+  auto comps = parse_components(deriv);
+  for (auto& comp : comps) {
+    if (comp == -1) {
+      comp = -2;
+    } else if (comp == -2) {
+      comp = -1;
+    }
+  }
+  return components_to_string(comps);
+}
+
+//! whether a selector involves `"u2"` but not `"u1"` (an exchangeable family
+//! can then route it to its `"u1"`-flavored leaf via `swap_args`).
+inline bool
+is_u2_only(const std::string& deriv)
+{
+  auto comps = parse_components(deriv);
+  bool has_u1 = std::find(comps.begin(), comps.end(), -1) != comps.end();
+  bool has_u2 = std::find(comps.begin(), comps.end(), -2) != comps.end();
+  return has_u2 && !has_u1;
+}
+}
 }

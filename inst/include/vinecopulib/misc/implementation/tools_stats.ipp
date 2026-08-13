@@ -918,5 +918,6 @@ pbvnorm(const Eigen::MatrixXd& z, double rho)
 
   return tools_eigen::binaryExpr_or_nan(z, f);
 }
+
 }
 }

@@ -209,6 +209,9 @@ inline FitControlsVinecop::FitControlsVinecop(const FitControlsConfig& config)
   if (optional::has_value(config.seeds)) {
     set_seeds(optional::value(config.seeds));
   }
+  if (optional::has_value(config.conditioning_set)) {
+    set_conditioning_set(optional::value(config.conditioning_set));
+  }
 }
 
 //! @name Sanity checks
@@ -229,6 +232,26 @@ FitControlsVinecop::check_threshold(double threshold)
 {
   if (threshold < 0 || threshold > 1) {
     throw std::runtime_error("threshold should be in [0,1]");
+  }
+}
+
+inline void
+FitControlsVinecop::check_conditioning_set(
+  const std::vector<size_t>& conditioning_set)
+{
+  // Dimension-free checks only (the vine dimension d is not known here; the
+  // upper bounds max(set) <= d and |set| <= d - 1 are checked in
+  // Vinecop::select()).
+  for (auto v : conditioning_set) {
+    if (v < 1) {
+      throw std::runtime_error(
+        "conditioning_set entries must be >= 1 (1-based variable indices)");
+    }
+  }
+  auto sorted = conditioning_set;
+  std::sort(sorted.begin(), sorted.end());
+  if (std::adjacent_find(sorted.begin(), sorted.end()) != sorted.end()) {
+    throw std::runtime_error("conditioning_set must not contain duplicates");
   }
 }
 //! @}
@@ -358,6 +381,21 @@ FitControlsVinecop::get_seeds() const
   return seeds_;
 }
 
+//! @brief Gets the conditioning set for conditioning-aware selection.
+inline std::vector<size_t>
+FitControlsVinecop::get_conditioning_set() const
+{
+  return conditioning_set_;
+}
+
+//! @brief Sets the conditioning set for conditioning-aware selection.
+inline void
+FitControlsVinecop::set_conditioning_set(std::vector<size_t> conditioning_set)
+{
+  check_conditioning_set(conditioning_set);
+  conditioning_set_ = conditioning_set;
+}
+
 //! @brief Gets the random number generator.
 inline boost::random::mt19937
 FitControlsVinecop::get_rng() const
@@ -472,6 +510,14 @@ FitControlsVinecop::str() const
   controls_str << "Number of threads: "
                << (get_num_threads() == 0 ? 1 : get_num_threads()) << std::endl;
   controls_str << "MST algorithm: " << get_tree_algorithm() << std::endl;
+  controls_str << "Conditioning set: ";
+  if (get_conditioning_set().empty()) {
+    controls_str << "none (default)";
+  } else {
+    for (auto v : get_conditioning_set())
+      controls_str << v << " ";
+  }
+  controls_str << std::endl;
   return controls_str.str().c_str();
 }
 

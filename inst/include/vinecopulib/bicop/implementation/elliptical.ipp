@@ -23,6 +23,24 @@ EllipticalBicop::hinv2_raw(const Eigen::MatrixXd& u,
   return hinv1_raw(tools_eigen::swap_cols(u), parameters);
 }
 
+inline Eigen::VectorXd
+EllipticalBicop::hfunc2_deriv_raw(const Eigen::MatrixXd& u,
+                                  const Eigen::MatrixXd& parameters,
+                                  const std::string& deriv)
+{
+  return hfunc1_deriv_raw(
+    tools_eigen::swap_cols(u), parameters, tools_deriv::swap_args(deriv));
+}
+
+inline Eigen::VectorXd
+EllipticalBicop::hfunc2_deriv2_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv)
+{
+  return hfunc1_deriv2_raw(
+    tools_eigen::swap_cols(u), parameters, tools_deriv::swap_args(deriv));
+}
+
 inline double
 EllipticalBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
 {

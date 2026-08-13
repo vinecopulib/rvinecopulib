@@ -10,6 +10,7 @@
 #include <limits>
 #include <vinecopulib/misc/tools_serialization.hpp>
 #include <vinecopulib/misc/triangular_array.hpp>
+#include <vinecopulib/vinecop/rvine_trees.hpp>
 
 namespace vinecopulib {
 
@@ -107,9 +108,11 @@ public:
                  const TriangularArray<size_t>& struct_array,
                  bool natural_order = false,
                  bool check = true);
+  explicit RVineStructure(const RVineTrees& trees, bool check = true);
   explicit RVineStructure(const std::string& filename, const bool check = true);
   explicit RVineStructure(const nlohmann::json& input, const bool check = true);
 
+  bool operator==(const RVineStructure& rhs) const;
   nlohmann::json to_json() const;
   void to_file(const std::string& filename) const;
 
@@ -124,6 +127,7 @@ public:
   TriangularArray<short unsigned> get_needed_hfunc1() const;
   TriangularArray<short unsigned> get_needed_hfunc2() const;
   Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> get_matrix() const;
+  RVineTrees get_trees() const;
 
   size_t struct_array(size_t tree,
                       size_t edge,

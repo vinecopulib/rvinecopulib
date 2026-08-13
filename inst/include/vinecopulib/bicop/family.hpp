@@ -166,6 +166,20 @@ const std::vector<BicopFamily> itau = {
   BicopFamily::joe
 };
 
+//! @brief Families with closed-form derivatives of the density and
+//! h-functions.
+//!
+//! For these families, `Bicop::pdf_deriv()`, `Bicop::pdf_deriv2()`,
+//! `Bicop::hfunc1_deriv()`, `Bicop::hfunc2_deriv()` (and their second-order
+//! and log-density counterparts) evaluate analytical expressions; other
+//! parametric families fall back to central finite differences.
+const std::vector<BicopFamily> analytic_derivs = {
+  BicopFamily::indep,   BicopFamily::gaussian, BicopFamily::student,
+  BicopFamily::clayton, BicopFamily::gumbel,   BicopFamily::frank,
+  BicopFamily::joe,     BicopFamily::bb1,      BicopFamily::bb6,
+  BicopFamily::bb7,     BicopFamily::bb8,      BicopFamily::tawn
+};
+
 } // end of namespace BicopFamilies
 } // end of namespace vinecopulib
 

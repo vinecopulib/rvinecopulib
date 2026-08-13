@@ -114,6 +114,11 @@ public:
   //! to use a non-reproducible seed).
   std::vector<int> get_seeds() const;
 
+  //! @return the conditioning set (1-based variable indices) placed at the
+  //! tail of the vine order during structure selection; empty for
+  //! unconditional selection.
+  std::vector<size_t> get_conditioning_set() const;
+
   boost::random::mt19937 get_rng() const;
 
   // Setters
@@ -146,6 +151,12 @@ public:
 
   void set_seeds(std::vector<int> seeds);
 
+  //! Sets the conditioning set for conditioning-aware structure selection.
+  //! @param conditioning_set 1-based variable indices to place at the tail of
+  //! the vine order (so they can be conditioned on with
+  //! `Vinecop::simulate_conditional()`); empty for unconditional selection.
+  void set_conditioning_set(std::vector<size_t> conditioning_set);
+
   // Misc
   std::string str() const;
 
@@ -163,11 +174,14 @@ private:
   bool select_families_ = true;
   std::string tree_algorithm_ = "mst_prim";
   std::vector<int> seeds_;
+  std::vector<size_t> conditioning_set_ = {};
   boost::random::mt19937 rng_;
 
   void check_tree_criterion(std::string tree_criterion);
 
   void check_threshold(double threshold);
+
+  void check_conditioning_set(const std::vector<size_t>& conditioning_set);
 };
 }
 

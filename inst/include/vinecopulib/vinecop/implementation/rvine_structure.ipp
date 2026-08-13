@@ -59,6 +59,17 @@ inline RVineStructure::RVineStructure(
   needed_hfunc2_ = compute_needed_hfunc2();
 }
 
+//! @brief Instantiates an R-vine structure from a list of trees.
+//! @param trees A list-of-trees decomposition.
+//! @param check Whether `trees` shall be checked for validity.
+inline RVineStructure::RVineStructure(const RVineTrees& trees, bool check)
+  : RVineStructure([&]() {
+    auto dec = trees.to_struct_array();
+    return RVineStructure(dec.order, dec.struct_array, false, check);
+  }())
+{
+}
+
 //! @brief Instantiates as a D-vine for a given dimension.
 //! @param d The dimension.
 //! @param trunc_lvl The truncation level. By default, it is dim - 1.
@@ -195,6 +206,16 @@ inline void
 RVineStructure::to_file(const std::string& filename) const
 {
   tools_serialization::json_to_file(filename, this->to_json());
+}
+
+//! @brief Equality operator comparing two `RVineStructure` objects.
+//! @param rhs Right-hand side of the comparison.
+inline bool
+RVineStructure::operator==(const RVineStructure& rhs) const
+{
+  return get_struct_array() == rhs.get_struct_array() &&
+         get_order() == rhs.get_order() &&
+         get_trunc_lvl() == rhs.get_trunc_lvl();
 }
 
 //! @brief Gets the dimension of the vine.
@@ -444,6 +465,20 @@ RVineStructure::get_matrix() const
     mat(d_ - i - 1, i) = order_[i];
   }
   return mat;
+}
+
+//! @brief Gets the list-of-trees representation of the structure.
+//!
+//! @return The tree-by-tree decomposition: for each tree, a list of edges, each
+//! an `(a, b, conditioning)` triple of 1-based variable labels -- the
+//! conditioned pair `a`, `b` and the (possibly empty) conditioning set. It is
+//! the inverse of the list-of-trees constructor (`from_trees`).
+inline RVineTrees
+RVineStructure::get_trees() const
+{
+  // decompose in original labels (the diagonal `order_` and the original-label
+  // structure array must share the same labelling)
+  return RVineTrees(order_, get_struct_array(false));
 }
 
 //! @brief Find the truncation level in an R-vine array.

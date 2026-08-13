@@ -7,57 +7,64 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <functional>
 
 namespace vinecopulib {
 
+//! @brief Utilities for numerical optimization.
+//!
+//! A small optimizer used for parametric maximum likelihood: Brent's
+//! derivative-free bracketing search for one-dimensional problems, and BFGS
+//! for higher dimensions. For BFGS, bound constraints are handled by
+//! optimizing over an unconstrained space and mapping back with
+//! tools_transforms, so the objective always sees natural parameters.
 namespace tools_optimization {
 
-//! @brief A class for the controls to Bobyqa.
-class BobyqaControls
+//! @brief Controls for the BFGS optimizer.
+struct Controls
 {
-public:
-  BobyqaControls();
-
-  BobyqaControls(double initial_trust_region,
-                 double final_trust_region,
-                 size_t maxeval);
-
-  double get_initial_trust_region();
-
-  double get_final_trust_region();
-
-  size_t get_maxeval();
-
-private:
-  double initial_trust_region_; //! Initial trust region
-  double final_trust_region_;   //! Final trust region
-  size_t maxeval_; //! Maximal number of evaluations of the objective
-
-  //! Sanity checks
-  //! @{
-  void check_parameters(double initial_trust_region,
-                        double final_trust_region,
-                        size_t maxeval);
-  //! @}
+  size_t maxeval = 1000; //!< maximal number of objective evaluations per run
+  double gtol = 1e-6;    //!< convergence: max-norm of the (eta-)gradient
+  double ftol = 1e-9;    //!< convergence: relative change in the objective
+  double xtol = 1e-8;    //!< convergence: relative change in eta
+  double eta_max = 30.0; //!< clamp on `|eta|` for bounded coordinates
 };
 
-//! @brief A class for optimization (wrapping Bobyqa).
+//! @brief The objective in the natural parameter space.
+//!
+//! Returns the value `f(theta)`. If `grad` has non-zero size on entry (equal
+//! to `theta`), it must be filled with the gradient `df/dtheta`; the optimizer
+//! passes an empty `grad` when only the value is needed (1-d Brent search and
+//! backtracked line-search trials) and a sized `grad` where the gradient is
+//! consumed.
+using Objective =
+  std::function<double(const Eigen::VectorXd& theta, Eigen::VectorXd& grad)>;
+
+//! @brief A box-constrained maximizer: Brent in 1-d, BFGS with automatic
+//! bound transforms otherwise.
 class Optimizer
 {
 public:
-  Optimizer();
+  Optimizer() = default;
 
-  void set_controls(double initial_trust_region,
-                    double final_trust_region,
-                    size_t maxeval);
+  explicit Optimizer(Controls controls);
 
-  Eigen::VectorXd optimize(
-    const Eigen::VectorXd& initial_parameters,
-    const Eigen::VectorXd& lower_bounds,
-    const Eigen::VectorXd& upper_bounds,
-    std::function<double(const Eigen::VectorXd&)> objective);
+  //! @brief maximizes `objective` over the box `[lower_bounds, upper_bounds]`.
+  //!
+  //! @param initial_parameters starting values, in natural coordinates.
+  //! @param lower_bounds lower bounds (finite or `-inf`).
+  //! @param upper_bounds upper bounds (finite or `+inf`).
+  //! @param objective the objective (value and gradient), see Objective.
+  //! @return the maximizing parameters, in natural coordinates.
+  Eigen::VectorXd optimize(const Eigen::VectorXd& initial_parameters,
+                           const Eigen::VectorXd& lower_bounds,
+                           const Eigen::VectorXd& upper_bounds,
+                           const Objective& objective);
 
+  //! @brief the number of objective evaluations (cumulative over calls).
   size_t get_objective_calls() const;
+
+  //! @brief the objective value at the maximum found by the last call.
   double get_objective_max() const;
 
 private:
@@ -65,11 +72,13 @@ private:
                              const Eigen::VectorXd& lower_bounds,
                              const Eigen::VectorXd& upper_bounds) const;
 
-  BobyqaControls controls_;
+  Controls controls_{};
   size_t objective_calls_{ 0 };
   double objective_max_{ 0 };
 };
-}
-}
+
+} // namespace tools_optimization
+
+} // namespace vinecopulib
 
 #include <vinecopulib/misc/implementation/tools_optimization.ipp>
