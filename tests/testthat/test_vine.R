@@ -65,9 +65,6 @@ test_that("truncation works", {
 })
 
 test_that("conditioning-aware selection is passed to the copula fit", {
-  rng_state <- .Random.seed
-  on.exit(assign(".Random.seed", rng_state, envir = globalenv()), add = TRUE)
-
   u_named <- as.data.frame(u[, 1:4])
   fit_conditioned <- vine(
     u_named,
@@ -122,9 +119,9 @@ test_that("d = 1 works", {
 
 test_that("discrete variables work", {
   x <- data.frame(
-    x1 = sample(1:4, 50, replace = TRUE),
-    x2 = rnorm(50),
-    x3 = rbinom(50, 3, 0.5)
+    x1 = rep(1:4, length.out = 50),
+    x2 = qnorm((seq_len(50) - 0.5) / 50),
+    x3 = rep(0:3, length.out = 50)
   )
 
   expect_no_error(
@@ -144,7 +141,10 @@ test_that("discrete variables work", {
   expect_equal(fit$margins[[1]]$type, "discrete")
   expect_equal(fit$copula$var_types, c("d", "c", "c"))
   expect_equiv(dvine(x, fit), dvine(x2, fit2))
-  expect_equiv(pvine(x, fit), pvine(x2, fit2), tol = 1e-2)
+  set.seed(42)
+  p <- pvine(x, fit)
+  set.seed(42)
+  expect_equiv(p, pvine(x2, fit2))
   expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
 
   expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "zi"))))

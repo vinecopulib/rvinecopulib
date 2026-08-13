@@ -184,8 +184,34 @@ test_that("conditioning-aware selection is exposed through the R controls", {
     "must not contain duplicates"
   )
   expect_error(
+    vinecop(u_cond, conditioning_set = "unknown"),
+    "unknown variable names"
+  )
+  u_duplicated_names <- u_cond
+  colnames(u_duplicated_names)[2] <- colnames(u_duplicated_names)[1]
+  expect_error(
+    vinecop(u_duplicated_names, conditioning_set = "a"),
+    "requires unique variable names"
+  )
+  expect_error(
     vinecop(unname(u_cond), conditioning_set = "b"),
     "requires named variables"
+  )
+  for (invalid_set in list(TRUE, NA_real_, Inf, 1.5)) {
+    expect_error(
+      vinecop(u_cond, conditioning_set = invalid_set),
+      "must contain variable indices or names"
+    )
+  }
+  for (invalid_set in list(0, 5)) {
+    expect_error(
+      vinecop(u_cond, conditioning_set = invalid_set),
+      "indices must be between 1 and d"
+    )
+  }
+  expect_error(
+    vinecop(u_cond, conditioning_set = 1:4),
+    "at most d - 1 variables"
   )
   expect_error(
     vinecop(u_cond, conditioning_set = 2, trunc_lvl = 1),

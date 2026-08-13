@@ -164,4 +164,12 @@ test_that("rvine computes discrete conditioning limits internally", {
   )
   expect_equal(sim$x3, rep(1.25, 20))
   expect_identical(sim$x2, ordered(rep(3, 20), levels = 1:5))
+
+  sim_factor <- rvine(
+    5,
+    fit,
+    x_cond = ordered(3, levels = 1:5),
+    conditioning_set = "x2"
+  )
+  expect_identical(sim_factor$x2, ordered(rep(3, 5), levels = 1:5))
 })
