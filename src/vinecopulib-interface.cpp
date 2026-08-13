@@ -329,9 +329,14 @@ Eigen::MatrixXd vinecop_sim_conditional_cpp(
 // [[Rcpp::export()]]
 Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u,
                                 const Rcpp::List& vinecop_r,
+                                const Eigen::MatrixXd& parameters,
                                 size_t cores)
 {
-  return vinecop_wrap(vinecop_r).pdf(u, cores);
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (parameters.size() > 0) {
+    return vinecop_cpp.pdf(u, parameters, cores);
+  }
+  return vinecop_cpp.pdf(u, cores);
 }
 
 inline Rcpp::NumericVector eigen_vector_wrap(const Eigen::VectorXd& x)
@@ -360,9 +365,13 @@ inline Rcpp::List vector_triangular_array_wrap(
 // [[Rcpp::export()]]
 Rcpp::List vinecop_pdf_full_cpp(const Eigen::MatrixXd& u,
                                 const Rcpp::List& vinecop_r,
+                                const Eigen::MatrixXd& parameters,
                                 size_t cores)
 {
-  auto result = vinecop_wrap(vinecop_r).pdf_full(u, cores, true);
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  auto result = parameters.size() > 0
+                  ? vinecop_cpp.pdf_full(u, parameters, cores, true)
+                  : vinecop_cpp.pdf_full(u, cores, true);
   return Rcpp::List::create(
     Rcpp::Named("pdf") = eigen_vector_wrap(result.pdf),
     Rcpp::Named("pdf_edges") = vector_triangular_array_wrap(result.pdf_edges),

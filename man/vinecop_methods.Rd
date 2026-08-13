@@ -14,7 +14,7 @@
 \alias{hessian.vinecop_dist}
 \title{Vine copula distributions}
 \usage{
-dvinecop(u, vinecop, cores = 1, keep_all = FALSE)
+dvinecop(u, vinecop, cores = 1, keep_all = FALSE, parameters = NULL)
 
 scores(u, vinecop, ...)
 
@@ -50,16 +50,17 @@ quantities computed during density evaluation.}
 
 \item{...}{unused.}
 
+\item{parameters}{optional observation-specific parameters for \code{dvinecop()},
+\code{scores()}, and \code{hessian()}. For a model with one parameter, this may be a
+vector with one entry per observation. Otherwise, it must be a matrix with
+one row per observation and one column per model parameter. For vine
+copulas, columns follow the \verb{(tree, edge, parameter)} order of \code{scores()}.
+Parameters are not recycled. Only continuous parametric models are
+supported.}
+
 \item{step_wise}{if \code{FALSE}, the score/Hessian is computed for the full
 likelihood; if \code{TRUE}, gradients are computed per pair-copula as in
 step-wise estimation.}
-
-\item{parameters}{optional observation-specific parameters. For a
-one-parameter bivariate family, this may be a vector with one entry per
-observation. Otherwise, it must be a matrix with one row per observation
-and one column per model parameter. For vine copulas, columns follow the
-\verb{(tree, edge, parameter)} order of \code{scores()}. Parameters are not recycled.
-Only continuous parametric models are supported.}
 
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 

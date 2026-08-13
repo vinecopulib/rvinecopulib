@@ -101,12 +101,12 @@ vinecop_sim_conditional_cpp <- function(vinecop_r, u_cond, conditioning_set, qrn
     .Call(`_rvinecopulib_vinecop_sim_conditional_cpp`, vinecop_r, u_cond, conditioning_set, qrng, cores, seeds)
 }
 
-vinecop_pdf_cpp <- function(u, vinecop_r, cores) {
-    .Call(`_rvinecopulib_vinecop_pdf_cpp`, u, vinecop_r, cores)
+vinecop_pdf_cpp <- function(u, vinecop_r, parameters, cores) {
+    .Call(`_rvinecopulib_vinecop_pdf_cpp`, u, vinecop_r, parameters, cores)
 }
 
-vinecop_pdf_full_cpp <- function(u, vinecop_r, cores) {
-    .Call(`_rvinecopulib_vinecop_pdf_full_cpp`, u, vinecop_r, cores)
+vinecop_pdf_full_cpp <- function(u, vinecop_r, parameters, cores) {
+    .Call(`_rvinecopulib_vinecop_pdf_full_cpp`, u, vinecop_r, parameters, cores)
 }
 
 vinecop_cdf_cpp <- function(u, vinecop_r, N, cores, seeds) {

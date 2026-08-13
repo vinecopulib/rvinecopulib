@@ -17,6 +17,9 @@ The main changes on the R end are:
   `hbicop()`, and `rbicop()` when parameters are passed directly (vectorized
   parameters are not supported for `bicop_dist()` objects),
 
+* added support for observation-specific parameters in `dvinecop()` for
+  continuous parametric vine copula models,
+
 * aligned the R frontend with the updated vinecopulib 0.8.0 API and tests,
   including the new per-row bicop parameter interface.
 
