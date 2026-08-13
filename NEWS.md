@@ -1,30 +1,92 @@
-# rvinecopulib 0.8.0.1.0
+# rvinecopulib 1.0.0.1.0 (unreleased)
 
-Update following an upgrade of the C++ backend vinecopulib to 0.8.0, see
-https://github.com/vinecopulib/vinecopulib/blob/main/NEWS.md.
+The first stable release. It bundles vinecopulib 1.0.0 and collects a large
+backend and frontend update: analytic derivatives, conditional simulation,
+conditioning-aware transforms and structure selection, observation-specific
+parameters, faster evaluation and fitting, and a modernized C++17 build. See
+the [vinecopulib 1.0.0 NEWS](https://github.com/vinecopulib/vinecopulib/blob/cond-simulate/NEWS.md)
+for the complete backend changes.
 
-The main changes on the R end are:
+### BREAKING API CHANGES
 
-* `vinecop()` and `vine()` now accept a custom function as `tree_crit`,
+* Require R >= 4.0.0, C++17, and Boost headers from BH >= 1.75.0-0.
 
-* added `scores()` and `hessian()` for vine copula models, and a `keep_all`
-  option to `dvinecop()` for returning intermediate quantities from density
-  evaluation. Both derivative functions now also support bivariate copula
-  models and observation-specific parameter matrices for continuous parametric
-  models,
+* R-vine structures now follow the backend convention with the conditioned
+  variable on the diagonal. Consequently, the matrix, order, structure array,
+  and edge orientation representing a model can differ from earlier releases;
+  densities and log-likelihoods are unchanged.
 
-* added support for vectorized `parameters` in `dbicop()`, `pbicop()`,
-  `hbicop()`, and `rbicop()` when parameters are passed directly (vectorized
-  parameters are not supported for `bicop_dist()` objects),
+### BEHAVIOR CHANGES
 
-* added support for observation-specific parameters in `dvinecop()` for
-  continuous parametric vine copula models,
+* TLL fits change slightly because the backend no longer clamps interpolation
+  grid endpoints at the boundary of the unit square.
 
-* aligned the R frontend with the updated vinecopulib 0.8.0 API and tests,
-  including the new per-row bicop parameter interface.
+* Kendall's tau for the BB6, BB7, BB8, and Tawn families incorporates several
+  numerical fixes. Maximum-likelihood estimates can also shift in the low
+  digits after the backend optimizer changed from BOBYQA to Brent/BFGS.
 
-* added conditioning-aware vine selection and conditional simulation with
-  `rvinecop()` and `rvine()`.
+* Compact `d + k` and expanded `2d` layouts for discrete variables are handled
+  consistently across bivariate and vine-copula evaluation, Rosenblatt
+  transforms, and conditional simulation.
+
+### NEW FEATURES
+
+* Add conditional simulation to `rvinecop()` and `rvine()`. Conditioning values
+  can be common or observation-specific, and `conditioning_set` accepts indices
+  or names. `vinecop()` and `vine()` also accept `conditioning_set` for
+  conditioning-aware structure selection. Simulation remains synchronized with
+  R's `set.seed()` for pseudo- and quasi-random generation.
+
+* Add `conditioning_set` to `rosenblatt()` and `inverse_rosenblatt()`. The model
+  is transiently evaluated in a compatible order and is not modified.
+
+* Add `scores()` and `hessian()` for bivariate copulas and extend both functions
+  for vine copulas. They support observation-specific parameter matrices for
+  continuous parametric models.
+
+* Add `keep_all` to `dvinecop()` to return per-edge densities and h-functions,
+  and allow observation-specific parameters in `dvinecop()`.
+
+* Support observation-specific parameters passed directly to `dbicop()`,
+  `pbicop()`, `hbicop()`, and `rbicop()`. Parameter rows are not recycled;
+  `bicop_dist()` objects continue to store one fixed parameter set.
+
+* Allow an R function as `tree_crit` in `vinecop()` and `vine()`. The callback
+  is serialized on the calling thread, while pair-copula fitting may still use
+  multiple cores.
+
+* Add `tail_dep()` and `blomqvist_beta()` for bivariate copula models and include
+  these dependence summaries in printed model output.
+
+### PERFORMANCE
+
+* Incorporate broad backend speedups for bivariate and vine evaluation,
+  analytic derivative cascades, TLL fitting/interpolation, structure selection,
+  pseudo-observations, integration, and shared Eigen/thread primitives.
+
+### BUG FIXES
+
+* Make inverse Rosenblatt transforms thread-safe and custom tree criteria safe
+  under multithreaded fitting.
+
+* Fix TLL CDF integration, Wilson random spanning trees, starting parameters for
+  discrete models, edge-case per-row parameter shapes, and evaluation of models
+  whose omitted pair copulas represent implicit independence.
+
+* Preserve and correctly trim variable names for discrete copula data.
+
+### BUILD SYSTEM AND DEPENDENCIES
+
+* Vendor the complete vinecopulib 1.0.0 header tree, while keeping the package
+  wrapper header as the R-specific integration point so downstream packages can
+  include all public backend headers.
+
+* Compile the package as C++17 and require BH >= 1.75.0-0. The backend update
+  also reduces its Boost surface to Graph, Math, and Random.
+
+* Modernize `src/update_vinecopulib.sh`: it accepts a branch or ref, imports via
+  a temporary clone, preserves package-owned wrappers, copies all public
+  headers, and reports the exact imported commit.
 
 # rvinecopulib 0.7.3.1.0
 
