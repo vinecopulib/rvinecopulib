@@ -37,6 +37,7 @@ protected:
   void fit(const Eigen::MatrixXd& data,
            std::string method,
            double,
+           size_t,
            const Eigen::VectorXd& weights);
 
   double get_npars() const;

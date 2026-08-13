@@ -11,7 +11,6 @@
 #include <Eigen/Dense>
 #include <vinecopulib/bicop/family.hpp>
 
-
 namespace vinecopulib {
 //! @brief An abstract class for bivariate copula families.
 //!
@@ -54,6 +53,7 @@ protected:
   virtual void fit(const Eigen::MatrixXd& data,
                    std::string method,
                    double mult,
+                   size_t grid_size,
                    const Eigen::VectorXd& weights) = 0;
 
   virtual double get_npars() const = 0;
@@ -62,12 +62,18 @@ protected:
 
   virtual double parameters_to_tau(const Eigen::MatrixXd& parameters) = 0;
 
+  // following two are non-pure: tail dependence defaults to NaN ("not
+  // implemented") and Blomqvist's beta has a generic implementation via the
+  // cdf.
+  virtual Eigen::MatrixXd parameters_to_taildep(
+    const Eigen::MatrixXd& parameters);
+
+  virtual double parameters_to_beta(const Eigen::MatrixXd& parameters);
+
   virtual void flip() = 0;
 
   // following are virtual so they can be overriden by KernelBicop
   virtual Eigen::VectorXd pdf(const Eigen::MatrixXd& u);
-
-  virtual Eigen::VectorXd cdf(const Eigen::MatrixXd& u) = 0;
 
   virtual Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u);
 
@@ -77,15 +83,44 @@ protected:
 
   Eigen::VectorXd hinv2(const Eigen::MatrixXd& u);
 
-  virtual Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u) = 0;
+  // Evaluation leaves. `parameters` has shape m x p with m in {1, n}: row i
+  // holds the p parameters for observation i; a single row is broadcast to all
+  // observations. The state-based dispatchers above call these with the stored
+  // parameters (a 1 x p broadcast row). This is the sole evaluation interface;
+  // every family implements the (stateless) math, and nonparametric families
+  // ignore `parameters` and read their interpolation grid instead.
+  Eigen::VectorXd pdf(const Eigen::MatrixXd& u,
+                      const Eigen::MatrixXd& parameters);
 
-  virtual Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u) = 0;
+  Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u,
+                         const Eigen::MatrixXd& parameters);
 
-  virtual Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u) = 0;
+  Eigen::VectorXd hfunc2(const Eigen::MatrixXd& u,
+                         const Eigen::MatrixXd& parameters);
 
-  virtual Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u) = 0;
+  Eigen::VectorXd hinv1(const Eigen::MatrixXd& u,
+                        const Eigen::MatrixXd& parameters);
 
-  virtual Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u) = 0;
+  Eigen::VectorXd hinv2(const Eigen::MatrixXd& u,
+                        const Eigen::MatrixXd& parameters);
+
+  virtual Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
+                              const Eigen::MatrixXd& parameters) = 0;
+
+  virtual Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u,
+                                  const Eigen::MatrixXd& parameters) = 0;
+
+  virtual Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u,
+                                     const Eigen::MatrixXd& parameters) = 0;
+
+  virtual Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u,
+                                     const Eigen::MatrixXd& parameters) = 0;
+
+  virtual Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters) = 0;
+
+  virtual Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters) = 0;
 
   virtual Eigen::MatrixXd tau_to_parameters(const double& tau) = 0;
   Eigen::MatrixXd no_tau_to_parameters(const double&);
@@ -95,9 +130,26 @@ protected:
 
   Eigen::VectorXd hinv2_num(const Eigen::MatrixXd& u);
 
-  Eigen::VectorXd pdf_c_d(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hinv1_num(const Eigen::MatrixXd& u,
+                            const Eigen::MatrixXd& parameters);
 
-  Eigen::VectorXd pdf_d_d(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hinv2_num(const Eigen::MatrixXd& u,
+                            const Eigen::MatrixXd& parameters);
+
+  // continuous numeric inverses: invert the *_raw leaves (which ignore
+  // var_types_), used by the `_raw` primitives so a continuous inverse never
+  // routes through the discrete h-function dispatcher
+  Eigen::VectorXd hinv1_num_raw(const Eigen::MatrixXd& u,
+                                const Eigen::MatrixXd& parameters);
+
+  Eigen::VectorXd hinv2_num_raw(const Eigen::MatrixXd& u,
+                                const Eigen::MatrixXd& parameters);
+
+  Eigen::VectorXd pdf_c_d(const Eigen::MatrixXd& u,
+                          const Eigen::MatrixXd& parameters);
+
+  Eigen::VectorXd pdf_d_d(const Eigen::MatrixXd& u,
+                          const Eigen::MatrixXd& parameters);
 
   double loglik(const Eigen::MatrixXd& u,
                 const Eigen::VectorXd weights = Eigen::VectorXd());

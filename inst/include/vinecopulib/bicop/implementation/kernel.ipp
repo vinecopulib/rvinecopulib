@@ -12,21 +12,18 @@ namespace vinecopulib {
 inline KernelBicop::KernelBicop()
 {
   // construct default grid (equally spaced on Gaussian scale)
-  size_t m = 30;
-  auto grid_points = this->make_normal_grid(m);
-
-  // move boundary points to 0/1, so we don't have to extrapolate
-  grid_points(0) = 0.0;
-  grid_points(m - 1) = 1.0;
+  size_t grid_size = 30;
+  auto grid_points = this->make_normal_grid(grid_size);
 
   interp_grid_ = std::make_shared<tools_interpolation::InterpolationGrid>(
-    grid_points, Eigen::MatrixXd::Constant(m, m, 1.0) // independence
+    grid_points,
+    Eigen::MatrixXd::Constant(grid_size, grid_size, 1.0) // independence
   );
   npars_ = 0.0;
 }
 
 inline Eigen::VectorXd
-KernelBicop::pdf_raw(const Eigen::MatrixXd& u)
+KernelBicop::pdf_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
   auto pdf = interp_grid_->interpolate(u);
   tools_eigen::trim(pdf, 1e-20, DBL_MAX);
@@ -38,25 +35,26 @@ KernelBicop::pdf(const Eigen::MatrixXd& u)
 {
   if (u.cols() == 4) {
     // evaluate jittered density at mid rank for stability
-    return pdf_raw((u.leftCols(2) + u.rightCols(2)).array() / 2.0);
+    return pdf_raw((u.leftCols(2) + u.rightCols(2)).array() / 2.0,
+                   Eigen::MatrixXd());
   }
-  return pdf_raw(u);
+  return pdf_raw(u, Eigen::MatrixXd());
 }
 
 inline Eigen::VectorXd
-KernelBicop::cdf(const Eigen::MatrixXd& u)
+KernelBicop::cdf(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
   return interp_grid_->integrate_2d(u);
 }
 
 inline Eigen::VectorXd
-KernelBicop::hfunc1_raw(const Eigen::MatrixXd& u)
+KernelBicop::hfunc1_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
   return interp_grid_->integrate_1d(u, 1);
 }
 
 inline Eigen::VectorXd
-KernelBicop::hfunc2_raw(const Eigen::MatrixXd& u)
+KernelBicop::hfunc2_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
   return interp_grid_->integrate_1d(u, 2);
 }
@@ -67,9 +65,9 @@ KernelBicop::hfunc1(const Eigen::MatrixXd& u)
   if (u.cols() == 4) {
     auto u_avg = u;
     u_avg.col(0) = (u.col(0) + u.col(2)).array() / 2.0;
-    return hfunc1_raw(u_avg.leftCols(2));
+    return hfunc1_raw(u_avg.leftCols(2), Eigen::MatrixXd());
   }
-  return hfunc1_raw(u);
+  return hfunc1_raw(u, Eigen::MatrixXd());
 }
 
 inline Eigen::VectorXd
@@ -78,21 +76,23 @@ KernelBicop::hfunc2(const Eigen::MatrixXd& u)
   if (u.cols() == 4) {
     auto u_avg = u;
     u_avg.col(1) = (u.col(1) + u.col(3)).array() / 2.0;
-    return hfunc2_raw(u_avg.leftCols(2));
+    return hfunc2_raw(u_avg.leftCols(2), Eigen::MatrixXd());
   }
-  return hfunc2_raw(u);
+  return hfunc2_raw(u, Eigen::MatrixXd());
 }
 
 inline Eigen::VectorXd
-KernelBicop::hinv1_raw(const Eigen::MatrixXd& u)
+KernelBicop::hinv1_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
-  return hinv1_num(u);
+  // direct inversion of the interpolated conditional cdf; replaces the
+  // generic bisection (which re-integrated the grid 35 times per point)
+  return interp_grid_->inverse_integrate_1d(u, 1);
 }
 
 inline Eigen::VectorXd
-KernelBicop::hinv2_raw(const Eigen::MatrixXd& u)
+KernelBicop::hinv2_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
-  return hinv2_num(u);
+  return interp_grid_->inverse_integrate_1d(u, 2);
 }
 
 inline double
@@ -107,7 +107,7 @@ KernelBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
     204967043, 733593603, 184618802, 399707801, 290266245
   };
   auto u = tools_stats::ghalton(1000, 2, seeds);
-  u.col(1) = hinv1_raw(u);
+  u.col(1) = hinv1_raw(u, Eigen::MatrixXd());
 
   this->set_parameters(oldpars);
   var_types_ = old_types;
@@ -150,13 +150,34 @@ KernelBicop::get_parameters_upper_bounds() const
 inline void
 KernelBicop::set_parameters(const Eigen::MatrixXd& parameters)
 {
+  Eigen::Index rows = parameters.rows();
+  Eigen::Index cols = parameters.cols();
+  if (rows != cols) {
+    std::stringstream message;
+    message << "parameters must be a square matrix, got " << rows
+            << " rows and " << cols << " columns.";
+    throw std::runtime_error(message.str().c_str());
+  }
+  if (rows < 3) {
+    std::stringstream message;
+    message << "parameters must be a square matrix of size at least 3, got "
+            << rows << " rows and " << cols << " columns.";
+    throw std::runtime_error(message.str().c_str());
+  }
   if (parameters.minCoeff() < 0) {
     std::stringstream message;
     message << "density should be larger than 0. ";
     throw std::runtime_error(message.str().c_str());
   }
-  // don't normalize again!
-  interp_grid_->set_values(parameters, 0);
+  if (rows == interp_grid_->get_values().rows()) {
+    // don't normalize again!
+    interp_grid_->set_values(parameters, 0);
+  } else {
+    // create new interpolation grid with new size
+    auto grid_points = this->make_normal_grid(rows);
+    interp_grid_ = std::make_shared<tools_interpolation::InterpolationGrid>(
+      grid_points, parameters, 0);
+  }
 }
 
 inline void

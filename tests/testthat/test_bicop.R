@@ -79,6 +79,20 @@ test_that("as.bicop works", {
   expect_s3_class(as.bicop(object), "bicop_dist")
   object$var_types <- c("d", "d")
   expect_eql(unlist(as.bicop(object)), unlist(object))
+
+  vec_object <- list(
+    family = "gaussian",
+    rotation = 0,
+    parameters = matrix(seq(-0.5, 0.5, length.out = 10), ncol = 1),
+    npars = 10
+  )
+  expect_error(
+    as.bicop(vec_object),
+    "not supported by 'bicop_dist' objects"
+  )
+  unchecked <- as.bicop(vec_object, check = FALSE)
+  expect_s3_class(unchecked, "bicop_dist")
+  expect_equal(unchecked$parameters, vec_object$parameters)
 })
 
 
@@ -92,6 +106,14 @@ test_that("S3 generics work", {
   u <- as.data.frame(u)
   expect_equiv(logLik(fit), sum(log(predict(fit, u, what = "pdf"))))
   expect_output(print(fit))
-  expect_output(summary(fit))
+  summary_output <- capture.output(summary(fit))
+  expect_length(summary_output, 3)
+  expect_match(summary_output[1], "Bivariate copula fit")
+  expect_match(summary_output[2], "^Dependence: tau =")
+  expect_match(summary_output[2], "; beta =")
+  expect_match(summary_output[3], "^Fit: n =")
+  expect_match(summary_output[3], "; logLik = .+; df = .+; AIC = .+; BIC =")
+  expect_eql(tail_dep(fit), tail_dep(as.bicop(fit)))
+  expect_eql(blomqvist_beta(fit), blomqvist_beta(as.bicop(fit)))
   expect_output(print(bicop(u, family = "nonp")))
 })

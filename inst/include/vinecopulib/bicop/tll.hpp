@@ -24,7 +24,7 @@ public:
   TllBicop();
 
 private:
-  Eigen::VectorXd gaussian_kernel_2d(const Eigen::MatrixXd& x);
+  static Eigen::VectorXd gaussian_kernel_2d(const Eigen::MatrixXd& x);
 
   Eigen::Matrix2d select_bandwidth(const Eigen::MatrixXd& x,
                                    std::string method,
@@ -48,6 +48,7 @@ private:
   void fit(const Eigen::MatrixXd& data,
            std::string method,
            double mult,
+           size_t grid_size,
            const Eigen::VectorXd& weights);
 };
 }

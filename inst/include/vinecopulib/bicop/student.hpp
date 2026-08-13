@@ -24,19 +24,38 @@ public:
   StudentBicop();
 
 private:
-  // PDF
-  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u);
+  // evaluation leaves (`parameters` is m x 2, m in {1, n}); these loop per row
+  // because the t-distribution helpers take scalar parameters
+  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u,
+                          const Eigen::MatrixXd& parameters);
 
-  // CDF
-  Eigen::VectorXd cdf(const Eigen::MatrixXd& u);
+  Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
+                      const Eigen::MatrixXd& parameters);
 
-  // hfunction
-  Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters);
 
-  // inverse hfunction
-  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u,
+                            const Eigen::MatrixXd& parameters);
+
+  // single source of truth for the math (shared by the state-based and
+  // parameter-aware leaves)
+  static Eigen::VectorXd pdf_impl(const Eigen::MatrixXd& u,
+                                  double rho,
+                                  double nu);
+  static Eigen::VectorXd cdf_impl(const Eigen::MatrixXd& u,
+                                  double rho,
+                                  double nu);
+  static Eigen::VectorXd hfunc1_impl(const Eigen::MatrixXd& u,
+                                     double rho,
+                                     double nu);
+  static Eigen::VectorXd hinv1_impl(const Eigen::MatrixXd& u,
+                                    double rho,
+                                    double nu);
 
   Eigen::MatrixXd tau_to_parameters(const double& tau);
+
+  Eigen::MatrixXd parameters_to_taildep(const Eigen::MatrixXd& parameters);
 
   Eigen::VectorXd get_start_parameters(const double tau);
 };

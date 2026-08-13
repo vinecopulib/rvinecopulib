@@ -29,17 +29,24 @@ namespace vinecopulib {
 
 namespace tools_integration {
 
+template<typename F>
 inline double
-integrate_zero_to_one(std::function<double(double)> f)
+integrate_zero_to_one(F&& f)
 {
   boost::numeric::odeint::runge_kutta_dopri5<double> stepper;
-  double lb = 1e-12;
-  double ub = 1.0 - lb;
+  // the integral bounds stay clear of 0/1 (integrands may be singular
+  // there); 1e-9 tolerance is plenty for the Kendall's tau computations
+  // this backs, and far cheaper than the previous 1e-12
+  const double lb = 1e-12;
+  const double ub = 1.0 - lb;
+  const double tol = 1e-9;
   double x = 0.0;
-  auto ifunc = [f](const double /* x */, double& dxdt, const double t) {
+  // capture by reference: no std::function allocation, and the functor can
+  // be inlined into the stepper
+  auto ifunc = [&f](const double /* x */, double& dxdt, const double t) {
     dxdt = f(t);
   };
-  integrate_adaptive(boost::numeric::odeint::make_controlled(lb, lb, stepper),
+  integrate_adaptive(boost::numeric::odeint::make_controlled(tol, tol, stepper),
                      ifunc,
                      x,
                      lb,

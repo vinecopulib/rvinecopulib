@@ -19,42 +19,38 @@ inline Bb1Bicop::Bb1Bicop()
 }
 
 inline double
-Bb1Bicop::generator(const double& u)
+Bb1Bicop::generator(const double& u,
+                    const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  return std::pow(std::pow(u, -parameters_(0)) - 1, parameters_(1));
+  return std::pow(std::pow(u, -parameters(0)) - 1, parameters(1));
 }
 
 inline double
-Bb1Bicop::generator_inv(const double& u)
+Bb1Bicop::generator_inv(const double& u,
+                        const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  return std::pow(std::pow(u, 1 / parameters_(1)) + 1, -1 / parameters_(0));
+  return std::pow(std::pow(u, 1 / parameters(1)) + 1, -1 / parameters(0));
 }
 
 inline double
-Bb1Bicop::generator_derivative(const double& u)
+Bb1Bicop::generator_derivative(
+  const double& u,
+  const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double theta = double(parameters_(0));
-  double delta = double(parameters_(1));
+  double theta = parameters(0);
+  double delta = parameters(1);
   double res = -delta * theta * std::pow(u, -(1 + theta));
   return res * std::pow(std::pow(u, -theta) - 1, delta - 1);
 }
 
-// inline double Bb1Bicop::generator_derivative2(const double &u)
-//{
-//    double theta = double(parameters_(0));
-//    double delta = double(parameters_(1));
-//    double res = delta * theta * std::pow(std::pow(u, -theta) - 1, delta);
-//    res /= (std::pow(std::pow(u, theta) - 1, 2) * std::pow(u, 2));
-//    return res * (1 + delta * theta - (1 + theta) * std::pow(u, theta));
-//}
-
 inline Eigen::VectorXd
-Bb1Bicop::pdf_raw(const Eigen::MatrixXd& u)
+Bb1Bicop::pdf_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd& parameters)
 {
-  double theta = static_cast<double>(parameters_(0));
-  double delta = static_cast<double>(parameters_(1));
-
-  auto f = [theta, delta](const double& u1, const double& u2) {
+  auto f = [](const double& u1,
+              const double& u2,
+              const Eigen::Ref<const Eigen::VectorXd>& par) {
+    double theta = par(0);
+    double delta = par(1);
     double t1 = std::pow(u1, -theta);
     double t2 = t1 - 1.0;
     double t3 = std::pow(t2, delta);
@@ -87,13 +83,24 @@ Bb1Bicop::pdf_raw(const Eigen::MatrixXd& u)
            t13 * t3 * t38 * t17 * t33 * t20 * t6 * delta * t59 +
            t25 * t3 * t39 * t36 * t6 * t59;
   };
-  return tools_eigen::binaryExpr_or_nan(u, f);
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
 }
 
 inline double
 Bb1Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
 {
   return 1 - 2 / (parameters(1) * (parameters(0) + 2));
+}
+
+inline Eigen::MatrixXd
+Bb1Bicop::parameters_to_taildep(const Eigen::MatrixXd& par)
+{
+  double theta = par(0);
+  double delta = par(1);
+  Eigen::MatrixXd taildep = Eigen::MatrixXd::Zero(2, 2);
+  taildep(0, 0) = std::pow(2.0, -1.0 / (theta * delta)); // lower tail dep.
+  taildep(1, 1) = 2 - std::pow(2.0, 1.0 / delta);        // upper tail dep.
+  return taildep;
 }
 
 inline Eigen::MatrixXd

@@ -44,8 +44,38 @@ args2bicop <- function(family, rotation, parameters, var_types = c("c", "c")) {
       parameters <- numeric(0)
     }
     assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
+    family <- family_set_all[pmatch(family, family_set_all)]
+    if (is_vectorized_bicop_parameters(parameters, family)) {
+      return(as.bicop(
+        list(
+          family = family,
+          rotation = rotation,
+          parameters = as.matrix(parameters),
+          var_types = var_types,
+          npars = length(parameters)
+        ),
+        check = FALSE
+      ))
+    }
     return(bicop_dist(family, rotation, parameters, var_types))
   }
+}
+
+is_vectorized_bicop_parameters <- function(parameters, family) {
+  parameters <- as.matrix(parameters)
+  if (
+    !(family %in% setdiff(family_set_parametric, "indep")) ||
+      (length(parameters) == 0) ||
+      (nrow(parameters) <= 1)
+  ) {
+    return(FALSE)
+  }
+
+  if (ncol(parameters) == 1) {
+    return(family %in% family_set_onepar)
+  }
+
+  TRUE
 }
 
 process_family_set <- function(family_set, par_method) {

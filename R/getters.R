@@ -5,8 +5,7 @@
 #' and `vinecop_dist`).
 #'
 #' @name getters
-#' @aliases get_pair_copula get_all_pair_copulas get_parameters
-#'   get_all_parameters get_ktau get_all_ktaus get_matrix get_structure
+#' @aliases get_pair_copula get_all_pair_copulas get_parameters get_all_parameters get_ktau get_all_ktaus get_matrix get_structure
 #' @param object a `bicop_dist`, `vinecop_dist` or `vine_dist` object.
 #' @details #' The [get_structure] method (for `vinecop_dist` or `vine_dist`
 #' objects only) extracts the structure (see [rvine_structure] for more

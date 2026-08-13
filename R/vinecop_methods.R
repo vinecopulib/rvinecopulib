@@ -4,13 +4,15 @@
 #' distribution.
 #'
 #' @name vinecop_distributions
-#' @aliases dvinecop pvinecop rvinecop dvinecop_dist pvinecop_dist rvinecop_dist
+#' @aliases dvinecop pvinecop rvinecop scores hessian dvinecop_dist pvinecop_dist rvinecop_dist
 #' @param u matrix of evaluation points; must contain at least d columns, where
 #'   d is the number of variables in the vine. More columns are required for
 #'   discrete models, see *Details*.
 #' @param vinecop an object of class `"vinecop_dist"`.
 #' @param cores number of cores to use; if larger than one, computations are
 #'   done in parallel on `cores` batches .
+#' @param keep_all if `TRUE`, `dvinecop()` returns additional intermediate
+#'   quantities computed during density evaluation.
 #' @details See [vinecop()] for the estimation and construction of vine copula
 #' models.
 #'
@@ -30,7 +32,13 @@
 #'
 #' @return
 #' `dvinecop()` gives the density, `pvinecop()` gives the distribution function,
-#' and `rvinecop()` generates random deviates.
+#' `rvinecop()` generates random deviates, `scores()` gives the observation-wise
+#' score matrix, and `hessian()` gives the average Hessian matrix.
+#'
+#' If `keep_all = TRUE`, `dvinecop()` returns a list with entries `pdf`,
+#' `pdf_edges`, `hfunc1`, `hfunc2`, `hfunc1_sub`, and `hfunc2_sub`. The `_sub`
+#' entries contain h-functions evaluated at left-sided limits when the model
+#' contains discrete variables; they are empty for fully continuous models.
 #'
 #' The length of the result is determined by `n` for `rvinecop()`, and
 #' the number of rows in `u` for the other functions.
@@ -56,6 +64,14 @@
 #' dvinecop(u[1, ], vc)
 #' pvinecop(u[1, ], vc)
 #'
+#' # evaluate derivatives of the log-likelihood
+#' scores(u, vc)
+#' hessian(u, vc)
+#'
+#' # derivatives can also be computed for the full likelihood
+#' scores(u, vc, step_wise = FALSE)
+#' hessian(u, vc, step_wise = FALSE)
+#'
 #' ## Discrete models
 #' vc$var_types <- rep("d", 5)  # convert model to discrete
 #'
@@ -70,10 +86,48 @@
 #' pairs(rvinecop(200, vc))
 #' @rdname vinecop_methods
 #' @export
-dvinecop <- function(u, vinecop, cores = 1) {
-  assert_that(inherits(vinecop, "vinecop_dist"))
+dvinecop <- function(u, vinecop, cores = 1, keep_all = FALSE) {
+  assert_that(
+    inherits(vinecop, "vinecop_dist"),
+    is.number(cores),
+    cores > 0,
+    is.flag(keep_all)
+  )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
-  vinecop_pdf_cpp(u, vinecop, cores)
+  if (keep_all) {
+    vinecop_pdf_full_cpp(u, vinecop, cores)
+  } else {
+    vinecop_pdf_cpp(u, vinecop, cores)
+  }
+}
+
+#' @rdname vinecop_methods
+#' @param step_wise if `FALSE`, the score/Hessian is computed for the full
+#'   likelihood; if `TRUE`, gradients are computed per pair-copula as in
+#'   step-wise estimation.
+#' @export
+scores <- function(u, vinecop, step_wise = TRUE, cores = 1) {
+  assert_that(
+    inherits(vinecop, "vinecop_dist"),
+    is.flag(step_wise),
+    is.number(cores),
+    cores > 0
+  )
+  u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
+  vinecop_scores_cpp(u, vinecop, step_wise, cores)
+}
+
+#' @rdname vinecop_methods
+#' @export
+hessian <- function(u, vinecop, step_wise = TRUE, cores = 1) {
+  assert_that(
+    inherits(vinecop, "vinecop_dist"),
+    is.flag(step_wise),
+    is.number(cores),
+    cores > 0
+  )
+  u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
+  vinecop_hessian_cpp(u, vinecop, step_wise, cores)
 }
 
 #' @rdname vinecop_methods
@@ -155,8 +209,9 @@ summary.vinecop_dist <- function(
       mdf$family[k] <- pc$family
       mdf$rotation[k] <- pc$rotation
       mdf$parameters[k] <- list(pc$parameters)
-      if (pc$family %in% setdiff(family_set_nonparametric, "indep"))
+      if (pc$family %in% setdiff(family_set_nonparametric, "indep")) {
         mdf$parameters[k] <- list("[30x30 grid]")
+      }
       mdf$df[k] <- pc$npars
       mdf$tau[k] <- par_to_ktau(pc)
       k <- k + 1
@@ -274,7 +329,7 @@ logLik.vinecop <- function(object, ...) {
 #' @references Nagler, T., Bumann, C., Czado, C. (2019). Model selection for
 #'   sparse high-dimensional vine copulas with application to portfolio risk.
 #'   *Journal of Multivariate Analysis, in press*
-#'   (\url{http://arxiv.org/pdf/1801.09739})
+#'   (\url{https://arxiv.org/pdf/1801.09739})
 #'
 #' @export mBICV
 #' @examples

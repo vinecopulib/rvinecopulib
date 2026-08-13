@@ -22,10 +22,12 @@ namespace vinecopulib {
 class EllipticalBicop : public ParBicop
 {
 private:
-  // hfunction and its inverse
-  Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u);
+  // hfunction and its inverse (thread `parameters` through the column swap)
+  Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters);
 
-  Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u,
+                            const Eigen::MatrixXd& parameters);
 
   // link between Kendall's tau and the par_bicop parameter
   double parameters_to_tau(const Eigen::MatrixXd& parameters);

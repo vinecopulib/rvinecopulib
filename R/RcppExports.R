@@ -45,6 +45,14 @@ bicop_par_to_tau_cpp <- function(bicop_r) {
     .Call(`_rvinecopulib_bicop_par_to_tau_cpp`, bicop_r)
 }
 
+bicop_tail_dep_cpp <- function(bicop_r) {
+    .Call(`_rvinecopulib_bicop_tail_dep_cpp`, bicop_r)
+}
+
+bicop_beta_cpp <- function(bicop_r) {
+    .Call(`_rvinecopulib_bicop_beta_cpp`, bicop_r)
+}
+
 bicop_tau_to_par_cpp <- function(bicop_r, tau) {
     .Call(`_rvinecopulib_bicop_tau_to_par_cpp`, bicop_r, tau)
 }
@@ -85,8 +93,20 @@ vinecop_pdf_cpp <- function(u, vinecop_r, cores) {
     .Call(`_rvinecopulib_vinecop_pdf_cpp`, u, vinecop_r, cores)
 }
 
+vinecop_pdf_full_cpp <- function(u, vinecop_r, cores) {
+    .Call(`_rvinecopulib_vinecop_pdf_full_cpp`, u, vinecop_r, cores)
+}
+
 vinecop_cdf_cpp <- function(u, vinecop_r, N, cores, seeds) {
     .Call(`_rvinecopulib_vinecop_cdf_cpp`, u, vinecop_r, N, cores, seeds)
+}
+
+vinecop_scores_cpp <- function(u, vinecop_r, step_wise, cores) {
+    .Call(`_rvinecopulib_vinecop_scores_cpp`, u, vinecop_r, step_wise, cores)
+}
+
+vinecop_hessian_cpp <- function(u, vinecop_r, step_wise, cores) {
+    .Call(`_rvinecopulib_vinecop_hessian_cpp`, u, vinecop_r, step_wise, cores)
 }
 
 vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds) {

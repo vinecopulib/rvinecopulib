@@ -20,11 +20,13 @@ namespace vinecopulib {
 //!     nonparametric family (TLLs); possible choices: `"constant"`,
 //!     `"linear"`, `"quadratic"`.
 //! @param nonparametric_mult A factor with which the smoothing parameters
-//!     are multiplied.
-//! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`
-//!     or `"bic"`) for the pair copula families.
+//!     are multiplied (default: 1.0).
+//! @param nonparametric_grid_size The grid size for the post-estimation
+//!     interpolation in nonparametric models (default: 30).
+//! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`,
+//!     `"bic"`, `"mbic"`, or `"mbicv"`) for the pair copula families.
 //! @param weights A vector of weights for the observations.
-//! @param psi0 Only for `selection_criterion = "mbic"`, the prior probability 
+//! @param psi0 Only for `selection_criterion = "mbic"`, the prior probability
 //!     of non-independence.
 //! @param preselect_families Whether to exclude families before fitting
 //!     based on symmetry properties of the data.
@@ -37,6 +39,7 @@ inline FitControlsBicop::FitControlsBicop(std::vector<BicopFamily> family_set,
                                           std::string parametric_method,
                                           std::string nonparametric_method,
                                           double nonparametric_mult,
+                                          size_t nonparametric_grid_size,
                                           std::string selection_criterion,
                                           const Eigen::VectorXd& weights,
                                           double psi0,
@@ -48,6 +51,7 @@ inline FitControlsBicop::FitControlsBicop(std::vector<BicopFamily> family_set,
   set_parametric_method(parametric_method);
   set_nonparametric_method(nonparametric_method);
   set_nonparametric_mult(nonparametric_mult);
+  set_nonparametric_grid_size(nonparametric_grid_size);
   set_selection_criterion(selection_criterion);
   set_weights(weights);
   set_preselect_families(preselect_families);
@@ -70,50 +74,58 @@ inline FitControlsBicop::FitControlsBicop(std::string parametric_method)
 //!     nonparametric family (TLLs); possible choices: `"constant"`,
 //!     `"linear"`, `"quadratic"`.
 //! @param nonparametric_mult A factor with which the smoothing parameters
-//!     are multiplied.
+//!     are multiplied (default: 1.0).
+//! @param nonparametric_grid_size The grid size for the post-estimation
+//!     interpolation in nonparametric models (default: 30).
 inline FitControlsBicop::FitControlsBicop(std::string nonparametric_method,
-                                          double nonparametric_mult)
+                                          double nonparametric_mult,
+                                          size_t nonparametric_grid_size)
   : FitControlsBicop()
 {
   set_nonparametric_method(nonparametric_method);
   set_nonparametric_mult(nonparametric_mult);
+  set_nonparametric_grid_size(nonparametric_grid_size);
 }
 
 //! @brief Instantiates the controls from a configuration object.
 //! @param config The configuration object.
 inline FitControlsBicop::FitControlsBicop(const FitControlsConfig& config)
-    : FitControlsBicop() // Call default constructor
+  : FitControlsBicop() // Call default constructor
 {
-    if (optional::has_value(config.family_set)) {
-        set_family_set(optional::value(config.family_set));
-    }
-    if (optional::has_value(config.parametric_method)) {
-        set_parametric_method(optional::value(config.parametric_method));
-    }
-    if (optional::has_value(config.nonparametric_method)) {
-        set_nonparametric_method(optional::value(config.nonparametric_method));
-    }
-    if (optional::has_value(config.nonparametric_mult)) {
-        set_nonparametric_mult(optional::value(config.nonparametric_mult));
-    }
-    if (optional::has_value(config.selection_criterion)) {
-        set_selection_criterion(optional::value(config.selection_criterion));
-    }
-    if (optional::has_value(config.weights)) {
-        set_weights(optional::value(config.weights));
-    }
-    if (optional::has_value(config.psi0)) {
-        set_psi0(optional::value(config.psi0));
-    }
-    if (optional::has_value(config.preselect_families)) {
-        set_preselect_families(optional::value(config.preselect_families));
-    }
-    if (optional::has_value(config.num_threads)) {
-        set_num_threads(optional::value(config.num_threads));
-    }
-    if (optional::has_value(config.allow_rotations)) {
-        set_allow_rotations(optional::value(config.allow_rotations));
-    }
+  if (optional::has_value(config.family_set)) {
+    set_family_set(optional::value(config.family_set));
+  }
+  if (optional::has_value(config.parametric_method)) {
+    set_parametric_method(optional::value(config.parametric_method));
+  }
+  if (optional::has_value(config.nonparametric_method)) {
+    set_nonparametric_method(optional::value(config.nonparametric_method));
+  }
+  if (optional::has_value(config.nonparametric_mult)) {
+    set_nonparametric_mult(optional::value(config.nonparametric_mult));
+  }
+  if (optional::has_value(config.nonparametric_grid_size)) {
+    set_nonparametric_grid_size(
+      optional::value(config.nonparametric_grid_size));
+  }
+  if (optional::has_value(config.selection_criterion)) {
+    set_selection_criterion(optional::value(config.selection_criterion));
+  }
+  if (optional::has_value(config.weights)) {
+    set_weights(optional::value(config.weights));
+  }
+  if (optional::has_value(config.psi0)) {
+    set_psi0(optional::value(config.psi0));
+  }
+  if (optional::has_value(config.preselect_families)) {
+    set_preselect_families(optional::value(config.preselect_families));
+  }
+  if (optional::has_value(config.num_threads)) {
+    set_num_threads(optional::value(config.num_threads));
+  }
+  if (optional::has_value(config.allow_rotations)) {
+    set_allow_rotations(optional::value(config.allow_rotations));
+  }
 }
 
 //! @name Sanity checks
@@ -145,14 +157,22 @@ FitControlsBicop::check_nonparametric_mult(double nonparametric_mult)
 }
 
 inline void
+FitControlsBicop::check_nonparametric_grid_size(size_t nonparametric_grid_size)
+{
+  if (nonparametric_grid_size < 3) {
+    throw std::runtime_error("nonparametric_grid_size must be at least 3");
+  }
+}
+
+inline void
 FitControlsBicop::check_selection_criterion(std::string selection_criterion)
 {
   std::vector<std::string> allowed_crits = {
     "loglik", "aic", "bic", "mbic", "mbicv"
   };
   if (!tools_stl::is_member(selection_criterion, allowed_crits)) {
-    throw std::runtime_error(
-      "selection_criterion should be 'loglik', 'aic', 'bic', or 'mbic'");
+    throw std::runtime_error("selection_criterion should be 'loglik', 'aic', "
+                             "'bic', 'mbic', or 'mbicv'");
   }
 }
 
@@ -194,6 +214,13 @@ inline double
 FitControlsBicop::get_nonparametric_mult() const
 {
   return nonparametric_mult_;
+}
+
+//! @brief Gets the nonparametric grid size.
+inline size_t
+FitControlsBicop::get_nonparametric_grid_size() const
+{
+  return nonparametric_grid_size_;
 }
 
 //! @brief Gets the number of threads.
@@ -266,6 +293,14 @@ FitControlsBicop::set_nonparametric_mult(double nonparametric_mult)
 {
   check_nonparametric_mult(nonparametric_mult);
   nonparametric_mult_ = nonparametric_mult;
+}
+
+//! @brief Sets the nonparametric grid size.
+inline void
+FitControlsBicop::set_nonparametric_grid_size(size_t nonparametric_grid_size)
+{
+  check_nonparametric_grid_size(nonparametric_grid_size);
+  nonparametric_grid_size_ = nonparametric_grid_size;
 }
 
 //! @brief Sets the selection criterion.
@@ -354,6 +389,8 @@ FitControlsBicop::str_internal(bool print_threads) const
   controls_str << "Nonparametric method: " << get_nonparametric_method()
                << std::endl;
   controls_str << "Nonparametric multiplier: " << get_nonparametric_mult()
+               << std::endl;
+  controls_str << "Nonparametric grid size: " << get_nonparametric_grid_size()
                << std::endl;
   controls_str << "Weights: "
                << static_cast<std::string>(get_weights().size() == 0 ? "no"

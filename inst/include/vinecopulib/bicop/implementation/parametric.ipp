@@ -67,6 +67,7 @@ inline void
 ParBicop::fit(const Eigen::MatrixXd& data,
               std::string method,
               double,
+              size_t,
               const Eigen::VectorXd& weights)
 {
   // for independence copula we don't have to do anything
@@ -175,15 +176,16 @@ ParBicop::adjust_parameters_bounds(Eigen::MatrixXd& lb,
   }
 
   // refine search interval for Brent algorithm
+  double eps = (var_types_ == std::vector<std::string>{ "c", "c" }) ? 0.1 : 0.6;
   if (tools_stl::is_member(family_, bicop_families::one_par)) {
     auto lb2 = lb;
     auto ub2 = ub;
     if (tools_stl::is_member(family_, bicop_families::rotationless)) {
-      lb = tau_to_parameters(std::max(tau - 0.1, -0.99));
-      ub = tau_to_parameters(std::min(tau + 0.1, 0.99));
+      lb = tau_to_parameters(std::max(tau - eps, -0.99));
+      ub = tau_to_parameters(std::min(tau + eps, 0.99));
     } else {
-      lb = tau_to_parameters(std::max(std::fabs(tau) - 0.1, 1e-10));
-      ub = tau_to_parameters(std::min(std::fabs(tau) + 0.1, 0.95));
+      lb = tau_to_parameters(std::max(std::fabs(tau) - eps, 1e-10));
+      ub = tau_to_parameters(std::min(std::fabs(tau) + eps, 0.95));
     }
     // make sure that parameter bounds are respected
     lb = lb2.cwiseMax(lb);
@@ -212,23 +214,25 @@ ParBicop::check_parameters(const Eigen::MatrixXd& parameters)
 inline void
 ParBicop::check_parameters_size(const Eigen::MatrixXd& parameters)
 {
-  if (parameters.size() != parameters_.size()) {
-    if (parameters.rows() != parameters_.rows()) {
-      std::stringstream message;
-      message << "parameters have has wrong number of rows "
-              << "for " << get_family_name() << " copula; "
-              << "expected: " << parameters_.rows() << ", "
-              << "actual: " << parameters.rows() << std::endl;
-      throw std::runtime_error(message.str().c_str());
-    }
-    if (parameters.cols() != parameters_.cols()) {
-      std::stringstream message;
-      message << "parameters have wrong number of columns "
-              << "for " << get_family_name() << " copula; "
-              << "expected: " << parameters_.cols() << ", "
-              << "actual: " << parameters.cols() << std::endl;
-      throw std::runtime_error(message.str().c_str());
-    }
+  // Validate rows and cols unconditionally: a same-size-but-transposed shape
+  // (e.g. 1 x p vs p x 1) would otherwise slip through and reach the
+  // coefficient-wise bound comparisons in check_parameters_lower/_upper with
+  // mismatched shapes (an out-of-bounds read under NDEBUG).
+  if (parameters.rows() != parameters_.rows()) {
+    std::stringstream message;
+    message << "parameters have has wrong number of rows "
+            << "for " << get_family_name() << " copula; "
+            << "expected: " << parameters_.rows() << ", "
+            << "actual: " << parameters.rows() << std::endl;
+    throw std::runtime_error(message.str().c_str());
+  }
+  if (parameters.cols() != parameters_.cols()) {
+    std::stringstream message;
+    message << "parameters have wrong number of columns "
+            << "for " << get_family_name() << " copula; "
+            << "expected: " << parameters_.cols() << ", "
+            << "actual: " << parameters.cols() << std::endl;
+    throw std::runtime_error(message.str().c_str());
   }
 }
 

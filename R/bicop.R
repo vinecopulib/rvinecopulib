@@ -217,6 +217,13 @@ as.bicop <- function(object, check = TRUE) {
   if (is.null(object$var_types)) {
     object$var_types <- c("c", "c")
   }
+  if (
+    check && is_vectorized_bicop_parameters(object$parameters, object$family)
+  ) {
+    stop(
+      "vectorized 'parameters' are not supported by 'bicop_dist' objects."
+    )
+  }
   if (check) {
     bicop_check_cpp(object)
   }
@@ -310,6 +317,11 @@ bicop_dist <- function(
   }
 
   family <- family_set_all[pmatch(family, family_set_all)]
+  if (is_vectorized_bicop_parameters(parameters, family)) {
+    stop(
+      "vectorized 'parameters' are not supported by 'bicop_dist' objects."
+    )
+  }
   dist <- list(
     family = family,
     rotation = rotation,

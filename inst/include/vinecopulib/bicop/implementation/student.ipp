@@ -19,10 +19,8 @@ inline StudentBicop::StudentBicop()
 }
 
 inline Eigen::VectorXd
-StudentBicop::pdf_raw(const Eigen::MatrixXd& u)
+StudentBicop::pdf_impl(const Eigen::MatrixXd& u, double rho, double nu)
 {
-  double rho = double(this->parameters_(0));
-  double nu = double(this->parameters_(1));
   Eigen::VectorXd f = Eigen::VectorXd::Ones(u.rows());
   Eigen::MatrixXd tmp = tools_stats::qt(u, nu);
 
@@ -39,12 +37,9 @@ StudentBicop::pdf_raw(const Eigen::MatrixXd& u)
 }
 
 inline Eigen::VectorXd
-StudentBicop::cdf(const Eigen::MatrixXd& u)
+StudentBicop::cdf_impl(const Eigen::MatrixXd& u, double rho, double nu)
 {
   using namespace tools_stats;
-
-  double rho = double(this->parameters_(0));
-  double nu = double(this->parameters_(1));
 
   // for integer nu, just use pbvt
   // otherwise, interpolate linearly between floor(nu) and ceil(nu)
@@ -62,10 +57,8 @@ StudentBicop::cdf(const Eigen::MatrixXd& u)
 }
 
 inline Eigen::VectorXd
-StudentBicop::hfunc1_raw(const Eigen::MatrixXd& u)
+StudentBicop::hfunc1_impl(const Eigen::MatrixXd& u, double rho, double nu)
 {
-  double rho = double(this->parameters_(0));
-  double nu = double(this->parameters_(1));
   Eigen::VectorXd h = Eigen::VectorXd::Ones(u.rows());
   Eigen::MatrixXd tmp = tools_stats::qt(u, nu);
   h = nu * h + tmp.col(0).cwiseAbs2();
@@ -77,10 +70,8 @@ StudentBicop::hfunc1_raw(const Eigen::MatrixXd& u)
 }
 
 inline Eigen::VectorXd
-StudentBicop::hinv1_raw(const Eigen::MatrixXd& u)
+StudentBicop::hinv1_impl(const Eigen::MatrixXd& u, double rho, double nu)
 {
-  double rho = double(this->parameters_(0));
-  double nu = double(this->parameters_(1));
   Eigen::VectorXd hinv = Eigen::VectorXd::Ones(u.rows());
   Eigen::VectorXd tmp = u.col(1);
   Eigen::VectorXd tmp2 = u.col(0);
@@ -96,6 +87,61 @@ StudentBicop::hinv1_raw(const Eigen::MatrixXd& u)
 }
 
 inline Eigen::VectorXd
+StudentBicop::pdf_raw(const Eigen::MatrixXd& u,
+                      const Eigen::MatrixXd& parameters)
+{
+  if (parameters.rows() == 1) {
+    return pdf_impl(u, parameters(0, 0), parameters(0, 1));
+  }
+  Eigen::VectorXd out(u.rows());
+  for (Eigen::Index i = 0; i < u.rows(); ++i) {
+    out(i) = pdf_impl(u.row(i), parameters(i, 0), parameters(i, 1))(0);
+  }
+  return out;
+}
+
+inline Eigen::VectorXd
+StudentBicop::cdf(const Eigen::MatrixXd& u, const Eigen::MatrixXd& parameters)
+{
+  if (parameters.rows() == 1) {
+    return cdf_impl(u, parameters(0, 0), parameters(0, 1));
+  }
+  Eigen::VectorXd out(u.rows());
+  for (Eigen::Index i = 0; i < u.rows(); ++i) {
+    out(i) = cdf_impl(u.row(i), parameters(i, 0), parameters(i, 1))(0);
+  }
+  return out;
+}
+
+inline Eigen::VectorXd
+StudentBicop::hfunc1_raw(const Eigen::MatrixXd& u,
+                         const Eigen::MatrixXd& parameters)
+{
+  if (parameters.rows() == 1) {
+    return hfunc1_impl(u, parameters(0, 0), parameters(0, 1));
+  }
+  Eigen::VectorXd out(u.rows());
+  for (Eigen::Index i = 0; i < u.rows(); ++i) {
+    out(i) = hfunc1_impl(u.row(i), parameters(i, 0), parameters(i, 1))(0);
+  }
+  return out;
+}
+
+inline Eigen::VectorXd
+StudentBicop::hinv1_raw(const Eigen::MatrixXd& u,
+                        const Eigen::MatrixXd& parameters)
+{
+  if (parameters.rows() == 1) {
+    return hinv1_impl(u, parameters(0, 0), parameters(0, 1));
+  }
+  Eigen::VectorXd out(u.rows());
+  for (Eigen::Index i = 0; i < u.rows(); ++i) {
+    out(i) = hinv1_impl(u.row(i), parameters(i, 0), parameters(i, 1))(0);
+  }
+  return out;
+}
+
+inline Eigen::VectorXd
 StudentBicop::get_start_parameters(const double tau)
 {
   Eigen::VectorXd parameters = get_parameters();
@@ -108,5 +154,25 @@ inline Eigen::MatrixXd
 StudentBicop::tau_to_parameters(const double& tau)
 {
   return no_tau_to_parameters(tau);
+}
+
+inline Eigen::MatrixXd
+StudentBicop::parameters_to_taildep(const Eigen::MatrixXd& parameters)
+{
+  double rho = parameters(0);
+  double nu = parameters(1);
+  // the t-copula has tail dependence in all four corners; the concordant
+  // (lower-lower, upper-upper) corners use rho, the discordant (lower-upper,
+  // upper-lower) corners use -rho.
+  Eigen::MatrixXd arg(2, 1);
+  arg(0) = -std::sqrt((nu + 1.0) * (1.0 - rho) / (1.0 + rho));
+  arg(1) = -std::sqrt((nu + 1.0) * (1.0 + rho) / (1.0 - rho));
+  Eigen::MatrixXd lambda = 2.0 * tools_stats::pt(arg, nu + 1.0);
+  Eigen::MatrixXd taildep(2, 2);
+  taildep(0, 0) = lambda(0); // lower-lower
+  taildep(1, 1) = lambda(0); // upper-upper
+  taildep(0, 1) = lambda(1); // lower-upper
+  taildep(1, 0) = lambda(1); // upper-lower
+  return taildep;
 }
 }

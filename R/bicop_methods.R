@@ -4,8 +4,7 @@
 #' inverses) for the bivariate copula distribution.
 #'
 #' @name bicop_distributions
-#' @aliases dbicop pbicop rbicop hbicop dbicop_dist pbicop_dist rbicop_dist
-#'   hbicop_dist
+#' @aliases dbicop pbicop rbicop hbicop dbicop_dist pbicop_dist rbicop_dist hbicop_dist
 #'
 #' @param u evaluation points, a matrix with at least two columns, see
 #'   *Details*.
@@ -85,14 +84,16 @@
 #' @rdname bicop_methods
 #' @export
 dbicop <- function(u, family, rotation, parameters, var_types = c("c", "c")) {
+  u <- if_vec_to_matrix(u)
   bicop <- args2bicop(family, rotation, parameters, var_types)
-  bicop_pdf_cpp(if_vec_to_matrix(u), bicop)
+  bicop_pdf_cpp(u, bicop)
 }
 #' @rdname bicop_methods
 #' @export
 pbicop <- function(u, family, rotation, parameters, var_types = c("c", "c")) {
+  u <- if_vec_to_matrix(u)
   bicop <- args2bicop(family, rotation, parameters, var_types)
-  bicop_cdf_cpp(if_vec_to_matrix(u), bicop)
+  bicop_cdf_cpp(u, bicop)
 }
 
 #' @param n number of observations. If `length(n) > 1``, the length is taken to
@@ -111,6 +112,17 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
   assert_that(is.flag(qrng))
 
   bicop <- args2bicop(family, rotation, parameters)
+  pars <- as.matrix(bicop$parameters)
+  if (
+    (bicop$family %in% family_set_parametric) &&
+      (nrow(pars) > 1) &&
+      ((ncol(pars) > 1) || (bicop$family %in% family_set_onepar))
+  ) {
+    stop(
+      "rbicop: vectorized 'parameters' are not simulation-compatible.",
+      call. = FALSE
+    )
+  }
   U <- bicop_sim_cpp(bicop, n, qrng, get_seeds())
   if (!is.null(bicop$names)) {
     colnames(U) <- bicop$names
@@ -297,6 +309,8 @@ print.bicop_dist <- function(x, ...) {
 #' @export
 summary.bicop_dist <- function(object, ...) {
   print.bicop_dist(object, ...)
+  print_bicop_dep_measures(object)
+  invisible(object)
 }
 
 #' @export
@@ -327,15 +341,23 @@ print.bicop <- function(x, ...) {
 #' @export
 summary.bicop <- function(object, ...) {
   print.bicop(object, ...)
-  cat("nobs =", object$nobs, "  ")
-
+  print_bicop_dep_measures(object)
   info <- bicop_fit_info(object)
-  cat("logLik =", round(info$logLik, 2), "  ")
-  cat("npars =", round(info$npars, 2), "  ")
-  cat("AIC =", round(info$AIC, 2), "  ")
-  cat("BIC =", round(info$BIC, 2), "  ")
+  cat(
+    "Fit: n = ",
+    object$nobs,
+    "; logLik = ",
+    format_bicop_number(info$logLik),
+    "; df = ",
+    format_bicop_number(info$npars),
+    "; AIC = ",
+    format_bicop_number(info$AIC),
+    "; BIC = ",
+    format_bicop_number(info$BIC),
+    "\n",
+    sep = ""
+  )
   attr(object, "info") <- info
-  cat("\n")
 
   invisible(object)
 }
@@ -344,6 +366,43 @@ summary.bicop <- function(object, ...) {
 #' @export
 coef.bicop_dist <- function(object, ...) {
   object$parameters
+}
+
+
+#' Dependence measures of a bivariate copula
+#'
+#' Computes the four corner tail-dependence coefficients or Blomqvist's beta
+#' for a bivariate copula distribution.
+#'
+#' @param object a [bicop_dist] or fitted [bicop] object.
+#'
+#' @return `tail_dep()` returns a 2 by 2 matrix whose rows refer to the lower
+#'   and upper tail of the first variable and whose columns refer to the lower
+#'   and upper tail of the second variable. `blomqvist_beta()` returns a
+#'   numeric scalar.
+#'
+#' @examples
+#' cop <- bicop_dist("clayton", 0, 2)
+#' tail_dep(cop)
+#' blomqvist_beta(cop)
+#'
+#' @name bicop_dependence
+#' @export
+tail_dep <- function(object) {
+  assert_that(inherits(object, "bicop_dist"))
+  out <- bicop_tail_dep_cpp(object)
+  dimnames(out) <- list(
+    variable1 = c("lower", "upper"),
+    variable2 = c("lower", "upper")
+  )
+  out
+}
+
+#' @rdname bicop_dependence
+#' @export
+blomqvist_beta <- function(object) {
+  assert_that(inherits(object, "bicop_dist"))
+  bicop_beta_cpp(object)
 }
 
 bicop_fit_info <- function(bc) {
@@ -355,4 +414,54 @@ bicop_fit_info <- function(bc) {
     AIC = -2 * ll[1] + 2 * attr(ll, "df"),
     BIC = -2 * ll[1] + log(bc$nobs) * attr(ll, "df")
   )
+}
+
+bicop_dep_measures <- function(bc) {
+  td <- tail_dep(bc)
+  td <- c(
+    LL = td["lower", "lower"],
+    LU = td["lower", "upper"],
+    UL = td["upper", "lower"],
+    UU = td["upper", "upper"]
+  )
+  list(
+    kendalls_tau = par_to_ktau(bc),
+    blomqvist_beta = blomqvist_beta(bc),
+    tail_dep = td
+  )
+}
+
+print_bicop_dep_measures <- function(bc) {
+  dep <- bicop_dep_measures(bc)
+  cat(
+    "Dependence: tau = ",
+    format_bicop_number(dep$kendalls_tau),
+    "; beta = ",
+    format_bicop_number(dep$blomqvist_beta),
+    "; tail dependence: ",
+    format_bicop_tail_dep(dep$tail_dep),
+    "\n",
+    sep = ""
+  )
+}
+
+format_bicop_tail_dep <- function(td) {
+  available <- !is.na(td)
+  if (!any(available)) {
+    return("not available")
+  }
+  nonzero <- available & td != 0
+  if (!any(nonzero)) {
+    return("none")
+  }
+  paste(
+    names(td)[nonzero],
+    format_bicop_number(td[nonzero]),
+    sep = " = ",
+    collapse = "; "
+  )
+}
+
+format_bicop_number <- function(x) {
+  formatC(x, format = "f", digits = 2)
 }

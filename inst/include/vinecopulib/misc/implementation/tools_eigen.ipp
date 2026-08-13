@@ -163,6 +163,142 @@ invert_f(const Eigen::VectorXd& x,
   return x_tmp;
 }
 
+//! computes the inverse \f$ f^{-1} \f$ of a monotone increasing function
+//! \f$ f \f$ by a vectorized safeguarded Newton method (the `rtsafe`
+//! algorithm of Numerical Recipes, run per element).
+//!
+//! Each element keeps its own bracket \f$ [x_l, x_h] \f$ with
+//! \f$ f(x_l) < x < f(x_h) \f$. A Newton step is taken only when it stays
+//! inside the bracket *and* shrinks the step by at least a factor of two;
+//! otherwise a bisection step is used. This guards against the Newton limit
+//! cycles that occur when the derivative on the flat wings badly overshoots
+//! a steep interior (e.g. Tawn h-functions). Elements are frozen once the
+//! step is within `tol`, so a result does not depend on the other rows in
+//! the batch. Assumes (as bisection does) that \f$ f \f$ is increasing with
+//! \f$ f(\text{lb}) \le x \le f(\text{ub}) \f$.
+//!
+//! @param x Evaluation points (the target values of \f$ f \f$).
+//! @param eval Fills `f` and `f'` at the currently-active (unconverged) rows;
+//!   evaluating only these rows keeps the expensive transcendental work
+//!   proportional to the average number of iterations, not the worst case.
+//! @param lb Lower bound.
+//! @param ub Upper bound.
+//! @param tol Convergence tolerance on the step size.
+//! @param n_iter Maximum number of iterations (the pure-bisection fallback
+//!   reaches `tol` well within the default).
+//!
+//! @return \f$ f^{-1}(x) \f$.
+inline Eigen::VectorXd
+invert_f_newton(const Eigen::VectorXd& x,
+                const NewtonEval& eval,
+                const double lb,
+                const double ub,
+                const double tol,
+                int n_iter)
+{
+  const Eigen::Index n = x.size();
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+  const Eigen::ArrayXd xa = x.array();
+  Eigen::ArrayXd xl = Eigen::ArrayXd::Constant(n, lb);
+  Eigen::ArrayXd xh = Eigen::ArrayXd::Constant(n, ub);
+  Eigen::ArrayXd v = 0.5 * (xl + xh);
+  Eigen::ArrayXd dx = (xh - xl).abs();
+  Eigen::ArrayXd dxold = dx;
+  // fv/dfv carry the last evaluation per row; frozen rows keep stale values
+  // that the (cheap) full-width arithmetic below never acts on
+  Eigen::ArrayXd fv = Eigen::ArrayXd::Zero(n);
+  Eigen::ArrayXd dfv = Eigen::ArrayXd::Ones(n);
+  std::vector<char> done(static_cast<std::size_t>(n), 0);
+
+  for (Eigen::Index j = 0; j < n; ++j) {
+    if ((std::isnan)(xa(j))) { // NaN inputs finalized immediately
+      v(j) = nan;
+      done[j] = 1;
+    }
+  }
+
+  // evaluate f/f' at the still-active rows and scatter them back; a NaN
+  // result on a live row cannot be bracketed, so freeze it as NaN
+  std::vector<Eigen::Index> active;
+  active.reserve(static_cast<std::size_t>(n));
+  auto evaluate_active = [&]() {
+    active.clear();
+    for (Eigen::Index j = 0; j < n; ++j) {
+      if (!done[j]) {
+        active.push_back(j);
+      }
+    }
+    if (active.empty()) {
+      return;
+    }
+    Eigen::VectorXd v_active(active.size());
+    for (std::size_t k = 0; k < active.size(); ++k) {
+      v_active(k) = v(active[k]);
+    }
+    Eigen::VectorXd f_out, fp_out;
+    eval(active, v_active, f_out, fp_out);
+    for (std::size_t k = 0; k < active.size(); ++k) {
+      const Eigen::Index j = active[k];
+      if (!std::isfinite(f_out(k))) {
+        // the function value cannot be bracketed; finalize as NaN
+        v(j) = nan;
+        done[j] = 1;
+      } else {
+        fv(j) = f_out(k) - xa(j);
+        // a non-finite derivative (overflow on the flat/steep wings) forces
+        // a bisection step (dfv == 0 trips both rtsafe conditions), so the
+        // solver stays as robust as plain bisection there
+        dfv(j) = std::isfinite(fp_out(k)) ? fp_out(k) : 0.0;
+      }
+    }
+  };
+
+  evaluate_active();
+
+  for (int iter = 0; iter < n_iter; ++iter) {
+    bool any = false;
+    for (Eigen::Index j = 0; j < n && !any; ++j) {
+      any = !done[j];
+    }
+    if (!any) {
+      break;
+    }
+    // bisect where the Newton step would leave the bracket or would not at
+    // least halve the previous step (the rtsafe safeguard)
+    auto out_of_bracket = ((v - xh) * dfv - fv) * ((v - xl) * dfv - fv) > 0.0;
+    auto too_slow = (2.0 * fv).abs() > (dxold * dfv).abs();
+    auto bisect = out_of_bracket || too_slow;
+
+    dxold = dx;
+    Eigen::ArrayXd dx_bisect = 0.5 * (xh - xl);
+    Eigen::ArrayXd dx_newton = fv / dfv;
+    dx = bisect.select(dx_bisect, dx_newton);
+    Eigen::ArrayXd v_new = bisect.select(xl + dx_bisect, v - dx_newton);
+    for (Eigen::Index j = 0; j < n; ++j) {
+      if (!done[j]) {
+        v(j) = v_new(j);
+        if (std::fabs(dx(j)) < tol) {
+          done[j] = 1; // step within tolerance
+        }
+      }
+    }
+
+    evaluate_active();
+    // maintain the bracket for rows still live after this evaluation
+    for (Eigen::Index j : active) {
+      if (!done[j]) {
+        if (fv(j) < 0.0) {
+          xl(j) = v(j);
+        } else {
+          xh(j) = v(j);
+        }
+      }
+    }
+  }
+
+  return v.matrix();
+}
+
 //! expand a vector into a matrix with two columns where each row
 //! contains one combination of the vector elements
 //!

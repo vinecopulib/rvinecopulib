@@ -145,8 +145,7 @@
 #' plot(dvine)
 #'
 #' @name rvine_structure
-#' @aliases rvine_matrix is.rvine_structure is.rvine_matrix dvine_structure
-#'   cvine_structure
+#' @aliases rvine_matrix is.rvine_structure is.rvine_matrix dvine_structure cvine_structure
 rvine_structure <- function(
   order,
   struct_array = list(),

@@ -20,56 +20,49 @@ inline Bb8Bicop::Bb8Bicop()
 }
 
 inline double
-Bb8Bicop::generator(const double& u)
+Bb8Bicop::generator(const double& u,
+                    const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double theta = double(parameters_(0));
-  double delta = double(parameters_(1));
+  double theta = parameters(0);
+  double delta = parameters(1);
   double res = (1 - std::pow(1 - delta * u, theta));
   return -std::log(res / (1 - std::pow(1 - delta, theta)));
 }
 
 inline double
-Bb8Bicop::generator_inv(const double& u)
+Bb8Bicop::generator_inv(const double& u,
+                        const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double theta = double(parameters_(0));
-  double delta = double(parameters_(1));
+  double theta = parameters(0);
+  double delta = parameters(1);
   double res = std::exp(-u) * (std::pow(1 - delta, theta) - 1);
   return (1 - std::pow(1 + res, 1 / theta)) / delta;
 }
 
 inline double
-Bb8Bicop::generator_derivative(const double& u)
+Bb8Bicop::generator_derivative(
+  const double& u,
+  const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double theta = double(parameters_(0));
-  double delta = double(parameters_(1));
+  double theta = parameters(0);
+  double delta = parameters(1);
   double res = delta * theta * std::pow(1 - delta * u, theta - 1);
   return -res / (1 - std::pow(1 - delta * u, theta));
 }
 
-// inline double Bb8Bicop::generator_derivative2(const double &u)
-//{
-//    double theta = double(parameters_(0));
-//    double delta = double(parameters_(1));
-//    double tmp = std::pow(1 - delta * u, theta);
-//    double res =
-//        std::pow(delta, 2) * theta * std::pow(1 - delta * u, theta - 2);
-//    return res * (theta - 1 + tmp) / std::pow(tmp - 1, 2);
-//}
-
 inline Eigen::VectorXd
-Bb8Bicop::pdf_raw(const Eigen::MatrixXd& u)
+Bb8Bicop::pdf_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd& parameters)
 {
-  double theta = static_cast<double>(parameters_(0));
-  double delta = static_cast<double>(parameters_(1));
-
-  double t10 = 1.0 - delta;
-  double t16 = 1.0 / theta;
-  double t38 = 2.0 * theta;
-  double t39 = std::pow(t10, t38);
-  double t59 = std::pow(t10, 3.0 * theta);
-
-  auto f = [theta, delta, t10, t16, t38, t39, t59](const double& u1,
-                                                   const double& u2) {
+  auto f = [](const double& u1,
+              const double& u2,
+              const Eigen::Ref<const Eigen::VectorXd>& par) {
+    double theta = par(0);
+    double delta = par(1);
+    double t10 = 1.0 - delta;
+    double t16 = 1.0 / theta;
+    double t38 = 2.0 * theta;
+    double t39 = std::pow(t10, t38);
+    double t59 = std::pow(t10, 3.0 * theta);
     double t2 = 1.0 - delta * u1;
     double t3 = std::pow(t2, theta);
     double t11 = std::pow(t10, theta);
@@ -94,7 +87,7 @@ Bb8Bicop::pdf_raw(const Eigen::MatrixXd& u)
 
     return -delta * t29 * t62 / t6 / t2 / t67 / t69;
   };
-  return tools_eigen::binaryExpr_or_nan(u, f);
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
 }
 
 inline double
@@ -108,6 +101,20 @@ Bb8Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
     return res * (1 - t * delta - std::pow(1 - t * delta, 1 - theta));
   };
   return 1 - 4 / (delta * theta) * tools_integration::integrate_zero_to_one(f);
+}
+
+inline Eigen::MatrixXd
+Bb8Bicop::parameters_to_taildep(const Eigen::MatrixXd& par)
+{
+  double theta = par(0);
+  double delta = par(1);
+  Eigen::MatrixXd taildep = Eigen::MatrixXd::Zero(2, 2);
+  // BB8 only has upper tail dependence in the limiting case delta = 1
+  // (where it reduces to the Joe copula), and none otherwise.
+  if (delta >= 1.0) {
+    taildep(1, 1) = 2 - std::pow(2.0, 1.0 / theta);
+  }
+  return taildep;
 }
 
 inline Eigen::MatrixXd

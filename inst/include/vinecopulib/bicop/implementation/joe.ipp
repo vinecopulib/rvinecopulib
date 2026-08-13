@@ -21,59 +21,55 @@ inline JoeBicop::JoeBicop()
 }
 
 inline double
-JoeBicop::generator(const double& u)
+JoeBicop::generator(const double& u,
+                    const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  return (-1) * std::log1p(-std::pow(1 - u, parameters_(0)));
+  return (-1) * std::log1p(-std::pow(1 - u, parameters(0)));
 }
 
 inline double
-JoeBicop::generator_inv(const double& u)
+JoeBicop::generator_inv(const double& u,
+                        const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  return 1 - std::pow(-std::expm1(-u), 1 / parameters_(0));
+  return 1 - std::pow(-std::expm1(-u), 1 / parameters(0));
 }
 
 inline double
-JoeBicop::generator_derivative(const double& u)
+JoeBicop::generator_derivative(
+  const double& u,
+  const Eigen::Ref<const Eigen::VectorXd>& parameters)
 {
-  double theta = double(parameters_(0));
+  double theta = parameters(0);
   return (-theta) * std::pow(1 - u, theta - 1) / (1 - std::pow(1 - u, theta));
 }
 
-// inline double JoeBicop::generator_derivative2(const double &u)
-//{
-//    double theta = double(parameters_(0));
-//    double res = theta * (theta - 1 + std::pow(1 - u, theta));
-//    return res * std::pow(1 - u, theta - 2) /
-//           std::pow(-1 + std::pow(1 - u, theta), 2);
-//}
-
 inline Eigen::VectorXd
-JoeBicop::pdf_raw(const Eigen::MatrixXd& u)
+JoeBicop::pdf_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd& parameters)
 {
-  double theta = static_cast<double>(parameters_(0));
-  auto f = [theta](const double& u1, const double& u2) {
+  auto f = [](const double& u1,
+              const double& u2,
+              const Eigen::Ref<const Eigen::VectorXd>& par) {
+    double theta = par(0);
     double t1 = std::pow(1 - u1, theta);
     double t2 = std::pow(1 - u2, theta);
     return std::pow(t1 + t2 - t1 * t2, 1 / theta - 2) *
            std::pow(1 - u1, theta - 1) * std::pow(1 - u2, theta - 1) *
            (theta - 1 + t1 + t2 - t1 * t2);
   };
-  return tools_eigen::binaryExpr_or_nan(u, f);
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
 }
 
 // inverse h-function
 inline Eigen::VectorXd
-JoeBicop::hinv1_raw(const Eigen::MatrixXd& u)
+JoeBicop::hinv1_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd& parameters)
 {
-  double theta = double(parameters_(0));
-
-  // Define the lambda function for qcondjoe
-  auto qcondjoe_func = [&theta](const double& u1, const double& u2) -> double {
-    return qcondjoe(u2, u1, theta);
+  auto qcondjoe_func =
+    [](const double& u1,
+       const double& u2,
+       const Eigen::Ref<const Eigen::VectorXd>& par) -> double {
+    return qcondjoe(u2, u1, par(0));
   };
-
-  // Use binaryExpr_or_nan to compute hinv
-  return tools_eigen::binaryExpr_or_nan(u, qcondjoe_func);
+  return tools_eigen::binaryExpr_or_nan(u, parameters, qcondjoe_func);
 }
 
 // link between Kendall's tau and the par_bicop parameter
@@ -97,6 +93,14 @@ JoeBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
   double tau = 2 / par + 1;
   tau = boost::math::digamma(2.0) - boost::math::digamma(tau);
   return 1 + 2 * tau / (2 - par);
+}
+
+inline Eigen::MatrixXd
+JoeBicop::parameters_to_taildep(const Eigen::MatrixXd& par)
+{
+  Eigen::MatrixXd taildep = Eigen::MatrixXd::Zero(2, 2);
+  taildep(1, 1) = 2 - std::pow(2.0, 1.0 / par(0)); // upper tail dependence
+  return taildep;
 }
 
 inline Eigen::VectorXd

@@ -4,9 +4,11 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <functional>
 #include <mutex>
 #include <vinecopulib/bicop/abstract.hpp>
 #include <vinecopulib/bicop/tools_select.hpp>
+#include <vinecopulib/misc/tools_batch.hpp>
 #include <vinecopulib/misc/tools_interface.hpp>
 #include <vinecopulib/misc/tools_serialization.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
@@ -102,15 +104,17 @@ inline Bicop::Bicop(const nlohmann::json& input)
   }
 }
 
-//! @brief Instantiates from a JSON file.
+//! @brief Instantiates from a JSON or CBOR file.
 //!
-//! @details The input file contains four attributes:
+//! @details Files ending in `.cbor` are read as CBOR. All other filenames are
+//! read as JSON for backwards compatibility. The input contains four
+//! attributes:
 //! `"fam"`, `"rot"`, `"par"`, `"vt"` respectively a
 //! string for the family name, an integer for the rotation, and a numeric
 //! matrix for the parameters, and a list of two strings for the variable
 //! types.
 //!
-//! @param filename The name of the JSON file to read.
+//! @param filename The name of the file to read.
 inline Bicop::Bicop(const std::string& filename)
   : Bicop(tools_serialization::file_to_json(filename))
 {
@@ -140,9 +144,11 @@ Bicop::to_json() const
   return output;
 }
 
-//! @brief Write the copula object into a JSON file.
+//! @brief Writes the copula object into a JSON or CBOR file.
 //!
-//! @details The written file contains four attributes:
+//! @details Filenames ending in `.cbor` are written as CBOR. All other
+//! filenames are written as JSON for backwards compatibility. The written
+//! representation contains four attributes:
 //! `"fam"`, `"rot"`, `"par"`, `"vt"`, `"nobs"`, `"ll"`, `"npars"`
 //! respectively a string for the family name, an integer for the rotation, and
 //! a numeric matrix for the parameters, a list of two strings for the
@@ -201,7 +207,8 @@ inline Eigen::VectorXd
 Bicop::cdf(const Eigen::MatrixXd& u) const
 {
   check_data(u);
-  Eigen::VectorXd p = bicop_->cdf(prep_for_abstract(u).leftCols(2));
+  Eigen::VectorXd p = bicop_->cdf(prep_for_abstract(u).leftCols(2),
+                                  bicop_->get_parameters().transpose());
   switch (rotation_) {
     default:
       return p;
@@ -394,6 +401,296 @@ Bicop::hinv2(const Eigen::MatrixXd& u) const
 }
 //! @}
 
+//! @name Stats methods with per-row parameters
+//!
+//! @details These overloads evaluate the copula at a *different* parameter set
+//! per row of `u`, in a single call, without mutating the object's stored
+//! parameters. The family, rotation, and variable types are taken from the
+//! object; only the parameter values vary by row. They are available for
+//! parametric families only (nonparametric families store an interpolation
+//! grid rather than a per-observation parameter vector).
+//!
+//! @param u An \f$ n \times (2 + k) \f$ matrix of observations (see the
+//!   single-argument overloads for the layout with discrete variables).
+//! @param parameters An \f$ n \times p \f$ matrix of parameters, where `p` is
+//!   the number of family parameters (`get_parameters().size()`) and row `i`
+//!   holds the parameter set used for row `i` of `u`. Parameters are given in
+//!   the family's natural (unrotated) parameterization, as for
+//!   `get_parameters()`.
+//! @param num_threads The number of threads to parallelize the evaluation over
+//!   rows.
+//! @{
+
+//! @brief Evaluates the copula density with per-row parameters.
+inline Eigen::VectorXd
+Bicop::pdf(const Eigen::MatrixXd& u,
+           const Eigen::MatrixXd& parameters,
+           const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(u,
+                         par_t,
+                         num_threads,
+                         [this](const Eigen::MatrixXd& ub,
+                                const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+                           return bicop_->pdf(prep_for_abstract(ub), pb);
+                         });
+}
+
+//! @brief Evaluates the copula distribution with per-row parameters.
+inline Eigen::VectorXd
+Bicop::cdf(const Eigen::MatrixXd& u,
+           const Eigen::MatrixXd& parameters,
+           const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this](const Eigen::MatrixXd& ub,
+           const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::VectorXd p = bicop_->cdf(prep_for_abstract(ub).leftCols(2), pb);
+      switch (rotation_) {
+        case 90:
+          return ub.col(1) - p;
+        case 180:
+          return (p.array() - 1 + ub.leftCols(2).rowwise().sum().array())
+            .matrix();
+        case 270:
+          return ub.col(0) - p;
+        default:
+          return p;
+      }
+    });
+}
+
+//! @brief Evaluates the first h-function with per-row parameters.
+inline Eigen::VectorXd
+Bicop::hfunc1(const Eigen::MatrixXd& u,
+              const Eigen::MatrixXd& parameters,
+              const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this](const Eigen::MatrixXd& ub,
+           const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::VectorXd h(ub.rows());
+      switch (rotation_) {
+        case 90:
+          h = bicop_->hfunc2(prep_for_abstract(ub), pb);
+          break;
+        case 180:
+          h = 1.0 - bicop_->hfunc1(prep_for_abstract(ub), pb).array();
+          break;
+        case 270:
+          h = 1.0 - bicop_->hfunc2(prep_for_abstract(ub), pb).array();
+          break;
+        default:
+          h = bicop_->hfunc1(prep_for_abstract(ub), pb);
+          break;
+      }
+      tools_eigen::trim(h, 0.0, 1.0);
+      return h;
+    });
+}
+
+//! @brief Evaluates the second h-function with per-row parameters.
+inline Eigen::VectorXd
+Bicop::hfunc2(const Eigen::MatrixXd& u,
+              const Eigen::MatrixXd& parameters,
+              const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this](const Eigen::MatrixXd& ub,
+           const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::VectorXd h(ub.rows());
+      switch (rotation_) {
+        case 90:
+          h = 1.0 - bicop_->hfunc1(prep_for_abstract(ub), pb).array();
+          break;
+        case 180:
+          h = 1.0 - bicop_->hfunc2(prep_for_abstract(ub), pb).array();
+          break;
+        case 270:
+          h = bicop_->hfunc1(prep_for_abstract(ub), pb);
+          break;
+        default:
+          h = bicop_->hfunc2(prep_for_abstract(ub), pb);
+          break;
+      }
+      tools_eigen::trim(h, 0.0, 1.0);
+      return h;
+    });
+}
+
+//! @brief Evaluates the inverse of the first h-function with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::hinv1(const Eigen::MatrixXd& u,
+             const Eigen::MatrixXd& parameters,
+             const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this](const Eigen::MatrixXd& ub,
+           const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::VectorXd hi(ub.rows());
+      switch (rotation_) {
+        case 90:
+          hi = bicop_->hinv2(prep_for_abstract(ub), pb);
+          break;
+        case 180:
+          hi = 1.0 - bicop_->hinv1(prep_for_abstract(ub), pb).array();
+          break;
+        case 270:
+          hi = 1.0 - bicop_->hinv2(prep_for_abstract(ub), pb).array();
+          break;
+        default:
+          hi = bicop_->hinv1(prep_for_abstract(ub), pb);
+          break;
+      }
+      tools_eigen::trim(hi, 0.0, 1.0);
+      return hi;
+    });
+}
+
+//! @brief Evaluates the inverse of the second h-function with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::hinv2(const Eigen::MatrixXd& u,
+             const Eigen::MatrixXd& parameters,
+             const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this](const Eigen::MatrixXd& ub,
+           const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::VectorXd hi(ub.rows());
+      switch (rotation_) {
+        case 90:
+          hi = 1.0 - bicop_->hinv1(prep_for_abstract(ub), pb).array();
+          break;
+        case 180:
+          hi = 1.0 - bicop_->hinv2(prep_for_abstract(ub), pb).array();
+          break;
+        case 270:
+          hi = bicop_->hinv1(prep_for_abstract(ub), pb);
+          break;
+        default:
+          hi = bicop_->hinv2(prep_for_abstract(ub), pb);
+          break;
+      }
+      tools_eigen::trim(hi, 0.0, 1.0);
+      return hi;
+    });
+}
+
+//! @brief Evaluates the log-likelihood contributions with per-row parameters
+//! and returns their sum (NaNs are ignored).
+inline double
+Bicop::loglik(const Eigen::MatrixXd& u,
+              const Eigen::MatrixXd& parameters,
+              const size_t num_threads) const
+{
+  Eigen::VectorXd lpdf = pdf(u, parameters, num_threads).array().log();
+  double ll = 0.0;
+  for (Eigen::Index i = 0; i < lpdf.size(); ++i) {
+    if (!(std::isnan)(lpdf(i))) {
+      ll += lpdf(i);
+    }
+  }
+  return ll;
+}
+//! @}
+
+//! @brief Validates per-row parameters (the internal leaves use the same
+//! `n x p` layout as the public API, one parameter set per row).
+inline Eigen::MatrixXd
+Bicop::format_parameters(const Eigen::MatrixXd& u,
+                         const Eigen::MatrixXd& parameters) const
+{
+  check_data(u);
+  if (!tools_stl::is_member(get_family(), bicop_families::parametric)) {
+    throw std::runtime_error(
+      "per-row parameters are only supported for parametric families; "
+      "nonparametric families store an interpolation grid rather than a "
+      "per-observation parameter vector.");
+  }
+  const Eigen::Index n = u.rows();
+  const Eigen::Index p = get_parameters().rows();
+  if (parameters.rows() != n) {
+    throw std::runtime_error("parameters must have one row per row of u "
+                             "(parameters.rows() must equal u.rows()).");
+  }
+  if (parameters.cols() != p) {
+    std::stringstream msg;
+    msg << "parameters has wrong number of columns; expected " << p
+        << " (the number of family parameters), actual " << parameters.cols()
+        << ".";
+    throw std::runtime_error(msg.str());
+  }
+  if (!parameters.allFinite()) {
+    throw std::runtime_error("parameters must not contain NaN or Inf.");
+  }
+  if (p > 0 && n > 0) {
+    Eigen::MatrixXd lb = get_parameters_lower_bounds();
+    Eigen::MatrixXd ub = get_parameters_upper_bounds();
+    for (Eigen::Index k = 0; k < p; ++k) {
+      if (parameters.col(k).minCoeff() < lb(k) ||
+          parameters.col(k).maxCoeff() > ub(k)) {
+        std::stringstream msg;
+        msg << "parameter " << k << " is out of bounds [" << lb(k) << ", "
+            << ub(k) << "].";
+        throw std::runtime_error(msg.str());
+      }
+    }
+  }
+  return parameters;
+}
+
+//! @brief Evaluates `f` over row-batches of `u`/`parameters`, possibly in
+//! parallel, and assembles the results.
+inline Eigen::VectorXd
+Bicop::eval_in_batches(
+  const Eigen::MatrixXd& u,
+  const Eigen::MatrixXd& parameters,
+  const size_t num_threads,
+  const std::function<Eigen::VectorXd(const Eigen::MatrixXd&,
+                                      const Eigen::MatrixXd&)>& f) const
+{
+  const size_t n = static_cast<size_t>(u.rows());
+  Eigen::VectorXd out(n);
+  if (n == 0) {
+    return out;
+  }
+  auto do_batch = [&](const tools_batch::Batch& b) {
+    out.segment(b.begin, b.size) =
+      f(u.middleRows(b.begin, b.size), parameters.middleRows(b.begin, b.size));
+  };
+  if (num_threads <= 1) {
+    do_batch(tools_batch::Batch{ 0, n });
+  } else {
+    tools_thread::ThreadPool pool(num_threads);
+    pool.map(do_batch, tools_batch::create_batches(n, num_threads));
+    pool.join();
+  }
+  return out;
+}
+
 //! @brief Simulates from a bivariate copula.
 //!
 //! @details If `qrng = TRUE`, generalized Halton sequences are used.
@@ -554,6 +851,81 @@ Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters) const
   return tau;
 }
 
+//! @brief Converts the copula parameters to the tail dependence coefficients.
+//!
+//! @details The result is a \f$ 2 \times 2 \f$ matrix \f$ M \f$ collecting the
+//! tail dependence coefficients in the four corners of the unit square:
+//! \f$ M(i, j) \f$ is the coefficient as \f$ U_1 \to i \f$ and
+//! \f$ U_2 \to j \f$, with \f$ i, j \in \{0, 1\} \f$ (0 = lower, 1 = upper).
+//! Thus \f$ M(0, 0) \f$ is the classical lower and \f$ M(1, 1) \f$ the
+//! classical upper tail dependence coefficient.
+//!
+//! For the unrotated family, the lower \f$ \lambda_L = M(0, 0) \f$ and upper
+//! \f$ \lambda_U = M(1, 1) \f$ coefficients are:
+//!
+//! | Family | Lower \f$ \lambda_L \f$ | Upper \f$ \lambda_U \f$ |
+//! | --- | --- | --- |
+//! | Independence, Gaussian, Frank | \f$ 0 \f$ | \f$ 0 \f$ |
+//! | Student t | \f$ \lambda_t \f$ (see below) | \f$ \lambda_t \f$ |
+//! | Clayton | \f$ 2^{-1/\theta} \f$ | \f$ 0 \f$ |
+//! | Gumbel | \f$ 0 \f$ | \f$ 2 - 2^{1/\theta} \f$ |
+//! | Joe | \f$ 0 \f$ | \f$ 2 - 2^{1/\theta} \f$ |
+//! | BB1 | \f$ 2^{-1/(\theta\delta)} \f$ | \f$ 2 - 2^{1/\delta} \f$ |
+//! | BB6 | \f$ 0 \f$ | \f$ 2 - 2^{1/(\theta\delta)} \f$ |
+//! | BB7 | \f$ 2^{-1/\delta} \f$ | \f$ 2 - 2^{1/\theta} \f$ |
+//! | BB8 | \f$ 0 \f$ | \f$ 2 - 2^{1/\theta} \f$ if \f$ \delta=1 \f$, else 0 |
+//! | Tawn (extreme-value) | \f$ 0 \f$ | \f$ 2 (1 - A(1/2)) \f$ |
+//! | TLL (nonparametric) | \c NaN | \c NaN |
+//!
+//! Here \f$ \theta \f$ (and \f$ \delta \f$ for two-parameter families) denote
+//! the copula parameters and \f$ A \f$ the Pickands dependence function. For
+//! the Student t copula, with correlation \f$ \rho \f$, degrees of freedom
+//! \f$ \nu \f$, and \f$ t_{\nu+1} \f$ the Student t cdf,
+//! \f$ \lambda_t = 2\, t_{\nu+1}(-\sqrt{(\nu+1)(1-\rho)/(1+\rho)}) \f$; it
+//! additionally has equal dependence in the two off-diagonal (discordant)
+//! corners, obtained by replacing \f$ \rho \f$ with \f$ -\rho \f$. All other
+//! parametric families have zero off-diagonal coefficients. Rotations permute
+//! the corners: 180 degrees swaps lower/upper, while 90/270 degrees move
+//! dependence to the off-diagonal corners.
+//!
+//! @param parameters The parameters (must be a valid parametrization of
+//!     the current family).
+inline Eigen::MatrixXd
+Bicop::parameters_to_taildep(const Eigen::MatrixXd& parameters) const
+{
+  Eigen::MatrixXd m = bicop_->parameters_to_taildep(parameters);
+  // rotate the 2x2 matrix like a grid, counter-clockwise, to match the
+  // (counter-clockwise) rotation applied to the data in `rotate_data`.
+  switch (rotation_) {
+    case 90:
+      return m.transpose().colwise().reverse();
+    case 180:
+      return m.reverse();
+    case 270:
+      return m.transpose().rowwise().reverse();
+    default:
+      return m;
+  }
+}
+
+//! @brief Converts the copula parameters to Blomqvist's \f$ \beta \f$.
+//!
+//! @details Blomqvist's beta is computed from the copula cdf as
+//! \f$ \beta = 4\, C(0.5, 0.5) - 1 \f$, using the same formula for every
+//! family (including the nonparametric `tll`).
+//!
+//! @param parameters The parameters (must be a valid parametrization of
+//!     the current family).
+inline double
+Bicop::parameters_to_beta(const Eigen::MatrixXd& parameters) const
+{
+  double beta = bicop_->parameters_to_beta(parameters);
+  if (tools_stl::is_member(rotation_, { 90, 270 })) {
+    beta *= -1;
+  }
+  return beta;
+}
+
 //! @name Getters and setters
 //!
 //! @{
@@ -642,6 +1014,23 @@ inline double
 Bicop::get_tau() const
 {
   return parameters_to_tau(bicop_->get_parameters());
+}
+
+//! @brief Gets the tail dependence coefficients.
+//!
+//! @details See Bicop::parameters_to_taildep() for the layout of the returned
+//! \f$ 2 \times 2 \f$ matrix.
+inline Eigen::MatrixXd
+Bicop::get_taildep() const
+{
+  return parameters_to_taildep(bicop_->get_parameters());
+}
+
+//! @brief Gets Blomqvist's beta.
+inline double
+Bicop::get_beta() const
+{
+  return parameters_to_beta(bicop_->get_parameters());
 }
 
 //! @brief Sets the rotation.
@@ -753,7 +1142,7 @@ Bicop::flip()
   } else if (rotation_ == 270) {
     rotation_ = 90;
   }
-  // The following implements any changes to the shape beyond the change in 
+  // The following implements any changes to the shape beyond the change in
   // rotation. Formost of our families, it does nothing.
   bicop_->flip();
 }
@@ -854,6 +1243,7 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
   bicop_->fit(prep_for_abstract(data_no_nan),
               method,
               controls.get_nonparametric_mult(),
+              controls.get_nonparametric_grid_size(),
               w);
   nobs_ = data_no_nan.rows();
 }
@@ -930,8 +1320,9 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
         double npars = cop.get_npars();
 
         new_criterion = -2 * ll + log(n_eff) * npars; // BIC
-        if (controls.get_selection_criterion() == "mbic") {
-          // correction for mBIC
+        if (controls.get_selection_criterion() == "mbic" ||
+            controls.get_selection_criterion() == "mbicv") {
+          // correction for mBIC or mBICV
           bool is_indep = (cop.get_family() == BicopFamily::indep);
           double psi0 = controls.get_psi0();
           double log_prior = static_cast<double>(!is_indep) * log(psi0) +

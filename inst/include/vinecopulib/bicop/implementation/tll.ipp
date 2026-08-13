@@ -104,17 +104,17 @@ TllBicop::fit_local_likelihood(const Eigen::MatrixXd& x,
   Eigen::Matrix2d S(B);
   Eigen::MatrixXd zz(n, 2), zz2(n, 2);
   for (size_t k = 0; k < m; ++k) {
-    zz = z_data - z.row(k).replicate(n, 1);
+    zz = z_data.rowwise() - z.row(k);
     kernels = gaussian_kernel_2d(zz) * det_irB;
     if (weights.size() > 0)
       kernels = kernels.cwiseProduct(weights);
     double f0 = kernels.mean();
     if (method != "constant") {
       zz = (irB * zz.transpose()).transpose();
-      f1 = zz.cwiseProduct(kernels.replicate(1, 2)).colwise().mean();
+      f1 = (zz.array().colwise() * kernels.array()).colwise().mean();
       b = f1 / f0;
       if (method == "quadratic") {
-        zz2 = zz.cwiseProduct(kernels.replicate(1, 2)) /
+        zz2 = (zz.array().colwise() * kernels.array()).matrix() /
               (f0 * static_cast<double>(n));
         b = B * b;
         S = (B * (zz.transpose() * zz2) * B - b * b.transpose()).inverse();
@@ -159,17 +159,25 @@ TllBicop::calculate_infl(const size_t& n,
                          const std::string& method,
                          const double& weight)
 {
-  Eigen::MatrixXd M;
+  // the Gaussian kernel at zero; static so it is computed only once
+  static const double kernel0 =
+    gaussian_kernel_2d(Eigen::MatrixXd::Zero(1, 2))(0);
+
   if (method == "constant") {
-    M = Eigen::MatrixXd::Constant(1, 1, f0);
-  } else if (method == "linear") {
-    M = Eigen::MatrixXd(3, 3);
+    // the 1x1 "matrix inverse" is just the reciprocal
+    return kernel0 * det_irB / f0 * weight / static_cast<double>(n);
+  }
+
+  double m_inv_00;
+  if (method == "linear") {
+    Eigen::Matrix3d M;
     M(0, 0) = f0;
     M.col(0).tail(2) = B * b * f0;
     M.row(0).tail(2) = M.col(0).tail(2);
     M.block(1, 1, 2, 2) = f0 * B + f0 * B * b * b.transpose() * B;
-  } else if (method == "quadratic") {
-    M = Eigen::MatrixXd::Zero(6, 6);
+    m_inv_00 = M.inverse()(0, 0);
+  } else {
+    Eigen::Matrix<double, 6, 6> M = Eigen::Matrix<double, 6, 6>::Zero();
     M(0, 0) = f0;
     M.col(0).segment(1, 2) = f0 * b;
     M.row(0).segment(1, 2) = M.col(0).segment(1, 2);
@@ -208,24 +216,23 @@ TllBicop::calculate_infl(const size_t& n,
     M(5, 4) += 3.0 * Si(1, 1) * b(0) * b(1) + b(0) * std::pow(b(1), 3);
     M(5, 4) *= 0.5 * f0;
     M(4, 5) = M(5, 4);
+    m_inv_00 = M.inverse()(0, 0);
   }
 
-  double infl = gaussian_kernel_2d(Eigen::MatrixXd::Zero(1, 2))(0) * det_irB;
-  infl *= M.inverse()(0, 0) * weight / static_cast<double>(n);
-  return infl;
+  return kernel0 * det_irB * m_inv_00 * weight / static_cast<double>(n);
 }
 
 inline void
 TllBicop::fit(const Eigen::MatrixXd& data,
               std::string method,
               double mult,
+              size_t grid_size,
               const Eigen::VectorXd& weights)
 {
   using namespace tools_interpolation;
 
   // construct default grid (equally spaced on Gaussian scale)
-  size_t m = 30;
-  auto grid_points = this->make_normal_grid(m);
+  auto grid_points = this->make_normal_grid(grid_size);
 
   // expand the interpolation grid; a matrix with two columns where each row
   // contains one combination of the grid points
@@ -256,19 +263,19 @@ TllBicop::fit(const Eigen::MatrixXd& data,
   Eigen::VectorXd c =
     ll_fit.col(0).cwiseQuotient(tools_stats::dnorm(z).rowwise().prod());
   // store values in mxm grid
-  Eigen::MatrixXd values(m, m);
-  values = Eigen::Map<Eigen::MatrixXd>(c.data(), m, m).transpose();
+  Eigen::MatrixXd values(grid_size, grid_size);
+  values =
+    Eigen::Map<Eigen::MatrixXd>(c.data(), grid_size, grid_size).transpose();
 
-  // for interpolation, we shift the limiting gridpoints to 0 and 1
-  grid_points(0) = 0.0;
-  grid_points(m - 1) = 1.0;
+  // create interpolation grid
   interp_grid_ = std::make_shared<InterpolationGrid>(grid_points, values);
 
   // compute effective degrees of freedom via interpolation ---------
   // stabilize interpolation by restricting to plausible range
   Eigen::VectorXd infl_vec = ll_fit.col(1).cwiseMin(1.3).cwiseMax(-0.2);
-  Eigen::MatrixXd infl(m, m);
-  infl = Eigen::Map<Eigen::MatrixXd>(infl_vec.data(), m, m).transpose();
+  Eigen::MatrixXd infl(grid_size, grid_size);
+  infl = Eigen::Map<Eigen::MatrixXd>(infl_vec.data(), grid_size, grid_size)
+           .transpose();
   // don't normalize margins of the EDF! (norm_times = 0)
   auto infl_grid = InterpolationGrid(grid_points, infl, 0);
   if ((var_types_[0] == "d") || (var_types_[1] == "d")) {

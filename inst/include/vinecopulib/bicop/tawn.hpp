@@ -25,11 +25,16 @@ public:
 
 private:
   // pickands dependence functions and its derivatives
-  double pickands(const double& t) override;
+  double pickands(const double& t,
+                  const Eigen::Ref<const Eigen::VectorXd>& parameters) override;
 
-  double pickands_derivative(const double& t) override;
+  double pickands_derivative(
+    const double& t,
+    const Eigen::Ref<const Eigen::VectorXd>& parameters) override;
 
-  double pickands_derivative2(const double& t) override;
+  double pickands_derivative2(
+    const double& t,
+    const Eigen::Ref<const Eigen::VectorXd>& parameters) override;
 
   Eigen::MatrixXd tau_to_parameters(const double& tau) override;
 
