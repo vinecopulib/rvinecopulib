@@ -302,7 +302,6 @@ test_that("vectorized parameter sanity checks are enforced", {
   set.seed(9)
   u <- matrix(runif(20), ncol = 2)
   pars_bad_n <- matrix(seq(-0.5, 0.5, length.out = nrow(u) - 1), ncol = 1)
-  pars_sim <- matrix(c(-0.3, 0.1), ncol = 1)
 
   expect_error(
     dbicop(u, "gaussian", 0, pars_bad_n),
@@ -312,8 +311,66 @@ test_that("vectorized parameter sanity checks are enforced", {
     hbicop(u, 1, "gaussian", 0, pars_bad_n),
     "parameters\\.rows\\(\\) must equal u\\.rows\\(\\)"
   )
+})
+
+test_that("rbicop supports vectorized parameters", {
+  n <- 40
+  pars <- matrix(seq(-0.8, 0.8, length.out = n), ncol = 1)
+
+  set.seed(123)
+  uniforms <- rbicop(n, "indep")
+  expected <- uniforms
+  expected[, 2] <- hbicop(
+    uniforms,
+    1,
+    "gaussian",
+    0,
+    pars,
+    inverse = TRUE
+  )
+
+  set.seed(123)
+  simulated <- rbicop(n, "gaussian", 0, pars)
+  expect_equal(simulated, expected)
+
+  set.seed(123)
+  expect_equal(rbicop(seq_len(n), "gaussian", 0, pars), expected)
+})
+
+test_that("rbicop vectorization handles rotations and multiple parameters", {
+  n <- 30
+  pars <- cbind(
+    seq(1.1, 3.5, length.out = n),
+    seq(1.05, 1.8, length.out = n)
+  )
+
+  set.seed(456)
+  uniforms <- rbicop(n, "indep", qrng = TRUE)
+  expected <- uniforms
+  expected[, 2] <- hbicop(
+    uniforms,
+    1,
+    "bb1",
+    270,
+    pars,
+    inverse = TRUE
+  )
+
+  set.seed(456)
+  expect_equal(rbicop(n, "bb1", 270, pars, qrng = TRUE), expected)
+})
+
+test_that("rbicop validates vectorized simulation inputs", {
+  pars <- matrix(c(-0.3, 0.1), ncol = 1)
+
+  expect_error(rbicop(1.5, "gaussian", 0, 0.2), "not a count")
+  expect_error(rbicop(3, "gaussian", 0, pars), "one row per row of u")
   expect_error(
-    rbicop(10, "gaussian", 0, pars_sim),
-    "not simulation"
+    rbicop(2, "gaussian", 0, matrix(c(0.1, NA_real_), ncol = 1)),
+    "must not contain NaN or Inf"
+  )
+  expect_error(
+    rbicop(2, "gaussian", 0, matrix(c(0.1, -1.1), ncol = 1)),
+    "out of bounds"
   )
 })

@@ -161,6 +161,12 @@ Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r,
                               std::vector<int> seeds)
 {
   Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    auto u = tools_stats::simulate_uniform(n, 2, qrng, seeds);
+    u.col(1) = bicop_cpp.as_continuous().hinv1(u, parameters);
+    return u;
+  }
   return bicop_cpp.simulate(n, qrng, seeds);
 }
 
