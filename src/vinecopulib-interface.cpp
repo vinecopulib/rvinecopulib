@@ -1,6 +1,8 @@
 #include "vinecopulib-wrappers.hpp"
 #include "kde1d-wrappers.hpp"
 
+#include <algorithm>
+
 using namespace vinecopulib;
 
 inline Eigen::MatrixXd get_bicop_parameters(const Rcpp::List& bicop_r)
@@ -259,6 +261,49 @@ Eigen::MatrixXd vinecop_sim_cpp(const Rcpp::List& vinecop_r,
 }
 
 // [[Rcpp::export()]]
+Eigen::MatrixXd vinecop_sim_conditional_cpp(
+  const Rcpp::List& vinecop_r,
+  Eigen::MatrixXd u_cond,
+  const std::vector<size_t>& conditioning_set,
+  const bool qrng,
+  const size_t cores,
+  const std::vector<int>& seeds)
+{
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (!conditioning_set.empty()) {
+    const auto var_types = vinecop_cpp.get_var_types();
+    const size_t k = conditioning_set.size();
+    vinecop_cpp.reorient(conditioning_set);
+    const auto order = vinecop_cpp.get_order();
+    const size_t d = order.size();
+
+    Eigen::MatrixXd u_ordered(u_cond.rows(), u_cond.cols());
+    size_t output_discrete = 0;
+    for (size_t i = 0; i < k; ++i) {
+      const size_t variable = order[d - k + i];
+      const auto input_it = std::find(
+        conditioning_set.begin(), conditioning_set.end(), variable);
+      const size_t input_position = static_cast<size_t>(
+        std::distance(conditioning_set.begin(), input_it));
+      u_ordered.col(i) = u_cond.col(input_position);
+
+      if (var_types[variable - 1] == "d") {
+        size_t input_discrete = 0;
+        for (size_t j = 0; j < input_position; ++j) {
+          input_discrete += var_types[conditioning_set[j] - 1] == "d";
+        }
+        u_ordered.col(k + output_discrete) =
+          u_cond.col(k + input_discrete);
+        ++output_discrete;
+      }
+    }
+    u_cond = std::move(u_ordered);
+  }
+
+  return vinecop_cpp.simulate_conditional(u_cond, qrng, cores, seeds);
+}
+
+// [[Rcpp::export()]]
 Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u,
                                 const Rcpp::List& vinecop_r,
                                 size_t cores)
@@ -355,7 +400,8 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd &data,
                               size_t num_threads,
                               std::vector<std::string> var_types,
                               std::string tree_algorithm,
-                              std::vector<int> seeds)
+                              std::vector<int> seeds,
+                              std::vector<size_t> conditioning_set)
 {
   std::vector<BicopFamily> fam_set(family_set.size());
   for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
@@ -382,6 +428,7 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd &data,
   fit_controls.set_show_trace(show_trace);
   fit_controls.set_tree_algorithm(tree_algorithm);
   fit_controls.set_seeds(seeds);
+  fit_controls.set_conditioning_set(conditioning_set);
 
   Vinecop vinecop_cpp(rvine_structure_wrap(structure, false));
   vinecop_cpp.set_var_types(var_types);
@@ -454,4 +501,3 @@ std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
   }
   return fits_r;
 }
-

@@ -13,6 +13,16 @@
 #'   done in parallel on `cores` batches .
 #' @param keep_all if `TRUE`, `dvinecop()` returns additional intermediate
 #'   quantities computed during density evaluation.
+#' @param u_cond optional conditioning values for `rvinecop()`. A vector or
+#'   one-row matrix is repeated `n` times; alternatively, supply an `n`-row
+#'   matrix for observation-specific conditioning values. The first block holds
+#'   the copula-scale values \eqn{F(x)}. For discrete conditioning variables,
+#'   append their left limits \eqn{F(x^-)} in the same relative order. If
+#'   `NULL`, `rvinecop()` performs unconditional simulation.
+#' @param conditioning_set variable indices or names corresponding to the first
+#'   block of `u_cond`. When `NULL`, the columns of `u_cond` correspond to the
+#'   last variables of the current vine order. When supplied, the model is
+#'   transiently reoriented and is not modified.
 #' @details See [vinecop()] for the estimation and construction of vine copula
 #' models.
 #'
@@ -32,8 +42,9 @@
 #'
 #' @return
 #' `dvinecop()` gives the density, `pvinecop()` gives the distribution function,
-#' `rvinecop()` generates random deviates, `scores()` gives the observation-wise
-#' score matrix, and `hessian()` gives the average Hessian matrix.
+#' `rvinecop()` generates unconditional or conditional random deviates,
+#' `scores()` gives the observation-wise score matrix, and `hessian()` gives the
+#' average Hessian matrix.
 #'
 #' If `keep_all = TRUE`, `dvinecop()` returns a list with entries `pdf`,
 #' `pdf_edges`, `hfunc1`, `hfunc2`, `hfunc1_sub`, and `hfunc2_sub`. The `_sub`
@@ -84,6 +95,20 @@
 #'
 #' # simulated data always has uniform margins
 #' pairs(rvinecop(200, vc))
+#'
+#' ## Conditional simulation
+#' vc_cond <- vinecop(u, family = "gaussian", conditioning_set = c(2, 4))
+#' u_cond <- c(0.25, 0.75)
+#' uc <- rvinecop(
+#'   100,
+#'   vc_cond,
+#'   u_cond = u_cond,
+#'   conditioning_set = c(2, 4)
+#' )
+#' stopifnot(
+#'   isTRUE(all.equal(uc[, 2], rep(0.25, 100))),
+#'   isTRUE(all.equal(uc[, 4], rep(0.75, 100)))
+#' )
 #' @rdname vinecop_methods
 #' @export
 dvinecop <- function(u, vinecop, cores = 1, keep_all = FALSE) {
@@ -150,15 +175,65 @@ pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
 #' Generalized Halton sequence up to dimension 300 and the Generalized Sobol
 #' sequence in higher dimensions (default `qrng = FALSE`).
 #' @export
-rvinecop <- function(n, vinecop, qrng = FALSE, cores = 1) {
+rvinecop <- function(
+  n,
+  vinecop,
+  qrng = FALSE,
+  cores = 1,
+  u_cond = NULL,
+  conditioning_set = NULL
+) {
   assert_that(
-    is.number(n),
+    is.count(n),
     inherits(vinecop, "vinecop_dist"),
     is.flag(qrng),
-    is.number(cores)
+    is.number(cores),
+    cores > 0
   )
 
-  U <- vinecop_sim_cpp(vinecop, n, qrng, cores, get_seeds())
+  n <- as.integer(n)
+  if (is.null(u_cond)) {
+    if (!is.null(conditioning_set) && length(conditioning_set) > 0) {
+      stop("'conditioning_set' requires 'u_cond'.", call. = FALSE)
+    }
+    U <- vinecop_sim_cpp(vinecop, n, qrng, cores, get_seeds())
+  } else {
+    u_cond <- process_conditioning_values(
+      u_cond,
+      n,
+      "u_cond",
+      numeric_only = TRUE
+    )
+    u_cond <- as.matrix(u_cond)
+    storage.mode(u_cond) <- "double"
+
+    conditioning_set <- process_conditioning_set(
+      conditioning_set,
+      vinecop$names,
+      dim(vinecop)[1]
+    )
+    if (length(conditioning_set) > 0) {
+      n_discrete <- sum(vinecop$var_types[conditioning_set] == "d")
+      expected_cols <- length(conditioning_set) + n_discrete
+      if (ncol(u_cond) != expected_cols) {
+        stop(
+          "'u_cond' must have one value column per conditioning variable and ",
+          "one additional left-limit column per discrete conditioning variable.",
+          call. = FALSE
+        )
+      }
+    }
+
+    U <- vinecop_sim_conditional_cpp(
+      vinecop,
+      u_cond,
+      conditioning_set,
+      qrng,
+      cores,
+      get_seeds()
+    )
+  }
+
   if (!is.null(vinecop$names)) {
     colnames(U) <- vinecop$names
   }

@@ -27,6 +27,108 @@ if_vec_to_matrix <- function(u, to_col = FALSE) {
   u
 }
 
+#' Internal: Validate and normalize a conditioning set.
+#' @param conditioning_set variable indices or names.
+#' @param var_names variable names, or `NULL`.
+#' @param d model dimension.
+#' @return an integer vector of 1-based variable indices.
+#' @noRd
+process_conditioning_set <- function(conditioning_set, var_names, d) {
+  if (is.null(conditioning_set) || length(conditioning_set) == 0) {
+    return(integer())
+  }
+
+  if (is.character(conditioning_set)) {
+    if (is.null(var_names)) {
+      stop(
+        "character 'conditioning_set' requires named variables.",
+        call. = FALSE
+      )
+    }
+    if (anyDuplicated(var_names)) {
+      stop(
+        "character 'conditioning_set' requires unique variable names.",
+        call. = FALSE
+      )
+    }
+    conditioning_set <- match(conditioning_set, var_names)
+    if (anyNA(conditioning_set)) {
+      stop("'conditioning_set' contains unknown variable names.", call. = FALSE)
+    }
+  } else {
+    if (
+      !is.numeric(conditioning_set) ||
+        anyNA(conditioning_set) ||
+        any(!is.finite(conditioning_set)) ||
+        any(conditioning_set != floor(conditioning_set))
+    ) {
+      stop(
+        "'conditioning_set' must contain variable indices or names.",
+        call. = FALSE
+      )
+    }
+  }
+
+  conditioning_set <- as.integer(conditioning_set)
+  if (any(conditioning_set < 1L | conditioning_set > d)) {
+    stop("'conditioning_set' indices must be between 1 and d.", call. = FALSE)
+  }
+  if (anyDuplicated(conditioning_set)) {
+    stop("'conditioning_set' must not contain duplicates.", call. = FALSE)
+  }
+  if (length(conditioning_set) >= d) {
+    stop(
+      "'conditioning_set' must contain at most d - 1 variables.",
+      call. = FALSE
+    )
+  }
+
+  conditioning_set
+}
+
+#' Internal: Normalize conditioning values and recycle a single row.
+#' @param x conditioning values.
+#' @param n required number of rows.
+#' @param arg argument name used in error messages.
+#' @param numeric_only whether all values must be numeric.
+#' @return a matrix or data frame with `n` rows.
+#' @noRd
+process_conditioning_values <- function(x, n, arg, numeric_only = FALSE) {
+  if (is.factor(x)) {
+    x <- as.data.frame(
+      lapply(seq_along(x), function(i) x[i]),
+      optional = TRUE
+    )
+  } else if (is.vector(x)) {
+    x <- matrix(x, nrow = 1)
+  }
+
+  if (!is.matrix(x) && !is.data.frame(x)) {
+    stop(
+      sprintf("'%s' must be a vector, matrix, or data frame.", arg),
+      call. = FALSE
+    )
+  }
+  if (
+    numeric_only &&
+      !(is.numeric(x) ||
+        (is.data.frame(x) && all(vapply(x, is.numeric, logical(1)))))
+  ) {
+    stop(sprintf("'%s' must be numeric.", arg), call. = FALSE)
+  }
+
+  if (nrow(x) == 1L) {
+    x <- x[rep.int(1L, n), , drop = FALSE]
+  } else if (nrow(x) != n) {
+    stop(
+      sprintf("'%s' must have one or 'n' rows.", arg),
+      call. = FALSE
+    )
+  }
+
+  x
+}
+
 #' Internal: Convert arguments to `bicop_dist` object.
 #' @param family the family as passed in function call.
 #' @param rotation the rotation as passed in function call.

@@ -24,7 +24,8 @@ vinecop(
   vinecop_object = NULL,
   show_trace = FALSE,
   cores = 1,
-  tree_algorithm = "mst_prim"
+  tree_algorithm = "mst_prim",
+  conditioning_set = NULL
 )
 }
 \arguments{
@@ -108,6 +109,12 @@ the sum of the edge weights (i.e., \code{tree_criterion}).
 algorithm to generate a random spanning tree, either with probability
 proportional to the product of the edge weights (weighted) or
 uniformly (unweighted).}
+
+\item{conditioning_set}{variable indices or names to place at the end of the
+vine order. The resulting model can be sampled conditionally with
+\code{\link[=rvinecop]{rvinecop()}} by supplying \code{u_cond}. Conditioning-aware selection requires
+a full, non-truncated vine and an MST tree algorithm (\code{"mst_prim"} or
+\code{"mst_kruskal"}).}
 }
 \value{
 Objects inheriting from \code{vinecop} and \code{vinecop_dist} for \code{\link[=vinecop]{vinecop()}}. In

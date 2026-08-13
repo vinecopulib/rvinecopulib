@@ -167,6 +167,44 @@ test_that("MST algorithms behave as expected", {
   expect_equal(length(unique_structures), 10)
 })
 
+test_that("conditioning-aware selection is exposed through the R controls", {
+  u_cond <- matrix(runif(400), 100, 4)
+  colnames(u_cond) <- letters[1:4]
+  fit_cond <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = c("b", "d")
+  )
+
+  expect_identical(fit_cond$controls$conditioning_set, c(2L, 4L))
+  expect_equal(sort(tail(fit_cond$structure$order, 2)), c(2L, 4L))
+
+  expect_error(
+    vinecop(u_cond, conditioning_set = c("b", "b")),
+    "must not contain duplicates"
+  )
+  expect_error(
+    vinecop(unname(u_cond), conditioning_set = "b"),
+    "requires named variables"
+  )
+  expect_error(
+    vinecop(u_cond, conditioning_set = 2, trunc_lvl = 1),
+    "requires a non-truncated vine"
+  )
+  expect_error(
+    vinecop(
+      u_cond,
+      conditioning_set = 2,
+      tree_algorithm = "random_weighted"
+    ),
+    "requires 'tree_algorithm'"
+  )
+  expect_error(
+    vinecop(u_cond, conditioning_set = 2, vinecop_object = fit_cond),
+    "cannot be used when refitting"
+  )
+})
+
 test_that("d = 1 works", {
   vc <- vinecop(runif(20), structure = rvine_structure(1))
   vc2 <- vinecop(runif(20))

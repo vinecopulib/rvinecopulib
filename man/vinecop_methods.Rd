@@ -20,7 +20,14 @@ hessian(u, vinecop, step_wise = TRUE, cores = 1)
 
 pvinecop(u, vinecop, n_mc = 10^4, cores = 1)
 
-rvinecop(n, vinecop, qrng = FALSE, cores = 1)
+rvinecop(
+  n,
+  vinecop,
+  qrng = FALSE,
+  cores = 1,
+  u_cond = NULL,
+  conditioning_set = NULL
+)
 }
 \arguments{
 \item{u}{matrix of evaluation points; must contain at least d columns, where
@@ -46,11 +53,24 @@ step-wise estimation.}
 \item{qrng}{if \code{TRUE}, generates quasi-random numbers using the multivariate
 Generalized Halton sequence up to dimension 300 and the Generalized Sobol
 sequence in higher dimensions (default \code{qrng = FALSE}).}
+
+\item{u_cond}{optional conditioning values for \code{rvinecop()}. A vector or
+one-row matrix is repeated \code{n} times; alternatively, supply an \code{n}-row
+matrix for observation-specific conditioning values. The first block holds
+the copula-scale values \eqn{F(x)}. For discrete conditioning variables,
+append their left limits \eqn{F(x^-)} in the same relative order. If
+\code{NULL}, \code{rvinecop()} performs unconditional simulation.}
+
+\item{conditioning_set}{variable indices or names corresponding to the first
+block of \code{u_cond}. When \code{NULL}, the columns of \code{u_cond} correspond to the
+last variables of the current vine order. When supplied, the model is
+transiently reoriented and is not modified.}
 }
 \value{
 \code{dvinecop()} gives the density, \code{pvinecop()} gives the distribution function,
-\code{rvinecop()} generates random deviates, \code{scores()} gives the observation-wise
-score matrix, and \code{hessian()} gives the average Hessian matrix.
+\code{rvinecop()} generates unconditional or conditional random deviates,
+\code{scores()} gives the observation-wise score matrix, and \code{hessian()} gives the
+average Hessian matrix.
 
 If \code{keep_all = TRUE}, \code{dvinecop()} returns a list with entries \code{pdf},
 \code{pdf_edges}, \code{hfunc1}, \code{hfunc2}, \code{hfunc1_sub}, and \code{hfunc2_sub}. The \verb{_sub}
@@ -121,6 +141,20 @@ pvinecop(u_disc[1:5, ], vc)
 
 # simulated data always has uniform margins
 pairs(rvinecop(200, vc))
+
+## Conditional simulation
+vc_cond <- vinecop(u, family = "gaussian", conditioning_set = c(2, 4))
+u_cond <- c(0.25, 0.75)
+uc <- rvinecop(
+  100,
+  vc_cond,
+  u_cond = u_cond,
+  conditioning_set = c(2, 4)
+)
+stopifnot(
+  isTRUE(all.equal(uc[, 2], rep(0.25, 100))),
+  isTRUE(all.equal(uc[, 4], rep(0.75, 100)))
+)
 }
 \seealso{
 \code{\link[=vinecop_dist]{vinecop_dist()}}, \code{\link[=vinecop]{vinecop()}}, \code{\link[=plot.vinecop]{plot.vinecop()}}, \code{\link[=contour.vinecop]{contour.vinecop()}}

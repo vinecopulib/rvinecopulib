@@ -78,6 +78,112 @@ test_that("d/p/r- functions work", {
   expect_lte(max(pvinecop(u, vc, 100)), 1)
 })
 
+test_that("conditional simulation handles R-side ordering and recycling", {
+  indep <- bicop_dist()
+  pcs_indep <- list(
+    rep(list(indep), 3),
+    rep(list(indep), 2),
+    list(indep)
+  )
+  vc_cond <- vinecop_dist(pcs_indep, dvine_structure(1:4))
+  vc_cond$names <- letters[1:4]
+  structure_before <- vc_cond$structure
+
+  # Values follow the explicitly supplied set order (4, 3), even though the
+  # current tail order is (3, 4).
+  set.seed(12)
+  u <- rvinecop(
+    20,
+    vc_cond,
+    u_cond = c(0.8, 0.2),
+    conditioning_set = c("d", "c")
+  )
+  expect_equal(dim(u), c(20L, 4L))
+  expect_identical(colnames(u), letters[1:4])
+  expect_equal(u[, 4], rep(0.8, 20))
+  expect_equal(u[, 3], rep(0.2, 20))
+  expect_identical(vc_cond$structure, structure_before)
+
+  set.seed(12)
+  u_parallel <- rvinecop(
+    20,
+    vc_cond,
+    u_cond = c(0.8, 0.2),
+    conditioning_set = c("d", "c"),
+    cores = 2
+  )
+  expect_equal(u_parallel, u)
+
+  # Observation-specific conditions are accepted without recycling.
+  u_cond <- cbind(seq(0.1, 0.5, length.out = 5), rep(0.7, 5))
+  u_obs <- rvinecop(5, vc_cond, u_cond = u_cond)
+  expect_equal(u_obs[, 3], u_cond[, 1])
+  expect_equal(u_obs[, 4], u_cond[, 2])
+
+  # A different admissible set is handled by transient reorientation.
+  u_reoriented <- rvinecop(
+    5,
+    vc_cond,
+    u_cond = 0.35,
+    conditioning_set = "a"
+  )
+  expect_equal(u_reoriented[, 1], rep(0.35, 5))
+
+  expect_error(
+    rvinecop(5, vc_cond, u_cond = matrix(0.5, 2, 2)),
+    "must have one or 'n' rows"
+  )
+  expect_error(
+    rvinecop(
+      5,
+      vc_cond,
+      u_cond = c(0.2, 0.3),
+      conditioning_set = "a"
+    ),
+    "one value column per conditioning variable"
+  )
+  expect_error(
+    rvinecop(5, vc_cond, conditioning_set = "a"),
+    "requires 'u_cond'"
+  )
+})
+
+test_that("conditional simulation accepts discrete left limits", {
+  indep <- bicop_dist()
+  pcs_indep <- list(
+    rep(list(indep), 3),
+    rep(list(indep), 2),
+    list(indep)
+  )
+  vc_disc <- vinecop_dist(
+    pcs_indep,
+    dvine_structure(1:4),
+    var_types = c("c", "c", "d", "d")
+  )
+  vc_disc$names <- letters[1:4]
+
+  # Layout in the supplied set order (4, 3): F4, F3, F4-, F3-.
+  u <- rvinecop(
+    20,
+    vc_disc,
+    u_cond = c(0.8, 0.7, 0.6, 0.5),
+    conditioning_set = c("d", "c")
+  )
+  expect_equal(dim(u), c(20L, 4L))
+  expect_true(all(u[, 4] >= 0.6))
+  expect_true(all(u[, 4] <= 0.8))
+
+  expect_error(
+    rvinecop(
+      5,
+      vc_disc,
+      u_cond = c(0.8, 0.7),
+      conditioning_set = c(4, 3)
+    ),
+    "additional left-limit column"
+  )
+})
+
 test_that("scores and hessian work", {
   u <- rvinecop(10, vc)
   expect_silent(s <- scores(u, vc))

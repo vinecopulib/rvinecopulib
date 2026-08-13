@@ -16,6 +16,9 @@ The main changes on the R end are:
 * aligned the R frontend with the updated vinecopulib 0.8.0 API and tests,
   including the new per-row bicop parameter interface.
 
+* added conditioning-aware vine selection and conditional simulation with
+  `rvinecop()` and `rvine()`.
+
 # rvinecopulib 0.7.3.1.0
 
 ### NEW FEATURES
