@@ -22,9 +22,14 @@
 #'   `"hoeffd"`, `"mcor"`, or `"joe"` for Kendall's \eqn{\tau}, Spearman's
 #'   \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation, or logarithm of
 #'   the partial correlation, respectively. Alternatively, a function with
-#'   arguments `data` (a two-column matrix) and `weights` (normalized to have
-#'   mean one, or `numeric(0)` when no weights were supplied) that returns one
-#'   numeric dependence value. Custom functions require `cores = 1`.
+#'   arguments `data` and `weights` may be supplied. `data` is a two-column
+#'   matrix of pair-copula pseudo-observations. `weights` contains the
+#'   corresponding observation weights, standardized by the backend to sum to
+#'   the original number of observations, or `numeric(0)` when no weights were
+#'   supplied. Rows containing missing values or zero weights are removed
+#'   before the function is called. The function must return one finite numeric
+#'   value; its absolute value is used as the edge strength. Custom functions
+#'   require `cores = 1`.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the
 #'   threshold should be selected automatically by [mBICV()].
 #' @param vinecop_object a `vinecop` object to be updated; if provided, only the

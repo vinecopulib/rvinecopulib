@@ -83,9 +83,14 @@ automatically by \code{\link[=mBICV]{mBICV()}}.}
 \code{"hoeffd"}, \code{"mcor"}, or \code{"joe"} for Kendall's \eqn{\tau}, Spearman's
 \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation, or logarithm of
 the partial correlation, respectively. Alternatively, a function with
-arguments \code{data} (a two-column matrix) and \code{weights} (normalized to have
-mean one, or \code{numeric(0)} when no weights were supplied) that returns one
-numeric dependence value. Custom functions require \code{cores = 1}.}
+arguments \code{data} and \code{weights} may be supplied. \code{data} is a two-column
+matrix of pair-copula pseudo-observations. \code{weights} contains the
+corresponding observation weights, standardized by the backend to sum to
+the original number of observations, or \code{numeric(0)} when no weights were
+supplied. Rows containing missing values or zero weights are removed
+before the function is called. The function must return one finite numeric
+value; its absolute value is used as the edge strength. Custom functions
+require \code{cores = 1}.}
 
 \item{threshold}{for thresholded vine copulas; \code{NA} indicates that the
 threshold should be selected automatically by \code{\link[=mBICV]{mBICV()}}.}
