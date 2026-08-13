@@ -121,7 +121,7 @@ test_that("discrete variables work", {
   x <- data.frame(
     x1 = rep(1:4, length.out = 50),
     x2 = qnorm((seq_len(50) - 0.5) / 50),
-    x3 = rep(0:3, length.out = 50)
+    x3 = floor(((seq_len(50) * 17) %% 53) / 53 * 4)
   )
 
   expect_no_error(
