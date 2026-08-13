@@ -239,7 +239,7 @@ test_that("custom tree criteria are passed through", {
   custom_tau <- function(data, weights) {
     n_calls <<- n_calls + 1L
     seen_weights <<- weights
-    cor(data[, 1], data[, 2], method = "kendall")
+    -abs(cor(data[, 1], data[, 2], method = "kendall"))
   }
 
   fit_custom <- vinecop(
@@ -272,6 +272,32 @@ test_that("custom tree criteria are passed through", {
     }
   )
   expect_equal(seen_weights, obs_weights / mean(obs_weights))
+})
+
+test_that("custom tree criteria receive filtered data and weights", {
+  set.seed(16)
+  u_custom <- matrix(runif(60), ncol = 2)
+  u_custom[1, 1] <- NA_real_
+  obs_weights <- seq_len(nrow(u_custom))
+  obs_weights[2] <- 0
+  seen_data <- NULL
+  seen_weights <- NULL
+
+  vinecop(
+    u_custom,
+    family_set = "indep",
+    weights = obs_weights,
+    tree_crit = function(data, weights) {
+      seen_data <<- data
+      seen_weights <<- weights
+      0.5
+    }
+  )
+
+  standardized_weights <- obs_weights / sum(obs_weights) * length(obs_weights)
+  expect_equal(dim(seen_data), c(28L, 2L))
+  expect_false(anyNA(seen_data))
+  expect_setequal(seen_weights, standardized_weights[-c(1, 2)])
 })
 
 test_that("custom tree criterion safeguards are enforced", {
