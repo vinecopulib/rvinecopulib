@@ -231,6 +231,92 @@ test_that("conditioning-aware selection is exposed through the R controls", {
   )
 })
 
+test_that("custom tree criteria are passed through", {
+  set.seed(15)
+  u_custom <- matrix(runif(400), ncol = 4)
+  n_calls <- 0L
+  seen_weights <- NULL
+  custom_tau <- function(data, weights) {
+    n_calls <<- n_calls + 1L
+    seen_weights <<- weights
+    cor(data[, 1], data[, 2], method = "kendall")
+  }
+
+  fit_custom <- vinecop(
+    u_custom,
+    family_set = "indep",
+    tree_crit = custom_tau
+  )
+  fit_tau <- vinecop(
+    u_custom,
+    family_set = "indep",
+    tree_crit = "tau"
+  )
+
+  expect_gt(n_calls, 0L)
+  expect_length(seen_weights, 0L)
+  expect_equal(
+    as_rvine_matrix(fit_custom$structure),
+    as_rvine_matrix(fit_tau$structure)
+  )
+  expect_identical(fit_custom$controls$tree_crit, custom_tau)
+
+  obs_weights <- seq_len(nrow(u_custom))
+  vinecop(
+    u_custom,
+    family_set = "indep",
+    weights = obs_weights,
+    tree_crit = function(data, weights) {
+      seen_weights <<- weights
+      0.5
+    }
+  )
+  expect_equal(seen_weights, obs_weights / mean(obs_weights))
+})
+
+test_that("custom tree criterion safeguards are enforced", {
+  u_custom <- matrix(runif(90), ncol = 3)
+  valid_criterion <- function(data, weights) 0.5
+
+  expect_error(
+    vinecop(u_custom, tree_crit = valid_criterion, cores = 2),
+    "require 'cores = 1'"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = "custom"),
+    "requires a function"
+  )
+  fit_custom <- vinecop(u_custom, family_set = "indep")
+  expect_error(
+    vinecop(
+      u_custom,
+      vinecop_object = fit_custom,
+      tree_crit = valid_criterion
+    ),
+    "cannot be used when refitting"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = function(data, weights) c(0.1, 0.2)),
+    "return one numeric value"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = function(data, weights) "bad"),
+    "return one numeric value"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = function(data, weights) NA_real_),
+    "return a finite numeric value"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = function(data, weights) Inf),
+    "return a finite numeric value"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = function(data, weights) stop("boom")),
+    "boom"
+  )
+})
+
 test_that("d = 1 works", {
   vc <- vinecop(runif(20), structure = rvine_structure(1))
   vc2 <- vinecop(runif(20))

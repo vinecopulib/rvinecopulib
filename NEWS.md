@@ -5,6 +5,8 @@ https://github.com/vinecopulib/vinecopulib/blob/main/NEWS.md.
 
 The main changes on the R end are:
 
+* `vinecop()` and `vine()` now accept a custom function as `tree_crit`,
+
 * added `scores()` and `hessian()` for vine copula models, and a `keep_all`
   option to `dvinecop()` for returning intermediate quantities from density
   evaluation,
