@@ -64,6 +64,8 @@ the number of rows in \code{u} for the other functions.
 
 The numerical arguments other than \code{n} are recycled to the length of the
 result.
+For vectorized simulation, \code{parameters} must have one row per generated
+observation and one column per family parameter.
 }
 \description{
 Density, distribution function, random generation and h-functions (with their

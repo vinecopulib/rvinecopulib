@@ -55,6 +55,8 @@
 #'
 #' The numerical arguments other than `n` are recycled to the length of the
 #' result.
+#' For vectorized simulation, `parameters` must have one row per generated
+#' observation and one column per family parameter.
 #'
 #' @seealso [bicop_dist()], [bicop()]
 #
@@ -109,20 +111,9 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
   if (inherits(family, "bicop_dist") & !missing(rotation)) {
     qrng <- rotation
   }
-  assert_that(is.flag(qrng))
+  assert_that(is.count(n), is.flag(qrng))
 
   bicop <- args2bicop(family, rotation, parameters)
-  pars <- as.matrix(bicop$parameters)
-  if (
-    (bicop$family %in% family_set_parametric) &&
-      (nrow(pars) > 1) &&
-      ((ncol(pars) > 1) || (bicop$family %in% family_set_onepar))
-  ) {
-    stop(
-      "rbicop: vectorized 'parameters' are not simulation-compatible.",
-      call. = FALSE
-    )
-  }
   U <- bicop_sim_cpp(bicop, n, qrng, get_seeds())
   if (!is.null(bicop$names)) {
     colnames(U) <- bicop$names
