@@ -11,6 +11,7 @@
 #' @param vinecop an object of class `"vinecop_dist"`.
 #' @param cores number of cores to use; if larger than one, computations are
 #'   done in parallel on `cores` batches .
+#' @param ... unused.
 #' @param keep_all if `TRUE`, `dvinecop()` returns additional intermediate
 #'   quantities computed during density evaluation.
 #' @param u_cond optional conditioning values for `rvinecop()`. A vector or
@@ -132,21 +133,25 @@ dvinecop <- function(u, vinecop, cores = 1, keep_all = FALSE) {
 #' @param step_wise if `FALSE`, the score/Hessian is computed for the full
 #'   likelihood; if `TRUE`, gradients are computed per pair-copula as in
 #'   step-wise estimation.
+#' @param parameters optional matrix of observation-specific parameters, with
+#'   one row per observation. For bivariate models, columns are family
+#'   parameters; for vine copulas, columns follow the `(tree, edge, parameter)`
+#'   order of `scores()`. Only continuous parametric models are supported.
 #' @export
-scores <- function(u, vinecop, step_wise = TRUE, cores = 1) {
-  assert_that(
-    inherits(vinecop, "vinecop_dist"),
-    is.flag(step_wise),
-    is.number(cores),
-    cores > 0
-  )
-  u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
-  vinecop_scores_cpp(u, vinecop, step_wise, cores)
+scores <- function(u, vinecop, ...) {
+  UseMethod("scores", vinecop)
 }
 
 #' @rdname vinecop_methods
 #' @export
-hessian <- function(u, vinecop, step_wise = TRUE, cores = 1) {
+scores.vinecop_dist <- function(
+  u,
+  vinecop,
+  parameters = NULL,
+  step_wise = TRUE,
+  cores = 1,
+  ...
+) {
   assert_that(
     inherits(vinecop, "vinecop_dist"),
     is.flag(step_wise),
@@ -154,7 +159,41 @@ hessian <- function(u, vinecop, step_wise = TRUE, cores = 1) {
     cores > 0
   )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
-  vinecop_hessian_cpp(u, vinecop, step_wise, cores)
+  if (is.null(parameters)) {
+    parameters <- matrix(numeric(), 0, 0)
+  }
+  assert_that(is.numeric(parameters))
+  vinecop_scores_cpp(u, vinecop, as.matrix(parameters), step_wise, cores)
+}
+
+#' @rdname vinecop_methods
+#' @export
+hessian <- function(u, vinecop, ...) {
+  UseMethod("hessian", vinecop)
+}
+
+#' @rdname vinecop_methods
+#' @export
+hessian.vinecop_dist <- function(
+  u,
+  vinecop,
+  parameters = NULL,
+  step_wise = TRUE,
+  cores = 1,
+  ...
+) {
+  assert_that(
+    inherits(vinecop, "vinecop_dist"),
+    is.flag(step_wise),
+    is.number(cores),
+    cores > 0
+  )
+  u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
+  if (is.null(parameters)) {
+    parameters <- matrix(numeric(), 0, 0)
+  }
+  assert_that(is.numeric(parameters))
+  vinecop_hessian_cpp(u, vinecop, as.matrix(parameters), step_wise, cores)
 }
 
 #' @rdname vinecop_methods

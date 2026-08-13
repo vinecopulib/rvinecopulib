@@ -9,7 +9,9 @@ The main changes on the R end are:
 
 * added `scores()` and `hessian()` for vine copula models, and a `keep_all`
   option to `dvinecop()` for returning intermediate quantities from density
-  evaluation,
+  evaluation. Both derivative functions now also support bivariate copula
+  models and observation-specific parameter matrices for continuous parametric
+  models,
 
 * added support for vectorized `parameters` in `dbicop()`, `pbicop()`,
   `hbicop()`, and `rbicop()` when parameters are passed directly (vectorized

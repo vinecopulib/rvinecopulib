@@ -10,6 +10,8 @@
 \alias{pbicop_dist}
 \alias{rbicop_dist}
 \alias{hbicop_dist}
+\alias{scores.bicop_dist}
+\alias{hessian.bicop_dist}
 \title{Bivariate copula distributions}
 \usage{
 dbicop(u, family, rotation, parameters, var_types = c("c", "c"))
@@ -17,6 +19,10 @@ dbicop(u, family, rotation, parameters, var_types = c("c", "c"))
 pbicop(u, family, rotation, parameters, var_types = c("c", "c"))
 
 rbicop(n, family, rotation, parameters, qrng = FALSE)
+
+\method{scores}{bicop_dist}(u, vinecop, parameters = NULL, cores = 1, ...)
+
+\method{hessian}{bicop_dist}(u, vinecop, parameters = NULL, cores = 1, ...)
 
 hbicop(
   u,
@@ -37,7 +43,9 @@ hbicop(
 
 \item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
 
-\item{parameters}{a vector or matrix of copula parameters.}
+\item{parameters}{a vector or matrix of copula parameters. For \code{scores()}
+and \code{hessian()}, an optional matrix with one row per observation overrides
+the parameters stored in \code{vinecop}.}
 
 \item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
 both continuous (default), or \code{c("c", "d")} for first variable continuous
@@ -49,6 +57,13 @@ be the number required.}
 \item{qrng}{if \code{TRUE}, generates quasi-random numbers using the bivariate
 Generalized Halton sequence (default \code{qrng = FALSE}).}
 
+\item{vinecop}{a \code{bicop_dist} object for \code{scores()} and \code{hessian()}.}
+
+\item{cores}{number of cores used for derivatives with per-observation
+parameters.}
+
+\item{...}{unused.}
+
 \item{cond_var}{either \code{1} or \code{2}; \code{cond_var = 1} conditions on the first
 variable, \code{cond_var = 2} on the second.}
 
@@ -57,7 +72,8 @@ variable, \code{cond_var = 2} on the second.}
 \value{
 \code{dbicop()} gives the density, \code{pbicop()} gives the distribution function,
 \code{rbicop()} generates random deviates, and \code{hbicop()} gives the h-functions
-(and their inverses).
+(and their inverses). \code{scores()} gives the observation-wise score matrix and
+\code{hessian()} gives the average Hessian matrix for a \code{bicop_dist} object.
 
 The length of the result is determined by \code{n} for \code{rbicop()}, and
 the number of rows in \code{u} for the other functions.

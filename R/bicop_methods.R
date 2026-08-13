@@ -11,10 +11,16 @@
 #' @param family the copula family, a string containing the family name (see
 #'   \code{\link{bicop}} for all possible families).
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
-#' @param parameters a vector or matrix of copula parameters.
+#' @param parameters a vector or matrix of copula parameters. For `scores()`
+#'   and `hessian()`, an optional matrix with one row per observation overrides
+#'   the parameters stored in `vinecop`.
 #' @param var_types variable types, a length 2 vector; e.g., `c("c", "c")` for
 #'   both continuous (default), or `c("c", "d")` for first variable continuous
 #'   and second discrete.
+#' @param cores number of cores used for derivatives with per-observation
+#'   parameters.
+#' @param vinecop a `bicop_dist` object for `scores()` and `hessian()`.
+#' @param ... unused.
 #'
 #' @note The functions can optionally be used with a [bicop_dist] object in place
 #' of the `family` argument, e.g.,
@@ -48,7 +54,8 @@
 #' @return
 #' `dbicop()` gives the density, `pbicop()` gives the distribution function,
 #' `rbicop()` generates random deviates, and `hbicop()` gives the h-functions
-#' (and their inverses).
+#' (and their inverses). `scores()` gives the observation-wise score matrix and
+#' `hessian()` gives the average Hessian matrix for a `bicop_dist` object.
 #'
 #' The length of the result is determined by `n` for `rbicop()`, and
 #' the number of rows in `u` for the other functions.
@@ -120,6 +127,42 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
   }
 
   U
+}
+
+#' @rdname bicop_methods
+#' @export
+scores.bicop_dist <- function(
+  u,
+  vinecop,
+  parameters = NULL,
+  cores = 1,
+  ...
+) {
+  assert_that(is.number(cores), cores > 0)
+  u <- if_vec_to_matrix(u)
+  if (is.null(parameters)) {
+    parameters <- matrix(numeric(), 0, 0)
+  }
+  assert_that(is.numeric(parameters))
+  bicop_scores_cpp(u, vinecop, as.matrix(parameters), cores)
+}
+
+#' @rdname bicop_methods
+#' @export
+hessian.bicop_dist <- function(
+  u,
+  vinecop,
+  parameters = NULL,
+  cores = 1,
+  ...
+) {
+  assert_that(is.number(cores), cores > 0)
+  u <- if_vec_to_matrix(u)
+  if (is.null(parameters)) {
+    parameters <- matrix(numeric(), 0, 0)
+  }
+  assert_that(is.numeric(parameters))
+  bicop_hessian_cpp(u, vinecop, as.matrix(parameters), cores)
 }
 
 
