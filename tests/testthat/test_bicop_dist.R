@@ -436,6 +436,8 @@ test_that("bivariate derivatives support per-observation parameters", {
 
   s <- scores(u_deriv, cop, parameters = pars)
   h <- hessian(u_deriv, cop, parameters = pars)
+  expect_equal(scores(u_deriv, cop, parameters = drop(pars)), s)
+  expect_equal(hessian(u_deriv, cop, parameters = drop(pars)), h)
   s_row <- vapply(
     seq_len(n),
     function(i) {

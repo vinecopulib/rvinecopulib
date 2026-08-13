@@ -133,10 +133,12 @@ dvinecop <- function(u, vinecop, cores = 1, keep_all = FALSE) {
 #' @param step_wise if `FALSE`, the score/Hessian is computed for the full
 #'   likelihood; if `TRUE`, gradients are computed per pair-copula as in
 #'   step-wise estimation.
-#' @param parameters optional matrix of observation-specific parameters, with
-#'   one row per observation. For bivariate models, columns are family
-#'   parameters; for vine copulas, columns follow the `(tree, edge, parameter)`
-#'   order of `scores()`. Only continuous parametric models are supported.
+#' @param parameters optional observation-specific parameters. For a
+#'   one-parameter bivariate family, this may be a vector with one entry per
+#'   observation. Otherwise, it must be a matrix with one row per observation
+#'   and one column per model parameter. For vine copulas, columns follow the
+#'   `(tree, edge, parameter)` order of `scores()`. Parameters are not recycled.
+#'   Only continuous parametric models are supported.
 #' @export
 scores <- function(u, vinecop, ...) {
   UseMethod("scores", vinecop)
@@ -147,9 +149,9 @@ scores <- function(u, vinecop, ...) {
 scores.vinecop_dist <- function(
   u,
   vinecop,
-  parameters = NULL,
   step_wise = TRUE,
   cores = 1,
+  parameters = NULL,
   ...
 ) {
   assert_that(
@@ -177,9 +179,9 @@ hessian <- function(u, vinecop, ...) {
 hessian.vinecop_dist <- function(
   u,
   vinecop,
-  parameters = NULL,
   step_wise = TRUE,
   cores = 1,
+  parameters = NULL,
   ...
 ) {
   assert_that(

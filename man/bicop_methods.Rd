@@ -20,9 +20,9 @@ pbicop(u, family, rotation, parameters, var_types = c("c", "c"))
 
 rbicop(n, family, rotation, parameters, qrng = FALSE)
 
-\method{scores}{bicop_dist}(u, vinecop, parameters = NULL, cores = 1, ...)
+\method{scores}{bicop_dist}(u, vinecop, cores = 1, parameters = NULL, ...)
 
-\method{hessian}{bicop_dist}(u, vinecop, parameters = NULL, cores = 1, ...)
+\method{hessian}{bicop_dist}(u, vinecop, cores = 1, parameters = NULL, ...)
 
 hbicop(
   u,
@@ -44,8 +44,10 @@ hbicop(
 \item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
 
 \item{parameters}{a vector or matrix of copula parameters. For \code{scores()}
-and \code{hessian()}, an optional matrix with one row per observation overrides
-the parameters stored in \code{vinecop}.}
+and \code{hessian()}, optional observation-specific parameters override those
+stored in \code{vinecop}: a vector is accepted for one-parameter families;
+otherwise, use a matrix with one row per observation and one column per
+parameter. Parameters are not recycled.}
 
 \item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
 both continuous (default), or \code{c("c", "d")} for first variable continuous
