@@ -99,7 +99,7 @@ process_conditioning_values <- function(x, n, arg, numeric_only = FALSE) {
       lapply(seq_along(x), function(i) x[i]),
       optional = TRUE
     )
-  } else if (is.vector(x)) {
+  } else if (is.atomic(x) && is.vector(x)) {
     x <- matrix(x, nrow = 1)
   }
 

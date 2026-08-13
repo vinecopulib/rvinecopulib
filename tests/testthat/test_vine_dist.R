@@ -57,6 +57,29 @@ test_that("rvine performs conditional simulation on the data scale", {
     rvine(5, vc_cond, conditioning_set = "a"),
     "requires 'x_cond'"
   )
+  expect_error(rvine(1.5, vc_cond), "not a count")
+  expect_error(rvine(5, vc_cond, qrng = 1), "not a flag")
+  expect_error(rvine(5, vc_cond, cores = 0), "not greater than 0")
+  expect_error(
+    rvine(5, vc_cond, x_cond = list(0.5), conditioning_set = "a"),
+    "must be a vector, matrix, or data frame"
+  )
+  expect_error(
+    rvine(5, vc_cond, x_cond = matrix(0.5, 2, 1), conditioning_set = "a"),
+    "must have one or 'n' rows"
+  )
+  expect_error(
+    rvine(5, vc_cond, x_cond = c(0.5, 0.5), conditioning_set = "a"),
+    "one column per conditioning variable"
+  )
+  expect_error(
+    rvine(5, vc_cond, x_cond = matrix(0.5, 1, 3)),
+    "between 1 and d - 1 columns"
+  )
+  expect_error(
+    rvine(5, vc_cond, x_cond = matrix(numeric(), 5, 0)),
+    "between 1 and d - 1 columns"
+  )
 })
 
 test_that("constructor catches wrong input", {

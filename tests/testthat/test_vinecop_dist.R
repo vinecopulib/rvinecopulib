@@ -146,6 +146,21 @@ test_that("conditional simulation handles R-side ordering and recycling", {
     rvinecop(5, vc_cond, conditioning_set = "a"),
     "requires 'u_cond'"
   )
+  expect_error(rvinecop(1.5, vc_cond), "not a count")
+  expect_error(rvinecop(5, vc_cond, qrng = 1), "not a flag")
+  expect_error(rvinecop(5, vc_cond, cores = 0), "not greater than 0")
+  expect_error(
+    rvinecop(5, vc_cond, u_cond = list(0.5)),
+    "must be a vector, matrix, or data frame"
+  )
+  expect_error(
+    rvinecop(5, vc_cond, u_cond = data.frame(value = "a")),
+    "must be numeric"
+  )
+  expect_error(
+    rvinecop(5, vc_cond, u_cond = 1.2, conditioning_set = "a"),
+    "all data must be contained"
+  )
 })
 
 test_that("conditional simulation accepts discrete left limits", {
@@ -181,6 +196,15 @@ test_that("conditional simulation accepts discrete left limits", {
       conditioning_set = c(4, 3)
     ),
     "additional left-limit column"
+  )
+  expect_error(
+    rvinecop(
+      5,
+      vc_disc,
+      u_cond = c(0.7, 0.8),
+      conditioning_set = 4
+    ),
+    "left-limit columns.*must not exceed"
   )
 })
 
