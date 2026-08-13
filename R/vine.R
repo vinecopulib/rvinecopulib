@@ -115,7 +115,8 @@ vine <- function(
     keep_data = FALSE,
     show_trace = FALSE,
     cores = 1,
-    tree_algorithm = "mst_prim"
+    tree_algorithm = "mst_prim",
+    conditioning_set = NULL
   ),
   weights = numeric(),
   keep_data = FALSE,
@@ -183,6 +184,7 @@ prep_for_margins <- function(data) {
 compute_pseudo_obs <- function(data, vine) {
   d <- ncol(data)
   u <- dpq_marg(data, vine)
+  colnames(u) <- names(data)
   if (any(vine$copula$var_types != "c")) {
     u_sub <- u
     for (k in which(vine$copula$var_types != "c")) {

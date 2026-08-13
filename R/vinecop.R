@@ -43,6 +43,11 @@
 #'   algorithm to generate a random spanning tree, either with probability
 #'   proportional to the product of the edge weights (weighted) or
 #'   uniformly (unweighted).
+#' @param conditioning_set variable indices or names to place at the end of the
+#'   vine order. The resulting model can be sampled conditionally with
+#'   [rvinecop()] by supplying `u_cond`. Conditioning-aware selection requires
+#'   a full, non-truncated vine and an MST tree algorithm (`"mst_prim"` or
+#'   `"mst_kruskal"`).
 #'
 #' @details
 #'
@@ -176,7 +181,8 @@ vinecop <- function(
   vinecop_object = NULL,
   show_trace = FALSE,
   cores = 1,
-  tree_algorithm = "mst_prim"
+  tree_algorithm = "mst_prim",
+  conditioning_set = NULL
 ) {
   assert_that(
     is.character(family_set),
@@ -203,6 +209,38 @@ vinecop <- function(
     correct_var_types(var_types),
     is.string(tree_algorithm)
   )
+
+  d <- length(var_types)
+  var_names <- colnames(data)
+  if (!is.null(var_names)) {
+    var_names <- var_names[seq_len(d)]
+  }
+  conditioning_set <- process_conditioning_set(
+    conditioning_set,
+    var_names,
+    d
+  )
+  if (length(conditioning_set) > 0) {
+    if (!is.null(vinecop_object)) {
+      stop(
+        "'conditioning_set' cannot be used when refitting a 'vinecop_object'.",
+        call. = FALSE
+      )
+    }
+    if (is.na(trunc_lvl) || (is.finite(trunc_lvl) && trunc_lvl < d - 1)) {
+      stop(
+        "conditioning-aware selection requires a non-truncated vine.",
+        call. = FALSE
+      )
+    }
+    if (!tree_algorithm %in% c("mst_prim", "mst_kruskal")) {
+      stop(
+        "conditioning-aware selection requires 'tree_algorithm' to be ",
+        "'mst_prim' or 'mst_kruskal'.",
+        call. = FALSE
+      )
+    }
+  }
 
   seeds <- get_seeds()
   if (!is.null(vinecop_object)) {
@@ -265,7 +303,8 @@ vinecop <- function(
       num_threads = cores,
       var_types = var_types,
       tree_algorithm = tree_algorithm,
-      seeds = seeds
+      seeds = seeds,
+      conditioning_set = conditioning_set
     )
   }
 
@@ -292,7 +331,8 @@ vinecop <- function(
     trunc_lvl = trunc_lvl,
     tree_crit = tree_crit,
     threshold = threshold,
-    tree_algorithm = tree_algorithm
+    tree_algorithm = tree_algorithm,
+    conditioning_set = conditioning_set
   )
   vinecop$nobs <- NROW(data)
   vinecop

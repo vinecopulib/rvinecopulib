@@ -64,6 +64,26 @@ test_that("truncation works", {
   expect_silent(rvine(50, fit_truncated))
 })
 
+test_that("conditioning-aware selection is passed to the copula fit", {
+  u_named <- as.data.frame(u[, 1:4])
+  fit_conditioned <- vine(
+    u_named,
+    copula_controls = list(
+      family_set = "indep",
+      conditioning_set = c("V2", "V4")
+    )
+  )
+
+  expect_identical(
+    fit_conditioned$copula$controls$conditioning_set,
+    c(2L, 4L)
+  )
+  expect_equal(
+    sort(tail(fit_conditioned$copula$structure$order, 2)),
+    c(2L, 4L)
+  )
+})
+
 test_that("margins_controls works", {
   fit_mult <- vine(u, margins_controls = list(mult = 2))
   expect_eql(

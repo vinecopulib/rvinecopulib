@@ -28,6 +28,37 @@ test_that("d/p/r- functions work", {
   expect_lte(max(pvine(u, vc, 100)), 1)
 })
 
+test_that("rvine performs conditional simulation on the data scale", {
+  indep <- bicop_dist()
+  vc_cond <- vine_dist(
+    rep(list(list(distr = "norm")), 3),
+    list(list(indep, indep), list(indep)),
+    dvine_structure(1:3)
+  )
+  vc_cond$names <- vc_cond$copula$names <- c("a", "b", "c")
+
+  x <- rvine(
+    10,
+    vc_cond,
+    x_cond = c(1.25, -0.5),
+    conditioning_set = c("c", "b")
+  )
+  expect_identical(dim(x), c(10L, 3L))
+  expect_identical(colnames(x), c("a", "b", "c"))
+  expect_equal(x[, "c"], rep(1.25, 10))
+  expect_equal(x[, "b"], rep(-0.5, 10))
+
+  x_obs <- cbind(seq(-1, 1, length.out = 5), rep(0.25, 5))
+  x <- rvine(5, vc_cond, x_cond = x_obs)
+  expect_equal(x[, "b"], x_obs[, 1])
+  expect_equal(x[, "c"], x_obs[, 2])
+
+  expect_error(
+    rvine(5, vc_cond, conditioning_set = "a"),
+    "requires 'x_cond'"
+  )
+})
+
 test_that("constructor catches wrong input", {
   # missing margin name
   expect_error(vine_dist(list(stupid = "norm"), pcs, mat))

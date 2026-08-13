@@ -136,3 +136,32 @@ test_that("vine works", {
   pvine(x, fit)
   rvine(10, fit)
 })
+
+test_that("rvine computes discrete conditioning limits internally", {
+  n <- 30
+  x <- data.frame(
+    x1 = rnorm(n),
+    x2 = ordered(sample(5, n, TRUE), 1:5),
+    x3 = rnorm(n)
+  )
+  fit <- vine(
+    x,
+    copula_controls = list(
+      family_set = "indep",
+      conditioning_set = c("x3", "x2")
+    )
+  )
+  x_cond <- data.frame(
+    x3 = 1.25,
+    x2 = ordered(3, levels = 1:5)
+  )
+
+  sim <- rvine(
+    20,
+    fit,
+    x_cond = x_cond,
+    conditioning_set = c("x3", "x2")
+  )
+  expect_equal(sim$x3, rep(1.25, 20))
+  expect_identical(sim$x2, ordered(rep(3, 20), levels = 1:5))
+})

@@ -10,6 +10,15 @@
 #' @param vine an object of class `"vine_dist"`.
 #' @param cores number of cores to use; if larger than one, computations are
 #'   done in parallel on `cores` batches .
+#' @param x_cond optional conditioning values for `rvine()` on the original
+#'   data scale. A vector or one-row object is repeated `n` times;
+#'   alternatively, supply an `n`-row matrix or data frame for
+#'   observation-specific conditioning values. If `NULL`, `rvine()` performs
+#'   unconditional simulation.
+#' @param conditioning_set variable indices or names corresponding to the
+#'   columns of `x_cond`. When `NULL`, the columns correspond to the last
+#'   variables of the current copula order. Discrete left limits are computed
+#'   internally from the fitted margins.
 #' @details
 #' See [vine] for the estimation and construction of vine models.
 #' Here, the density, distribution function and random generation
@@ -22,7 +31,7 @@
 #' (i.e., output of [vine_dist()]).
 #' @return
 #' `dvine()` gives the density, `pvine()` gives the distribution function,
-#' and `rvine()` generates random deviates.
+#' and `rvine()` generates unconditional or conditional random deviates.
 #'
 #' The length of the result is determined by `n` for `rvine()`, and
 #' the number of rows in `u` for the other functions.
@@ -108,14 +117,100 @@ pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
 #' Generalized Halton sequence up to dimension 300 and the Generalized Sobol
 #' sequence in higher dimensions (default `qrng = FALSE`).
 #' @export
-rvine <- function(n, vine, qrng = FALSE, cores = 1) {
-  assert_that(inherits(vine, "vine_dist"), is.flag(qrng))
+rvine <- function(
+  n,
+  vine,
+  qrng = FALSE,
+  cores = 1,
+  x_cond = NULL,
+  conditioning_set = NULL
+) {
+  assert_that(
+    is.count(n),
+    inherits(vine, "vine_dist"),
+    is.flag(qrng),
+    is.number(cores),
+    cores > 0
+  )
 
-  # simulate copula data
-  U <- rvinecop(n, vine$copula, qrng, cores)
+  n <- as.integer(n)
+  if (is.null(x_cond)) {
+    if (!is.null(conditioning_set) && length(conditioning_set) > 0) {
+      stop("'conditioning_set' requires 'x_cond'.", call. = FALSE)
+    }
+    U <- rvinecop(n, vine$copula, qrng, cores)
+    conditioned_variables <- integer()
+  } else {
+    x_cond <- process_conditioning_values(x_cond, n, "x_cond")
+    d <- dim(vine)[1]
+    conditioning_set_supplied <-
+      !is.null(conditioning_set) && length(conditioning_set) > 0
+
+    if (conditioning_set_supplied) {
+      conditioned_variables <- process_conditioning_set(
+        conditioning_set,
+        vine$names,
+        d
+      )
+      if (ncol(x_cond) != length(conditioned_variables)) {
+        stop(
+          "'x_cond' must have one column per conditioning variable.",
+          call. = FALSE
+        )
+      }
+    } else {
+      k <- ncol(x_cond)
+      if (k < 1L || k >= d) {
+        stop("'x_cond' must have between 1 and d - 1 columns.", call. = FALSE)
+      }
+      conditioned_variables <- utils::tail(vine$copula$structure$order, k)
+    }
+
+    get_conditioning_column <- function(i) {
+      if (is.data.frame(x_cond)) x_cond[[i]] else x_cond[, i]
+    }
+    u_values <- lapply(seq_along(conditioned_variables), function(i) {
+      eval_one_dpq(
+        get_conditioning_column(i),
+        vine$margins[[conditioned_variables[i]]],
+        "p"
+      )
+    })
+    discrete_positions <- which(
+      vine$copula$var_types[conditioned_variables] == "d"
+    )
+    u_left_limits <- lapply(discrete_positions, function(i) {
+      eval_one_dpq(
+        get_conditioning_column(i),
+        vine$margins[[conditioned_variables[i]]],
+        "p_sub"
+      )
+    })
+    u_cond <- do.call(cbind, c(u_values, u_left_limits))
+
+    U <- rvinecop(
+      n,
+      vine$copula,
+      qrng,
+      cores,
+      u_cond = u_cond,
+      conditioning_set = if (conditioning_set_supplied) {
+        conditioned_variables
+      }
+    )
+  }
 
   # use quantile transformation for marginals
   X <- dpq_marg(U, vine, "q")
+  if (!is.null(x_cond)) {
+    for (i in seq_along(conditioned_variables)) {
+      if (is.data.frame(X)) {
+        X[[conditioned_variables[i]]] <- get_conditioning_column(i)
+      } else {
+        X[, conditioned_variables[i]] <- get_conditioning_column(i)
+      }
+    }
+  }
   colnames(X) <- vine$names
   X
 }
