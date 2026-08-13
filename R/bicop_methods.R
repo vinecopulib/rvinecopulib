@@ -12,8 +12,10 @@
 #'   \code{\link{bicop}} for all possible families).
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
 #' @param parameters a vector or matrix of copula parameters. For `scores()`
-#'   and `hessian()`, an optional matrix with one row per observation overrides
-#'   the parameters stored in `vinecop`.
+#'   and `hessian()`, optional observation-specific parameters override those
+#'   stored in `vinecop`: a vector is accepted for one-parameter families;
+#'   otherwise, use a matrix with one row per observation and one column per
+#'   parameter. Parameters are not recycled.
 #' @param var_types variable types, a length 2 vector; e.g., `c("c", "c")` for
 #'   both continuous (default), or `c("c", "d")` for first variable continuous
 #'   and second discrete.
@@ -134,8 +136,8 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
 scores.bicop_dist <- function(
   u,
   vinecop,
-  parameters = NULL,
   cores = 1,
+  parameters = NULL,
   ...
 ) {
   assert_that(is.number(cores), cores > 0)
@@ -152,8 +154,8 @@ scores.bicop_dist <- function(
 hessian.bicop_dist <- function(
   u,
   vinecop,
-  parameters = NULL,
   cores = 1,
+  parameters = NULL,
   ...
 ) {
   assert_that(is.number(cores), cores > 0)

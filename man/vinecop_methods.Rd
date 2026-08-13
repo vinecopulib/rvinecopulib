@@ -18,11 +18,11 @@ dvinecop(u, vinecop, cores = 1, keep_all = FALSE)
 
 scores(u, vinecop, ...)
 
-\method{scores}{vinecop_dist}(u, vinecop, parameters = NULL, step_wise = TRUE, cores = 1, ...)
+\method{scores}{vinecop_dist}(u, vinecop, step_wise = TRUE, cores = 1, parameters = NULL, ...)
 
 hessian(u, vinecop, ...)
 
-\method{hessian}{vinecop_dist}(u, vinecop, parameters = NULL, step_wise = TRUE, cores = 1, ...)
+\method{hessian}{vinecop_dist}(u, vinecop, step_wise = TRUE, cores = 1, parameters = NULL, ...)
 
 pvinecop(u, vinecop, n_mc = 10^4, cores = 1)
 
@@ -50,14 +50,16 @@ quantities computed during density evaluation.}
 
 \item{...}{unused.}
 
-\item{parameters}{optional matrix of observation-specific parameters, with
-one row per observation. For bivariate models, columns are family
-parameters; for vine copulas, columns follow the \verb{(tree, edge, parameter)}
-order of \code{scores()}. Only continuous parametric models are supported.}
-
 \item{step_wise}{if \code{FALSE}, the score/Hessian is computed for the full
 likelihood; if \code{TRUE}, gradients are computed per pair-copula as in
 step-wise estimation.}
+
+\item{parameters}{optional observation-specific parameters. For a
+one-parameter bivariate family, this may be a vector with one entry per
+observation. Otherwise, it must be a matrix with one row per observation
+and one column per model parameter. For vine copulas, columns follow the
+\verb{(tree, edge, parameter)} order of \code{scores()}. Parameters are not recycled.
+Only continuous parametric models are supported.}
 
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 
