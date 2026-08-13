@@ -65,6 +65,9 @@ test_that("truncation works", {
 })
 
 test_that("conditioning-aware selection is passed to the copula fit", {
+  rng_state <- .Random.seed
+  on.exit(assign(".Random.seed", rng_state, envir = globalenv()), add = TRUE)
+
   u_named <- as.data.frame(u[, 1:4])
   fit_conditioned <- vine(
     u_named,
