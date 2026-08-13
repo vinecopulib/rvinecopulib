@@ -334,28 +334,30 @@ BEGIN_RCPP
 END_RCPP
 }
 // vinecop_pdf_cpp
-Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, size_t cores);
-RcppExport SEXP _rvinecopulib_vinecop_pdf_cpp(SEXP uSEXP, SEXP vinecop_rSEXP, SEXP coresSEXP) {
+Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, const Eigen::MatrixXd& parameters, size_t cores);
+RcppExport SEXP _rvinecopulib_vinecop_pdf_cpp(SEXP uSEXP, SEXP vinecop_rSEXP, SEXP parametersSEXP, SEXP coresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type parameters(parametersSEXP);
     Rcpp::traits::input_parameter< size_t >::type cores(coresSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_pdf_cpp(u, vinecop_r, cores));
+    rcpp_result_gen = Rcpp::wrap(vinecop_pdf_cpp(u, vinecop_r, parameters, cores));
     return rcpp_result_gen;
 END_RCPP
 }
 // vinecop_pdf_full_cpp
-Rcpp::List vinecop_pdf_full_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, size_t cores);
-RcppExport SEXP _rvinecopulib_vinecop_pdf_full_cpp(SEXP uSEXP, SEXP vinecop_rSEXP, SEXP coresSEXP) {
+Rcpp::List vinecop_pdf_full_cpp(const Eigen::MatrixXd& u, const Rcpp::List& vinecop_r, const Eigen::MatrixXd& parameters, size_t cores);
+RcppExport SEXP _rvinecopulib_vinecop_pdf_full_cpp(SEXP uSEXP, SEXP vinecop_rSEXP, SEXP parametersSEXP, SEXP coresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u(uSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type parameters(parametersSEXP);
     Rcpp::traits::input_parameter< size_t >::type cores(coresSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_pdf_full_cpp(u, vinecop_r, cores));
+    rcpp_result_gen = Rcpp::wrap(vinecop_pdf_full_cpp(u, vinecop_r, parameters, cores));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -504,8 +506,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_rosenblatt_cpp", (DL_FUNC) &_rvinecopulib_vinecop_rosenblatt_cpp, 6},
     {"_rvinecopulib_vinecop_sim_cpp", (DL_FUNC) &_rvinecopulib_vinecop_sim_cpp, 5},
     {"_rvinecopulib_vinecop_sim_conditional_cpp", (DL_FUNC) &_rvinecopulib_vinecop_sim_conditional_cpp, 6},
-    {"_rvinecopulib_vinecop_pdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_pdf_cpp, 3},
-    {"_rvinecopulib_vinecop_pdf_full_cpp", (DL_FUNC) &_rvinecopulib_vinecop_pdf_full_cpp, 3},
+    {"_rvinecopulib_vinecop_pdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_pdf_cpp, 4},
+    {"_rvinecopulib_vinecop_pdf_full_cpp", (DL_FUNC) &_rvinecopulib_vinecop_pdf_full_cpp, 4},
     {"_rvinecopulib_vinecop_cdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_cdf_cpp, 5},
     {"_rvinecopulib_vinecop_scores_cpp", (DL_FUNC) &_rvinecopulib_vinecop_scores_cpp, 5},
     {"_rvinecopulib_vinecop_hessian_cpp", (DL_FUNC) &_rvinecopulib_vinecop_hessian_cpp, 5},

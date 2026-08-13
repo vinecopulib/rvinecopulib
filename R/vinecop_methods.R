@@ -26,6 +26,13 @@
 #'   block of `u_cond`. When `NULL`, the columns of `u_cond` correspond to the
 #'   last variables of the current vine order. When supplied, the model is
 #'   transiently reoriented and is not modified.
+#' @param parameters optional observation-specific parameters for `dvinecop()`,
+#'   `scores()`, and `hessian()`. For a model with one parameter, this may be a
+#'   vector with one entry per observation. Otherwise, it must be a matrix with
+#'   one row per observation and one column per model parameter. For vine
+#'   copulas, columns follow the `(tree, edge, parameter)` order of `scores()`.
+#'   Parameters are not recycled. Only continuous parametric models are
+#'   supported.
 #' @details See [vinecop()] for the estimation and construction of vine copula
 #' models.
 #'
@@ -114,7 +121,13 @@
 #' )
 #' @rdname vinecop_methods
 #' @export
-dvinecop <- function(u, vinecop, cores = 1, keep_all = FALSE) {
+dvinecop <- function(
+  u,
+  vinecop,
+  cores = 1,
+  keep_all = FALSE,
+  parameters = NULL
+) {
   assert_that(
     inherits(vinecop, "vinecop_dist"),
     is.number(cores),
@@ -122,10 +135,15 @@ dvinecop <- function(u, vinecop, cores = 1, keep_all = FALSE) {
     is.flag(keep_all)
   )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
+  if (is.null(parameters)) {
+    parameters <- matrix(numeric(), 0, 0)
+  }
+  assert_that(is.numeric(parameters))
+  parameters <- as.matrix(parameters)
   if (keep_all) {
-    vinecop_pdf_full_cpp(u, vinecop, cores)
+    vinecop_pdf_full_cpp(u, vinecop, parameters, cores)
   } else {
-    vinecop_pdf_cpp(u, vinecop, cores)
+    vinecop_pdf_cpp(u, vinecop, parameters, cores)
   }
 }
 
@@ -133,12 +151,6 @@ dvinecop <- function(u, vinecop, cores = 1, keep_all = FALSE) {
 #' @param step_wise if `FALSE`, the score/Hessian is computed for the full
 #'   likelihood; if `TRUE`, gradients are computed per pair-copula as in
 #'   step-wise estimation.
-#' @param parameters optional observation-specific parameters. For a
-#'   one-parameter bivariate family, this may be a vector with one entry per
-#'   observation. Otherwise, it must be a matrix with one row per observation
-#'   and one column per model parameter. For vine copulas, columns follow the
-#'   `(tree, edge, parameter)` order of `scores()`. Parameters are not recycled.
-#'   Only continuous parametric models are supported.
 #' @export
 scores <- function(u, vinecop, ...) {
   UseMethod("scores", vinecop)
@@ -413,7 +425,12 @@ predict.vinecop <- function(
   newdata <- if_vec_to_matrix(newdata, dim(object)[1] == 1)
   switch(
     what,
-    "pdf" = vinecop_pdf_cpp(newdata, object, cores),
+    "pdf" = vinecop_pdf_cpp(
+      newdata,
+      object,
+      matrix(numeric(), 0, 0),
+      cores
+    ),
     "cdf" = vinecop_cdf_cpp(newdata, object, n_mc, cores, get_seeds())
   )
 }
@@ -432,7 +449,12 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
   )
   switch(
     what,
-    "pdf" = vinecop_pdf_cpp(object$data, object, cores),
+    "pdf" = vinecop_pdf_cpp(
+      object$data,
+      object,
+      matrix(numeric(), 0, 0),
+      cores
+    ),
     "cdf" = vinecop_cdf_cpp(object$data, object, n_mc, cores, get_seeds())
   )
 }

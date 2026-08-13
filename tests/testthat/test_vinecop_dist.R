@@ -74,6 +74,7 @@ test_that("d/p/r- functions work", {
   )
   expect_equal(dvinecop(u, vc, cores = 2), dvinecop(u, vc))
   expect_equal(dvinecop(u, vc, cores = 2, keep_all = TRUE), pdf_full)
+  expect_equal(dvinecop(u, vc, 2, TRUE), pdf_full)
   expect_gte(min(pvinecop(u, vc, 100)), 0)
   expect_lte(max(pvinecop(u, vc, 100)), 1)
 })
@@ -263,6 +264,134 @@ test_that("conditional simulation accepts discrete left limits", {
       conditioning_set = 4
     ),
     "left-limit columns.*must not exceed"
+  )
+})
+
+test_that("dvinecop accepts full-vine parameter matrices", {
+  u_vectorized <- rvinecop(20, vc)
+  parameters <- matrix(
+    rep(unlist(get_all_parameters(vc)), each = nrow(u_vectorized)),
+    nrow = nrow(u_vectorized)
+  )
+
+  expect_equal(
+    dvinecop(u_vectorized, vc, parameters = parameters),
+    dvinecop(u_vectorized, vc)
+  )
+  expect_equal(
+    dvinecop(
+      u_vectorized,
+      vc,
+      keep_all = TRUE,
+      parameters = parameters
+    ),
+    dvinecop(u_vectorized, vc, keep_all = TRUE)
+  )
+})
+
+test_that("dvinecop supports observation-specific parameters", {
+  set.seed(17)
+  n <- 30
+  u_vectorized <- matrix(runif(2 * n, 0.1, 0.9), ncol = 2)
+  cop <- bicop_dist("gaussian", parameters = 0)
+  vc_vectorized <- vinecop_dist(
+    list(list(cop)),
+    dvine_structure(1:2)
+  )
+  parameters <- seq(-0.7, 0.7, length.out = n)
+
+  density <- dvinecop(
+    u_vectorized,
+    vc_vectorized,
+    parameters = parameters
+  )
+  expect_equal(
+    density,
+    dbicop(u_vectorized, "gaussian", parameters = parameters)
+  )
+  expect_equal(
+    dvinecop(u_vectorized, vc_vectorized, cores = 2, parameters = parameters),
+    density
+  )
+
+  full <- dvinecop(
+    u_vectorized,
+    vc_vectorized,
+    keep_all = TRUE,
+    parameters = parameters
+  )
+  expect_equal(full$pdf, density)
+  expect_equal(full$pdf_edges[[1]][[1]], density)
+  expect_pdf_full_triangular_vectors(full, vc_vectorized, n)
+  expect_equal(
+    dvinecop(
+      u_vectorized,
+      vc_vectorized,
+      cores = 2,
+      keep_all = TRUE,
+      parameters = parameters
+    ),
+    full
+  )
+})
+
+test_that("dvinecop parameter safeguards are enforced", {
+  u_vectorized <- matrix(c(0.2, 0.3, 0.7, 0.8), ncol = 2)
+  cop <- bicop_dist("gaussian", parameters = 0.4)
+  vc_vectorized <- vinecop_dist(list(list(cop)), dvine_structure(1:2))
+
+  expect_error(
+    dvinecop(u_vectorized, vc_vectorized, parameters = "bad"),
+    "not a numeric"
+  )
+  expect_error(
+    dvinecop(u_vectorized, vc_vectorized, parameters = matrix(0.2, 1, 1)),
+    "one row per row of u"
+  )
+  expect_error(
+    dvinecop(
+      u_vectorized,
+      vc_vectorized,
+      parameters = matrix(rep(0.2, 4), nrow = 2)
+    ),
+    "get_npars.*columns"
+  )
+  expect_error(
+    dvinecop(
+      u_vectorized,
+      vc_vectorized,
+      parameters = matrix(c(0.2, NA_real_), ncol = 1)
+    ),
+    "must not contain NaN or Inf"
+  )
+  expect_error(
+    dvinecop(
+      u_vectorized,
+      vc_vectorized,
+      parameters = matrix(c(0.2, 1.1), ncol = 1)
+    ),
+    "out of bounds"
+  )
+
+  vc_discrete <- vc_vectorized
+  vc_discrete$var_types[1] <- "d"
+  u_discrete <- cbind(u_vectorized, u_vectorized[, 1])
+  expect_error(
+    dvinecop(u_discrete, vc_discrete, parameters = matrix(c(0.2, 0.3))),
+    "continuous"
+  )
+
+  vc_nonparametric <- vinecop_dist(
+    list(list(bicop_dist("tll"))),
+    dvine_structure(1:2)
+  )
+  expect_error(
+    dvinecop(
+      u_vectorized,
+      vc_nonparametric,
+      parameters = matrix(numeric(60), nrow = 2)
+    ),
+    "parametric pair copulas"
   )
 })
 
