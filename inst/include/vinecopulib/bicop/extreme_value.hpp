@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -23,22 +23,22 @@ private:
   // pdf, cdf, hfunctions and inverses (`parameters` is m x p, m in {1, n}; a
   // single row is broadcast to all observations)
   Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
-                      const Eigen::MatrixXd& parameters);
+                      const Eigen::MatrixXd& parameters) override;
 
   Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u,
-                          const Eigen::MatrixXd& parameters);
+                          const Eigen::MatrixXd& parameters) override;
 
   Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u,
-                             const Eigen::MatrixXd& parameters);
+                             const Eigen::MatrixXd& parameters) override;
 
   Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u,
-                             const Eigen::MatrixXd& parameters);
+                             const Eigen::MatrixXd& parameters) override;
 
   Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u,
-                            const Eigen::MatrixXd& parameters);
+                            const Eigen::MatrixXd& parameters) override;
 
   Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u,
-                            const Eigen::MatrixXd& parameters);
+                            const Eigen::MatrixXd& parameters) override;
 
   // pickands dependence functions and its derivatives; `parameters` is a single
   // parameter set (a p x 1 column)
@@ -54,10 +54,15 @@ private:
     const double& t,
     const Eigen::Ref<const Eigen::VectorXd>& parameters) = 0;
 
-  // link between Kendall's tau and the par_bicop parameter
-  double parameters_to_tau(const Eigen::MatrixXd& par);
+  // where A'' peaks; `parameters_to_tau` splits its integral there, because the
+  // peak can be far narrower than any subdivision reachable from [0, 1]
+  virtual double pickands_peak(
+    const Eigen::Ref<const Eigen::VectorXd>& parameters);
 
-  Eigen::MatrixXd parameters_to_taildep(const Eigen::MatrixXd& par);
+  // link between Kendall's tau and the par_bicop parameter
+  double parameters_to_tau(const Eigen::MatrixXd& par) override;
+
+  Eigen::MatrixXd parameters_to_taildep(const Eigen::MatrixXd& par) override;
 };
 }
 

@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -9,15 +9,6 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <limits>
 #include <vinecopulib/bicop/fit_controls.hpp>
-
-#if defined(__GNUC__) || defined(__clang__)
-#define DEPRECATED __attribute__((deprecated))
-#elif defined(_MSC_VER)
-#define DEPRECATED __declspec(deprecated)
-#else
-#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
-#define DEPRECATED
-#endif
 
 namespace vinecopulib {
 //! @brief A class for controlling fits of vine copula models.
@@ -65,7 +56,6 @@ public:
   explicit FitControlsVinecop(const FitControlsConfig& config);
 
   // Getters
-  DEPRECATED size_t get_truncation_level() const;
   //! @return the truncation level (the number of trees that will be fit;
   //! pair copulas above this level are forced to independence).
   size_t get_trunc_lvl() const;
@@ -75,7 +65,8 @@ public:
   std::string get_tree_criterion() const;
 
   //! @return the custom edge-weight function used when `tree_criterion` is
-  //! `"custom"` (empty otherwise).
+  //! `"custom"` (empty otherwise). It is always called on the thread that
+  //! starts the fit, so it need not be thread safe.
   TreeCriterionFunction get_tree_criterion_function() const;
 
   //! @return the absolute-dependence threshold below which pair copulas
@@ -85,7 +76,6 @@ public:
   //! @return whether progress information is printed during fitting.
   bool get_show_trace() const;
 
-  DEPRECATED bool get_select_truncation_level() const;
   //! @return whether the truncation level is selected automatically via
   //! the mBICv criterion during fitting.
   bool get_select_trunc_lvl() const;
@@ -122,13 +112,15 @@ public:
   boost::random::mt19937 get_rng() const;
 
   // Setters
-  DEPRECATED void set_truncation_level(size_t trunc_lvl);
   void set_trunc_lvl(size_t trunc_lvl);
 
   void set_tree_criterion(std::string tree_criterion);
 
   //! Sets the custom edge-weight function used when `tree_criterion` is
-  //! `"custom"`.
+  //! `"custom"`. The two may be set in either order, but a fit is rejected
+  //! unless both are set. The function is always called on the thread that
+  //! starts the fit, so it need not be thread safe; the pair-copula fits still
+  //! use `num_threads` threads.
   //! @param tree_criterion_function a callable mapping a two-column matrix of
   //! pair-copula data and a vector of weights to a scalar dependence value.
   void set_tree_criterion_function(
@@ -138,14 +130,13 @@ public:
 
   void set_show_trace(bool show_trace);
 
-  DEPRECATED void set_select_truncation_level(bool select_trunc_lvl);
   void set_select_trunc_lvl(bool select_trunc_lvl);
 
   void set_select_threshold(bool select_threshold);
 
   void set_select_families(bool select_families);
 
-  void set_fit_controls_bicop(FitControlsBicop controls);
+  void set_fit_controls_bicop(const FitControlsBicop& controls);
 
   void set_tree_algorithm(std::string tree_algorithm);
 

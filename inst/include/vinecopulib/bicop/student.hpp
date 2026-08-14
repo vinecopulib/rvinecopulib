@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -27,43 +27,43 @@ private:
   // evaluation leaves (`parameters` is m x 2, m in {1, n}); these loop per row
   // because the t-distribution helpers take scalar parameters
   Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u,
-                          const Eigen::MatrixXd& parameters);
+                          const Eigen::MatrixXd& parameters) override;
 
   Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
-                      const Eigen::MatrixXd& parameters);
+                      const Eigen::MatrixXd& parameters) override;
 
   Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u,
-                             const Eigen::MatrixXd& parameters);
+                             const Eigen::MatrixXd& parameters) override;
 
   Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u,
-                            const Eigen::MatrixXd& parameters);
+                            const Eigen::MatrixXd& parameters) override;
 
   // analytic derivative leaves (canonical selectors; see tools_deriv),
   // ported from the VineCopula C sources (tcopuladeriv.c,
   // tcopuladeriv_new.c, logderiv.c)
   Eigen::VectorXd pdf_deriv_raw(const Eigen::MatrixXd& u,
                                 const Eigen::MatrixXd& parameters,
-                                const std::string& deriv);
+                                const std::string& deriv) override;
 
   Eigen::VectorXd pdf_deriv2_raw(const Eigen::MatrixXd& u,
                                  const Eigen::MatrixXd& parameters,
-                                 const std::string& deriv);
+                                 const std::string& deriv) override;
 
   Eigen::VectorXd hfunc1_deriv_raw(const Eigen::MatrixXd& u,
                                    const Eigen::MatrixXd& parameters,
-                                   const std::string& deriv);
+                                   const std::string& deriv) override;
 
   Eigen::VectorXd hfunc1_deriv2_raw(const Eigen::MatrixXd& u,
                                     const Eigen::MatrixXd& parameters,
-                                    const std::string& deriv);
+                                    const std::string& deriv) override;
 
   Eigen::VectorXd logpdf_deriv_raw(const Eigen::MatrixXd& u,
                                    const Eigen::MatrixXd& parameters,
-                                   const std::string& deriv);
+                                   const std::string& deriv) override;
 
   Eigen::VectorXd logpdf_deriv2_raw(const Eigen::MatrixXd& u,
                                     const Eigen::MatrixXd& parameters,
-                                    const std::string& deriv);
+                                    const std::string& deriv) override;
 
   // applies a scalar kernel to each row of `u` with per-row parameters
   static Eigen::VectorXd apply_kernel(
@@ -121,11 +121,12 @@ private:
                                     double rho,
                                     double nu);
 
-  Eigen::MatrixXd tau_to_parameters(const double& tau);
+  Eigen::MatrixXd tau_to_parameters(const double& tau) override;
 
-  Eigen::MatrixXd parameters_to_taildep(const Eigen::MatrixXd& parameters);
+  Eigen::MatrixXd parameters_to_taildep(
+    const Eigen::MatrixXd& parameters) override;
 
-  Eigen::VectorXd get_start_parameters(const double tau);
+  Eigen::VectorXd get_start_parameters(const double tau) override;
 };
 }
 

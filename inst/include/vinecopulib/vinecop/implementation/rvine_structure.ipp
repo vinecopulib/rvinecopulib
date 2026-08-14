@@ -1,9 +1,10 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <utility>
 #include <vinecopulib/misc/tools_serialization.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
@@ -387,7 +388,7 @@ RVineStructure::str() const
 inline RVineStructure
 RVineStructure::simulate(size_t d, bool natural_order, std::vector<int> seeds)
 {
-  auto U = tools_stats::simulate_uniform(d, d, false, seeds);
+  auto U = tools_stats::simulate_uniform(d, d, false, std::move(seeds));
 
   // A is the R-vine matrix we want to create (upper right-triag format).
   // B is a random binary representation that we need to convert.
@@ -684,7 +685,7 @@ RVineStructure::check_upper_tri() const
 inline void
 RVineStructure::check_columns() const
 {
-  std::string problem = "";
+  std::string problem;
   for (size_t j = 0; j < d_ - 1; j++) {
     // read column into vector so we can use stl methods
     std::vector<size_t> col(std::min(trunc_lvl_, d_ - 1 - j));
@@ -702,7 +703,7 @@ RVineStructure::check_columns() const
     if (unique_in_col != col.size()) {
       problem = "a column must not contain duplicate entries.";
     }
-    if (problem != "") {
+    if (!problem.empty()) {
       throw std::runtime_error("not a valid R-vine array: " + problem);
     }
   }

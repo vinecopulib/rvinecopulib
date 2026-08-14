@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -70,17 +70,16 @@ struct EdgeProperties
   vinecopulib::Bicop pair_copula;
   double fit_id;
 };
-typedef boost::adjacency_list<
+using VineTree = boost::adjacency_list<
   boost::vecS,
   boost::vecS,
   boost::undirectedS,
   VertexProperties,
-  boost::property<boost::edge_weight_t, double, EdgeProperties>>
-  VineTree;
+  boost::property<boost::edge_weight_t, double, EdgeProperties>>;
 
-typedef boost::graph_traits<VineTree>::edge_descriptor EdgeIterator;
-typedef std::pair<EdgeIterator, bool> FoundEdge;
-typedef boost::property_map<VineTree, boost::edge_weight_t>::type WeightMap;
+using EdgeIterator = boost::graph_traits<VineTree>::edge_descriptor;
+using FoundEdge = std::pair<EdgeIterator, bool>;
+using WeightMap = boost::property_map<VineTree, boost::edge_weight_t>::type;
 
 class VinecopSelector
 {

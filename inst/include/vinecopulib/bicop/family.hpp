@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -75,7 +75,7 @@ std::string
 get_family_name(BicopFamily family);
 
 BicopFamily
-get_family_enum(std::string family);
+get_family_enum(const std::string& family);
 
 //! Convenience definitions of sets of bivariate copula families
 namespace bicop_families {

@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -24,23 +24,23 @@ class EllipticalBicop : public ParBicop
 private:
   // hfunction and its inverse (thread `parameters` through the column swap)
   Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u,
-                             const Eigen::MatrixXd& parameters);
+                             const Eigen::MatrixXd& parameters) override;
 
   Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u,
-                            const Eigen::MatrixXd& parameters);
+                            const Eigen::MatrixXd& parameters) override;
 
   // elliptical copulas are exchangeable: the second h-function derivatives
   // are the first ones at swapped arguments/selectors
   Eigen::VectorXd hfunc2_deriv_raw(const Eigen::MatrixXd& u,
                                    const Eigen::MatrixXd& parameters,
-                                   const std::string& deriv);
+                                   const std::string& deriv) override;
 
   Eigen::VectorXd hfunc2_deriv2_raw(const Eigen::MatrixXd& u,
                                     const Eigen::MatrixXd& parameters,
-                                    const std::string& deriv);
+                                    const std::string& deriv) override;
 
   // link between Kendall's tau and the par_bicop parameter
-  double parameters_to_tau(const Eigen::MatrixXd& parameters);
+  double parameters_to_tau(const Eigen::MatrixXd& parameters) override;
 };
 }
 

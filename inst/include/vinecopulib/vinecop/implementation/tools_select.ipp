@@ -1,9 +1,10 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <utility>
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
 
@@ -12,7 +13,9 @@
 #include <boost/graph/random_spanning_tree.hpp>
 #include <boost/random.hpp>
 #include <cmath>
+#include <functional>
 #include <iostream>
+#include <unordered_set>
 #include <wdm/eigen.hpp>
 
 namespace vinecopulib {
@@ -108,8 +111,9 @@ inline VinecopSelector::VinecopSelector(const Eigen::MatrixXd& data,
                                         const FitControlsVinecop& controls,
                                         std::vector<std::string> var_types)
   : n_(data.rows())
+  // d_ is declared before var_types_, so it is initialized before the move.
   , d_(var_types.size())
-  , var_types_(var_types)
+  , var_types_(std::move(var_types))
   , controls_(controls)
   , pool_(controls_.get_num_threads())
   , trees_(std::vector<VineTree>(1))
@@ -133,7 +137,7 @@ inline VinecopSelector::VinecopSelector(const Eigen::MatrixXd& data,
                                         const RVineStructure& vine_struct,
                                         const FitControlsVinecop& controls,
                                         std::vector<std::string> var_types)
-  : VinecopSelector(data, controls, var_types)
+  : VinecopSelector(data, controls, std::move(var_types))
 {
   vine_struct_ = vine_struct;
   structure_unknown_ = false;
@@ -403,7 +407,7 @@ VinecopSelector::get_nobs() const
 inline double
 VinecopSelector::get_next_threshold(std::vector<double>& thresholded_crits)
 {
-  if (thresholded_crits.size() == 0) {
+  if (thresholded_crits.empty()) {
     return 1.0;
   }
   // sort in descending order
@@ -446,7 +450,10 @@ VinecopSelector::add_allowed_edges(VineTree& vine_tree)
 //!
 //! Used when the structure is unknown. The candidate edges are enumerated
 //! single-threaded (insertion order is significant); their weights are then
-//! computed in parallel, with graph writes guarded by a mutex.
+//! computed in parallel, with graph writes guarded by a mutex. A custom
+//! criterion is the exception: it is user code that the library cannot assume
+//! to be thread safe (and that the R and Python bindings may only run on the
+//! thread that entered the library), so those weights are computed serially.
 inline void
 VinecopSelector::add_allowed_edges_proximity(
   VineTree& vine_tree,
@@ -512,8 +519,15 @@ VinecopSelector::add_allowed_edges_proximity(
     }
   };
 
-  pool_.map(process_edge, edge_list);
-  pool_.wait();
+  if (tree_criterion == "custom") {
+    for (const auto& edge : edge_list) {
+      tools_interface::check_user_interrupt();
+      process_edge(edge);
+    }
+  } else {
+    pool_.map(process_edge, edge_list);
+    pool_.wait();
+  }
 }
 
 //! @brief Adds the edges dictated by a fixed vine structure.
@@ -597,10 +611,18 @@ VinecopSelector::select_edges_mst_kruskal(VineTree& vine_tree)
 {
   std::vector<EdgeIterator> spanning_tree;
   kruskal_minimum_spanning_tree(vine_tree, std::back_inserter(spanning_tree));
-  // Using a hashmap to make the lookup faster
-  // boost::unordered set is used instead of std::set
-  // because std::pair doesn't have a default hash function
-  boost::unordered_set<std::pair<size_t, size_t>> edges_set;
+  // A hash set makes the lookup below O(1); std::pair has no default hash, so
+  // the set carries its own.
+  struct PairHash
+  {
+    size_t operator()(const std::pair<size_t, size_t>& e) const noexcept
+    {
+      const size_t h = std::hash<size_t>()(e.first);
+      return h ^
+             (std::hash<size_t>()(e.second) + 0x9e3779b9 + (h << 6) + (h >> 2));
+    }
+  };
+  std::unordered_set<std::pair<size_t, size_t>, PairHash> edges_set;
   for (auto e : spanning_tree) {
     edges_set.insert(
       { boost::source(e, vine_tree), boost::target(e, vine_tree) });
@@ -1077,7 +1099,7 @@ VinecopSelector::find_common_neighbor(size_t v0,
   auto ei1 = tree[v1].prev_edge_indices;
   auto ei_common = intersect(ei0, ei1);
 
-  if (ei_common.size() == 0) {
+  if (ei_common.empty()) {
     return -1;
   } else {
     return ei_common[0];
@@ -1241,7 +1263,7 @@ VinecopSelector::get_pc_index(const EdgeIterator& e, const VineTree& tree)
   // add 1 everywhere for user-facing representation (boost::graph
   // starts at 0)
   index << tree[e].conditioned[0] + 1 << "," << tree[e].conditioned[1] + 1;
-  if (tree[e].conditioning.size() > 0) {
+  if (!tree[e].conditioning.empty()) {
     index << " | ";
     for (unsigned int i = 0; i < tree[e].conditioning.size(); ++i) {
       index << tree[e].conditioning[i] + 1;
@@ -1250,7 +1272,7 @@ VinecopSelector::get_pc_index(const EdgeIterator& e, const VineTree& tree)
     }
   }
 
-  return index.str().c_str();
+  return index.str();
 }
 }
 }

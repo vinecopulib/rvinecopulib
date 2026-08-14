@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -20,15 +20,15 @@ class ParBicop : public AbstractBicop
 {
 protected:
   // Getters and setters
-  Eigen::MatrixXd get_parameters() const;
+  Eigen::MatrixXd get_parameters() const override;
 
-  Eigen::MatrixXd get_parameters_lower_bounds() const;
+  Eigen::MatrixXd get_parameters_lower_bounds() const override;
 
-  Eigen::MatrixXd get_parameters_upper_bounds() const;
+  Eigen::MatrixXd get_parameters_upper_bounds() const override;
 
-  void set_parameters(const Eigen::MatrixXd& parameters);
+  void set_parameters(const Eigen::MatrixXd& parameters) override;
 
-  void flip();
+  void flip() override;
 
   // Data members
   Eigen::MatrixXd parameters_;
@@ -39,11 +39,11 @@ protected:
            std::string method,
            double,
            size_t,
-           const Eigen::VectorXd& weights);
+           const Eigen::VectorXd& weights) override;
 
-  double get_npars() const;
+  double get_npars() const override;
 
-  void set_npars(const double& npars);
+  void set_npars(const double& npars) override;
 
   virtual Eigen::VectorXd get_start_parameters(const double tau) = 0;
 
@@ -52,27 +52,27 @@ protected:
   // interface; families with closed forms override these.
   Eigen::VectorXd pdf_deriv_raw(const Eigen::MatrixXd& u,
                                 const Eigen::MatrixXd& parameters,
-                                const std::string& deriv);
+                                const std::string& deriv) override;
 
   Eigen::VectorXd pdf_deriv2_raw(const Eigen::MatrixXd& u,
                                  const Eigen::MatrixXd& parameters,
-                                 const std::string& deriv);
+                                 const std::string& deriv) override;
 
   Eigen::VectorXd hfunc1_deriv_raw(const Eigen::MatrixXd& u,
                                    const Eigen::MatrixXd& parameters,
-                                   const std::string& deriv);
+                                   const std::string& deriv) override;
 
   Eigen::VectorXd hfunc1_deriv2_raw(const Eigen::MatrixXd& u,
                                     const Eigen::MatrixXd& parameters,
-                                    const std::string& deriv);
+                                    const std::string& deriv) override;
 
   Eigen::VectorXd hfunc2_deriv_raw(const Eigen::MatrixXd& u,
                                    const Eigen::MatrixXd& parameters,
-                                   const std::string& deriv);
+                                   const std::string& deriv) override;
 
   Eigen::VectorXd hfunc2_deriv2_raw(const Eigen::MatrixXd& u,
                                     const Eigen::MatrixXd& parameters,
-                                    const std::string& deriv);
+                                    const std::string& deriv) override;
 
 private:
   Eigen::VectorXd fd_deriv(

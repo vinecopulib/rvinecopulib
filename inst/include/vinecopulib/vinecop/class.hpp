@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -27,7 +27,7 @@ class Vinecop
 {
 public:
   // default constructors
-  Vinecop() {}
+  Vinecop() = default;
 
   explicit Vinecop(size_t d);
 
@@ -47,10 +47,11 @@ public:
                    const std::vector<std::string>& var_types = {},
                    const FitControlsVinecop& controls = FitControlsVinecop());
 
+  // `matrix` must not be defaulted: that makes `Vinecop(data)` ambiguous with
+  // the overload above.
   explicit Vinecop(
     const Eigen::MatrixXd& data,
-    const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix =
-      Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>(),
+    const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
     const std::vector<std::string>& var_types = {},
     const FitControlsVinecop& controls = FitControlsVinecop());
 
@@ -69,14 +70,6 @@ public:
   void fit(const Eigen::MatrixXd& data,
            const FitControlsBicop& controls = FitControlsBicop(),
            const size_t num_threads = 1);
-
-  DEPRECATED void select_all(
-    const Eigen::MatrixXd& data,
-    const FitControlsVinecop& controls = FitControlsVinecop());
-
-  DEPRECATED void select_families(
-    const Eigen::MatrixXd& data,
-    const FitControlsVinecop& controls = FitControlsVinecop());
 
   // Getters for a single pair copula
 
@@ -165,6 +158,13 @@ public:
   // Stats methods
   Eigen::VectorXd pdf(Eigen::MatrixXd u, const size_t num_threads = 1) const;
 
+  //! @brief The density together with the per-edge quantities computed on the
+  //! way, as returned by `pdf_full()`.
+  //!
+  //! The triangular arrays are indexed `(tree, edge)`. `_sub` holds the
+  //! h-functions of the second ("sub") argument needed for discrete variables.
+  //! The derivative routines take these as input rather than recomputing the
+  //! h-function cascade.
   struct PdfWithHfuncsResult
   {
     Eigen::VectorXd pdf;
@@ -176,7 +176,7 @@ public:
   };
 
   PdfWithHfuncsResult pdf_full(Eigen::MatrixXd u,
-                               const size_t num_threads,
+                               const size_t num_threads = 1,
                                const bool keep_all = true) const;
 
   // Stats methods with per-observation parameters. `parameters` is an
@@ -189,13 +189,13 @@ public:
 
   PdfWithHfuncsResult pdf_full(Eigen::MatrixXd u,
                                const Eigen::MatrixXd& parameters,
-                               const size_t num_threads,
+                               const size_t num_threads = 1,
                                const bool keep_all = true) const;
 
   Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
-                      const size_t N = 1e4,
+                      const size_t N = 10000,
                       const size_t num_threads = 1,
-                      std::vector<int> seeds = std::vector<int>()) const;
+                      const std::vector<int>& seeds = std::vector<int>()) const;
 
   Eigen::MatrixXd simulate(
     const size_t n,
@@ -208,6 +208,12 @@ public:
     const bool qrng = false,
     const size_t num_threads = 1,
     const std::vector<int>& seeds = std::vector<int>()) const;
+  Eigen::MatrixXd simulate_conditional(
+    const Eigen::MatrixXd& u_cond,
+    const std::vector<size_t>& conditioning_set,
+    const bool qrng = false,
+    const size_t num_threads = 1,
+    const std::vector<int>& seeds = std::vector<int>()) const;
 
   void reorient(const std::vector<size_t>& conditioning_set);
 
@@ -215,8 +221,17 @@ public:
                              const size_t num_threads = 1,
                              bool randomize_discrete = true,
                              std::vector<int> seeds = {}) const;
+  Eigen::MatrixXd rosenblatt(Eigen::MatrixXd u,
+                             const std::vector<size_t>& conditioning_set,
+                             const size_t num_threads = 1,
+                             bool randomize_discrete = true,
+                             std::vector<int> seeds = {}) const;
   Eigen::MatrixXd inverse_rosenblatt(const Eigen::MatrixXd& u,
                                      const size_t num_threads = 1) const;
+  Eigen::MatrixXd inverse_rosenblatt(
+    const Eigen::MatrixXd& u,
+    const std::vector<size_t>& conditioning_set,
+    const size_t num_threads = 1) const;
 
   //! Sets every pair copula in one shot.
   //! @param pair_copulas nested list of `Bicop` instances, shaped like
@@ -265,6 +280,13 @@ public:
 
   std::string str(const std::vector<size_t>& trees = {}) const;
 
+  //! @brief The scores together with the per-edge quantities computed on the
+  //! way, as returned by `scores_full()`.
+  //!
+  //! `scores` is \f$ n \times p \f$ with columns in `(tree, edge, parameter)`
+  //! order. The remaining members are indexed `(tree, edge)` and hold the
+  //! pair-copula densities and the derivatives of the log-density and
+  //! h-functions with respect to the parameters and the arguments.
   struct ScoresResult
   {
     Eigen::MatrixXd scores;
@@ -331,6 +353,45 @@ public:
                              const size_t num_threads = 1);
 
 private:
+  struct ReorientationMap
+  {
+    RVineStructure structure;
+    TriangularArray<RVineTrees::PairCopulaLocation> pair_copulas;
+    bool identity{ false };
+  };
+
+  class VinecopView
+  {
+  public:
+    explicit VinecopView(const Vinecop& vinecop);
+    VinecopView(const Vinecop& vinecop, const ReorientationMap& reorientation);
+
+    const RVineStructure& get_structure() const;
+    BicopView get_pair_copula(size_t tree, size_t edge) const;
+
+  private:
+    const Vinecop* vinecop_;
+    const ReorientationMap* reorientation_;
+  };
+
+  ReorientationMap make_reorientation_map(
+    const std::vector<size_t>& conditioning_set) const;
+  Eigen::MatrixXd simulate_conditional_impl(
+    const Eigen::MatrixXd& u_cond,
+    const std::vector<size_t>& conditioning_set,
+    const VinecopView& view,
+    bool qrng,
+    size_t num_threads,
+    const std::vector<int>& seeds) const;
+  Eigen::MatrixXd rosenblatt_impl(Eigen::MatrixXd u,
+                                  const VinecopView& view,
+                                  size_t num_threads,
+                                  bool randomize_discrete,
+                                  std::vector<int> seeds) const;
+  Eigen::MatrixXd inverse_rosenblatt_impl(const Eigen::MatrixXd& u,
+                                          const VinecopView& view,
+                                          size_t num_threads) const;
+
   // Per-edge derivative caches shared by the analytic score/gradient/Hessian
   // cascades. One forward walk over the vine (build_deriv_cache) fills them;
   // the cascades then only read them.
@@ -408,8 +469,8 @@ protected:
   double threshold_{ 0.0 };
   double loglik_{ NAN };
   size_t nobs_{ 0 };
-  mutable std::vector<std::string> var_types_;
-  mutable int n_discrete_{ 0 };
+  std::vector<std::string> var_types_;
+  int n_discrete_{ 0 };
 
   void check_data_dim(const Eigen::MatrixXd& data) const;
   void check_data(const Eigen::MatrixXd& data) const;
@@ -419,14 +480,15 @@ protected:
   void finalize_fit(const tools_select::VinecopSelector& selector);
   void check_conditioning_set(const std::vector<size_t>& conditioning_set,
                               const FitControlsVinecop& controls) const;
+  static void check_tree_criterion_function(const FitControlsVinecop& controls);
   void check_weights_size(const Eigen::VectorXd& weights,
                           const Eigen::MatrixXd& data) const;
   void check_enough_data(const Eigen::MatrixXd& data) const;
   void check_fitted() const;
   void check_indices(const size_t tree, const size_t edge) const;
   void check_var_types(const std::vector<std::string>& var_types) const;
-  void set_continuous_var_types() const;
-  void set_var_types_internal(const std::vector<std::string>& var_types) const;
+  void set_continuous_var_types();
+  void set_var_types_internal(const std::vector<std::string>& var_types);
   int get_n_discrete() const;
   bool is_discrete() const;
   Eigen::MatrixXd collapse_data(const Eigen::MatrixXd& u) const;

@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -102,7 +102,7 @@ template<class F, class... Args>
 void
 ThreadPool::push(F&& f, Args&&... args)
 {
-  if (workers_.size() == 0) {
+  if (workers_.empty()) {
     f(args...); // if there are no workers, do the job in the main thread
     return;
   } else {
@@ -250,7 +250,7 @@ ThreadPool::announce_stop()
 inline void
 ThreadPool::join_workers()
 {
-  if (workers_.size() > 0) {
+  if (!workers_.empty()) {
     for (auto& worker : workers_) {
       if (worker.joinable())
         worker.join();

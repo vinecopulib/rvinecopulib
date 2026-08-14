@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -25,7 +25,7 @@ TllBicop::gaussian_kernel_2d(const Eigen::MatrixXd& x)
 //! times appropriate factor).
 inline Eigen::Matrix2d
 TllBicop::select_bandwidth(const Eigen::MatrixXd& x,
-                           std::string method,
+                           const std::string& method,
                            const Eigen::VectorXd& weights)
 {
   size_t n = x.rows();
@@ -82,7 +82,7 @@ inline Eigen::MatrixXd
 TllBicop::fit_local_likelihood(const Eigen::MatrixXd& x,
                                const Eigen::MatrixXd& x_data,
                                const Eigen::Matrix2d& B,
-                               std::string method,
+                               const std::string& method,
                                const Eigen::VectorXd& weights)
 {
   size_t m = x.rows();      // number of evaluation points

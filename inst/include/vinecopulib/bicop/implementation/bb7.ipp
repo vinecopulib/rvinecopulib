@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -6,6 +6,7 @@
 
 #include <vinecopulib/misc/tools_eigen.hpp>
 #include <vinecopulib/misc/tools_integration.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
 
 namespace vinecopulib {
 inline Bb7Bicop::Bb7Bicop()
@@ -2800,9 +2801,13 @@ Bb7Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
   double theta = parameters(0);
   double delta = parameters(1);
   auto f = [&theta, &delta](const double& v) {
-    double tmp = std::pow(1 - v, theta);
-    double res = -4 * (std::pow(1 - tmp, -delta) - 1) / (theta * delta);
-    return res / (std::pow(1 - v, theta - 1) * std::pow(1 - tmp, -delta - 1));
+    // expm1/log1p rather than pow(., -delta) - 1, which loses every digit as
+    // v -> 1 and underflows to exactly zero.
+    const double log1mv = tools_stl::log1p(-v);
+    const double tmp = std::exp(theta * log1mv);
+    const double log1mtmp = tools_stl::log1p(-tmp);
+    const double res = -4 * std::expm1(-delta * log1mtmp) / (theta * delta);
+    return res / std::exp((theta - 1) * log1mv + (-delta - 1) * log1mtmp);
   };
   return 1 + tools_integration::integrate_zero_to_one(f);
 }

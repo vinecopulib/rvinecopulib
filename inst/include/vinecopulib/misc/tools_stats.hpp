@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -140,8 +140,10 @@ to_pseudo_obs(Eigen::MatrixXd x,
               const Eigen::VectorXd& weights = Eigen::VectorXd(),
               std::vector<int> seeds = std::vector<int>());
 
-// Covers the unit hypercube with boxes and assigns each sample to a box.
-// Used internally for recovering the latent sample of a discrete copula.
+//! @brief Covers the unit hypercube with boxes and assigns each sample to a
+//! box.
+//!
+//! Used internally for recovering the latent sample of a discrete copula.
 class BoxCovering
 {
 public:

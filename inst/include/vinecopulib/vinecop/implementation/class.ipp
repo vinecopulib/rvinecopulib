@@ -1,9 +1,10 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <utility>
 #include <vinecopulib/bicop/class.hpp>
 #include <vinecopulib/misc/tools_interface.hpp>
 #include <vinecopulib/misc/tools_serialization.hpp>
@@ -37,11 +38,11 @@ inline Vinecop::Vinecop(const RVineStructure& structure,
   , rvine_structure_(structure)
 {
 
-  if (pair_copulas.size() > 0) {
+  if (!pair_copulas.empty()) {
     set_all_pair_copulas(pair_copulas);
   }
 
-  if (var_types.size() > 0) {
+  if (!var_types.empty()) {
     set_var_types(var_types);
   } else {
     set_continuous_var_types();
@@ -86,14 +87,14 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd& data,
     d_ = structure.get_dim();
     rvine_structure_ = structure;
   } else {
-    if (var_types.size() > 0) {
+    if (!var_types.empty()) {
       d_ = var_types.size();
     } else {
       d_ = data.cols();
     }
     rvine_structure_ = RVineStructure(d_, static_cast<size_t>(0));
   }
-  if (var_types.size() == 0) {
+  if (var_types.empty()) {
     set_continuous_var_types();
   } else {
     set_var_types(var_types);
@@ -108,9 +109,9 @@ inline Vinecop::Vinecop(const Eigen::MatrixXd& data,
 //! then selecting the model using `select()`.
 //!
 //! @param data An \f$ n \times d \f$ matrix of observations.
-//! @param matrix Either an empty matrix (default) or an R-vine structure
-//!     matrix, see `select()`. If empty, then it is selected as part of the
-//!     fit.
+//! @param matrix Either an R-vine structure matrix, see `select()`, or an
+//!     empty matrix, in which case the structure is selected as part of the
+//!     fit. To select the structure, prefer `Vinecop(data)`.
 //! @param var_types Strings specifying the types of the variables,
 //!   e.g., `("c", "d")` means first variable continuous, second discrete.
 //!   If empty, then all variables are set as continuous.
@@ -287,8 +288,12 @@ Vinecop::make_pair_copula_store(const size_t d, const size_t trunc_lvl)
 //! 52-69.
 //! The dependence measure used to select trees (default: Kendall's tau) is
 //! corrected for ties (see the [wdm](https://github.com/tnagler/wdm) library).
-//! The dependence measure can be changed using the `controls.tree_criterion`,
-//! which can be set to `"tau"`, `"rho"` or `"hoeffd"`.
+//! The dependence measure can be changed using `controls.tree_criterion`,
+//! which can be set to `"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`, `"joe"`, or
+//! `"custom"`. The last one uses the callable supplied through
+//! `controls.tree_criterion_function`, which is always called on the thread
+//! that starts the fit, so it need not be thread safe; the pair-copula fits
+//! still use `controls.num_threads` threads.
 //! Both Prim's (default: `"mst_prim"`) and Kruskal's (`"mst_kruskal"`)
 //! algorithms are available through `controls.tree_algorithm` for the
 //! maximum spanning tree selection.
@@ -322,13 +327,14 @@ Vinecop::make_pair_copula_store(const size_t d, const size_t trunc_lvl)
 //! so that the maximal available information is used.
 //!
 //!
-//! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param data \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   observations, where \f$ k \f$ is the number of discrete variables.
 //! @param controls The controls to the algorithm (see `FitControlsVinecop()`).
 inline void
 Vinecop::select(const Eigen::MatrixXd& data, const FitControlsVinecop& controls)
 {
   if (controls.get_select_families()) {
+    check_tree_criterion_function(controls);
     check_data(data);
     if (d_ == 1) {
       loglik_ = 0;
@@ -396,23 +402,61 @@ Vinecop::check_conditioning_set(const std::vector<size_t>& conditioning_set,
   }
 }
 
-//! @brief Relabels the vine to an equivalent one whose order tail equals
-//! `conditioning_set`.
-//!
-//! @details A value-preserving re-orientation: the fitted model is unchanged
-//! (both the density `pdf` and the log-likelihood `loglik` are invariant), only
-//! its sampling-order representation changes, so that the variables in
-//! `conditioning_set` are drawn first and can be conditioned on with
-//! `simulate_conditional`. It chooses, per tree, which conditioned variable
-//! sits on the matrix diagonal, and flips each pair copula whose stored
-//! orientation no longer matches its new position. Throws if the current
-//! structure admits no sampling order ending in `conditioning_set` (fit with a
-//! conditioning set via `FitControlsVinecop` to guarantee one exists).
-//!
-//! @param conditioning_set 1-based variable indices to place at the tail of the
-//! variable order.
+//! @brief Validates the custom edge-weight function against the criterion it
+//! belongs to (called from `select()`, the single entry point to structure
+//! selection; the two fields can be set in either order, so the pairing can
+//! only be checked once the fit starts).
 inline void
-Vinecop::reorient(const std::vector<size_t>& conditioning_set)
+Vinecop::check_tree_criterion_function(const FitControlsVinecop& controls)
+{
+  bool is_custom = (controls.get_tree_criterion() == "custom");
+  bool has_function = static_cast<bool>(controls.get_tree_criterion_function());
+  if (is_custom && !has_function) {
+    throw std::runtime_error("tree_criterion = \"custom\" requires a "
+                             "tree_criterion_function callable");
+  }
+  if (has_function && !is_custom) {
+    throw std::runtime_error(
+      "a tree_criterion_function was provided, but tree_criterion is \"" +
+      controls.get_tree_criterion() +
+      "\"; set tree_criterion = \"custom\" to use it");
+  }
+}
+
+inline Vinecop::VinecopView::VinecopView(const Vinecop& vinecop)
+  : vinecop_(&vinecop)
+  , reorientation_(nullptr)
+{
+}
+
+inline Vinecop::VinecopView::VinecopView(const Vinecop& vinecop,
+                                         const ReorientationMap& reorientation)
+  : vinecop_(&vinecop)
+  , reorientation_(reorientation.identity ? nullptr : &reorientation)
+{
+}
+
+inline const RVineStructure&
+Vinecop::VinecopView::get_structure() const
+{
+  return reorientation_ ? reorientation_->structure
+                        : vinecop_->rvine_structure_;
+}
+
+inline BicopView
+Vinecop::VinecopView::get_pair_copula(size_t tree, size_t edge) const
+{
+  if (!reorientation_)
+    return BicopView(vinecop_->pair_copulas_[tree][edge]);
+
+  auto location = reorientation_->pair_copulas(tree, edge);
+  return BicopView(vinecop_->pair_copulas_[location.tree][location.edge],
+                   location.flipped);
+}
+
+inline Vinecop::ReorientationMap
+Vinecop::make_reorientation_map(
+  const std::vector<size_t>& conditioning_set) const
 {
   size_t k = conditioning_set.size();
 
@@ -445,22 +489,19 @@ Vinecop::reorient(const std::vector<size_t>& conditioning_set)
     return true;
   };
 
-  // early no-op: the conditioning set is already the tail of the order
+  // Preserve the exact representation if the requested variables already
+  // form the sampling-order tail.
   if (tail_is_b(rvine_structure_.get_order())) {
-    return;
+    ReorientationMap identity;
+    identity.identity = true;
+    return identity;
   }
 
-  // Re-orient via the shared RVineTrees primitive: decompose the fitted vine
-  // into its tree list (carrying pair copulas), then peel it back into a
-  // matrix while steering the diagonal so the conditioning set lands at the
-  // tail. For the leading columns we put a non-conditioning leaf on the
-  // diagonal, for the trailing columns a conditioning one. Because the
-  // conditioning set forms a self-contained sub-vine block (guaranteed when
-  // fitted via `set_conditioning_set()`), the required leaf is always present;
-  // the tail check + `RVineStructure` validation below guard the general case.
+  // Peel the structure while steering the diagonal so that the conditioning
+  // set lands at the tail. No fitted pair copulas are copied here.
   auto to_tail =
     [&](size_t col,
-        const std::vector<std::vector<size_t>>& leaf_edges) -> size_t {
+        const std::vector<std::vector<size_t>>& leaf_edges) noexcept -> size_t {
     bool want_cond = (col >= d_ - k);
     for (const auto& options : leaf_edges)
       for (auto v : options)
@@ -469,28 +510,63 @@ Vinecop::reorient(const std::vector<size_t>& conditioning_set)
     return leaf_edges.front().front();
   };
 
-  std::vector<size_t> new_order;
-  TriangularArray<size_t> new_struct_array(d_, d_ - 1);
-  std::vector<std::vector<Bicop>> new_pair_copulas;
-  bool ok = true;
+  const std::string inadmissible =
+    "conditioning set is not admissible as a sampling-order tail of this "
+    "vine; fit with FitControlsVinecop::set_conditioning_set() or condition "
+    "on an admissible set.";
+  RVineTrees::Decomposition decomposition;
   try {
-    auto dec = get_trees().to_struct_array(to_tail);
-    new_order = std::move(dec.order);
-    new_struct_array = std::move(dec.struct_array);
-    new_pair_copulas = std::move(dec.pair_copulas);
+    decomposition = rvine_structure_.get_trees().to_struct_array_map(to_tail);
   } catch (const std::exception&) {
-    ok = false; // infeasible (proximity / no admissible leaf)
+    throw std::runtime_error(inadmissible);
   }
-  if (!ok || !tail_is_b(new_order)) {
-    throw std::runtime_error(
-      "conditioning set is not admissible as a sampling-order tail of this "
-      "vine; fit with FitControlsVinecop::set_conditioning_set() or condition "
-      "on an admissible set.");
+  if (!tail_is_b(decomposition.order)) {
+    throw std::runtime_error(inadmissible);
   }
 
-  // full R-vine validation (proximity etc.); loglik/threshold/nobs invariant
-  rvine_structure_ = RVineStructure(new_order, new_struct_array, false, true);
-  pair_copulas_ = std::move(new_pair_copulas);
+  RVineStructure structure(
+    decomposition.order, decomposition.struct_array, false, true);
+  return { std::move(structure),
+           std::move(decomposition.pair_copula_locations),
+           false };
+}
+
+//! @brief Relabels the vine to an equivalent one whose order tail equals
+//! `conditioning_set`.
+//!
+//! @details A value-preserving re-orientation: the fitted model is unchanged
+//! (both the density `pdf` and the log-likelihood `loglik` are invariant), only
+//! its sampling-order representation changes, so that the variables in
+//! `conditioning_set` are drawn first and can be conditioned on with
+//! `simulate_conditional`. It chooses, per tree, which conditioned variable
+//! sits on the matrix diagonal, and flips each pair copula whose stored
+//! orientation no longer matches its new position. Throws if the current
+//! structure admits no sampling order ending in `conditioning_set` (fit with a
+//! conditioning set via `FitControlsVinecop` to guarantee one exists).
+//!
+//! @param conditioning_set 1-based variable indices to place at the tail of the
+//! variable order.
+inline void
+Vinecop::reorient(const std::vector<size_t>& conditioning_set)
+{
+  auto reorientation = make_reorientation_map(conditioning_set);
+  if (reorientation.identity)
+    return;
+
+  std::vector<std::vector<Bicop>> pair_copulas(d_ - 1);
+  for (size_t tree = 0; tree < d_ - 1; ++tree) {
+    pair_copulas[tree].reserve(d_ - 1 - tree);
+    for (size_t edge = 0; edge < d_ - 1 - tree; ++edge) {
+      auto location = reorientation.pair_copulas(tree, edge);
+      pair_copulas[tree].emplace_back(
+        pair_copulas_[location.tree][location.edge]);
+      if (location.flipped)
+        pair_copulas[tree].back().flip();
+    }
+  }
+
+  rvine_structure_ = std::move(reorientation.structure);
+  pair_copulas_ = std::move(pair_copulas);
 }
 
 //! @brief Fits the parameters of a pre-specified vine copula model.
@@ -502,7 +578,7 @@ Vinecop::reorient(const std::vector<size_t>& conditioning_set)
 //! and a `FitControlsVinecop` object instantiated
 //! with `select_families = false`.
 //!
-//! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param data \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   observations, where \f$ k \f$ is the number of discrete variables.
 //! @param controls The controls for each bivariate fit (see
 //! `FitControlsBicop()`).
@@ -612,63 +688,6 @@ Vinecop::fit(const Eigen::MatrixXd& data,
       loglik_ += pair_copulas_[tree][edge].get_loglik();
     }
   }
-}
-
-//! @brief Automatically fits and selects a vine copula model.
-//!
-//! Selection of the structure is performed using the algorithm of
-//! Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka (2013).
-//! *Selecting and estimating regular vine copulae and application to
-//! financial returns.* Computational Statistics & Data Analysis, 59 (1),
-//! 52-69.
-//!
-//! @details When at least one variable is discrete, two types of "observations"
-//! are required: the first \f$ n \times d \f$ block contains realizations of
-//! \f$ F_Y(Y), F_X(X) \f$; the second \f$ n \times d \f$ block contains
-//! realizations of \f$ F_Y(Y^-), F_X(X^-), ... \f$. The minus indicates a
-//! left-sided limit of the cdf. For continuous variables the left limit and the
-//! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
-//! F_Y(Y^-) = F_Y(Y - 1) \f$. Continuous variables in the second block can
-//! be omitted.
-//!
-//! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
-//!   observations, where \f$ k \f$ is the number of discrete variables.
-//! @param controls The controls to the algorithm (see `FitControlsVinecop()`).
-inline void
-Vinecop::select_all(const Eigen::MatrixXd& data,
-                    const FitControlsVinecop& controls)
-{
-  rvine_structure_ = RVineStructure(d_, static_cast<size_t>(0));
-  select(data, controls);
-}
-
-//! @brief Automatically selects all pair-copula families and fits all.
-//! parameters.
-//!
-//!
-//! @details When at least one variable is discrete, two types of "observations"
-//! are required: the first \f$ n \times d \f$ block contains realizations of
-//! \f$ F_Y(Y), F_X(X) \f$; the second \f$ n \times d \f$ block contains
-//! realizations of \f$ F_Y(Y^-), F_X(X^-), ... \f$. The minus indicates a
-//! left-sided limit of the cdf. For continuous variables the left limit and the
-//! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
-//! F_Y(Y^-) = F_Y(Y - 1) \f$. Continuous variables in the second block can
-//! be omitted.
-//!
-//! If there are missing data (i.e., NaN entries), incomplete observations are
-//! discarded before fitting a pair-copula. This is done on a pair-by-pair basis
-//! so that the maximal available information is used.
-//!
-//! @param data \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
-//!   observations, where \f$ k \f$ is the number of discrete variables.
-//! @param controls The controls to the algorithm (see `FitControlsVinecop()`).
-inline void
-Vinecop::select_families(const Eigen::MatrixXd& data,
-                         const FitControlsVinecop& controls)
-{
-  auto controls_trunc_lvl = controls;
-  controls_trunc_lvl.set_trunc_lvl(rvine_structure_.get_trunc_lvl());
-  select(data, controls);
 }
 
 //! @name Getters and setters
@@ -861,7 +880,6 @@ Vinecop::get_matrix() const
 }
 
 //! @brief Gets the above diagonal coefficients of the vine copula model.
-//! @param natural_order Whether indices correspond to natural order.
 inline TriangularArray<size_t>
 Vinecop::get_struct_array(bool natural_order) const
 {
@@ -975,8 +993,6 @@ Vinecop::get_threshold() const
 }
 
 //! @brief Sets variable types.
-//! @param var_types A vector specifying the types of the variables,
-//!   e.g., `{"c", "d"}` means first varible continuous, second discrete.
 inline void
 Vinecop::set_var_types(const std::vector<std::string>& var_types)
 {
@@ -985,8 +1001,6 @@ Vinecop::set_var_types(const std::vector<std::string>& var_types)
 }
 
 //! @brief Sets all pair-copulas.
-//! @param pair_copulas A vector of pair-copulas that has to be consistent with
-//!     the current structure (see `Vinecop()`).
 inline void
 Vinecop::set_all_pair_copulas(
   const std::vector<std::vector<Bicop>>& pair_copulas)
@@ -1005,7 +1019,7 @@ Vinecop::check_var_types(const std::vector<std::string>& var_types) const
         << "than variables (" << d_ << ")" << std::endl;
     throw std::runtime_error(msg.str());
   }
-  for (auto t : var_types) {
+  for (const auto& t : var_types) {
     if (!tools_stl::is_member(t, { "c", "d" })) {
       msg << "variable type must be 'c' or 'd' (not '" << t << "')."
           << std::endl;
@@ -1018,14 +1032,14 @@ Vinecop::check_var_types(const std::vector<std::string>& var_types) const
 //! @param var_types A vector specifying the types of the variables,
 //!   e.g., `{"c", "d"}` means first varible continuous, second discrete.
 inline void
-Vinecop::set_var_types_internal(const std::vector<std::string>& var_types) const
+Vinecop::set_var_types_internal(const std::vector<std::string>& var_types)
 {
   var_types_ = var_types;
   n_discrete_ = 0;
   for (const auto& t : var_types_) {
     n_discrete_ += (t == "d");
   }
-  if (pair_copulas_.size() == 0) {
+  if (pair_copulas_.empty()) {
     return;
   }
 
@@ -1081,7 +1095,7 @@ Vinecop::get_var_types() const
 //! limit and the cdf itself coincide. Respective columns can be omitted in the
 //! second block.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `Vinecop::select()`).
 //! @param num_threads The number of threads to use for computations; if greater
@@ -1318,7 +1332,7 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
 //! limit and the cdf itself coincide. Respective columns can be omitted in the
 //! second block.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `Vinecop::select()`).
 //! @param num_threads The number of threads to use for computations; if greater
@@ -1614,7 +1628,7 @@ Vinecop::build_deriv_cache(const Eigen::MatrixXd& u,
 //! the caches below stay empty). Models with nonparametric pair copulas are
 //! rejected (differentiating w.r.t. the interpolation grid is meaningless).
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
@@ -2083,7 +2097,7 @@ Vinecop::scores_full(Eigen::MatrixXd u,
 //! with respect to the parameters. This is a thin wrapper around
 //! `scores_full()`; see there for the computational details.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
@@ -2117,7 +2131,7 @@ Vinecop::scores(Eigen::MatrixXd u,
 //! Returns the observation-average of `scores()` as a vector of length
 //! `npars`, mirroring how `hessian()` averages `hessian_full()`.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
@@ -2164,7 +2178,7 @@ Vinecop::gradient(Eigen::MatrixXd u,
 //! Models with discrete variables use central finite differences of
 //! `scores()` instead; models with nonparametric pair copulas are rejected.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
@@ -2499,7 +2513,7 @@ Vinecop::hessian_full(Eigen::MatrixXd u,
 //! \f$ \mathrm{npars} \times \mathrm{npars} \f$ matrix (use `hessian_full()`
 //! for the per-observation decomposition).
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
@@ -2559,8 +2573,8 @@ Vinecop::hessian(Eigen::MatrixXd u,
     size_t ipar = 0;
     for (size_t t = 0; t < trunc_lvl; t++) {
       for (size_t e = 0; e < d_ - 1 - t; e++) {
-        for (size_t p = 0; p < hess(t, e).size(); p++) {
-          H.row(ipar++) += hess(t, e)[p].colwise().sum();
+        for (const auto& block : hess(t, e)) {
+          H.row(ipar++) += block.colwise().sum();
         }
       }
     }
@@ -2575,7 +2589,7 @@ Vinecop::hessian(Eigen::MatrixXd u,
 //! matrix. Together with `hessian()` this forms the sandwich estimator of the
 //! asymptotic covariance.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()`).
 //! @param step_wise if `false`, full gradient of the log-likelihood; if `true`,
@@ -2586,7 +2600,7 @@ Vinecop::hessian(Eigen::MatrixXd u,
 inline Eigen::MatrixXd
 Vinecop::scores_cov(Eigen::MatrixXd u, bool step_wise, const size_t num_threads)
 {
-  auto s = this->scores(u, step_wise, num_threads);
+  auto s = this->scores(std::move(u), step_wise, num_threads);
   // materialize the centered scores; a lazy expression would be evaluated
   // twice by the product below
   Eigen::MatrixXd sc = s.rowwise() - s.colwise().mean();
@@ -2604,7 +2618,7 @@ Vinecop::scores_cov(Eigen::MatrixXd u,
                     bool step_wise,
                     const size_t num_threads)
 {
-  auto s = this->scores(u, parameters, step_wise, num_threads);
+  auto s = this->scores(std::move(u), parameters, step_wise, num_threads);
   Eigen::MatrixXd sc = s.rowwise() - s.colwise().mean();
   return (sc.adjoint() * sc) / static_cast<double>(s.rows());
 }
@@ -2625,7 +2639,7 @@ Vinecop::scores_cov(Eigen::MatrixXd u,
 //! limit and the cdf itself coincide. Respective columns can be omitted in the
 //! second block.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `Vinecop::select()`).
 //! @param N Integer for the number of quasi-random numbers to draw
@@ -2640,7 +2654,7 @@ inline Eigen::VectorXd
 Vinecop::cdf(const Eigen::MatrixXd& u,
              const size_t N,
              const size_t num_threads,
-             std::vector<int> seeds) const
+             const std::vector<int>& seeds) const
 {
   if (d_ > 21201) {
     std::stringstream message;
@@ -2705,10 +2719,7 @@ Vinecop::simulate(const size_t n,
 //! order (they are drawn first by the vine and form a self-contained sub-vine).
 //! Each row of `u_cond` is one
 //! conditioning point; the corresponding output row is drawn from the
-//! remaining variables' distribution conditional on that point. It is
-//! implemented as a Rosenblatt transform of the conditioning variables
-//! followed by an inverse Rosenblatt transform (see `rosenblatt()` /
-//! `inverse_rosenblatt()`).
+//! remaining variables' distribution conditional on that point.
 //!
 //! Discrete conditioning variables are supported. As for the other data-taking
 //! methods, a discrete variable requires its left-limit CDF \f$ F(x^-) \f$ in
@@ -2731,6 +2742,10 @@ Vinecop::simulate(const size_t n,
 //!   supplying only `k` columns when a conditioning variable is discrete may be
 //!   silently reinterpreted as a different `k`. To draw many samples at a
 //!   single conditioning point, pass that point repeated over `n` rows.
+//!   The overload taking `conditioning_set` also accepts the expanded
+//!   \f$ n \times 2k \f$ layout, with one left-limit column per conditioning
+//!   variable. Use that overload whenever the expanded layout is ambiguous
+//!   with a compact layout for a different number of conditioning variables.
 //! @param qrng Set to true for quasi-random numbers (over the conditioned
 //!   variables).
 //! @param num_threads The number of threads to use for computations.
@@ -2749,81 +2764,110 @@ Vinecop::simulate_conditional(const Eigen::MatrixXd& u_cond,
                               const size_t num_threads,
                               const std::vector<int>& seeds) const
 {
-  size_t n = static_cast<size_t>(u_cond.rows());
   size_t n_cols = static_cast<size_t>(u_cond.cols());
   auto order = rvine_structure_.get_order();
 
-  // ---- recover the number of conditioning variables `k` from the column
-  //      count. `u_cond` has `k` value columns plus one left-limit column
-  //      F(x^-) per discrete conditioning variable, i.e.
-  //      `n_cols = k + #discrete(order[d-k..d-1])`. This is strictly increasing
-  //      in `k`, so the match is unique. The conditioning variables are the
-  //      last `k` of the vine order (drawn first, a self-contained sub-vine).
   size_t k = 0;
-  bool found = false;
-  for (size_t kk = 1; (kk <= d_ - 1) && !found; ++kk) {
+  for (size_t kk = 1; kk <= d_ - 1; ++kk) {
     size_t kd = 0;
     for (size_t i = 0; i < kk; ++i)
       if (var_types_[order[d_ - kk + i] - 1] == "d")
         ++kd;
     if (n_cols == kk + kd) {
       k = kk;
-      found = true;
+      break;
     }
   }
-  if (!found) {
+  if (k == 0) {
     throw std::runtime_error(
       "u_cond has an invalid number of columns; expected k + (number of "
       "discrete conditioning variables) columns for some number of "
       "conditioning variables k in 1, ..., d - 1.");
   }
+
+  std::vector<size_t> conditioning_set(k);
+  for (size_t i = 0; i < k; ++i)
+    conditioning_set[i] = order[d_ - k + i];
+  return simulate_conditional_impl(
+    u_cond, conditioning_set, VinecopView(*this), qrng, num_threads, seeds);
+}
+
+//! @brief Simulates conditionally on a specified set of variables.
+//!
+//! @param conditioning_set The 1-based conditioning-variable indices. The
+//!   first `k` columns of `u_cond` correspond to these variables in the given
+//!   order. In the expanded layout, the next `k` columns contain their
+//!   left-limits in the same order; in the compact layout, only left-limits of
+//!   discrete variables follow.
+inline Eigen::MatrixXd
+Vinecop::simulate_conditional(const Eigen::MatrixXd& u_cond,
+                              const std::vector<size_t>& conditioning_set,
+                              const bool qrng,
+                              const size_t num_threads,
+                              const std::vector<int>& seeds) const
+{
+  auto reorientation = make_reorientation_map(conditioning_set);
+  return simulate_conditional_impl(u_cond,
+                                   conditioning_set,
+                                   VinecopView(*this, reorientation),
+                                   qrng,
+                                   num_threads,
+                                   seeds);
+}
+
+inline Eigen::MatrixXd
+Vinecop::simulate_conditional_impl(const Eigen::MatrixXd& u_cond,
+                                   const std::vector<size_t>& conditioning_set,
+                                   const VinecopView& view,
+                                   bool qrng,
+                                   size_t num_threads,
+                                   const std::vector<int>& seeds) const
+{
+  const size_t n = static_cast<size_t>(u_cond.rows());
+  const size_t k = conditioning_set.size();
+  const size_t kd = static_cast<size_t>(std::count_if(
+    conditioning_set.begin(), conditioning_set.end(), [&](size_t var) {
+      return var_types_[var - 1] == "d";
+    }));
+  const size_t n_cols = static_cast<size_t>(u_cond.cols());
+  const bool expanded = n_cols == 2 * k;
+  if (!expanded && (n_cols != k + kd)) {
+    throw std::runtime_error(
+      "u_cond must have 2 * k columns or one column per conditioning variable "
+      "plus one left-limit column per discrete conditioning variable.");
+  }
   if (!tools_eigen::check_if_in_unit_cube(u_cond)) {
     throw std::runtime_error("all elements of u_cond must be in (0, 1).");
   }
 
-  // ---- algorithm (reuse the tested Rosenblatt primitives) ----
-  // 1. Embed the conditioning values into a full data matrix in the collapsed
-  //    `n x (d + n_discrete)` layout: value columns F(x), plus a left-limit
-  //    column F(x^-) for each discrete conditioning variable. The fillers are
-  //    irrelevant: the conditioning block is self-contained, so its Rosenblatt
-  //    transform depends only on the conditioning values.
   auto disc_cols = tools_select::get_disc_cols(var_types_);
   Eigen::MatrixXd u_completed =
     Eigen::MatrixXd::Constant(n, d_ + get_n_discrete(), 0.5);
   size_t kd_seen = 0;
   for (size_t i = 0; i < k; ++i) {
-    size_t var = order[d_ - k + i] - 1;
-    u_completed.col(var) = u_cond.col(i); // F(x)
+    size_t var = conditioning_set[i] - 1;
+    u_completed.col(var) = u_cond.col(i);
     if (var_types_[var] == "d") {
-      if ((u_cond.col(k + kd_seen).array() > u_cond.col(i).array()).any()) {
+      size_t left_col = expanded ? k + i : k + kd_seen;
+      if ((u_cond.col(left_col).array() > u_cond.col(i).array()).any()) {
         throw std::runtime_error(
           "for discrete conditioning variables, the left-limit columns of "
           "u_cond (F(x^-)) must not exceed the value columns (F(x)).");
       }
-      u_completed.col(d_ + disc_cols[var]) = u_cond.col(k + kd_seen); // F(x^-)
+      u_completed.col(d_ + disc_cols[var]) = u_cond.col(left_col);
       ++kd_seen;
     }
   }
 
-  // 2. Recover the independent-uniform seeds of the conditioning block.
-  //    `randomize_discrete = true` is required: for a discrete conditioning
-  //    value the seed is drawn across the atom's [F(x^-), F(x)] interval
-  //    (Brockwell), so the conditioned draws are unbiased. It is a no-op for
-  //    continuous models.
-  Eigen::MatrixXd w = rosenblatt(u_completed, num_threads, true, seeds);
+  Eigen::MatrixXd w =
+    rosenblatt_impl(std::move(u_completed), view, num_threads, true, seeds);
 
-  // 3. Assemble the seed matrix: conditioning seeds + fresh uniforms for the
-  //    conditioned variables.
   Eigen::MatrixXd u = tools_stats::simulate_uniform(n, d_, qrng, seeds);
-  for (size_t i = 0; i < k; ++i) {
-    size_t col = order[d_ - k + i] - 1;
-    u.col(col) = w.col(col);
+  for (auto var : conditioning_set) {
+    u.col(var - 1) = w.col(var - 1);
   }
 
-  // 4. Inverse Rosenblatt: reproduces the conditioning values (exactly for
-  //    continuous variables, up to the atom for discrete ones) and draws the
-  //    remaining variables from their conditional distribution.
-  return inverse_rosenblatt(u, num_threads);
+  return inverse_rosenblatt_impl(u, view, num_threads);
 }
 
 //! @brief Evaluates the log-likelihood.
@@ -2832,7 +2876,7 @@ Vinecop::simulate_conditional(const Eigen::MatrixXd& u_cond,
 //! \f[ \mathrm{loglik} = \sum_{i = 1}^n \log c(U_{1, i}, ..., U_{d, i}), \f]
 //! where \f$ c \f$ is the copula density, see `Vinecop::pdf()`.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()` or `Vinecop::pdf()`).
 //! @param num_threads The number of threads to use for computations; if greater
@@ -2872,7 +2916,7 @@ Vinecop::loglik(const Eigen::MatrixXd& u,
 //! The AIC is a consistent model selection criterion even
 //! for nonparametric models.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `select()` or `Vinecop::pdf()`).
 //! @param num_threads The number of threads to use for computations; if greater
@@ -2894,7 +2938,7 @@ Vinecop::aic(const Eigen::MatrixXd& u, const size_t num_threads) const
 //! The BIC is a consistent model selection criterion
 //! for nonparametric models.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `Vinecop::select()` or `Vinecop::pdf()`).
 //! @param num_threads The number of threads to use for computations; if greater
@@ -2922,7 +2966,7 @@ Vinecop::bic(const Eigen::MatrixXd& u, const size_t num_threads) const
 //! selection criterion for parametric sparse vine copula models when
 //! \f$ d = o(\sqrt{n \log n})\f$.
 //!
-//! @param u An \f$ n \times (d + k) \f$ or \f$ n \times 2d \f$ matrix of
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
 //!   evaluation points, where \f$ k \f$ is the number of discrete variables
 //!   (see `Vinecop::select()` or `Vinecop::pdf()`).
 //! @param psi0 Baseline prior probability of a non-independence copula.
@@ -2993,7 +3037,8 @@ Vinecop::get_npars() const
 //! \f[ F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0, 0]}), \f]
 //! set `randomize_discrete = FALSE`.
 //!
-//! @param u An \f$ n \times d \f$ matrix of evaluation points.
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
+//!   evaluation points, where \f$ k \f$ is the number of discrete variables.
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
@@ -3010,6 +3055,48 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
                     bool randomize_discrete,
                     std::vector<int> seeds) const
 {
+  return rosenblatt_impl(std::move(u),
+                         VinecopView(*this),
+                         num_threads,
+                         randomize_discrete,
+                         std::move(seeds));
+}
+
+//! @brief Evaluates the Rosenblatt transform for a conditioning set.
+//!
+//! @details The vine is evaluated in an admissible sampling order whose tail
+//! contains exactly `conditioning_set`. The model itself is not modified.
+//!
+//! @param u An \f$ n \times 2d \f$ or \f$ n \times (d + k) \f$ matrix of
+//!   evaluation points, where \f$ k \f$ is the number of discrete variables.
+//! @param conditioning_set The 1-based indices of the conditioning variables.
+//! @param num_threads The number of threads to use for computations.
+//! @param randomize_discrete Whether to randomize the transform for discrete
+//!   variables.
+//! @param seeds Seeds used for discrete randomization.
+//! @return An \f$ n \times d \f$ matrix of independent uniform variates.
+inline Eigen::MatrixXd
+Vinecop::rosenblatt(Eigen::MatrixXd u,
+                    const std::vector<size_t>& conditioning_set,
+                    const size_t num_threads,
+                    bool randomize_discrete,
+                    std::vector<int> seeds) const
+{
+  auto reorientation = make_reorientation_map(conditioning_set);
+  return rosenblatt_impl(std::move(u),
+                         VinecopView(*this, reorientation),
+                         num_threads,
+                         randomize_discrete,
+                         std::move(seeds));
+}
+
+inline Eigen::MatrixXd
+Vinecop::rosenblatt_impl(Eigen::MatrixXd u,
+                         const VinecopView& view,
+                         size_t num_threads,
+                         bool randomize_discrete,
+                         std::vector<int> seeds) const
+{
   check_data(u);
   collapse_data_inplace(u);
 
@@ -3017,8 +3104,9 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
   size_t n = u.rows();
 
   // info about the vine structure
-  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
-  auto order = rvine_structure_.get_order();
+  const auto& structure = view.get_structure();
+  size_t trunc_lvl = structure.get_trunc_lvl();
+  auto order = structure.get_order();
   auto inverse_order = tools_stl::invert_permutation(order);
   auto disc_cols = tools_select::get_disc_cols(var_types_);
 
@@ -3048,13 +3136,13 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
         tools_interface::check_user_interrupt(edge % 100 == 0);
         // extract evaluation point from hfunction matrices (have been
         // computed in previous tree level)
-        Bicop* edge_copula = &pair_copulas_[tree][edge];
-        auto var_types = edge_copula->get_var_types();
-        size_t m = rvine_structure_.min_array(tree, edge);
+        auto edge_copula = view.get_pair_copula(tree, edge);
+        auto var_types = edge_copula.get_var_types();
+        size_t m = structure.min_array(tree, edge);
 
         u_e.resize(b.size, 2);
         u_e.col(0) = hfunc2.block(b.begin, edge, b.size, 1);
-        if (m == rvine_structure_.struct_array(tree, edge, true)) {
+        if (m == structure.struct_array(tree, edge, true)) {
           u_e.col(1) = hfunc2.block(b.begin, m - 1, b.size, 1);
         } else {
           u_e.col(1) = hfunc1.block(b.begin, m - 1, b.size, 1);
@@ -3063,7 +3151,7 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
         if ((var_types[0] == "d") || (var_types[1] == "d")) {
           u_e.conservativeResize(b.size, 4);
           u_e.col(2) = hfunc2_sub.block(b.begin, edge, b.size, 1);
-          if (m == rvine_structure_.struct_array(tree, edge, true)) {
+          if (m == structure.struct_array(tree, edge, true)) {
             u_e.col(3) = hfunc2_sub.block(b.begin, m - 1, b.size, 1);
           } else {
             u_e.col(3) = hfunc1_sub.block(b.begin, m - 1, b.size, 1);
@@ -3071,21 +3159,21 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
         }
 
         // h-functions are only evaluated if needed in next step
-        if (rvine_structure_.needed_hfunc1(tree, edge)) {
-          hfunc1.block(b.begin, edge, b.size, 1) = edge_copula->hfunc1(u_e);
+        if (structure.needed_hfunc1(tree, edge)) {
+          hfunc1.block(b.begin, edge, b.size, 1) = edge_copula.hfunc1(u_e);
           if (var_types[1] == "d") {
             u_e_sub = u_e;
             u_e_sub.col(1) = u_e.col(3);
             hfunc1_sub.block(b.begin, edge, b.size, 1) =
-              edge_copula->hfunc1(u_e_sub);
+              edge_copula.hfunc1(u_e_sub);
           }
         }
-        hfunc2.block(b.begin, edge, b.size, 1) = edge_copula->hfunc2(u_e);
+        hfunc2.block(b.begin, edge, b.size, 1) = edge_copula.hfunc2(u_e);
         if (var_types[0] == "d") {
           u_e_sub = u_e;
           u_e_sub.col(0) = u_e.col(2);
           hfunc2_sub.block(b.begin, edge, b.size, 1) =
-            edge_copula->hfunc2(u_e_sub);
+            edge_copula.hfunc2(u_e_sub);
         }
       }
     }
@@ -3111,7 +3199,8 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
                                           : hfunc2.col(inverse_order[j]);
     }
     // randomize by weighting left and right limits with independent uniforms
-    auto R = tools_stats::simulate_uniform(u.rows(), d, false, seeds);
+    auto R =
+      tools_stats::simulate_uniform(u.rows(), d, false, std::move(seeds));
     U.leftCols(d) = U.leftCols(d).array() * R.array() +
                     U.rightCols(d).array() * (1 - R.array());
   }
@@ -3150,7 +3239,10 @@ Vinecop::rosenblatt(Eigen::MatrixXd u,
 //! `Vinecop::inverse_rosenblatt()` computes \f[ V_{M[d - j, j]}= F^{-1}(U_{M[d
 //! - j, j]} | U_{M[d - j - 1, j - 1]}, \dots, U_{M[0, 0]}). \f]
 //!
-//! @param u An \f$ n \times d \f$ matrix of evaluation points.
+//! @param u An \f$ n \times 2d \f$, \f$ n \times (d + k) \f$, or
+//!   \f$ n \times d \f$ matrix of independent uniform variates, where \f$ k \f$
+//!   is the number of discrete variables. Only the first \f$ d \f$ columns are
+//!   used.
 //! @param num_threads The number of threads to use for computations; if greater
 //!   than 1, the function will be applied concurrently to `num_threads` batches
 //!   of `u`.
@@ -3159,31 +3251,72 @@ inline Eigen::MatrixXd
 Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
                             const size_t num_threads) const
 {
-  auto var_types = get_var_types();
-  set_continuous_var_types();
-  check_data(u);
+  return inverse_rosenblatt_impl(u, VinecopView(*this), num_threads);
+}
+
+//! @brief Evaluates the inverse Rosenblatt transform for a conditioning set.
+//!
+//! @details The vine is evaluated in an admissible sampling order whose tail
+//! contains exactly `conditioning_set`. The model itself is not modified.
+//!
+//! @param u An \f$ n \times 2d \f$, \f$ n \times (d + k) \f$, or
+//!   \f$ n \times d \f$ matrix of independent uniform variates, where \f$ k \f$
+//!   is the number of discrete variables. Only the first \f$ d \f$ columns are
+//!   used.
+//! @param conditioning_set The 1-based indices of the conditioning variables.
+//! @param num_threads The number of threads to use for computations.
+//! @return An \f$ n \times d \f$ matrix of transformed values.
+inline Eigen::MatrixXd
+Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
+                            const std::vector<size_t>& conditioning_set,
+                            const size_t num_threads) const
+{
+  auto reorientation = make_reorientation_map(conditioning_set);
+  return inverse_rosenblatt_impl(
+    u, VinecopView(*this, reorientation), num_threads);
+}
+
+inline Eigen::MatrixXd
+Vinecop::inverse_rosenblatt_impl(const Eigen::MatrixXd& u,
+                                 const VinecopView& view,
+                                 size_t num_threads) const
+{
+  const size_t n_cols = static_cast<size_t>(u.cols());
+  const size_t compact_cols = d_ + get_n_discrete();
+  if ((n_cols != d_) && (n_cols != compact_cols) && (n_cols != 2 * d_)) {
+    throw std::runtime_error(
+      "data has wrong number of columns; expected: " + std::to_string(2 * d_) +
+      ", " + std::to_string(compact_cols) + ", or " + std::to_string(d_) +
+      ", actual: " + std::to_string(n_cols) + ".");
+  }
+  if (u.rows() < 1) {
+    throw std::runtime_error("data must have at least one row");
+  }
+  tools_eigen::check_if_in_unit_cube(u);
 
   size_t n = u.rows();
   size_t d = d_;
 
   Eigen::MatrixXd U_vine = u.leftCols(d); // output matrix
   //                   (hfunc1 + hfunc2)      (U_vine)       (info matrices)
-  size_t bytes_required = (8 * 2 * n * d * d) + (8 * n * d) + (4 * 4 * d * d);
+  size_t bytes_required =
+    (size_t{ 16 } * n * d * d) + (size_t{ 8 } * n * d) + (size_t{ 16 } * d * d);
   // if the problem is too large (requires more than 1 GB memory), split
   // the data into two halves and call simulate on the reduced data.
   if ((n > 1) & (bytes_required > static_cast<size_t>(1e9))) {
     size_t n_half = n / 2;
     size_t n_left = n - n_half;
     U_vine.block(0, 0, n_half, d) =
-      inverse_rosenblatt(u.block(0, 0, n_half, d), num_threads);
+      inverse_rosenblatt_impl(u.block(0, 0, n_half, d), view, num_threads);
     U_vine.block(n_half, 0, n_left, d) =
-      inverse_rosenblatt(u.block(n_half, 0, n_left, d), num_threads);
+      inverse_rosenblatt_impl(u.block(n_half, 0, n_left, d), view, num_threads);
     return U_vine;
   }
 
   // info about the vine structure (in upper triangular matrix notation)
-  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
-  auto order = rvine_structure_.get_order();
+  const auto& structure = view.get_structure();
+  size_t trunc_lvl = structure.get_trunc_lvl();
+  auto order = structure.get_order();
   auto inverse_order = tools_stl::invert_permutation(order);
 
   auto do_batch = [&](const tools_batch::Batch& b) {
@@ -3206,14 +3339,12 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
         static_cast<double>(n) * static_cast<double>(d) > 1e5);
       size_t tree_start = std::min(trunc_lvl - 1, d - var - 2);
       for (ptrdiff_t tree = tree_start; tree >= 0; --tree) {
-        // var types have already been set to continuous above, so no copy
-        // via as_continuous() is needed
-        const Bicop& edge_copula = pair_copulas_[tree][var];
+        auto edge_copula = view.get_pair_copula(tree, var).as_continuous();
 
         // extract data for conditional pair
-        size_t m = rvine_structure_.min_array(tree, var);
+        size_t m = structure.min_array(tree, var);
         U_e.col(0) = hinv2(tree + 1, var);
-        if (m == rvine_structure_.struct_array(tree, var, true)) {
+        if (m == structure.struct_array(tree, var, true)) {
           U_e.col(1) = hinv2(tree, m - 1);
         } else {
           U_e.col(1) = hfunc1(tree, m - 1);
@@ -3222,9 +3353,9 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
         // inverse Rosenblatt transform simulates data for conditional pair
         hinv2(tree, var) = edge_copula.hinv2(U_e);
 
-        // if required at later stage, also calculate hfunc2
+        // if required at a later stage, also calculate hfunc1
         if (var < static_cast<ptrdiff_t>(d_) - 1) {
-          if (rvine_structure_.needed_hfunc1(tree, var)) {
+          if (structure.needed_hfunc1(tree, var)) {
             U_e.col(0) = hinv2(tree, var);
             hfunc1(tree + 1, var) = edge_copula.hfunc1(U_e);
           }
@@ -3243,7 +3374,6 @@ Vinecop::inverse_rosenblatt(const Eigen::MatrixXd& u,
     pool.join();
   }
 
-  set_var_types_internal(var_types);
   return U_vine;
 }
 
@@ -3257,7 +3387,7 @@ Vinecop::check_data_dim(const Eigen::MatrixXd& data) const
   if ((d_data != d_exp) & (d_data != 2 * d_)) {
     std::stringstream msg;
     msg << "data has wrong number of columns; "
-        << "expected: " << d_exp << " or " << 2 * d_ << ", actual: " << d_data
+        << "expected: " << 2 * d_ << " or " << d_exp << ", actual: " << d_data
         << " (model contains ";
     if (n_disc == 0) {
       msg << "no discrete variables)." << std::endl;
@@ -3384,9 +3514,8 @@ Vinecop::truncate(size_t trunc_lvl)
 
 //! @brief Sets all variable types to continuous.
 //!
-//! @details The function can be const, because var_types_ is mutable.
 inline void
-Vinecop::set_continuous_var_types() const
+Vinecop::set_continuous_var_types()
 {
   var_types_ = std::vector<std::string>(d_);
   for (auto& t : var_types_)
@@ -3443,7 +3572,7 @@ Vinecop::str(const std::vector<size_t>& trees) const
   std::vector<size_t> trees_to_summarize;
   std::vector<size_t> all_trees(rvine_structure_.get_trunc_lvl());
   std::iota(all_trees.begin(), all_trees.end(), 0);
-  if (trees.size() == 0) {
+  if (trees.empty()) {
     trees_to_summarize = all_trees;
   } else {
     trees_to_summarize = tools_stl::intersect(all_trees, trees);
@@ -3465,16 +3594,16 @@ Vinecop::str(const std::vector<size_t>& trees) const
   std::vector<std::string> parameters;
   std::vector<std::string> dfs;
   std::vector<std::string> taus;
-  trees_s.push_back("tree");
-  edges.push_back("edge");
-  conditioned_variables.push_back("conditioned variables");
-  conditioning_variables.push_back("conditioning variables");
-  var_types.push_back("var_types");
-  families.push_back("family");
-  rotations.push_back("rotation");
-  parameters.push_back("parameters");
-  dfs.push_back("df");
-  taus.push_back("tau");
+  trees_s.emplace_back("tree");
+  edges.emplace_back("edge");
+  conditioned_variables.emplace_back("conditioned variables");
+  conditioning_variables.emplace_back("conditioning variables");
+  var_types.emplace_back("var_types");
+  families.emplace_back("family");
+  rotations.emplace_back("rotation");
+  parameters.emplace_back("parameters");
+  dfs.emplace_back("df");
+  taus.emplace_back("tau");
 
   std::stringstream params_ss;   // 2 decimal places
   std::stringstream dfs_ss;      // 1 decimal place
@@ -3491,14 +3620,14 @@ Vinecop::str(const std::vector<size_t>& trees) const
       conditioned_variables.push_back(std::to_string(order[e]) + ", " +
                                       std::to_string(arr(t, e)));
       if (t > 0) {
-        std::string cv = "";
+        std::string cv;
         for (size_t cv_ = t - 1; cv_ > 0; --cv_) {
           cv += std::to_string(arr(cv_, e)) + ", ";
         }
         cv += std::to_string(arr(0, e));
         conditioning_variables.push_back(cv);
       } else {
-        conditioning_variables.push_back("");
+        conditioning_variables.emplace_back("");
       }
       var_types.push_back(var_types_[order[e] - 1] + ", " +
                           var_types_[arr(t, e) - 1]);
@@ -3538,10 +3667,10 @@ Vinecop::str(const std::vector<size_t>& trees) const
 
       } else {
         families.push_back(get_family_name(BicopFamily::indep));
-        rotations.push_back("");
-        parameters.push_back("");
-        taus.push_back("0.0");
-        dfs.push_back("");
+        rotations.emplace_back("");
+        parameters.emplace_back("");
+        taus.emplace_back("0.0");
+        dfs.emplace_back("");
       }
     }
   }

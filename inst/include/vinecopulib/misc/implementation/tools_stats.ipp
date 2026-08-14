@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -87,20 +87,8 @@ simulate_normal(const size_t& n,
   return qnorm(tools_stats::simulate_uniform(n, d, qrng, seeds));
 }
 
-//! @brief Applies the empirical probability integral transform to a data
-//! matrix.
-//!
-//! Gives pseudo-observations from the copula by applying the empirical
-//! distribution function (scaled by \f$ n + 1 \f$) to each margin/column.
-//!
-//! @param x A matrix of real numbers.
-//! @param ties_method Indicates how to treat ties; same as in R, see
-//! https://stat.ethz.ch/R-manual/R-devel/library/base/html/rank.html.
-//! @param weights Vector of weights for the observations.
-//! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$
-//! (column-wise).
-//! (internal) 1-d worker with pre-converted weights; moves `xvec` into
-//! `wdm::impl::rank` to avoid a copy.
+// (internal) 1-d worker with pre-converted weights; moves `xvec` into
+// `wdm::impl::rank` to avoid a copy.
 inline Eigen::VectorXd
 pseudo_obs_1d_impl(std::vector<double>&& xvec,
                    const std::string& ties_method,
@@ -119,6 +107,20 @@ pseudo_obs_1d_impl(std::vector<double>&& xvec,
          (static_cast<double>(n) + 1.0);
 }
 
+//! @brief Applies the empirical probability integral transform to a data
+//! matrix.
+//!
+//! Gives pseudo-observations from the copula by applying the empirical
+//! distribution function (scaled by \f$ n + 1 \f$) to each margin/column.
+//!
+//! @param x A matrix of real numbers.
+//! @param ties_method Indicates how to treat ties; same as in R, see
+//! https://stat.ethz.ch/R-manual/R-devel/library/base/html/rank.html.
+//! @param weights Vector of weights for the observations.
+//! @param seeds Seeds for the random number generator, used only when
+//! `ties_method = "random"`.
+//! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$
+//! (column-wise).
 inline Eigen::MatrixXd
 to_pseudo_obs(Eigen::MatrixXd x,
               const std::string& ties_method,
@@ -146,6 +148,8 @@ to_pseudo_obs(Eigen::MatrixXd x,
 //! @param ties_method Indicates how to treat ties; same as in R, see
 //! https://stat.ethz.ch/R-manual/R-devel/library/base/html/rank.html.
 //! @param weights Vector of weights for the observations.
+//! @param seeds Seeds for the random number generator, used only when
+//! `ties_method = "random"`.
 //! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$.
 inline Eigen::VectorXd
 to_pseudo_obs_1d(Eigen::VectorXd x,
@@ -459,6 +463,9 @@ ace(const Eigen::MatrixXd& data,                        // data
   return phi;
 }
 
+//! @name Dependence measures
+//! @{
+
 //! calculates the pairwise maximum correlation coefficient.
 inline double
 pairwise_mcor(const Eigen::MatrixXd& x, const Eigen::VectorXd& weights)
@@ -485,6 +492,9 @@ pairwise_mcor(const Eigen::MatrixXd& x, const Eigen::VectorXd& weights)
 inline Eigen::MatrixXd
 ghalton(const size_t& n, const size_t& d, const std::vector<int>& seeds)
 {
+  if ((n < 1) || (d < 1)) {
+    throw std::runtime_error("n and d must be at least 1.");
+  }
 
   Eigen::MatrixXd res(d, n);
 
@@ -547,6 +557,9 @@ ghalton(const size_t& n, const size_t& d, const std::vector<int>& seeds)
 inline Eigen::MatrixXd
 sobol(const size_t& n, const size_t& d, const std::vector<int>& seeds)
 {
+  if ((n < 1) || (d < 1)) {
+    throw std::runtime_error("n and d must be at least 1.");
+  }
 
   // output matrix
   Eigen::MatrixXd output = Eigen::MatrixXd::Zero(n, d);

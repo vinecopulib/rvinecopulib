@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -95,6 +95,13 @@ ExtremeValueBicop::hinv2_raw(const Eigen::MatrixXd& u,
 }
 
 inline double
+ExtremeValueBicop::pickands_peak(
+  const Eigen::Ref<const Eigen::VectorXd>& /* parameters */)
+{
+  return 0.5;
+}
+
+inline double
 ExtremeValueBicop::parameters_to_tau(const Eigen::MatrixXd& par)
 {
   auto f = [this, &par](const double t) {
@@ -102,7 +109,11 @@ ExtremeValueBicop::parameters_to_tau(const Eigen::MatrixXd& par)
     double A2 = pickands_derivative2(t, par.col(0));
     return t * (1 - t) * A2 / A;
   };
-  return tools_integration::integrate_zero_to_one(f);
+  // A'' concentrates in a narrow peak, ~2% of the interval wide at Tawn's
+  // theta = 60 and narrower still as the parameters grow asymmetric, so the
+  // integral is split at the peak.
+  return tools_integration::integrate_zero_to_one_split(
+    f, pickands_peak(par.col(0)));
 }
 
 inline Eigen::MatrixXd
