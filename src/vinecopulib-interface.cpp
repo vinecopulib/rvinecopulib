@@ -263,44 +263,18 @@ Eigen::MatrixXd vinecop_sim_cpp(const Rcpp::List& vinecop_r,
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_sim_conditional_cpp(
   const Rcpp::List& vinecop_r,
-  Eigen::MatrixXd u_cond,
+  const Eigen::MatrixXd& u_cond,
   const std::vector<size_t>& conditioning_set,
   const bool qrng,
   const size_t cores,
   const std::vector<int>& seeds)
 {
   Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
-  if (!conditioning_set.empty()) {
-    const auto var_types = vinecop_cpp.get_var_types();
-    const size_t k = conditioning_set.size();
-    vinecop_cpp.reorient(conditioning_set);
-    const auto order = vinecop_cpp.get_order();
-    const size_t d = order.size();
-
-    Eigen::MatrixXd u_ordered(u_cond.rows(), u_cond.cols());
-    size_t output_discrete = 0;
-    for (size_t i = 0; i < k; ++i) {
-      const size_t variable = order[d - k + i];
-      const auto input_it = std::find(
-        conditioning_set.begin(), conditioning_set.end(), variable);
-      const size_t input_position = static_cast<size_t>(
-        std::distance(conditioning_set.begin(), input_it));
-      u_ordered.col(i) = u_cond.col(input_position);
-
-      if (var_types[variable - 1] == "d") {
-        size_t input_discrete = 0;
-        for (size_t j = 0; j < input_position; ++j) {
-          input_discrete += var_types[conditioning_set[j] - 1] == "d";
-        }
-        u_ordered.col(k + output_discrete) =
-          u_cond.col(k + input_discrete);
-        ++output_discrete;
-      }
-    }
-    u_cond = std::move(u_ordered);
+  if (conditioning_set.empty()) {
+    return vinecop_cpp.simulate_conditional(u_cond, qrng, cores, seeds);
   }
-
-  return vinecop_cpp.simulate_conditional(u_cond, qrng, cores, seeds);
+  return vinecop_cpp.simulate_conditional(
+    u_cond, conditioning_set, qrng, cores, seeds);
 }
 
 // [[Rcpp::export()]]

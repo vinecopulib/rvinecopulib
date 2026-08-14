@@ -140,7 +140,7 @@ test_that("conditional simulation handles R-side ordering and recycling", {
       u_cond = c(0.2, 0.3),
       conditioning_set = "a"
     ),
-    "one value column per conditioning variable"
+    "continuous conditioning variables"
   )
   expect_error(
     rvinecop(5, vc_cond, conditioning_set = "a"),
@@ -163,6 +163,53 @@ test_that("conditional simulation handles R-side ordering and recycling", {
   )
 })
 
+test_that("conditional simulation is synchronized with the R seed", {
+  indep <- bicop_dist()
+  vc_cond <- vinecop_dist(
+    list(rep(list(indep), 2), list(indep)),
+    dvine_structure(1:3)
+  )
+
+  for (use_qrng in c(FALSE, TRUE)) {
+    set.seed(314)
+    u1 <- rvinecop(
+      25,
+      vc_cond,
+      qrng = use_qrng,
+      u_cond = 0.4,
+      conditioning_set = 3
+    )
+    state_after <- .Random.seed
+
+    set.seed(314)
+    u2 <- rvinecop(
+      25,
+      vc_cond,
+      qrng = use_qrng,
+      u_cond = 0.4,
+      conditioning_set = 3
+    )
+    expect_identical(u2, u1)
+    expect_identical(.Random.seed, state_after)
+
+    # get_seeds() advances R's RNG by exactly its 20 seed draws; the backend
+    # consumes only the resulting C++ seeds and never touches R's RNG directly.
+    set.seed(314)
+    runif(20)
+    expect_identical(.Random.seed, state_after)
+
+    set.seed(315)
+    u3 <- rvinecop(
+      25,
+      vc_cond,
+      qrng = use_qrng,
+      u_cond = 0.4,
+      conditioning_set = 3
+    )
+    expect_false(identical(u3[, 1:2], u1[, 1:2]))
+  }
+})
+
 test_that("conditional simulation accepts discrete left limits", {
   indep <- bicop_dist()
   pcs_indep <- list(
@@ -173,20 +220,31 @@ test_that("conditional simulation accepts discrete left limits", {
   vc_disc <- vinecop_dist(
     pcs_indep,
     dvine_structure(1:4),
-    var_types = c("c", "c", "d", "d")
+    var_types = c("c", "c", "c", "d")
   )
   vc_disc$names <- letters[1:4]
 
-  # Layout in the supplied set order (4, 3): F4, F3, F4-, F3-.
-  u <- rvinecop(
+  # Expanded layout in the supplied set order (4, 3): F4, F3, F4-, F3-.
+  set.seed(12)
+  u_expanded <- rvinecop(
     20,
     vc_disc,
-    u_cond = c(0.8, 0.7, 0.6, 0.5),
+    u_cond = c(0.8, 0.7, 0.6, 0.7),
     conditioning_set = c("d", "c")
   )
-  expect_equal(dim(u), c(20L, 4L))
-  expect_true(all(u[, 4] >= 0.6))
-  expect_true(all(u[, 4] <= 0.8))
+  # Compact layout omits the redundant F3- column.
+  set.seed(12)
+  u_compact <- rvinecop(
+    20,
+    vc_disc,
+    u_cond = c(0.8, 0.7, 0.6),
+    conditioning_set = c("d", "c")
+  )
+  expect_identical(u_expanded, u_compact)
+  expect_equal(dim(u_expanded), c(20L, 4L))
+  expect_true(all(u_expanded[, 4] >= 0.6))
+  expect_true(all(u_expanded[, 4] <= 0.8))
+  expect_equal(u_expanded[, 3], rep(0.7, 20))
 
   expect_error(
     rvinecop(

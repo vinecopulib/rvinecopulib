@@ -288,13 +288,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // vinecop_sim_conditional_cpp
-Eigen::MatrixXd vinecop_sim_conditional_cpp(const Rcpp::List& vinecop_r, Eigen::MatrixXd u_cond, const std::vector<size_t>& conditioning_set, const bool qrng, const size_t cores, const std::vector<int>& seeds);
+Eigen::MatrixXd vinecop_sim_conditional_cpp(const Rcpp::List& vinecop_r, const Eigen::MatrixXd& u_cond, const std::vector<size_t>& conditioning_set, const bool qrng, const size_t cores, const std::vector<int>& seeds);
 RcppExport SEXP _rvinecopulib_vinecop_sim_conditional_cpp(SEXP vinecop_rSEXP, SEXP u_condSEXP, SEXP conditioning_setSEXP, SEXP qrngSEXP, SEXP coresSEXP, SEXP seedsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type u_cond(u_condSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u_cond(u_condSEXP);
     Rcpp::traits::input_parameter< const std::vector<size_t>& >::type conditioning_set(conditioning_setSEXP);
     Rcpp::traits::input_parameter< const bool >::type qrng(qrngSEXP);
     Rcpp::traits::input_parameter< const size_t >::type cores(coresSEXP);
