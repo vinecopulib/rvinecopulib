@@ -16,8 +16,10 @@
 #' @param u_cond optional conditioning values for `rvinecop()`. A vector or
 #'   one-row matrix is repeated `n` times; alternatively, supply an `n`-row
 #'   matrix for observation-specific conditioning values. The first block holds
-#'   the copula-scale values \eqn{F(x)}. For discrete conditioning variables,
-#'   append their left limits \eqn{F(x^-)} in the same relative order. If
+#'   the copula-scale values \eqn{F(x)}. The expanded layout appends one
+#'   left-limit column \eqn{F(x^-)} per conditioning variable in the same order;
+#'   columns for continuous variables equal their value columns. In the compact
+#'   layout, the redundant columns for continuous variables are omitted. If
 #'   `NULL`, `rvinecop()` performs unconditional simulation.
 #' @param conditioning_set variable indices or names corresponding to the first
 #'   block of `u_cond`. When `NULL`, the columns of `u_cond` correspond to the
@@ -214,13 +216,31 @@ rvinecop <- function(
     )
     if (length(conditioning_set) > 0) {
       n_discrete <- sum(vinecop$var_types[conditioning_set] == "d")
-      expected_cols <- length(conditioning_set) + n_discrete
-      if (ncol(u_cond) != expected_cols) {
+      compact_cols <- length(conditioning_set) + n_discrete
+      expanded_cols <- 2L * length(conditioning_set)
+      if (!(ncol(u_cond) %in% c(compact_cols, expanded_cols))) {
         stop(
           "'u_cond' must have one value column per conditioning variable and ",
-          "one additional left-limit column per discrete conditioning variable.",
+          "one additional left-limit column per discrete conditioning variable ",
+          "(compact layout), or two columns per conditioning variable ",
+          "(expanded layout).",
           call. = FALSE
         )
+      }
+      if (ncol(u_cond) == expanded_cols) {
+        continuous <- which(vinecop$var_types[conditioning_set] == "c")
+        left_limits <- u_cond[,
+          length(conditioning_set) + continuous,
+          drop = FALSE
+        ]
+        values <- u_cond[, continuous, drop = FALSE]
+        if (!isTRUE(all.equal(left_limits, values))) {
+          stop(
+            "expanded-layout left-limit columns for continuous conditioning ",
+            "variables must equal their value columns.",
+            call. = FALSE
+          )
+        }
       }
     }
 

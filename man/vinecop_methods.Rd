@@ -57,8 +57,10 @@ sequence in higher dimensions (default \code{qrng = FALSE}).}
 \item{u_cond}{optional conditioning values for \code{rvinecop()}. A vector or
 one-row matrix is repeated \code{n} times; alternatively, supply an \code{n}-row
 matrix for observation-specific conditioning values. The first block holds
-the copula-scale values \eqn{F(x)}. For discrete conditioning variables,
-append their left limits \eqn{F(x^-)} in the same relative order. If
+the copula-scale values \eqn{F(x)}. The expanded layout appends one
+left-limit column \eqn{F(x^-)} per conditioning variable in the same order;
+columns for continuous variables equal their value columns. In the compact
+layout, the redundant columns for continuous variables are omitted. If
 \code{NULL}, \code{rvinecop()} performs unconditional simulation.}
 
 \item{conditioning_set}{variable indices or names corresponding to the first
