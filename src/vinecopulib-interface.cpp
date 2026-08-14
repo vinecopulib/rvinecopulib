@@ -163,9 +163,12 @@ Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r,
   Bicop bicop_cpp = bicop_wrap(bicop_r);
   Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
   if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
-    auto u = tools_stats::simulate_uniform(n, 2, qrng, seeds);
-    u.col(1) = bicop_cpp.as_continuous().hinv1(u, parameters);
-    return u;
+    if (parameters.rows() != static_cast<Eigen::Index>(n)) {
+      throw std::runtime_error(
+        "vectorized parameters must have one row per row of u "
+        "(one per simulated observation)");
+    }
+    return bicop_cpp.simulate(parameters, qrng, seeds);
   }
   return bicop_cpp.simulate(n, qrng, seeds);
 }
