@@ -44,6 +44,9 @@ for the complete backend changes.
   for vine copulas. They support observation-specific parameter matrices for
   continuous parametric models.
 
+* Add first- and second-order density, log-density, and h-function derivatives
+  to `dbicop()` and `hbicop()` through the `deriv` argument.
+
 * Add `keep_all` to `dvinecop()` to return per-edge densities and h-functions,
   and allow observation-specific parameters in `dvinecop()`.
 

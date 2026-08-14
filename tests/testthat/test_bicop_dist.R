@@ -498,3 +498,204 @@ test_that("bivariate derivative safeguards are enforced", {
     "not implemented for the TLL"
   )
 })
+
+test_that("dbicop exposes selected density derivatives", {
+  u <- matrix(c(0.21, 0.37, 0.44, 0.62, 0.73, 0.28), ncol = 2)
+  cop <- bicop_dist("gaussian", parameters = 0.35)
+  eps <- 1e-6
+
+  u_plus <- u_minus <- u
+  u_plus[, 1] <- u_plus[, 1] + eps
+  u_minus[, 1] <- u_minus[, 1] - eps
+  du1_fd <- (dbicop(u_plus, cop) - dbicop(u_minus, cop)) / (2 * eps)
+
+  expect_equal(dbicop(u, cop, deriv = "u1"), du1_fd, tolerance = 1e-6)
+  expect_equal(
+    dbicop(u, cop, deriv = "par"),
+    dbicop(u, cop, deriv = "par1")
+  )
+  expect_equal(
+    dbicop(u, cop, deriv = c("u1", "par1")),
+    dbicop(u, cop, deriv = c("par1", "u1"))
+  )
+  expect_equal(dbicop(u, cop, log = TRUE), log(dbicop(u, cop)))
+  expect_equal(
+    dbicop(u, cop, log = TRUE, deriv = "par1"),
+    drop(scores(u, cop))
+  )
+  expect_equal(
+    mean(dbicop(u, cop, log = TRUE, deriv = c("par1", "par1"))),
+    drop(hessian(u, cop))
+  )
+})
+
+test_that("hbicop exposes selected h-function derivatives", {
+  u <- matrix(c(0.18, 0.31, 0.47, 0.66, 0.79, 0.23), ncol = 2)
+  cop <- bicop_dist("bb1", rotation = 270, parameters = c(1.2, 1.4))
+  eps <- 1e-6
+
+  cop_plus <- bicop_dist("bb1", 270, c(1.2 + eps, 1.4))
+  cop_minus <- bicop_dist("bb1", 270, c(1.2 - eps, 1.4))
+  dh1_dpar1_fd <-
+    (hbicop(u, 1, cop_plus) - hbicop(u, 1, cop_minus)) / (2 * eps)
+
+  expect_equal(
+    hbicop(u, 1, cop, deriv = "par1"),
+    dh1_dpar1_fd,
+    tolerance = 1e-6
+  )
+  expect_equal(hbicop(u, 1, cop, deriv = "u2"), dbicop(u, cop))
+  expect_equal(hbicop(u, 2, cop, deriv = "u1"), dbicop(u, cop))
+  expect_equal(
+    hbicop(u, 1, cop, deriv = c("par1", "u2")),
+    dbicop(u, cop, deriv = "par1")
+  )
+  expect_equal(
+    hbicop(u, 2, cop, deriv = c("u2", "par2")),
+    hbicop(u, 2, cop, deriv = c("par2", "u2"))
+  )
+})
+
+test_that("function derivatives support observation-specific parameters", {
+  u <- matrix(c(0.2, 0.35, 0.5, 0.65, 0.8, 0.25), ncol = 2)
+  parameters <- matrix(c(-0.5, 0.1, 0.6), ncol = 1)
+  evaluators <- list(
+    function(x, par, cores = 1) {
+      dbicop(x, "gaussian", parameters = par, deriv = "par1", cores = cores)
+    },
+    function(x, par, cores = 1) {
+      dbicop(
+        x,
+        "gaussian",
+        parameters = par,
+        deriv = c("u1", "par1"),
+        cores = cores
+      )
+    },
+    function(x, par, cores = 1) {
+      dbicop(
+        x,
+        "gaussian",
+        parameters = par,
+        log = TRUE,
+        deriv = "par1",
+        cores = cores
+      )
+    },
+    function(x, par, cores = 1) {
+      dbicop(
+        x,
+        "gaussian",
+        parameters = par,
+        log = TRUE,
+        deriv = c("par1", "par1"),
+        cores = cores
+      )
+    },
+    function(x, par, cores = 1) {
+      hbicop(
+        x,
+        1,
+        "gaussian",
+        parameters = par,
+        deriv = "par1",
+        cores = cores
+      )
+    },
+    function(x, par, cores = 1) {
+      hbicop(
+        x,
+        1,
+        "gaussian",
+        parameters = par,
+        deriv = c("u1", "par1"),
+        cores = cores
+      )
+    },
+    function(x, par, cores = 1) {
+      hbicop(
+        x,
+        2,
+        "gaussian",
+        parameters = par,
+        deriv = "par1",
+        cores = cores
+      )
+    },
+    function(x, par, cores = 1) {
+      hbicop(
+        x,
+        2,
+        "gaussian",
+        parameters = par,
+        deriv = c("u2", "par1"),
+        cores = cores
+      )
+    }
+  )
+
+  for (evaluate in evaluators) {
+    expected <- vapply(seq_len(nrow(u)), function(i) {
+      evaluate(u[i, ], parameters[i, 1])
+    }, numeric(1))
+    expect_equal(evaluate(u, parameters, cores = 2), expected)
+  }
+  expect_equal(
+    dbicop(u, "gaussian", parameters = parameters, cores = 2),
+    dbicop(u, "gaussian", parameters = parameters)
+  )
+  expect_equal(
+    hbicop(u, 1, "gaussian", parameters = parameters, inverse = TRUE, cores = 2),
+    hbicop(u, 1, "gaussian", parameters = parameters, inverse = TRUE)
+  )
+})
+
+test_that("function derivative safeguards are enforced", {
+  u <- matrix(c(0.2, 0.3, 0.7, 0.8), ncol = 2)
+  cop <- bicop_dist("gaussian", parameters = 0.4)
+
+  expect_error(dbicop(u, cop, deriv = 1), "character vector")
+  expect_error(dbicop(u, cop, deriv = character()), "length one or two")
+  expect_error(
+    dbicop(u, cop, deriv = c("u1", "u2", "par1")),
+    "length one or two"
+  )
+  expect_error(dbicop(u, cop, deriv = NA_character_), "character vector")
+  expect_error(dbicop(u, cop, deriv = "u3"), "components of 'deriv'")
+  expect_error(dbicop(u, cop, deriv = "par0"), "components of 'deriv'")
+  expect_error(dbicop(u, cop, deriv = "par2"), "parameter")
+  expect_error(dbicop(u, cop, deriv = "u1", cores = 0), "not greater than 0")
+  expect_error(
+    hbicop(u, 1, cop, inverse = TRUE, deriv = "u1"),
+    "inverse h-functions"
+  )
+  expect_error(dbicop(u, bicop_dist("tll"), deriv = "u1"), "not implemented")
+  expect_error(
+    dbicop(
+      cbind(u, u[, 1] - 0.01),
+      "gaussian",
+      parameters = 0.4,
+      var_types = c("d", "c"),
+      deriv = "u1"
+    ),
+    "continuous variable types"
+  )
+  expect_error(
+    hbicop(
+      u,
+      1,
+      "gaussian",
+      parameters = matrix(c(0.2, 0.3, 0.4), ncol = 1),
+      deriv = "par1"
+    ),
+    "one row per row of u"
+  )
+  expect_error(
+    rvinecopulib:::bicop_deriv_cpp(u, cop, "pdf", "u1", 3, 1),
+    "order must be one or two"
+  )
+  expect_error(
+    rvinecopulib:::bicop_deriv_cpp(u, cop, "unknown", "u1", 1, 1),
+    "unknown derivative target"
+  )
+})

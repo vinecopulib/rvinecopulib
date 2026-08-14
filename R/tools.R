@@ -180,6 +180,33 @@ is_vectorized_bicop_parameters <- function(parameters, family) {
   TRUE
 }
 
+#' Internal: Validate a bivariate copula derivative selector.
+#' @param deriv character vector identifying one or two differentiation
+#'   components.
+#' @return The normalized components, or `NULL`.
+#' @noRd
+normalize_bicop_deriv <- function(deriv) {
+  if (is.null(deriv)) {
+    return(NULL)
+  }
+  if (!is.character(deriv) || !length(deriv) %in% 1:2 || anyNA(deriv)) {
+    stop(
+      "'deriv' must be NULL or a character vector of length one or two.",
+      call. = FALSE
+    )
+  }
+
+  deriv[deriv == "par"] <- "par1"
+  valid <- grepl("^(u1|u2|par[1-9][0-9]*)$", deriv)
+  if (!all(valid)) {
+    stop(
+      "components of 'deriv' must be 'u1', 'u2', 'par', or 'par<k>'.",
+      call. = FALSE
+    )
+  }
+  deriv
+}
+
 process_family_set <- function(family_set, par_method) {
   family_set <- check_and_match_family_set(family_set)
   family_set <- expand_family_set(family_set)
