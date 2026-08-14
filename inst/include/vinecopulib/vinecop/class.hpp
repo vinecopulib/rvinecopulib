@@ -367,6 +367,7 @@ private:
     VinecopView(const Vinecop& vinecop, const ReorientationMap& reorientation);
 
     const RVineStructure& get_structure() const;
+    size_t get_trunc_lvl() const;
     BicopView get_pair_copula(size_t tree, size_t edge) const;
 
   private:
@@ -461,6 +462,7 @@ private:
   // overloads: rejects discrete variables and checks the n x npars shape.
   void check_per_obs_params(const Eigen::MatrixXd& u,
                             const Eigen::MatrixXd& per_obs_params) const;
+  size_t get_effective_trunc_lvl() const;
 
 protected:
   size_t d_{ 1 };
