@@ -305,10 +305,6 @@ test_that("custom tree criterion safeguards are enforced", {
   valid_criterion <- function(data, weights) 0.5
 
   expect_error(
-    vinecop(u_custom, tree_crit = valid_criterion, cores = 2),
-    "require 'cores = 1'"
-  )
-  expect_error(
     vinecop(u_custom, tree_crit = "custom"),
     "requires a function"
   )
@@ -340,6 +336,38 @@ test_that("custom tree criterion safeguards are enforced", {
   expect_error(
     vinecop(u_custom, tree_crit = function(data, weights) stop("boom")),
     "boom"
+  )
+})
+
+test_that("custom tree criteria support multicore pair-copula fitting", {
+  set.seed(17)
+  u_custom <- matrix(runif(400), ncol = 4)
+  n_calls <- 0L
+  criterion <- function(data, weights) {
+    n_calls <<- n_calls + 1L
+    abs(cor(data[, 1], data[, 2], method = "kendall"))
+  }
+
+  fit_parallel <- vinecop(
+    u_custom,
+    family_set = "indep",
+    tree_crit = criterion,
+    cores = 2
+  )
+  parallel_calls <- n_calls
+  expect_gt(parallel_calls, 0L)
+
+  n_calls <- 0L
+  fit_serial <- vinecop(
+    u_custom,
+    family_set = "indep",
+    tree_crit = criterion,
+    cores = 1
+  )
+  expect_identical(n_calls, parallel_calls)
+  expect_equal(
+    as_rvine_matrix(fit_parallel$structure),
+    as_rvine_matrix(fit_serial$structure)
   )
 })
 

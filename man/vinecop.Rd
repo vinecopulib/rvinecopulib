@@ -90,7 +90,8 @@ the original number of observations, or \code{numeric(0)} when no weights were
 supplied. Rows containing missing values or zero weights are removed
 before the function is called. The function must return one finite numeric
 value; its absolute value is used as the edge strength. Custom functions
-require \code{cores = 1}.}
+always run serially on the calling thread; pair-copula fitting may still use
+\code{cores} threads.}
 
 \item{threshold}{for thresholded vine copulas; \code{NA} indicates that the
 threshold should be selected automatically by \code{\link[=mBICV]{mBICV()}}.}
