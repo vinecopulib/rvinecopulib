@@ -27,7 +27,8 @@ inline Vinecop::Vinecop(const size_t d)
 //! @param structure An `RVineStructure` object specifying the vine structure.
 //! @param pair_copulas `Bicop` objects specifying the pair-copulas, namely
 //!     a nested list such that `pc_store[t][e]` contains a `Bicop`
-//!     object for the pair copula corresponding to tree `t` and edge `e`.
+//!     object for the pair copula corresponding to tree `t` and edge `e`. If
+//!     empty, all pair-copulas are treated as independence.
 //! @param var_types Strings specifying the types of the variables,
 //!   e.g., `("c", "d")` means first variable continuous, second discrete.
 //!   If empty, then all variables are set as continuous.
@@ -53,7 +54,8 @@ inline Vinecop::Vinecop(const RVineStructure& structure,
 //! @param matrix An R-vine matrix specifying the vine structure.
 //! @param pair_copulas `Bicop` objects specifying the pair-copulas, namely
 //!     a nested list such that `pc_store[t][e]` contains a `Bicop`
-//!     object for the pair copula corresponding to tree `t` and edge `e`.
+//!     object for the pair copula corresponding to tree `t` and edge `e`. If
+//!     empty, all pair-copulas are treated as independence.
 //! @param var_types Strings specifying the types of the variables,
 //!   e.g., `("c", "d")` means first variable continuous, second discrete.
 //!   If empty, then all variables are set as continuous.
@@ -443,6 +445,12 @@ Vinecop::VinecopView::get_structure() const
                         : vinecop_->rvine_structure_;
 }
 
+inline size_t
+Vinecop::VinecopView::get_trunc_lvl() const
+{
+  return vinecop_->get_effective_trunc_lvl();
+}
+
 inline BicopView
 Vinecop::VinecopView::get_pair_copula(size_t tree, size_t edge) const
 {
@@ -592,7 +600,7 @@ Vinecop::fit(const Eigen::MatrixXd& data,
   auto u = collapse_data(data);
 
   // info about the vine structure (reverse rows (!) for more natural indexing)
-  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  size_t trunc_lvl = get_effective_trunc_lvl();
   if (trunc_lvl == 0)
     return;
 
@@ -813,6 +821,12 @@ inline size_t
 Vinecop::get_trunc_lvl() const
 {
   return rvine_structure_.get_trunc_lvl();
+}
+
+inline size_t
+Vinecop::get_effective_trunc_lvl() const
+{
+  return std::min(rvine_structure_.get_trunc_lvl(), pair_copulas_.size());
 }
 
 //! @brief Gets the parameters of all pair copulas.
@@ -1149,7 +1163,7 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
   }
 
   // info about the vine structure (reverse rows (!) for more natural indexing)
-  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  size_t trunc_lvl = get_effective_trunc_lvl();
   auto order = rvine_structure_.get_order();
   auto disc_cols = tools_select::get_disc_cols(var_types_);
   const bool discrete = is_discrete();
@@ -1361,7 +1375,7 @@ Vinecop::pdf(Eigen::MatrixXd u,
 inline void
 Vinecop::check_parametric(const char* fn) const
 {
-  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  size_t trunc_lvl = get_effective_trunc_lvl();
   for (size_t t = 0; t < trunc_lvl; t++) {
     for (size_t e = 0; e < d_ - 1 - t; e++) {
       if (!tools_stl::is_member(pair_copulas_[t][e].get_family(),
@@ -1427,7 +1441,7 @@ Vinecop::build_deriv_cache(const Eigen::MatrixXd& u,
                            bool second_order,
                            const Eigen::MatrixXd& per_obs_params) const
 {
-  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  size_t trunc_lvl = get_effective_trunc_lvl();
   auto order = rvine_structure_.get_order();
   const size_t m = size;
   TriangularArray<DerivCache> cache(d_, trunc_lvl);
@@ -1688,7 +1702,7 @@ Vinecop::scores_full(Eigen::MatrixXd u,
   u = collapse_data(u);
 
   // info about the vine structure (reverse rows (!) for more natural indexing)
-  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  size_t trunc_lvl = get_effective_trunc_lvl();
   auto order = rvine_structure_.get_order();
   auto disc_cols = tools_select::get_disc_cols(var_types_);
   const size_t n = static_cast<size_t>(u.rows());
@@ -2212,7 +2226,7 @@ Vinecop::hessian_full(Eigen::MatrixXd u,
   check_data(u);
   u = collapse_data(u);
 
-  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  size_t trunc_lvl = get_effective_trunc_lvl();
 
   check_parametric("hessian()");
 
@@ -2550,7 +2564,7 @@ Vinecop::hessian(Eigen::MatrixXd u,
   if (n == 0 || npars == 0) {
     return H;
   }
-  size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+  size_t trunc_lvl = get_effective_trunc_lvl();
 
   // ponytail: process observations in row-chunks so peak memory is
   // O(chunk * npars^2) rather than O(n * npars^2) -- hessian_full()
@@ -3105,7 +3119,7 @@ Vinecop::rosenblatt_impl(Eigen::MatrixXd u,
 
   // info about the vine structure
   const auto& structure = view.get_structure();
-  size_t trunc_lvl = structure.get_trunc_lvl();
+  size_t trunc_lvl = view.get_trunc_lvl();
   auto order = structure.get_order();
   auto inverse_order = tools_stl::invert_permutation(order);
   auto disc_cols = tools_select::get_disc_cols(var_types_);
@@ -3315,7 +3329,7 @@ Vinecop::inverse_rosenblatt_impl(const Eigen::MatrixXd& u,
 
   // info about the vine structure (in upper triangular matrix notation)
   const auto& structure = view.get_structure();
-  size_t trunc_lvl = structure.get_trunc_lvl();
+  size_t trunc_lvl = view.get_trunc_lvl();
   auto order = structure.get_order();
   auto inverse_order = tools_stl::invert_permutation(order);
 
