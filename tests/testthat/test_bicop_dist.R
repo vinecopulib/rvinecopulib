@@ -335,6 +335,35 @@ test_that("rbicop supports vectorized parameters", {
 
   set.seed(123)
   expect_equal(rbicop(seq_len(n), "gaussian", 0, pars), expected)
+
+  expect_error(
+    rbicop(n - 1L, "gaussian", 0, pars),
+    "one row per row of u"
+  )
+})
+
+test_that("vectorized rbicop is synchronized with the R seed", {
+  n <- 25
+  pars <- matrix(seq(-0.8, 0.8, length.out = n), ncol = 1)
+
+  for (use_qrng in c(FALSE, TRUE)) {
+    set.seed(314)
+    u1 <- rbicop(n, "gaussian", 0, pars, qrng = use_qrng)
+    state_after <- .Random.seed
+
+    set.seed(314)
+    u2 <- rbicop(n, "gaussian", 0, pars, qrng = use_qrng)
+    expect_identical(u2, u1)
+    expect_identical(.Random.seed, state_after)
+
+    set.seed(314)
+    runif(20)
+    expect_identical(.Random.seed, state_after)
+
+    set.seed(315)
+    u3 <- rbicop(n, "gaussian", 0, pars, qrng = use_qrng)
+    expect_false(identical(u3, u1))
+  }
 })
 
 test_that("rbicop vectorization handles rotations and multiple parameters", {
