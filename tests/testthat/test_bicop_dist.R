@@ -635,9 +635,13 @@ test_that("function derivatives support observation-specific parameters", {
   )
 
   for (evaluate in evaluators) {
-    expected <- vapply(seq_len(nrow(u)), function(i) {
-      evaluate(u[i, ], parameters[i, 1])
-    }, numeric(1))
+    expected <- vapply(
+      seq_len(nrow(u)),
+      function(i) {
+        evaluate(u[i, ], parameters[i, 1])
+      },
+      numeric(1)
+    )
     expect_equal(evaluate(u, parameters, cores = 2), expected)
   }
   expect_equal(
@@ -645,7 +649,14 @@ test_that("function derivatives support observation-specific parameters", {
     dbicop(u, "gaussian", parameters = parameters)
   )
   expect_equal(
-    hbicop(u, 1, "gaussian", parameters = parameters, inverse = TRUE, cores = 2),
+    hbicop(
+      u,
+      1,
+      "gaussian",
+      parameters = parameters,
+      inverse = TRUE,
+      cores = 2
+    ),
     hbicop(u, 1, "gaussian", parameters = parameters, inverse = TRUE)
   )
 })

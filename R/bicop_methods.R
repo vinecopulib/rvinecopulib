@@ -143,7 +143,14 @@ dbicop <- function(
   }
 
   what <- if (log) "logpdf" else "pdf"
-  bicop_deriv_cpp(u, bicop, what, paste0(deriv, collapse = ""), length(deriv), cores)
+  bicop_deriv_cpp(
+    u,
+    bicop,
+    what,
+    paste0(deriv, collapse = ""),
+    length(deriv),
+    cores
+  )
 }
 #' @rdname bicop_methods
 #' @export
