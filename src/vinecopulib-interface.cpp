@@ -235,19 +235,32 @@ void vinecop_check_cpp(Rcpp::List vinecop_r)
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
                                                const Rcpp::List& vinecop_r,
+                                               const std::vector<size_t>&
+                                                 conditioning_set,
                                                size_t cores)
 {
-  return vinecop_wrap(vinecop_r).inverse_rosenblatt(U, cores);
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (conditioning_set.empty()) {
+    return vinecop_cpp.inverse_rosenblatt(U, cores);
+  }
+  return vinecop_cpp.inverse_rosenblatt(U, conditioning_set, cores);
 }
 
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U,
                                        const Rcpp::List& vinecop_r,
+                                       const std::vector<size_t>&
+                                         conditioning_set,
                                        size_t cores,
                                        bool randomize_discrete,
                                        std::vector<int> seeds)
 {
-  return vinecop_wrap(vinecop_r).rosenblatt(U, cores, randomize_discrete, seeds);
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (conditioning_set.empty()) {
+    return vinecop_cpp.rosenblatt(U, cores, randomize_discrete, seeds);
+  }
+  return vinecop_cpp.rosenblatt(
+    U, conditioning_set, cores, randomize_discrete, seeds);
 }
 
 // [[Rcpp::export()]]

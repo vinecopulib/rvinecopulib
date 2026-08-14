@@ -77,12 +77,12 @@ vinecop_check_cpp <- function(vinecop_r) {
     invisible(.Call(`_rvinecopulib_vinecop_check_cpp`, vinecop_r))
 }
 
-vinecop_inverse_rosenblatt_cpp <- function(U, vinecop_r, cores) {
-    .Call(`_rvinecopulib_vinecop_inverse_rosenblatt_cpp`, U, vinecop_r, cores)
+vinecop_inverse_rosenblatt_cpp <- function(U, vinecop_r, conditioning_set, cores) {
+    .Call(`_rvinecopulib_vinecop_inverse_rosenblatt_cpp`, U, vinecop_r, conditioning_set, cores)
 }
 
-vinecop_rosenblatt_cpp <- function(U, vinecop_r, cores, randomize_discrete, seeds) {
-    .Call(`_rvinecopulib_vinecop_rosenblatt_cpp`, U, vinecop_r, cores, randomize_discrete, seeds)
+vinecop_rosenblatt_cpp <- function(U, vinecop_r, conditioning_set, cores, randomize_discrete, seeds) {
+    .Call(`_rvinecopulib_vinecop_rosenblatt_cpp`, U, vinecop_r, conditioning_set, cores, randomize_discrete, seeds)
 }
 
 vinecop_sim_cpp <- function(vinecop_r, n, qrng, cores, seeds) {

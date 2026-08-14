@@ -17,6 +17,10 @@
 #'    of `u`).
 #' @param randomize_discrete Whether to randomize the transform for discrete
 #'   variables; see Details.
+#' @param conditioning_set optional variable indices or names that define the
+#'   conditioning variables. The transform uses an admissible sampling order
+#'   whose tail contains exactly this set. The model is not modified. If
+#'   `NULL`, the current model order is used.
 #'
 #' @details
 #' The Rosenblatt transform (Rosenblatt, 1952) \eqn{U = T(V)} of a random vector
@@ -85,10 +89,24 @@
 #' vc <- fit$copula
 #' rosenblatt(pseudo_obs(x), vc)
 #' @export
-rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
+rosenblatt <- function(
+  x,
+  model,
+  cores = 1,
+  randomize_discrete = TRUE,
+  conditioning_set = NULL
+) {
   assert_that(
     inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist")),
-    is.number(cores)
+    is.number(cores),
+    cores > 0,
+    is.flag(randomize_discrete)
+  )
+
+  conditioning_set <- process_conditioning_set(
+    conditioning_set,
+    model$names,
+    if (inherits(model, "bicop_dist")) 2L else dim(model)[1]
   )
 
   if (inherits(model, "bicop_dist")) {
@@ -112,7 +130,14 @@ rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
   assert_that(all((x >= 0) & (x <= 1)))
   x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
   x <- if_vec_to_matrix(x, dim(model)[1] == 1)
-  x <- vinecop_rosenblatt_cpp(x, model, cores, randomize_discrete, get_seeds())
+  x <- vinecop_rosenblatt_cpp(
+    x,
+    model,
+    conditioning_set,
+    cores,
+    randomize_discrete,
+    get_seeds()
+  )
   colnames(x) <- model$names
 
   x
@@ -120,11 +145,23 @@ rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
 
 #' @rdname rosenblatt
 #' @export
-inverse_rosenblatt <- function(u, model, cores = 1) {
+inverse_rosenblatt <- function(
+  u,
+  model,
+  cores = 1,
+  conditioning_set = NULL
+) {
   assert_that(
     all((u > 0) & (u < 1)),
     inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist")),
-    is.number(cores)
+    is.number(cores),
+    cores > 0
+  )
+
+  conditioning_set <- process_conditioning_set(
+    conditioning_set,
+    model$names,
+    if (inherits(model, "bicop_dist")) 2L else dim(model)[1]
   )
 
   to_col <- if (inherits(model, "bicop_dist")) FALSE else (dim(model)[1] == 1)
@@ -139,9 +176,14 @@ inverse_rosenblatt <- function(u, model, cores = 1) {
   }
 
   if (inherits(model, "vinecop_dist")) {
-    u <- vinecop_inverse_rosenblatt_cpp(u, model, cores)
+    u <- vinecop_inverse_rosenblatt_cpp(u, model, conditioning_set, cores)
   } else {
-    u <- vinecop_inverse_rosenblatt_cpp(u, model$copula, cores)
+    u <- vinecop_inverse_rosenblatt_cpp(
+      u,
+      model$copula,
+      conditioning_set,
+      cores
+    )
     u <- dpq_marg(u, model, "q")
   }
   colnames(u) <- model$names

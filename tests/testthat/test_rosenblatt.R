@@ -24,6 +24,129 @@ test_that("rosenblatt works with vine copulas", {
   expect_eql(inverse_rosenblatt(rosenblatt(u, vc), vc), u)
 })
 
+test_that("rosenblatt supports explicit conditioning sets", {
+  indep <- bicop_dist()
+  vc_cond <- vinecop_dist(
+    list(rep(list(indep), 3), rep(list(indep), 2), list(indep)),
+    dvine_structure(1:4)
+  )
+  vc_cond$names <- letters[1:4]
+  structure_before <- vc_cond$structure
+  u <- rvinecop(20, vc_cond)
+
+  z_names <- rosenblatt(
+    u,
+    vc_cond,
+    conditioning_set = c("d", "c")
+  )
+  z_indices <- rosenblatt(u, vc_cond, conditioning_set = c(4, 3))
+  expect_identical(z_names, z_indices)
+  expect_identical(colnames(z_names), letters[1:4])
+  expect_equal(
+    inverse_rosenblatt(
+      z_names,
+      vc_cond,
+      conditioning_set = c("d", "c")
+    ),
+    u
+  )
+  expect_identical(
+    rosenblatt(u, vc_cond, cores = 2, conditioning_set = c(4, 3)),
+    z_indices
+  )
+  expect_identical(
+    inverse_rosenblatt(
+      z_indices,
+      vc_cond,
+      cores = 2,
+      conditioning_set = c(4, 3)
+    ),
+    u
+  )
+  expect_identical(vc_cond$structure, structure_before)
+
+  u_bicop <- rbicop(20, pc)
+  expect_equal(
+    inverse_rosenblatt(
+      rosenblatt(u_bicop, pc, conditioning_set = 1),
+      pc,
+      conditioning_set = 1
+    ),
+    u_bicop
+  )
+})
+
+test_that("conditional rosenblatt safeguards are enforced", {
+  indep <- bicop_dist()
+  vc_cond <- vinecop_dist(
+    list(rep(list(indep), 2), list(indep)),
+    dvine_structure(1:3)
+  )
+  u <- matrix(runif(15), ncol = 3)
+
+  expect_error(
+    rosenblatt(u, vc_cond, conditioning_set = "a"),
+    "requires named variables"
+  )
+  vc_cond$names <- letters[1:3]
+  expect_error(
+    rosenblatt(u, vc_cond, conditioning_set = "unknown"),
+    "unknown variable names"
+  )
+  expect_error(
+    inverse_rosenblatt(u, vc_cond, conditioning_set = c(1, 1)),
+    "must not contain duplicates"
+  )
+  expect_error(
+    rosenblatt(u, vc_cond, conditioning_set = 0),
+    "between 1 and d"
+  )
+  expect_error(
+    inverse_rosenblatt(u, vc_cond, conditioning_set = 1:3),
+    "at most d - 1"
+  )
+  expect_error(
+    rosenblatt(u, vc_cond, conditioning_set = 1.5),
+    "indices or names"
+  )
+  expect_error(rosenblatt(u, vc_cond, cores = 0), "not greater than 0")
+  expect_error(inverse_rosenblatt(u, vc_cond, cores = 0), "not greater than 0")
+  expect_error(
+    rosenblatt(u, vc_cond, randomize_discrete = 1),
+    "not a flag"
+  )
+})
+
+test_that("conditional discrete rosenblatt uses R seeds and both layouts", {
+  indep <- bicop_dist()
+  vc_disc <- vinecop_dist(
+    list(rep(list(indep), 2), list(indep)),
+    dvine_structure(1:3),
+    var_types = c("c", "d", "c")
+  )
+  u <- matrix(seq(0.15, 0.85, length.out = 30), ncol = 3)
+  u_lower <- pmax(u[, 2] - 0.1, 1e-10)
+  compact <- cbind(u, u_lower)
+  expanded <- cbind(u, u)
+  expanded[, 5] <- u_lower
+
+  set.seed(314)
+  z_compact <- rosenblatt(compact, vc_disc, conditioning_set = 2)
+  state_after <- .Random.seed
+  set.seed(314)
+  z_expanded <- rosenblatt(expanded, vc_disc, conditioning_set = 2)
+  expect_identical(z_expanded, z_compact)
+  expect_identical(.Random.seed, state_after)
+
+  set.seed(314)
+  runif(20)
+  expect_identical(.Random.seed, state_after)
+
+  set.seed(315)
+  z_other_seed <- rosenblatt(compact, vc_disc, conditioning_set = 2)
+  expect_false(identical(z_other_seed[, 2], z_compact[, 2]))
+})
+
 test_that("discrete rosenblatt works with vine copulas", {
   u <- rvinecop(2000, vc)
   uu <- cbind(u, u[, 2])
@@ -56,6 +179,15 @@ test_that("rosenblatt works with vine distribution", {
   expect_eql(inverse_rosenblatt(rosenblatt(u, vd), vd), u)
   vd <- vine(u, copula_controls = list(structure = mat, family = "clay"))
   expect_equiv(inverse_rosenblatt(rosenblatt(u, vd), vd), u)
+
+  vd$names <- vd$copula$names <- letters[1:3]
+  colnames(u) <- letters[1:3]
+  z <- rosenblatt(u, vd, conditioning_set = "a")
+  expect_identical(colnames(z), letters[1:3])
+  expect_equiv(
+    inverse_rosenblatt(z, vd, conditioning_set = "a"),
+    u
+  )
 })
 
 test_that("discrete rosenblatt works with vine distributions", {

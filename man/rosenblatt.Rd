@@ -5,9 +5,15 @@
 \alias{inverse_rosenblatt}
 \title{(Inverse) Rosenblatt transform}
 \usage{
-rosenblatt(x, model, cores = 1, randomize_discrete = TRUE)
+rosenblatt(
+  x,
+  model,
+  cores = 1,
+  randomize_discrete = TRUE,
+  conditioning_set = NULL
+)
 
-inverse_rosenblatt(u, model, cores = 1)
+inverse_rosenblatt(u, model, cores = 1, conditioning_set = NULL)
 }
 \arguments{
 \item{x}{matrix of evaluation points; must be in \eqn{(0, 1)^d} for copula
@@ -21,6 +27,11 @@ of \code{u}).}
 
 \item{randomize_discrete}{Whether to randomize the transform for discrete
 variables; see Details.}
+
+\item{conditioning_set}{optional variable indices or names that define the
+conditioning variables. The transform uses an admissible sampling order
+whose tail contains exactly this set. The model is not modified. If
+\code{NULL}, the current model order is used.}
 
 \item{u}{matrix of evaluation points; must be in \eqn{(0, 1)^d}.}
 }
