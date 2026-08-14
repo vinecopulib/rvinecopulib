@@ -29,7 +29,8 @@
 #'   supplied. Rows containing missing values or zero weights are removed
 #'   before the function is called. The function must return one finite numeric
 #'   value; its absolute value is used as the edge strength. Custom functions
-#'   require `cores = 1`.
+#'   always run serially on the calling thread; pair-copula fitting may still use
+#'   `cores` threads.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the
 #'   threshold should be selected automatically by [mBICV()].
 #' @param vinecop_object a `vinecop` object to be updated; if provided, only the
@@ -253,9 +254,6 @@ vinecop <- function(
   tree_crit_control <- tree_crit
   tree_crit_function <- NULL
   if (is.function(tree_crit)) {
-    if (cores != 1) {
-      stop("custom 'tree_crit' functions require 'cores = 1'.", call. = FALSE)
-    }
     if (!is.null(vinecop_object)) {
       stop(
         "custom 'tree_crit' functions cannot be used when refitting a model.",
