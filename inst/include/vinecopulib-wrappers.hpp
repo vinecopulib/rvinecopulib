@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef INTERFACED_FROM_R
+#define INTERFACED_FROM_R
+#endif
+
 #include <RcppEigen.h>
 #include "vinecopulib/misc/tools_interface.hpp"
 #include "vinecopulib.hpp"

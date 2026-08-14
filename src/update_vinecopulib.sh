@@ -1,13 +1,30 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-git clone --depth 1 git@github.com:vinecopulib/vinecopulib.git -b dev --single-branch
+set -euo pipefail
 
-rm -rf ../inst/include/vinecopulib/*
-mv ./vinecopulib/include/* ../inst/include
+backend_ref="${1:-main}"
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+include_dir="$script_dir/../inst/include"
+work_dir="$(mktemp -d)"
+backend_dir="$work_dir/vinecopulib"
 
-sed -i '11i#define INTERFACED_FROM_R' ./../inst/include/vinecopulib/misc/tools_interface.hpp
+cleanup() {
+  rm -rf -- "$work_dir"
+}
+trap cleanup EXIT
 
-sed -i -e '8,13d' -e '31,34d' ./../inst/include/vinecopulib/misc/tools_integration.hpp
+git clone \
+  --depth 1 \
+  --branch "$backend_ref" \
+  --single-branch \
+  git@github.com:vinecopulib/vinecopulib.git \
+  "$backend_dir"
 
-rm -rf ./../inst/include/vinecopulib/mainpage.h
-rm -rf vinecopulib
+backend_commit="$(git -C "$backend_dir" rev-parse HEAD)"
+
+# Keep package-owned headers such as vinecopulib-wrappers.hpp, but replace the
+# complete upstream header tree, including documentation headers.
+rm -rf -- "$include_dir/vinecopulib"
+cp -R "$backend_dir/include/." "$include_dir/"
+
+printf 'Imported vinecopulib %s at %s\n' "$backend_ref" "$backend_commit"
