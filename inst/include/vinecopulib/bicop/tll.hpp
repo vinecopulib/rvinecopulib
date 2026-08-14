@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -27,13 +27,13 @@ private:
   static Eigen::VectorXd gaussian_kernel_2d(const Eigen::MatrixXd& x);
 
   Eigen::Matrix2d select_bandwidth(const Eigen::MatrixXd& x,
-                                   std::string method,
+                                   const std::string& method,
                                    const Eigen::VectorXd& weights);
 
   Eigen::MatrixXd fit_local_likelihood(const Eigen::MatrixXd& x,
                                        const Eigen::MatrixXd& x_data,
                                        const Eigen::Matrix2d& B,
-                                       std::string method,
+                                       const std::string& method,
                                        const Eigen::VectorXd& weights);
 
   double calculate_infl(const size_t& n,
@@ -49,7 +49,7 @@ private:
            std::string method,
            double mult,
            size_t grid_size,
-           const Eigen::VectorXd& weights);
+           const Eigen::VectorXd& weights) override;
 };
 }
 

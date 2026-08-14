@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -6,6 +6,7 @@
 
 #include <vinecopulib/misc/tools_eigen.hpp>
 #include <vinecopulib/misc/tools_integration.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
 
 namespace vinecopulib {
 inline Bb8Bicop::Bb8Bicop()
@@ -3589,9 +3590,13 @@ Bb8Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
   double theta = parameters(0);
   double delta = parameters(1);
   auto f = [theta, delta](const double t) {
-    double tmp = std::pow(1 - t * delta, theta);
-    double res = std::log((tmp - 1) / (std::pow(1 - delta, theta) - 1));
-    return res * (1 - t * delta - std::pow(1 - t * delta, 1 - theta));
+    // log1p(-exp(.)) differences rather than log of a ratio: the ratio rounds
+    // to exactly 1 as t -> 1/delta, and the logarithm then returns 0.
+    const double log1mtd = tools_stl::log1p(-t * delta);
+    const double num = tools_stl::log1p(-std::exp(theta * log1mtd));
+    const double den =
+      tools_stl::log1p(-std::exp(theta * tools_stl::log1p(-delta)));
+    return (num - den) * (1 - t * delta - std::exp((1 - theta) * log1mtd));
   };
   return 1 - 4 / (delta * theta) * tools_integration::integrate_zero_to_one(f);
 }

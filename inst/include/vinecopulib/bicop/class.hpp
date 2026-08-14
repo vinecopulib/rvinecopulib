@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -13,6 +13,7 @@ namespace vinecopulib {
 
 // forward declaration of Abstract class
 class AbstractBicop;
+class BicopView;
 using BicopPtr = std::shared_ptr<AbstractBicop>;
 
 //! @brief A class for bivariate copula models.
@@ -44,6 +45,7 @@ using BicopPtr = std::shared_ptr<AbstractBicop>;
 //!
 class Bicop
 {
+  friend class BicopView;
 
 public:
   // Constructors
@@ -57,6 +59,10 @@ public:
                  const std::vector<std::string>& var_types = { "c", "c" });
 
   Bicop(const Bicop& other);
+
+  // Required, not redundant: the copy constructor above suppresses the implicit
+  // move, and copying deep-clones the family object.
+  Bicop(Bicop&& other) = default;
 
   explicit Bicop(const std::string& filename);
 
@@ -291,6 +297,11 @@ public:
     const bool qrng = false,
     const std::vector<int>& seeds = std::vector<int>()) const;
 
+  Eigen::MatrixXd simulate(const Eigen::MatrixXd& parameters,
+                           const bool qrng = false,
+                           const std::vector<int>& seeds = std::vector<int>(),
+                           const size_t num_threads = 1) const;
+
   // Methods modifying the family/rotation/parameters
   void fit(const Eigen::MatrixXd& data,
            const FitControlsBicop& controls = FitControlsBicop());
@@ -329,11 +340,35 @@ public:
   Bicop as_continuous() const;
 
 private:
+  // Evaluate the continuous copula represented by this object without
+  // consulting or changing its stored variable types. These are used by the
+  // inverse Rosenblatt transform, whose input and output always have
+  // continuous uniform margins even when the fitted model has discrete
+  // variables.
+  Eigen::VectorXd hfunc1_continuous(const Eigen::MatrixXd& u,
+                                    bool flipped) const;
+
+  Eigen::VectorXd hinv2_continuous(const Eigen::MatrixXd& u,
+                                   bool flipped) const;
+
   Eigen::MatrixXd format_data(const Eigen::MatrixXd& u) const;
 
   void rotate_data(Eigen::MatrixXd& u) const;
 
   Eigen::MatrixXd prep_for_abstract(const Eigen::MatrixXd& u) const;
+
+  Eigen::MatrixXd prep_for_abstract_continuous(const Eigen::MatrixXd& u) const;
+
+  struct ConditionalSpec
+  {
+    bool use_first;
+    bool complement;
+  };
+
+  ConditionalSpec get_conditional_spec(bool first_function) const;
+
+  static Eigen::VectorXd finalize_conditional(Eigen::VectorXd value,
+                                              bool complement);
 
   Eigen::MatrixXd format_parameters(const Eigen::MatrixXd& u,
                                     const Eigen::MatrixXd& parameters) const;
@@ -390,6 +425,30 @@ private:
   size_t nobs_{ 0 };
   mutable std::vector<std::string> var_types_;
 };
+
+//! @cond INTERNAL
+//! A non-owning, optionally transposed view of a bivariate copula.
+class BicopView
+{
+public:
+  explicit BicopView(const Bicop& bicop,
+                     bool flipped = false,
+                     bool continuous = false);
+
+  BicopView as_continuous() const;
+  std::vector<std::string> get_var_types() const;
+  Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u) const;
+  Eigen::VectorXd hfunc2(const Eigen::MatrixXd& u) const;
+  Eigen::VectorXd hinv2(const Eigen::MatrixXd& u) const;
+
+private:
+  static Eigen::MatrixXd swap_arguments(const Eigen::MatrixXd& u);
+
+  const Bicop* bicop_;
+  bool flipped_;
+  bool continuous_;
+};
+//! @endcond
 }
 
 #include <vinecopulib/bicop/implementation/class.ipp>

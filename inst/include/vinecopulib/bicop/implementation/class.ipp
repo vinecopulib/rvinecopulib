@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -164,6 +164,12 @@ Bicop::to_file(const std::string& filename) const
   tools_serialization::json_to_file(filename, to_json());
 }
 
+//! @name Stats methods
+//!
+//! @details These evaluate the copula at the object's stored parameters. See
+//! below for the overloads taking one parameter set per row.
+//! @{
+
 //! @brief Evaluates the copula density.
 //!
 //! @details The copula density is defined as joint density divided by marginal
@@ -178,8 +184,9 @@ Bicop::to_file(const std::string& filename) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @return A length n vector of copula densities evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::pdf(const Eigen::MatrixXd& u) const
@@ -200,8 +207,9 @@ Bicop::pdf(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @return A length n vector of copula probabilities evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::cdf(const Eigen::MatrixXd& u) const
@@ -238,33 +246,18 @@ Bicop::cdf(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @return A length n vector of the first h-function evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::hfunc1(const Eigen::MatrixXd& u) const
 {
   check_data(u);
-  Eigen::VectorXd h(u.rows());
-  switch (rotation_) {
-    default:
-      h = bicop_->hfunc1(prep_for_abstract(u));
-      break;
-
-    case 90:
-      h = bicop_->hfunc2(prep_for_abstract(u));
-      break;
-
-    case 180:
-      h = 1.0 - bicop_->hfunc1(prep_for_abstract(u)).array();
-      break;
-
-    case 270:
-      h = 1.0 - bicop_->hfunc2(prep_for_abstract(u)).array();
-      break;
-  }
-  tools_eigen::trim(h, 0.0, 1.0);
-  return h;
+  const auto spec = get_conditional_spec(true);
+  const auto u_new = prep_for_abstract(u);
+  auto h = spec.use_first ? bicop_->hfunc1(u_new) : bicop_->hfunc2(u_new);
+  return finalize_conditional(std::move(h), spec.complement);
 }
 
 //! @brief Evaluates the second h-function.
@@ -281,33 +274,18 @@ Bicop::hfunc1(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @return A length n vector of the second h-function evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::hfunc2(const Eigen::MatrixXd& u) const
 {
   check_data(u);
-  Eigen::VectorXd h(u.rows());
-  switch (rotation_) {
-    default:
-      h = bicop_->hfunc2(prep_for_abstract(u));
-      break;
-
-    case 90:
-      h = 1.0 - bicop_->hfunc1(prep_for_abstract(u)).array();
-      break;
-
-    case 180:
-      h = 1.0 - bicop_->hfunc2(prep_for_abstract(u)).array();
-      break;
-
-    case 270:
-      h = bicop_->hfunc1(prep_for_abstract(u)).array();
-      break;
-  }
-  tools_eigen::trim(h, 0.0, 1.0);
-  return h;
+  const auto spec = get_conditional_spec(false);
+  const auto u_new = prep_for_abstract(u);
+  auto h = spec.use_first ? bicop_->hfunc1(u_new) : bicop_->hfunc2(u_new);
+  return finalize_conditional(std::move(h), spec.complement);
 }
 
 //! @brief Evaluates the inverse of the first h-function.
@@ -325,34 +303,19 @@ Bicop::hfunc2(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @return A length n vector of the inverse of the first h-function evaluated
 //! at \c u.
 inline Eigen::VectorXd
 Bicop::hinv1(const Eigen::MatrixXd& u) const
 {
   check_data(u);
-  Eigen::VectorXd hi(u.rows());
-  switch (rotation_) {
-    default:
-      hi = bicop_->hinv1(prep_for_abstract(u));
-      break;
-
-    case 90:
-      hi = bicop_->hinv2(prep_for_abstract(u));
-      break;
-
-    case 180:
-      hi = 1.0 - bicop_->hinv1(prep_for_abstract(u)).array();
-      break;
-
-    case 270:
-      hi = 1.0 - bicop_->hinv2(prep_for_abstract(u)).array();
-      break;
-  }
-  tools_eigen::trim(hi, 0.0, 1.0);
-  return hi;
+  const auto spec = get_conditional_spec(true);
+  const auto u_new = prep_for_abstract(u);
+  auto hi = spec.use_first ? bicop_->hinv1(u_new) : bicop_->hinv2(u_new);
+  return finalize_conditional(std::move(hi), spec.complement);
 }
 
 //! @brief Evaluates the inverse of the second h-function.
@@ -370,35 +333,135 @@ Bicop::hinv1(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @return A length n vector of the inverse of the second h-function evaluated
 //! at \c u.
 inline Eigen::VectorXd
 Bicop::hinv2(const Eigen::MatrixXd& u) const
 {
   check_data(u);
-  Eigen::VectorXd hi(u.rows());
-  switch (rotation_) {
-    default:
-      hi = bicop_->hinv2(prep_for_abstract(u));
-      break;
-
-    case 90:
-      hi = 1.0 - bicop_->hinv1(prep_for_abstract(u)).array();
-      break;
-
-    case 180:
-      hi = 1.0 - bicop_->hinv2(prep_for_abstract(u)).array();
-      break;
-
-    case 270:
-      hi = bicop_->hinv1(prep_for_abstract(u));
-      break;
-  }
-  tools_eigen::trim(hi, 0.0, 1.0);
-  return hi;
+  const auto spec = get_conditional_spec(false);
+  const auto u_new = prep_for_abstract(u);
+  auto hi = spec.use_first ? bicop_->hinv1(u_new) : bicop_->hinv2(u_new);
+  return finalize_conditional(std::move(hi), spec.complement);
 }
+
+inline Eigen::VectorXd
+Bicop::hfunc1_continuous(const Eigen::MatrixXd& u, bool flipped) const
+{
+  auto u_new =
+    prep_for_abstract_continuous(flipped ? tools_eigen::swap_cols(u) : u);
+  // TLL leaves read their interpolation grid directly and ignore the parameter
+  // argument; do not materialize the full grid merely to pass it unused.
+  Eigen::MatrixXd parameters = get_family() == BicopFamily::tll
+                                 ? Eigen::MatrixXd()
+                                 : bicop_->get_parameters().transpose();
+  const auto spec = get_conditional_spec(!flipped);
+  auto h = spec.use_first ? bicop_->hfunc1_raw(u_new, parameters)
+                          : bicop_->hfunc2_raw(u_new, parameters);
+  return finalize_conditional(std::move(h), spec.complement);
+}
+
+inline Eigen::VectorXd
+Bicop::hinv2_continuous(const Eigen::MatrixXd& u, bool flipped) const
+{
+  auto u_new =
+    prep_for_abstract_continuous(flipped ? tools_eigen::swap_cols(u) : u);
+  Eigen::MatrixXd parameters = get_family() == BicopFamily::tll
+                                 ? Eigen::MatrixXd()
+                                 : bicop_->get_parameters().transpose();
+  const auto spec = get_conditional_spec(flipped);
+  auto hi = spec.use_first ? bicop_->hinv1_raw(u_new, parameters)
+                           : bicop_->hinv2_raw(u_new, parameters);
+  return finalize_conditional(std::move(hi), spec.complement);
+}
+
+inline Bicop::ConditionalSpec
+Bicop::get_conditional_spec(bool first_function) const
+{
+  switch (rotation_) {
+    case 90:
+      return { !first_function, !first_function };
+    case 180:
+      return { first_function, true };
+    case 270:
+      return { !first_function, first_function };
+    default:
+      return { first_function, false };
+  }
+}
+
+inline Eigen::VectorXd
+Bicop::finalize_conditional(Eigen::VectorXd value, bool complement)
+{
+  if (complement) {
+    value = 1.0 - value.array();
+  }
+  tools_eigen::trim(value, 0.0, 1.0);
+  return value;
+}
+
+//! @cond INTERNAL
+inline BicopView::BicopView(const Bicop& bicop, bool flipped, bool continuous)
+  : bicop_(&bicop)
+  , flipped_(flipped)
+  , continuous_(continuous)
+{
+}
+
+inline BicopView
+BicopView::as_continuous() const
+{
+  return BicopView(*bicop_, flipped_, true);
+}
+
+inline std::vector<std::string>
+BicopView::get_var_types() const
+{
+  if (continuous_)
+    return { "c", "c" };
+  auto var_types = bicop_->get_var_types();
+  if (flipped_)
+    std::swap(var_types[0], var_types[1]);
+  return var_types;
+}
+
+inline Eigen::VectorXd
+BicopView::hfunc1(const Eigen::MatrixXd& u) const
+{
+  if (continuous_)
+    return bicop_->hfunc1_continuous(u, flipped_);
+  return flipped_ ? bicop_->hfunc2(swap_arguments(u)) : bicop_->hfunc1(u);
+}
+
+inline Eigen::VectorXd
+BicopView::hfunc2(const Eigen::MatrixXd& u) const
+{
+  if (continuous_)
+    return bicop_->hfunc1_continuous(swap_arguments(u), !flipped_);
+  return flipped_ ? bicop_->hfunc1(swap_arguments(u)) : bicop_->hfunc2(u);
+}
+
+inline Eigen::VectorXd
+BicopView::hinv2(const Eigen::MatrixXd& u) const
+{
+  if (continuous_)
+    return bicop_->hinv2_continuous(u, flipped_);
+  return flipped_ ? bicop_->hinv1(swap_arguments(u)) : bicop_->hinv2(u);
+}
+
+inline Eigen::MatrixXd
+BicopView::swap_arguments(const Eigen::MatrixXd& u)
+{
+  Eigen::MatrixXd swapped = u;
+  swapped.col(0).swap(swapped.col(1));
+  if (swapped.cols() == 4)
+    swapped.col(2).swap(swapped.col(3));
+  return swapped;
+}
+//! @endcond
 //! @}
 
 //! @name Stats methods with per-row parameters
@@ -410,15 +473,16 @@ Bicop::hinv2(const Eigen::MatrixXd& u) const
 //! parametric families only (nonparametric families store an interpolation
 //! grid rather than a per-observation parameter vector).
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations (see the
-//!   single-argument overloads for the layout with discrete variables).
-//! @param parameters An \f$ n \times p \f$ matrix of parameters, where `p` is
-//!   the number of family parameters (`get_parameters().size()`) and row `i`
-//!   holds the parameter set used for row `i` of `u`. Parameters are given in
-//!   the family's natural (unrotated) parameterization, as for
-//!   `get_parameters()`.
-//! @param num_threads The number of threads to parallelize the evaluation over
-//!   rows.
+//! Common arguments:
+//!
+//! - `u`: an \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations (see the single-argument overloads for the layout with
+//!   discrete variables).
+//! - `parameters`: an \f$ n \times p \f$ matrix, where `p` is the number of
+//!   family parameters (`get_parameters().size()`) and row `i` holds the
+//!   parameter set used for row `i` of `u`. Parameters are given in the
+//!   family's natural (unrotated) parameterization, as for `get_parameters()`.
+//! - `num_threads`: the number of threads to parallelize over rows.
 //! @{
 
 //! @brief Evaluates the copula density with per-row parameters.
@@ -472,30 +536,18 @@ Bicop::hfunc1(const Eigen::MatrixXd& u,
               const size_t num_threads) const
 {
   Eigen::MatrixXd par_t = format_parameters(u, parameters);
-  return eval_in_batches(
-    u,
-    par_t,
-    num_threads,
-    [this](const Eigen::MatrixXd& ub,
-           const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
-      Eigen::VectorXd h(ub.rows());
-      switch (rotation_) {
-        case 90:
-          h = bicop_->hfunc2(prep_for_abstract(ub), pb);
-          break;
-        case 180:
-          h = 1.0 - bicop_->hfunc1(prep_for_abstract(ub), pb).array();
-          break;
-        case 270:
-          h = 1.0 - bicop_->hfunc2(prep_for_abstract(ub), pb).array();
-          break;
-        default:
-          h = bicop_->hfunc1(prep_for_abstract(ub), pb);
-          break;
-      }
-      tools_eigen::trim(h, 0.0, 1.0);
-      return h;
-    });
+  return eval_in_batches(u,
+                         par_t,
+                         num_threads,
+                         [this](const Eigen::MatrixXd& ub,
+                                const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+                           const auto spec = get_conditional_spec(true);
+                           const auto u_new = prep_for_abstract(ub);
+                           auto h = spec.use_first ? bicop_->hfunc1(u_new, pb)
+                                                   : bicop_->hfunc2(u_new, pb);
+                           return finalize_conditional(std::move(h),
+                                                       spec.complement);
+                         });
 }
 
 //! @brief Evaluates the second h-function with per-row parameters.
@@ -505,30 +557,18 @@ Bicop::hfunc2(const Eigen::MatrixXd& u,
               const size_t num_threads) const
 {
   Eigen::MatrixXd par_t = format_parameters(u, parameters);
-  return eval_in_batches(
-    u,
-    par_t,
-    num_threads,
-    [this](const Eigen::MatrixXd& ub,
-           const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
-      Eigen::VectorXd h(ub.rows());
-      switch (rotation_) {
-        case 90:
-          h = 1.0 - bicop_->hfunc1(prep_for_abstract(ub), pb).array();
-          break;
-        case 180:
-          h = 1.0 - bicop_->hfunc2(prep_for_abstract(ub), pb).array();
-          break;
-        case 270:
-          h = bicop_->hfunc1(prep_for_abstract(ub), pb);
-          break;
-        default:
-          h = bicop_->hfunc2(prep_for_abstract(ub), pb);
-          break;
-      }
-      tools_eigen::trim(h, 0.0, 1.0);
-      return h;
-    });
+  return eval_in_batches(u,
+                         par_t,
+                         num_threads,
+                         [this](const Eigen::MatrixXd& ub,
+                                const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+                           const auto spec = get_conditional_spec(false);
+                           const auto u_new = prep_for_abstract(ub);
+                           auto h = spec.use_first ? bicop_->hfunc1(u_new, pb)
+                                                   : bicop_->hfunc2(u_new, pb);
+                           return finalize_conditional(std::move(h),
+                                                       spec.complement);
+                         });
 }
 
 //! @brief Evaluates the inverse of the first h-function with per-row
@@ -539,30 +579,18 @@ Bicop::hinv1(const Eigen::MatrixXd& u,
              const size_t num_threads) const
 {
   Eigen::MatrixXd par_t = format_parameters(u, parameters);
-  return eval_in_batches(
-    u,
-    par_t,
-    num_threads,
-    [this](const Eigen::MatrixXd& ub,
-           const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
-      Eigen::VectorXd hi(ub.rows());
-      switch (rotation_) {
-        case 90:
-          hi = bicop_->hinv2(prep_for_abstract(ub), pb);
-          break;
-        case 180:
-          hi = 1.0 - bicop_->hinv1(prep_for_abstract(ub), pb).array();
-          break;
-        case 270:
-          hi = 1.0 - bicop_->hinv2(prep_for_abstract(ub), pb).array();
-          break;
-        default:
-          hi = bicop_->hinv1(prep_for_abstract(ub), pb);
-          break;
-      }
-      tools_eigen::trim(hi, 0.0, 1.0);
-      return hi;
-    });
+  return eval_in_batches(u,
+                         par_t,
+                         num_threads,
+                         [this](const Eigen::MatrixXd& ub,
+                                const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+                           const auto spec = get_conditional_spec(true);
+                           const auto u_new = prep_for_abstract(ub);
+                           auto hi = spec.use_first ? bicop_->hinv1(u_new, pb)
+                                                    : bicop_->hinv2(u_new, pb);
+                           return finalize_conditional(std::move(hi),
+                                                       spec.complement);
+                         });
 }
 
 //! @brief Evaluates the inverse of the second h-function with per-row
@@ -573,30 +601,18 @@ Bicop::hinv2(const Eigen::MatrixXd& u,
              const size_t num_threads) const
 {
   Eigen::MatrixXd par_t = format_parameters(u, parameters);
-  return eval_in_batches(
-    u,
-    par_t,
-    num_threads,
-    [this](const Eigen::MatrixXd& ub,
-           const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
-      Eigen::VectorXd hi(ub.rows());
-      switch (rotation_) {
-        case 90:
-          hi = 1.0 - bicop_->hinv1(prep_for_abstract(ub), pb).array();
-          break;
-        case 180:
-          hi = 1.0 - bicop_->hinv2(prep_for_abstract(ub), pb).array();
-          break;
-        case 270:
-          hi = bicop_->hinv1(prep_for_abstract(ub), pb);
-          break;
-        default:
-          hi = bicop_->hinv2(prep_for_abstract(ub), pb);
-          break;
-      }
-      tools_eigen::trim(hi, 0.0, 1.0);
-      return hi;
-    });
+  return eval_in_batches(u,
+                         par_t,
+                         num_threads,
+                         [this](const Eigen::MatrixXd& ub,
+                                const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+                           const auto spec = get_conditional_spec(false);
+                           const auto u_new = prep_for_abstract(ub);
+                           auto hi = spec.use_first ? bicop_->hinv1(u_new, pb)
+                                                    : bicop_->hinv2(u_new, pb);
+                           return finalize_conditional(std::move(hi),
+                                                       spec.complement);
+                         });
 }
 
 //! @brief Evaluates the log-likelihood contributions with per-row parameters
@@ -640,10 +656,9 @@ Bicop::loglik(const Eigen::MatrixXd& u,
 //! parameter set per row of `u` (see the corresponding `pdf()` overload for
 //! the layout and validation rules).
 //!
-//! @param u An \f$ n \times 2 \f$ matrix of observations contained in
-//!   \f$ (0, 1)^2 \f$.
-//! @param deriv The derivative selector.
-//! @return A length n vector of derivatives evaluated at `u`.
+//! Common arguments: `u` is an \f$ n \times 2 \f$ matrix of observations in
+//! \f$ (0, 1)^2 \f$ and `deriv` selects the derivative; each method returns a
+//! length-`n` vector evaluated at `u`.
 //! @{
 
 //! @brief Evaluates a first derivative of the copula density.
@@ -1131,8 +1146,8 @@ assemble_hessian_full(
 //! row of `u` (see the corresponding `pdf()` overload for the layout and
 //! validation rules).
 //!
-//! @param u An \f$ n \times 2 \f$ matrix of observations contained in
-//!   \f$ (0, 1)^2 \f$.
+//! In every method here, `u` is an \f$ n \times 2 \f$ matrix of observations
+//! in \f$ (0, 1)^2 \f$.
 //! @{
 
 //! @brief Evaluates the per-observation scores.
@@ -1498,6 +1513,42 @@ Bicop::simulate(const size_t& n,
   return u;
 }
 
+//! @brief Simulates from a bivariate copula with per-row parameters.
+//!
+//! @details Observation `i` is drawn from the copula carrying row `i` of
+//! `parameters`, without mutating the object's stored parameters. The family,
+//! rotation, and variable types are taken from the object; only the parameter
+//! values vary by observation. Available for parametric families only.
+//!
+//! @param parameters An \f$ n \times p \f$ matrix of parameters, where `n` is
+//!   the number of observations to simulate, `p` is the number of family
+//!   parameters (`get_parameters().size()`), and row `i` holds the parameter
+//!   set used for observation `i`. Parameters are given in the family's
+//!   natural (unrotated) parameterization, as for `get_parameters()`.
+//! @param qrng Set to true for quasi-random numbers.
+//! @param seeds Seeds of the (quasi-)random number generator; if empty
+//! (default), the (quasi-)random number generator is seeded randomly.
+//! @param num_threads The number of threads to parallelize the simulation over
+//!   observations.
+//! @return An \f$ n \times 2 \f$ matrix of samples from the copula model.
+inline Eigen::MatrixXd
+Bicop::simulate(const Eigen::MatrixXd& parameters,
+                const bool qrng,
+                const std::vector<int>& seeds,
+                const size_t num_threads) const
+{
+  if (parameters.rows() < 1) {
+    throw std::runtime_error("parameters must have at least one row (one "
+                             "parameter set per simulated observation).");
+  }
+  auto u = tools_stats::simulate_uniform(
+    static_cast<size_t>(parameters.rows()), 2, qrng, seeds);
+  // use inverse Rosenblatt transform to generate a sample from the copula
+  // (always simulate continuous data)
+  u.col(1) = this->as_continuous().hinv1(u, parameters, num_threads);
+  return u;
+}
+
 //! @brief Evaluates the log-likelihood.
 //!
 //! @details The log-likelihood is defined as
@@ -1513,8 +1564,9 @@ Bicop::simulate(const size_t& n,
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @return The log-likelihood evaluated at \c u.
 inline double
 Bicop::loglik(const Eigen::MatrixXd& u) const
@@ -1522,7 +1574,7 @@ Bicop::loglik(const Eigen::MatrixXd& u) const
   if (u.rows() < 1) {
     return get_loglik();
   } else {
-    tools_eigen::check_if_in_unit_cube(u);
+    check_data(u);
     return bicop_->loglik(prep_for_abstract(u));
   }
 }
@@ -1536,8 +1588,9 @@ Bicop::loglik(const Eigen::MatrixXd& u) const
 //! The AIC is a consistent model selection criterion even
 //! for nonparametric models.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @return The AIC evaluated at \c u.
 inline double
 Bicop::aic(const Eigen::MatrixXd& u) const
@@ -1554,8 +1607,9 @@ Bicop::aic(const Eigen::MatrixXd& u) const
 //! The BIC is a consistent model selection criterion
 //! for parametric models.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @return The BIC evaluated at \c u.
 inline double
 Bicop::bic(const Eigen::MatrixXd& u) const
@@ -1574,14 +1628,15 @@ Bicop::bic(const Eigen::MatrixXd& u) const
 //!
 //! @details The mBIC is defined as
 //! \f[ \mathrm{BIC} = -2\, \mathrm{loglik} +  p \log(n) - 2 (I \log(\psi_0) + (1 - I) \log(1 - \psi_0), \f]
-//! where \f$ \mathrm{loglik} \f$ is the \log-liklihood
+//! where \f$ \mathrm{loglik} \f$ is the log-likelihood
 //! (see `Bicop::loglik()`), \f$ p \f$ is the (effective) number of parameters of the
 //! model, and \f$ \psi_0 \f$ is the prior probability of having a
 //! non-independence copula and \f$ I \f$ is an indicator for the family being
 //! non-independence.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @param psi0 Prior probability of a non-independence copula.
 //! @return The mBIC evaluated at \c u.
 // clang-format on
@@ -1595,6 +1650,7 @@ Bicop::mbic(const Eigen::MatrixXd& u, const double psi0) const
                      static_cast<double>(is_indep) * std::log(1.0 - psi0);
   double n = static_cast<double>(nobs_);
   if (u.rows() > 0) {
+    tools_eigen::remove_nans(u_no_nan);
     n = static_cast<double>(u_no_nan.rows());
   }
   return -2 * this->loglik(u_no_nan) + std::log(n) * npars - 2 * log_prior;
@@ -1613,17 +1669,32 @@ Bicop::get_npars() const
 
 //! @brief Converts a Kendall's \f$ \tau \f$ into copula parameters
 //! for one-parameter families.
+//!
+//! @details Only available where \f$ \tau \f$ determines the parameters
+//! completely: the one-parameter families in `bicop_families::itau`, i.e.
+//! `indep`, `gaussian`, `clayton`, `gumbel`, `frank` and `joe`. Note that
+//! `student` belongs to `bicop_families::itau` — it can be *fitted* by
+//! inverting \f$ \tau \f$ — but is not invertible here, because \f$ \tau
+//! \f$ pins its correlation and leaves the degrees of freedom free.
+//!
 //! @param tau A value in \f$ (-1, 1) \f$.
+//! @throws std::runtime_error if the family is not one of those listed above.
+//! @see parameters_to_tau(), which is available for every family.
 inline Eigen::MatrixXd
 Bicop::tau_to_parameters(const double& tau) const
 {
   return bicop_->tau_to_parameters(tau);
 }
 
-//! @brief Converts the copula parameters to Kendall's \f$ tau \f$.
+//! @brief Converts the copula parameters to Kendall's \f$ \tau \f$.
+//!
+//! @details Available for every family. For the families whose \f$ \tau \f$
+//! has no closed form (`bb6`, `bb7`, `bb8`, `tawn`) it is computed by
+//! quadrature. The sign is flipped for the 90 and 270 degree rotations.
 //!
 //! @param parameters The parameters (must be a valid parametrization of
 //!     the current family).
+//! @see tau_to_parameters() for the inverse, which only some families admit.
 inline double
 Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters) const
 {
@@ -1844,7 +1915,7 @@ Bicop::check_data_dim(const Eigen::MatrixXd& u) const
   if ((n_cols != n_cols_exp) & (n_cols != 4)) {
     std::stringstream msg;
     msg << "data has wrong number of columns; "
-        << "expected: " << n_cols_exp << " or 4, actual: " << n_cols
+        << "expected: 4 or " << n_cols_exp << ", actual: " << n_cols
         << " (model contains ";
     if (n_disc == 0) {
       msg << "no discrete variables)." << std::endl;
@@ -1873,8 +1944,6 @@ Bicop::set_parameters(const Eigen::MatrixXd& parameters)
 }
 
 //! @brief Sets variable types.
-//! @param var_types A vector of size two specifying the types of the variables,
-//!   e.g., `{"c", "d"}` means first variable continuous, second discrete.
 inline void
 Bicop::set_var_types(const std::vector<std::string>& var_types)
 {
@@ -1947,7 +2016,7 @@ Bicop::str() const
   } else if (get_family() != BicopFamily::indep) {
     bicop_str << "  parameters = " << get_parameters() << "\n";
   }
-  return bicop_str.str().c_str();
+  return bicop_str.str();
 }
 
 //! @brief Gets lower bounds for copula parameters.
@@ -1996,16 +2065,18 @@ Bicop::as_continuous() const
 //! When at least one variable is discrete, two types of "observations"
 //! are required: the first \f$ n \times 2 \f$ block contains realizations of
 //! \f$ F_{X_1}(X_1), F_{X_2}(X_2) \f$. Let \f$ k \f$ denote the number of
-//! discrete variables (either one or two). Then the second \f$ n \times k \f$
-//! block contains realizations of \f$ F_{X_k}(X_k^-) \f$. The minus indicates a
+//! discrete variables (either one or two). The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ F_{X_j}(X_j^-) \f$. The minus indicates a
 //! left-sided limit of the cdf. For continuous variables the left limit and the
-//! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
-//! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
+//! cdf itself coincide, and their columns can be omitted from the second block.
+//! For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_j}(X_j^-) = F_{X_j}(X_j - 1) \f$.
 //!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
-//! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param data An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @param controls The controls (see `FitControlsBicop`).
 inline void
 Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
@@ -2016,6 +2087,7 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
   } else {
     method = controls.get_nonparametric_method();
   }
+  check_data_dim(data);
   tools_eigen::check_if_in_unit_cube(data);
 
   auto w = controls.get_weights();
@@ -2042,16 +2114,18 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 //! When at least one variable is discrete, two types of "observations"
 //! are required: the first \f$ n \times 2 \f$ block contains realizations of
 //! \f$ F_{X_1}(X_1), F_{X_2}(X_2) \f$. Let \f$ k \f$ denote the number of
-//! discrete variables (either one or two). Then the second \f$ n \times k \f$
-//! block contains realizations of \f$ F_{X_k}(X_k^-) \f$. The minus indicates a
+//! discrete variables (either one or two). The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ F_{X_j}(X_j^-) \f$. The minus indicates a
 //! left-sided limit of the cdf. For continuous variables the left limit and the
-//! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
-//! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
+//! cdf itself coincide, and their columns can be omitted from the second block.
+//! For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_j}(X_j^-) = F_{X_j}(X_j - 1) \f$.
 //!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
-//! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param data An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
+//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
+//!   of discrete variables.
 //! @param controls The controls (see `FitControlsBicop`).
 inline void
 Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
@@ -2211,6 +2285,15 @@ Bicop::prep_for_abstract(const Eigen::MatrixXd& u) const
   return u_new;
 }
 
+inline Eigen::MatrixXd
+Bicop::prep_for_abstract_continuous(const Eigen::MatrixXd& u) const
+{
+  Eigen::MatrixXd u_new = u.leftCols(2);
+  tools_eigen::trim(u_new);
+  rotate_data(u_new);
+  return u_new;
+}
+
 //! @brief Checks whether the supplied rotation is valid (only 0, 90, 180, 270
 //! allowd).
 inline void
@@ -2257,7 +2340,7 @@ Bicop::check_var_types(const std::vector<std::string>& var_types) const
   if (var_types.size() != 2) {
     throw std::runtime_error("var_types must have size two.");
   }
-  for (auto t : var_types) {
+  for (const auto& t : var_types) {
     if (!tools_stl::is_member(t, { "c", "d" })) {
       throw std::runtime_error("var type must be either 'c' or 'd'.");
     }
@@ -2269,7 +2352,7 @@ inline unsigned short
 Bicop::get_n_discrete() const
 {
   int n_discrete = 0;
-  for (auto t : var_types_) {
+  for (const auto& t : var_types_) {
     n_discrete += (t == "d");
   }
   return static_cast<unsigned short>(n_discrete);

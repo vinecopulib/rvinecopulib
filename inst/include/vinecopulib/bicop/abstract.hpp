@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -223,7 +223,7 @@ protected:
                           const Eigen::MatrixXd& parameters);
 
   double loglik(const Eigen::MatrixXd& u,
-                const Eigen::VectorXd weights = Eigen::VectorXd());
+                const Eigen::VectorXd& weights = Eigen::VectorXd());
 
   // Data members
   BicopFamily family_;
@@ -232,7 +232,7 @@ protected:
 };
 
 //! A shared pointer to an object of class AbstracBicop.
-typedef std::shared_ptr<AbstractBicop> BicopPtr;
+using BicopPtr = std::shared_ptr<AbstractBicop>;
 }
 
 #include <vinecopulib/bicop/implementation/abstract.ipp>

@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -25,7 +25,7 @@
 namespace vinecopulib {
 
 //! virtual destructor
-inline AbstractBicop::~AbstractBicop() {}
+inline AbstractBicop::~AbstractBicop() = default;
 
 //! Instantiates a bivariate copula using the default contructor
 //!
@@ -92,10 +92,17 @@ AbstractBicop::create(BicopFamily family, const Eigen::MatrixXd& parameters)
 
 //!@}
 
+//! Fallback for families that cannot be parametrized by Kendall's tau alone:
+//! everything outside `bicop_families::itau`, plus `student`, whose tau pins
+//! rho but leaves the degrees of freedom free.
 inline Eigen::MatrixXd
 AbstractBicop::no_tau_to_parameters(const double&)
 {
-  throw std::runtime_error("Method not implemented for this family");
+  throw std::runtime_error(
+    "tau_to_parameters() is not available for the " + get_family_name() +
+    " family: its parameters are not determined by Kendall's tau alone. It is "
+    "available for the one-parameter families in bicop_families::itau "
+    "(indep, gaussian, clayton, gumbel, frank, joe).");
 }
 
 //! Default tail dependence: not implemented for this family, so all four
@@ -215,7 +222,7 @@ AbstractBicop::hinv2(const Eigen::MatrixXd& u)
 //! @param u Data matrix.
 //! @param weights Optional weights for each observation.
 inline double
-AbstractBicop::loglik(const Eigen::MatrixXd& u, const Eigen::VectorXd weights)
+AbstractBicop::loglik(const Eigen::MatrixXd& u, const Eigen::VectorXd& weights)
 {
   Eigen::MatrixXd log_pdf = this->pdf(u).array().log();
   if (weights.size() > 0) {

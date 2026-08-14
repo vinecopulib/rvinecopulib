@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -82,12 +82,21 @@ public:
     std::function<size_t(size_t col,
                          const std::vector<std::vector<size_t>>& leaf_edges)>;
 
-  //! @brief The result of a copula-aware `to_struct_array()`.
+  //! @brief The source of a pair copula in a matrix representation.
+  struct PairCopulaLocation
+  {
+    size_t tree{ 0 };
+    size_t edge{ 0 };
+    bool flipped{ false };
+  };
+
+  //! @brief The result of `to_struct_array()`.
   struct Decomposition
   {
     std::vector<size_t> order;
     TriangularArray<size_t> struct_array;
     std::vector<std::vector<Bicop>> pair_copulas; //!< indexed `[tree][edge]`
+    TriangularArray<PairCopulaLocation> pair_copula_locations;
   };
 
   //! @brief One edge of the augmented (line-graph) view: its two incident node
@@ -96,6 +105,7 @@ public:
   {
     size_t node1{ 0 };
     size_t node2{ 0 };
+    size_t source_edge{ 0 };
     const Edge* edge{ nullptr };
     bool consumed{ false };
   };
@@ -137,6 +147,10 @@ public:
   Decomposition to_struct_array(
     const DiagonalPolicy& diagonal_policy = default_diagonal_policy()) const;
 
+  //! @brief Converts back to matrix form without copying pair copulas.
+  Decomposition to_struct_array_map(
+    const DiagonalPolicy& diagonal_policy = default_diagonal_policy()) const;
+
   size_t get_dim() const { return d_; }
   size_t get_trunc_lvl() const { return trunc_lvl_; }
 
@@ -147,6 +161,7 @@ private:
 
   std::map<std::pair<size_t, std::vector<size_t>>, size_t> build_lookup(
     const std::vector<AugmentedEdge>& edges) const;
+  void check_tree_sizes() const;
   void check_missing_vars(const std::vector<Edge>& edges, size_t d) const;
   std::vector<AugmentedTree> trees_to_augmented() const;
   Decomposition peel(const DiagonalPolicy& diagonal_policy,

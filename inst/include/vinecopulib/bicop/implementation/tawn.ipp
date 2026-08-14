@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -6,6 +6,7 @@
 
 #include <vinecopulib/misc/tools_eigen.hpp>
 #include <vinecopulib/misc/tools_integration.hpp>
+#include <vinecopulib/misc/tools_stl.hpp>
 
 namespace vinecopulib {
 inline TawnBicop::TawnBicop()
@@ -55,13 +56,36 @@ TawnBicop::pickands_derivative2(
   double psi2 = parameters(1);
   double theta = parameters(2);
 
-  double temp = std::pow(psi2 * t, theta) + std::pow(psi1 * (1 - t), theta);
-  double temp2 = psi2 * std::pow(psi2 * t, theta - 1) -
-                 psi1 * std::pow(psi1 * (1 - t), theta - 1);
-  double temp3 = std::pow(psi2, 2) * std::pow(psi2 * t, theta - 2) +
-                 std::pow(psi1, 2) * std::pow(psi1 * (1 - t), theta - 2);
-  return (1 - theta) * std::pow(temp, 1 / theta - 2) * std::pow(temp2, 2) +
-         std::pow(temp, 1 / theta - 1) * (theta - 1) * temp3;
+  // With x = (psi2 t)^theta and y = (psi1 (1-t))^theta,
+  //
+  //   A''(t) = (theta - 1) * (x + y)^(1/theta - 2) * x * y / (t (1-t))^2,
+  //
+  // because x * y is the exact simplification of (x + y) * temp3 - temp2^2 for
+  // this Pickands function. That form is manifestly non-negative (A is convex)
+  // and free of the cancellation the two-term version suffers. Evaluate it in
+  // logs: for small psi the powers reach 1e-180, where (x + y)^(1/theta - 2)
+  // overflows on its own.
+  const double log_x = theta * std::log(psi2 * t);
+  const double log_y = theta * std::log(psi1 * (1 - t));
+  if (!std::isfinite(log_x) || !std::isfinite(log_y)) {
+    return 0.0; // psi1 or psi2 is 0, or t is 0 or 1: A is linear there
+  }
+  const double hi = std::max(log_x, log_y);
+  const double log_sum =
+    hi + tools_stl::log1p(std::exp(std::min(log_x, log_y) - hi));
+  return std::exp(std::log(theta - 1) + (1 / theta - 2) * log_sum + log_x +
+                  log_y - 2 * std::log(t) - 2 * tools_stl::log1p(-t));
+}
+
+inline double
+TawnBicop::pickands_peak(const Eigen::Ref<const Eigen::VectorXd>& parameters)
+{
+  // A'' peaks where the two powers in A balance, (psi2 t)^theta =
+  // (psi1 (1-t))^theta. For psi1 << psi2 that is a long way from 1/2.
+  const double psi1 = parameters(0);
+  const double psi2 = parameters(1);
+  const double sum = psi1 + psi2;
+  return (sum > 0.0) ? psi1 / sum : 0.5;
 }
 
 // [BEGIN generated derivative leaves]

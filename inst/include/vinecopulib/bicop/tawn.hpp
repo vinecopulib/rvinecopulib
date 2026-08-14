@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -35,38 +35,42 @@ private:
   double pickands_derivative2(
     const double& t,
     const Eigen::Ref<const Eigen::VectorXd>& parameters) override;
+
+  double pickands_peak(
+    const Eigen::Ref<const Eigen::VectorXd>& parameters) override;
+
   // analytic derivatives (per-selector closed forms; see tawn.ipp)
   Eigen::VectorXd pdf_deriv_raw(const Eigen::MatrixXd& u,
                                 const Eigen::MatrixXd& parameters,
-                                const std::string& deriv);
+                                const std::string& deriv) override;
 
   Eigen::VectorXd pdf_deriv2_raw(const Eigen::MatrixXd& u,
                                  const Eigen::MatrixXd& parameters,
-                                 const std::string& deriv);
+                                 const std::string& deriv) override;
 
   Eigen::VectorXd hfunc1_deriv_raw(const Eigen::MatrixXd& u,
                                    const Eigen::MatrixXd& parameters,
-                                   const std::string& deriv);
+                                   const std::string& deriv) override;
 
   Eigen::VectorXd hfunc1_deriv2_raw(const Eigen::MatrixXd& u,
                                     const Eigen::MatrixXd& parameters,
-                                    const std::string& deriv);
+                                    const std::string& deriv) override;
 
   Eigen::VectorXd hfunc2_deriv_raw(const Eigen::MatrixXd& u,
                                    const Eigen::MatrixXd& parameters,
-                                   const std::string& deriv);
+                                   const std::string& deriv) override;
 
   Eigen::VectorXd hfunc2_deriv2_raw(const Eigen::MatrixXd& u,
                                     const Eigen::MatrixXd& parameters,
-                                    const std::string& deriv);
+                                    const std::string& deriv) override;
 
   Eigen::VectorXd logpdf_deriv_raw(const Eigen::MatrixXd& u,
                                    const Eigen::MatrixXd& parameters,
-                                   const std::string& deriv);
+                                   const std::string& deriv) override;
 
   Eigen::VectorXd logpdf_deriv2_raw(const Eigen::MatrixXd& u,
                                     const Eigen::MatrixXd& parameters,
-                                    const std::string& deriv);
+                                    const std::string& deriv) override;
 
   Eigen::MatrixXd tau_to_parameters(const double& tau) override;
 

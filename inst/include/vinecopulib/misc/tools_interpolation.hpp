@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -20,7 +20,7 @@ namespace tools_interpolation {
 class InterpolationGrid
 {
 public:
-  InterpolationGrid() {}
+  InterpolationGrid() = default;
 
   InterpolationGrid(const Eigen::VectorXd& grid_points,
                     const Eigen::MatrixXd& values,

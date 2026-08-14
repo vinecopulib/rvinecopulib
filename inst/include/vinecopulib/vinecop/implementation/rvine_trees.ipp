@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -76,9 +76,10 @@ inline RVineTrees::RVineTrees(size_t d, std::vector<Tree> trees)
 inline RVineTrees::DiagonalPolicy
 RVineTrees::default_diagonal_policy()
 {
-  return [](size_t, const std::vector<std::vector<size_t>>& leaf_edges) {
-    return leaf_edges[0][0];
-  };
+  return
+    [](size_t, const std::vector<std::vector<size_t>>& leaf_edges) noexcept {
+      return leaf_edges[0][0];
+    };
 }
 
 //! @brief Converts back to matrix form, choosing diagonals with a policy and
@@ -87,6 +88,20 @@ RVineTrees::default_diagonal_policy()
 //!   diagonal (see `DiagonalPolicy`).
 inline RVineTrees::Decomposition
 RVineTrees::to_struct_array(const DiagonalPolicy& diagonal_policy) const
+{
+  check_tree_sizes();
+  return peel(diagonal_policy, true);
+}
+
+inline RVineTrees::Decomposition
+RVineTrees::to_struct_array_map(const DiagonalPolicy& diagonal_policy) const
+{
+  check_tree_sizes();
+  return peel(diagonal_policy, false);
+}
+
+inline void
+RVineTrees::check_tree_sizes() const
 {
   for (size_t t = 0; t < trunc_lvl_; ++t) {
     if (trees_[t].size() != d_ - 1 - t) {
@@ -97,7 +112,6 @@ RVineTrees::to_struct_array(const DiagonalPolicy& diagonal_policy) const
         std::to_string(trees_[t].size()) + ".");
     }
   }
-  return peel(diagonal_policy, true);
 }
 
 //! @brief Shared leaf-peeling: fills the R-vine matrix column by column.
@@ -109,6 +123,7 @@ RVineTrees::peel(const DiagonalPolicy& diagonal_policy,
 
   std::vector<size_t> order(d_);
   TriangularArray<size_t> struct_array(d_, trunc_lvl_);
+  TriangularArray<PairCopulaLocation> pair_copula_locations(d_, trunc_lvl_);
   std::vector<std::vector<Bicop>> pair_copulas;
   if (carry_copulas) {
     pair_copulas.resize(trunc_lvl_);
@@ -161,6 +176,8 @@ RVineTrees::peel(const DiagonalPolicy& diagonal_policy,
         if (diag != ed.a)
           pair_copulas[t - 1][col].flip();
       }
+      pair_copula_locations(t - 1,
+                            col) = { t - 1, e.source_edge, diag != ed.a };
       check_set = ed.C;
       tree.degrees[e.node1]--;
       tree.degrees[e.node2]--;
@@ -192,6 +209,8 @@ RVineTrees::peel(const DiagonalPolicy& diagonal_policy,
           if (diag != ed.a)
             pair_copulas[tree_idx][col].flip();
         }
+        pair_copula_locations(tree_idx,
+                              col) = { tree_idx, e.source_edge, diag != ed.a };
         check_set = ed.C;
         ltree.degrees[e.node1]--;
         ltree.degrees[e.node2]--;
@@ -209,7 +228,8 @@ RVineTrees::peel(const DiagonalPolicy& diagonal_policy,
   order[d_ - 1] = struct_array(0, d_ - 2);
   return Decomposition{ std::move(order),
                         std::move(struct_array),
-                        std::move(pair_copulas) };
+                        std::move(pair_copulas),
+                        std::move(pair_copula_locations) };
 }
 
 //! @brief Builds the map from `(variable, conditioning ∪ partner)` to the edge
@@ -267,8 +287,10 @@ RVineTrees::trees_to_augmented() const
     atree.edges.reserve(edges.size());
     if (t == 0) {
       check_missing_vars(edges, d_);
-      for (const auto& ed : edges)
-        atree.edges.push_back({ ed.a, ed.b, &ed, false });
+      for (size_t i = 0; i < edges.size(); ++i) {
+        const auto& ed = edges[i];
+        atree.edges.push_back({ ed.a, ed.b, i, &ed, false });
+      }
       atree.degrees.assign(d_ + 1, 0); // 1-based labels; index 0 unused
     } else {
       auto lookup = build_lookup(augmented[t - 1].edges);
@@ -286,7 +308,7 @@ RVineTrees::trees_to_augmented() const
           problem += ")";
           throw std::runtime_error(problem);
         }
-        atree.edges.push_back({ it1->second, it2->second, &ed, false });
+        atree.edges.push_back({ it1->second, it2->second, i, &ed, false });
       }
       atree.degrees.assign(augmented[t - 1].edges.size(), 0);
     }

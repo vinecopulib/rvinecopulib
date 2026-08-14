@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -7,6 +7,7 @@
 #include <boost/random/seed_seq.hpp>
 #include <random>
 #include <stdexcept>
+#include <utility>
 #include <vinecopulib/misc/tools_stl.hpp>
 
 //! @file vinecop/implementation/fit_controls.ipp
@@ -39,10 +40,13 @@ inline FitControlsVinecop::FitControlsVinecop()
 //!     `"linear"`, `"quadratic"`.
 //! @param nonparametric_mult A factor with which the smoothing parameters
 //!     are multiplied.
+//! @param nonparametric_grid_size The size of the interpolation grid backing
+//!     the local-likelihood nonparametric family (TLLs).
 //! @param trunc_lvl Truncation level for truncated vines.
 //! @param tree_criterion The criterion for selecting the spanning
-//!     tree (`"tau"`, `"hoeffd"`, `"rho"`, and `"mcor"` implemented so far)
-//!     during the tree-wise structure selection.
+//!     tree (`"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`, `"joe"`, or `"custom"`)
+//!     during the tree-wise structure selection. `"custom"` uses the callable
+//!     set through `set_tree_criterion_function()`.
 //! @param threshold For thresholded vines (0 = no threshold).
 //! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`,
 //!     `"bic"`, `"mbic"`, or `"mbicv"`) for the pair copula families.
@@ -61,7 +65,8 @@ inline FitControlsVinecop::FitControlsVinecop()
 //! @param show_trace Whether to show a trace of the building progress.
 //! @param num_threads Number of concurrent threads to use while fitting
 //!     pair copulas within a tree; never uses more than the number
-//!     of concurrent threads supported by the implementation.
+//!     of concurrent threads supported by the implementation. A custom
+//!     tree criterion is exempt and always runs on the calling thread.
 //! @param tree_algorithm The algorithm for building the spanning
 //!     tree (`"mst_prim"`, `"mst_kruskal"`, `"random_weighted"`, or
 //!     `"random_unweighted"`) during the tree-wise structure selection.
@@ -98,12 +103,12 @@ inline FitControlsVinecop::FitControlsVinecop(
   std::string tree_algorithm,
   bool allow_rotations,
   std::vector<int> seeds)
-  : FitControlsBicop(family_set,
-                     parametric_method,
-                     nonparametric_method,
+  : FitControlsBicop(std::move(family_set),
+                     std::move(parametric_method),
+                     std::move(nonparametric_method),
                      nonparametric_mult,
                      nonparametric_grid_size,
-                     selection_criterion,
+                     std::move(selection_criterion),
                      weights,
                      psi0,
                      preselect_families,
@@ -111,14 +116,14 @@ inline FitControlsVinecop::FitControlsVinecop(
                      num_threads)
 {
   set_trunc_lvl(trunc_lvl);
-  set_tree_criterion(tree_criterion);
+  set_tree_criterion(std::move(tree_criterion));
   set_threshold(threshold);
   set_select_trunc_lvl(select_trunc_lvl);
   set_select_threshold(select_threshold);
   set_select_families(select_families);
   set_show_trace(show_trace);
-  set_tree_algorithm(tree_algorithm);
-  set_seeds(seeds);
+  set_tree_algorithm(std::move(tree_algorithm));
+  set_seeds(std::move(seeds));
 }
 
 //! @brief Instantiates custom controls for fitting vine copula models.
@@ -126,8 +131,9 @@ inline FitControlsVinecop::FitControlsVinecop(
 //! @param controls See `FitControlsBicop()`.
 //! @param trunc_lvl Truncation level for truncated vines.
 //! @param tree_criterion The criterion for selecting the spanning
-//!     tree (`"tau"`, `"hoeffd"`, `"rho"`, and `"mcor"` implemented so far)
-//!     during the tree-wise structure selection.
+//!     tree (`"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`, `"joe"`, or `"custom"`)
+//!     during the tree-wise structure selection. `"custom"` uses the callable
+//!     set through `set_tree_criterion_function()`.
 //! @param threshold For thresholded vines (`0` = no threshold).
 //! @param show_trace Whether to show a trace of the building progress.
 //! @param select_trunc_lvl Whether the truncation shall be selected
@@ -163,14 +169,14 @@ inline FitControlsVinecop::FitControlsVinecop(const FitControlsBicop& controls,
   : FitControlsBicop(controls)
 {
   set_trunc_lvl(trunc_lvl);
-  set_tree_criterion(tree_criterion);
+  set_tree_criterion(std::move(tree_criterion));
   set_threshold(threshold);
   set_select_trunc_lvl(select_trunc_lvl);
   set_select_threshold(select_threshold);
   set_select_families(select_families);
   set_show_trace(show_trace);
-  set_tree_algorithm(tree_algorithm);
-  set_seeds(seeds);
+  set_tree_algorithm(std::move(tree_algorithm));
+  set_seeds(std::move(seeds));
 }
 
 //! @brief Instantiates the controls from a configuration object.
@@ -178,39 +184,38 @@ inline FitControlsVinecop::FitControlsVinecop(const FitControlsBicop& controls,
 inline FitControlsVinecop::FitControlsVinecop(const FitControlsConfig& config)
   : FitControlsBicop(config)
 {
-  if (optional::has_value(config.trunc_lvl)) {
-    set_trunc_lvl(optional::value(config.trunc_lvl));
+  if (config.trunc_lvl.has_value()) {
+    set_trunc_lvl(*config.trunc_lvl);
   }
-  if (optional::has_value(config.tree_criterion)) {
-    set_tree_criterion(optional::value(config.tree_criterion));
+  if (config.tree_criterion.has_value()) {
+    set_tree_criterion(*config.tree_criterion);
   }
-  if (optional::has_value(config.tree_criterion_function)) {
-    set_tree_criterion_function(
-      optional::value(config.tree_criterion_function));
+  if (config.tree_criterion_function.has_value()) {
+    set_tree_criterion_function(*config.tree_criterion_function);
   }
-  if (optional::has_value(config.threshold)) {
-    set_threshold(optional::value(config.threshold));
+  if (config.threshold.has_value()) {
+    set_threshold(*config.threshold);
   }
-  if (optional::has_value(config.select_trunc_lvl)) {
-    set_select_trunc_lvl(optional::value(config.select_trunc_lvl));
+  if (config.select_trunc_lvl.has_value()) {
+    set_select_trunc_lvl(*config.select_trunc_lvl);
   }
-  if (optional::has_value(config.select_threshold)) {
-    set_select_threshold(optional::value(config.select_threshold));
+  if (config.select_threshold.has_value()) {
+    set_select_threshold(*config.select_threshold);
   }
-  if (optional::has_value(config.select_families)) {
-    set_select_families(optional::value(config.select_families));
+  if (config.select_families.has_value()) {
+    set_select_families(*config.select_families);
   }
-  if (optional::has_value(config.show_trace)) {
-    set_show_trace(optional::value(config.show_trace));
+  if (config.show_trace.has_value()) {
+    set_show_trace(*config.show_trace);
   }
-  if (optional::has_value(config.tree_algorithm)) {
-    set_tree_algorithm(optional::value(config.tree_algorithm));
+  if (config.tree_algorithm.has_value()) {
+    set_tree_algorithm(*config.tree_algorithm);
   }
-  if (optional::has_value(config.seeds)) {
-    set_seeds(optional::value(config.seeds));
+  if (config.seeds.has_value()) {
+    set_seeds(*config.seeds);
   }
-  if (optional::has_value(config.conditioning_set)) {
-    set_conditioning_set(optional::value(config.conditioning_set));
+  if (config.conditioning_set.has_value()) {
+    set_conditioning_set(*config.conditioning_set);
   }
 }
 
@@ -220,7 +225,8 @@ inline void
 FitControlsVinecop::check_tree_criterion(std::string tree_criterion)
 {
   if (!tools_stl::is_member(
-        tree_criterion, { "tau", "rho", "joe", "hoeffd", "mcor", "custom" })) {
+        std::move(tree_criterion),
+        { "tau", "rho", "joe", "hoeffd", "mcor", "custom" })) {
     throw std::runtime_error("tree_criterion must be one of "
                              "'tau', 'rho', 'hoeffd', 'mcor', 'joe', or "
                              "'custom'");
@@ -313,7 +319,7 @@ inline void
 FitControlsVinecop::set_tree_criterion(std::string tree_criterion)
 {
   check_tree_criterion(tree_criterion);
-  tree_criterion_ = tree_criterion;
+  tree_criterion_ = std::move(tree_criterion);
 }
 
 //! @brief Gets the custom criterion function for tree selection.
@@ -328,7 +334,7 @@ inline void
 FitControlsVinecop::set_tree_criterion_function(
   TreeCriterionFunction tree_criterion_function)
 {
-  tree_criterion_function_ = tree_criterion_function;
+  tree_criterion_function_ = std::move(tree_criterion_function);
 }
 
 //! @brief Gets the threshold parameter.
@@ -393,7 +399,7 @@ inline void
 FitControlsVinecop::set_conditioning_set(std::vector<size_t> conditioning_set)
 {
   check_conditioning_set(conditioning_set);
-  conditioning_set_ = conditioning_set;
+  conditioning_set_ = std::move(conditioning_set);
 }
 
 //! @brief Gets the random number generator.
@@ -434,7 +440,7 @@ FitControlsVinecop::get_fit_controls_bicop() const
 
 //! @brief Sets the fit controls for bivariate fitting.
 inline void
-FitControlsVinecop::set_fit_controls_bicop(FitControlsBicop controls)
+FitControlsVinecop::set_fit_controls_bicop(const FitControlsBicop& controls)
 {
   set_family_set(controls.get_family_set());
   set_parametric_method(controls.get_parametric_method());
@@ -458,14 +464,14 @@ FitControlsVinecop::set_tree_algorithm(std::string tree_algorithm)
       "tree_algorithm must be one of 'mst_prim', 'mst_kruskal', "
       "'random_weighted', or 'random_unweighted'");
   }
-  tree_algorithm_ = tree_algorithm;
+  tree_algorithm_ = std::move(tree_algorithm);
 }
 
 //! @brief Sets the random seeds for the random number generator.
 inline void
 FitControlsVinecop::set_seeds(std::vector<int> seeds)
 {
-  if (seeds.size() == 0) {
+  if (seeds.empty()) {
     // no seeds provided, seed randomly
     std::random_device rd{};
     seeds = std::vector<int>(20);
@@ -518,7 +524,7 @@ FitControlsVinecop::str() const
       controls_str << v << " ";
   }
   controls_str << std::endl;
-  return controls_str.str().c_str();
+  return controls_str.str();
 }
 
 }
