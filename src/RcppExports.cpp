@@ -245,30 +245,32 @@ BEGIN_RCPP
 END_RCPP
 }
 // vinecop_inverse_rosenblatt_cpp
-Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U, const Rcpp::List& vinecop_r, size_t cores);
-RcppExport SEXP _rvinecopulib_vinecop_inverse_rosenblatt_cpp(SEXP USEXP, SEXP vinecop_rSEXP, SEXP coresSEXP) {
+Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U, const Rcpp::List& vinecop_r, const std::vector<size_t>& conditioning_set, size_t cores);
+RcppExport SEXP _rvinecopulib_vinecop_inverse_rosenblatt_cpp(SEXP USEXP, SEXP vinecop_rSEXP, SEXP conditioning_setSEXP, SEXP coresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type U(USEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
+    Rcpp::traits::input_parameter< const std::vector<size_t>& >::type conditioning_set(conditioning_setSEXP);
     Rcpp::traits::input_parameter< size_t >::type cores(coresSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_inverse_rosenblatt_cpp(U, vinecop_r, cores));
+    rcpp_result_gen = Rcpp::wrap(vinecop_inverse_rosenblatt_cpp(U, vinecop_r, conditioning_set, cores));
     return rcpp_result_gen;
 END_RCPP
 }
 // vinecop_rosenblatt_cpp
-Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U, const Rcpp::List& vinecop_r, size_t cores, bool randomize_discrete, std::vector<int> seeds);
-RcppExport SEXP _rvinecopulib_vinecop_rosenblatt_cpp(SEXP USEXP, SEXP vinecop_rSEXP, SEXP coresSEXP, SEXP randomize_discreteSEXP, SEXP seedsSEXP) {
+Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U, const Rcpp::List& vinecop_r, const std::vector<size_t>& conditioning_set, size_t cores, bool randomize_discrete, std::vector<int> seeds);
+RcppExport SEXP _rvinecopulib_vinecop_rosenblatt_cpp(SEXP USEXP, SEXP vinecop_rSEXP, SEXP conditioning_setSEXP, SEXP coresSEXP, SEXP randomize_discreteSEXP, SEXP seedsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type U(USEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type vinecop_r(vinecop_rSEXP);
+    Rcpp::traits::input_parameter< const std::vector<size_t>& >::type conditioning_set(conditioning_setSEXP);
     Rcpp::traits::input_parameter< size_t >::type cores(coresSEXP);
     Rcpp::traits::input_parameter< bool >::type randomize_discrete(randomize_discreteSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type seeds(seedsSEXP);
-    rcpp_result_gen = Rcpp::wrap(vinecop_rosenblatt_cpp(U, vinecop_r, cores, randomize_discrete, seeds));
+    rcpp_result_gen = Rcpp::wrap(vinecop_rosenblatt_cpp(U, vinecop_r, conditioning_set, cores, randomize_discrete, seeds));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -465,8 +467,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_rvine_structure_sim_cpp", (DL_FUNC) &_rvinecopulib_rvine_structure_sim_cpp, 3},
     {"_rvinecopulib_rvine_matrix_check_cpp", (DL_FUNC) &_rvinecopulib_rvine_matrix_check_cpp, 1},
     {"_rvinecopulib_vinecop_check_cpp", (DL_FUNC) &_rvinecopulib_vinecop_check_cpp, 1},
-    {"_rvinecopulib_vinecop_inverse_rosenblatt_cpp", (DL_FUNC) &_rvinecopulib_vinecop_inverse_rosenblatt_cpp, 3},
-    {"_rvinecopulib_vinecop_rosenblatt_cpp", (DL_FUNC) &_rvinecopulib_vinecop_rosenblatt_cpp, 5},
+    {"_rvinecopulib_vinecop_inverse_rosenblatt_cpp", (DL_FUNC) &_rvinecopulib_vinecop_inverse_rosenblatt_cpp, 4},
+    {"_rvinecopulib_vinecop_rosenblatt_cpp", (DL_FUNC) &_rvinecopulib_vinecop_rosenblatt_cpp, 6},
     {"_rvinecopulib_vinecop_sim_cpp", (DL_FUNC) &_rvinecopulib_vinecop_sim_cpp, 5},
     {"_rvinecopulib_vinecop_sim_conditional_cpp", (DL_FUNC) &_rvinecopulib_vinecop_sim_conditional_cpp, 6},
     {"_rvinecopulib_vinecop_pdf_cpp", (DL_FUNC) &_rvinecopulib_vinecop_pdf_cpp, 3},
