@@ -256,3 +256,13 @@ restored <- readRDS(path)
 unlink(path)
 all.equal(dvine(x, restored), dvine(x, fit_custom))
 ```
+
+## Related documentation
+
+- [Getting started](getting-started.html) introduces the complete `vine()`
+  modeling workflow.
+- [Discrete, mixed, and zero-inflated data](discrete-data.html) derives the
+  likelihood contributions and documents copula-scale layouts.
+- The [`vine()` reference](../reference/vine.html), [margin-family
+  reference](../reference/margin_family.html), and [fitted-margin
+  protocol](../reference/margin_protocol.html) give complete API contracts.

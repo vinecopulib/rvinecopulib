@@ -19,6 +19,13 @@ navbar:
       - text: Margins and data types
       - text: Marginal models
         href: articles/marginal-models.html
+      - text: Discrete, mixed, and zero-inflated data
+        href: articles/discrete-data.html
+      - text: Advanced workflows
+      - text: Conditional simulation and Rosenblatt transforms
+        href: articles/conditional-simulation.html
+      - text: Scores, Hessians, and varying parameters
+        href: articles/likelihood-inference.html
 
 reference:
 - title: Full distributions and margins

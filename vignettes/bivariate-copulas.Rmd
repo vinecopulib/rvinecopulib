@@ -85,7 +85,9 @@ hbicop(cbind(points[, 1], h), cond_var = 1, family = cop, inverse = TRUE)
 ```
 
 This round trip recovers the second column up to numerical precision. The same
-conditional-distribution operations drive vine recursion and simulation.
+conditional-distribution operations drive vine recursion and simulation; see
+[Conditional simulation and Rosenblatt
+transforms](conditional-simulation.html) for the multivariate workflow.
 
 ## Dependence measures
 
@@ -174,8 +176,8 @@ fit_discrete <- bicop(
 fit_discrete
 ```
 
-The dedicated discrete-data guide covers compact layouts, mixed models, and
-atoms in detail.
+The [discrete-data guide](discrete-data.html) derives the likelihood
+contribution and covers compact layouts, mixed models, and atoms in detail.
 
 ## Observation-specific parameters
 
@@ -197,6 +199,8 @@ parametric families.
 
 - [Vine copula models and structures](vine-copula-models.html) shows how
   bivariate copulas are assembled into a high-dimensional model.
+- [Scores, Hessians, and varying parameters](likelihood-inference.html)
+  documents likelihood derivatives and parameter ordering.
 - The [`bicop()` reference](../reference/bicop.html) lists all fitting
   controls; [`bicop_dist()` and its distribution
   functions](../reference/bicop_dist.html) document construction and

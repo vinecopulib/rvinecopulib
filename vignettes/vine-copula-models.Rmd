@@ -227,6 +227,13 @@ or construct a new `vinecop_dist()` after changing its components.
 
 - [Bivariate copula models](bivariate-copulas.html) provides the details of
   the pair-copula building blocks.
+- [Discrete, mixed, and zero-inflated data](discrete-data.html) explains the
+  copula-scale representation required when some variables have atoms.
+- [Conditional simulation and Rosenblatt
+  transforms](conditional-simulation.html) describes conditioning-aware
+  structures and sampling orders.
+- [Scores, Hessians, and varying parameters](likelihood-inference.html)
+  explains edge parameter ordering and stepwise versus full derivatives.
 - The [`vinecop()` reference](../reference/vinecop.html) lists all fitting and
   selection arguments; the [structure reference](../reference/rvine_structure.html)
   gives the formal matrix validity conditions.
