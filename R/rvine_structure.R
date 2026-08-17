@@ -233,7 +233,9 @@ plot.rvine_matrix <- function(x, ...) {
 #' @param trunc_lvl the truncation level
 #' @export
 cvine_structure <- function(order, trunc_lvl = Inf) {
-  if (is.count(order)) order <- seq_len(order)
+  if (is.count(order)) {
+    order <- seq_len(order)
+  }
   assert_that(
     is.vector(order) && all(sapply(order, is.count)),
     msg = "Order should be a vector of positive integers."
@@ -261,7 +263,9 @@ cvine_structure <- function(order, trunc_lvl = Inf) {
 #' @rdname rvine_structure
 #' @export
 dvine_structure <- function(order, trunc_lvl = Inf) {
-  if (is.count(order)) order <- seq_len(order)
+  if (is.count(order)) {
+    order <- seq_len(order)
+  }
   assert_that(
     is.vector(order) && all(sapply(order, is.count)),
     msg = "Order should be a vector of positive integers."

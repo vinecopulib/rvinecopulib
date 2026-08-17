@@ -31,6 +31,9 @@ for the complete backend changes.
 
 ### NEW FEATURES
 
+* Add the `dmargin()`, `pmargin()`, and `qmargin()` protocol and
+  `margin_dist()` constructor for custom fitted or fixed margins.
+
 * Add conditional simulation to `rvinecop()` and `rvine()`. Conditioning values
   can be common or observation-specific, and `conditioning_set` accepts indices
   or names. `vinecop()` and `vine()` also accept `conditioning_set` for

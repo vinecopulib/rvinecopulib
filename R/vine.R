@@ -214,10 +214,12 @@ expand_factors <- function(data) {
   as.data.frame(data)
 }
 
-#' @param margins A list with with each element containing the specification of a
-#' marginal [stats::Distributions]. Each marginal specification
-#' should be a list with containing at least the distribution family (`"distr"`)
-#' and optionally the parameters, e.g.
+#' @param margins a list containing one marginal distribution per variable.
+#' Each margin can be a [margin_dist()] object, another fitted object
+#' implementing the [margin protocol][margin_protocol], a `kde1d` object, or a
+#' fixed [stats::Distributions] specification. Fixed specifications must be a
+#' list containing at least the distribution family (`"distr"`) and optionally
+#' the parameters, e.g.
 #' `list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))`.
 #' Note that parameters that have no default values have to be provided.
 #' Furthermore, if `margins` has length one, it will be recycled for every component.
@@ -243,7 +245,6 @@ vine_dist <- function(margins, pair_copulas, structure) {
   }
   stopifnot(length(margins) == dim(structure)[1])
   check_marg <- lapply(margins, check_distr)
-  try(npars_marg <- sum(sapply(margins, get_npars_distr)), silent = TRUE)
 
   is_ok <- sapply(check_marg, isTRUE)
   if (!all(is_ok)) {
@@ -261,6 +262,7 @@ vine_dist <- function(margins, pair_copulas, structure) {
     )
     stop(msg)
   }
+  npars_marg <- sum(vapply(margins, margin_npars, numeric(1)))
 
   # create the vinecop object
   copula <- vinecop_dist(pair_copulas, structure)
@@ -304,8 +306,8 @@ finalize_vine <- function(vine, data, weights, keep_data) {
   ## compute npars/loglik
   npars <- loglik <- 0
   for (k in seq_len(ncol(data))) {
-    npars <- npars + vine$margins[[k]]$edf
-    loglik <- loglik + vine$margins[[k]]$loglik
+    npars <- npars + margin_npars(vine$margins[[k]])
+    loglik <- loglik + margin_loglik(vine$margins[[k]])
   }
 
   ## add the npars/loglik of the copulas

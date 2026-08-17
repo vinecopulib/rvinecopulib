@@ -25,10 +25,9 @@
 #' for the vine distributions are standard.
 #'
 #' The functions are based on [dvinecop()], [pvinecop()] and [rvinecop()] for
-#' [vinecop] objects, and either [kde1d::dkde1d()], [kde1d::pkde1d()] and
-#' [kde1d::qkde1d()] for estimated vines (i.e., output of [vine()]), or the
-#' standard *d/p/q-xxx* from [stats::Distributions] for custom vines
-#' (i.e., output of [vine_dist()]).
+#' [vinecop] objects. Margins are evaluated through [dmargin()], [pmargin()],
+#' and [qmargin()]. Methods are provided for margins fitted by [vine()] and for
+#' the fixed [stats::Distributions] specifications accepted by [vine_dist()].
 #' @return
 #' `dvine()` gives the density, `pvine()` gives the distribution function,
 #' and `rvine()` generates unconditional or conditional random deviates.
@@ -237,7 +236,7 @@ get_vine_dist_margin_summary <- function(vd) {
   }
   df <- data.frame(
     margin = seq_along(margins),
-    distr = sapply(margins, function(x) x$distr)
+    distr = vapply(margins, margin_family_name, character(1))
   )
   class(df) <- c("summary_df", class(df))
   df
@@ -358,27 +357,16 @@ get_x_sub <- function(x, margin) {
 }
 
 eval_one_dpq <- function(x, margin, what = "p") {
-  if (inherits(margin, "kde1d")) {
-    dpq <- switch(
-      what,
-      p = pkde1d(x, margin),
-      d = dkde1d(x, margin),
-      q = qkde1d(x, margin),
-      p_sub = pkde1d(get_x_sub(x, margin), margin)
-    )
-  } else {
-    par <- margin[names(margin) != "distr"]
-    par[[length(par) + 1]] <- if (what == "p_sub") get_x_sub(x, margin) else x
-    names(par)[[length(par)]] <- switch(
-      what,
-      p = "q",
-      p_sub = "q",
-      d = "x",
-      q = "p"
-    )
-    dpq <- do.call(get(paste0(what, margin$distr)), par)
+  dpq <- switch(
+    what,
+    p = pmargin(x, margin),
+    d = dmargin(x, margin),
+    q = qmargin(x, margin),
+    p_sub = pmargin(get_x_sub(x, margin), margin)
+  )
+  if (is.factor(dpq)) {
+    dpq <- as.data.frame(dpq)
   }
-  if (is.factor(dpq)) dpq <- as.data.frame(dpq)
   if (what == "p_sub") {
     dpq[is.nan(dpq) & !is.nan(x)] <- 0
   }
