@@ -12,6 +12,11 @@ The main changes on the R end are:
   continuous, integer-valued discrete, and zero-inflated left-limit CDFs are
   now handled centrally by the margin protocol,
 
+* `vine()` can select marginal families through
+  `margins_controls$family_set`; parametric families from `univariateML` and
+  user-defined `margin_family()` candidates are supported alongside the
+  existing `kde1d` margins,
+
 * `vinecop()` and `vine()` now accept a custom function as `tree_crit`,
 
 * added `scores()` and `hessian()` for vine copula models, and a `keep_all`

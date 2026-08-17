@@ -35,7 +35,8 @@ Suggests:
     igraph,
     ggplot2,
     ggraph,
-    testthat
+    testthat,
+    univariateML
 LinkingTo: 
     BH (>= 1.75.0-0),
     Rcpp,
