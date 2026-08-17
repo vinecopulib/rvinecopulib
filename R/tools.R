@@ -327,7 +327,13 @@ check_distr <- function(distr) {
 
   ## fitted objects can implement the generic margin protocol
   if (has_margin_protocol(distr) && !is_legacy_margin(distr)) {
-    e <- tryCatch(margin_npars(distr), error = function(e) e)
+    e <- tryCatch(
+      {
+        margin_npars(distr)
+        margin_type(distr)
+      },
+      error = function(e) e
+    )
     if (inherits(e, "error")) {
       return(e$message)
     }

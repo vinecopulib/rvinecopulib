@@ -8,6 +8,10 @@ The main changes on the R end are:
 * added the `dmargin()`, `pmargin()`, and `qmargin()` protocol and
   `margin_dist()` constructor for custom fitted or fixed margins,
 
+* added `zero_inflated()` and a top-level `var_types` argument to `vine()`;
+  continuous, integer-valued discrete, and zero-inflated left-limit CDFs are
+  now handled centrally by the margin protocol,
+
 * `vinecop()` and `vine()` now accept a custom function as `tree_crit`,
 
 * added `scores()` and `hessian()` for vine copula models, and a `keep_all`

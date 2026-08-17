@@ -22,6 +22,10 @@
 #'   store the pseudo-observations used for fitting the copula, use the
 #'   `copula_controls` argument.
 #' @param cores the number of cores to use for parallel computations.
+#' @param var_types optional variable types, one for each variable after factor
+#'   expansion: `"c"` for continuous, `"d"` for integer-valued discrete, or
+#'   `"zi"` for continuous with an atom at zero. Types are inferred from
+#'   [ordered()] and [zero_inflated()] columns when omitted.
 #' @details
 #' `vine_dist()` creates a vine copula by specifying the margins, a nested list
 #' of `bicop_dist` objects and a quadratic structure matrix.
@@ -120,18 +124,24 @@ vine <- function(
   ),
   weights = numeric(),
   keep_data = FALSE,
-  cores = 1
+  cores = 1,
+  var_types = NULL
 ) {
   ## basic sanity checks (copula_controls are checked by vinecop)
+  margins_controls_supplied <- !missing(margins_controls)
   data <- expand_factors(data)
 
   d <- ncol(data)
-  var_types <- rep("c", d)
-  var_types[sapply(data, is.ordered)] <- "d"
 
   assert_that(is.list(margins_controls))
   allowed_margins_controls <- c("xmin", "xmax", "type", "mult", "bw", "deg")
   assert_that(in_set(names(margins_controls), allowed_margins_controls))
+  var_types <- resolve_margin_types(
+    data,
+    var_types,
+    margins_controls,
+    margins_controls_supplied
+  )
 
   assert_that(is.list(copula_controls))
   if (is.null(copula_controls$keep_data)) {
@@ -141,6 +151,7 @@ vine <- function(
 
   ## expand the required arguments and compute default mult if needed
   margins_controls <- expand_margin_controls(margins_controls, d, data)
+  margins_controls$type <- var_types
   for (k in which(sapply(data, is.ordered))) {
     margins_controls$type[k] <- "d"
     margins_controls$xmin[k] <- 0
@@ -174,6 +185,72 @@ vine <- function(
   ]
 
   finalize_vine(vine, data, weights, keep_data)
+}
+
+resolve_margin_types <- function(
+  data,
+  var_types,
+  margins_controls,
+  margins_controls_supplied
+) {
+  d <- ncol(data)
+  inferred <- rep("c", d)
+  inferred[vapply(data, is.ordered, logical(1))] <- "d"
+  inferred[vapply(data, inherits, logical(1), "zero_inflated")] <- "zi"
+
+  controls_type <- if (margins_controls_supplied) {
+    margins_controls$type
+  } else {
+    NULL
+  }
+  if (!is.null(controls_type)) {
+    controls_type <- expand_margin_types(
+      controls_type,
+      d,
+      "margins_controls$type"
+    )
+  }
+  if (!is.null(var_types)) {
+    var_types <- expand_margin_types(var_types, d, "var_types")
+  }
+  if (
+    !is.null(var_types) &&
+      !is.null(controls_type) &&
+      !identical(var_types, controls_type)
+  ) {
+    stop("'var_types' and 'margins_controls$type' disagree.", call. = FALSE)
+  }
+
+  explicit <- if (!is.null(var_types)) var_types else controls_type
+  resolved <- if (is.null(explicit)) inferred else explicit
+  marked <- inferred != "c"
+  if (any(marked & resolved != inferred)) {
+    stop(
+      "explicit variable types disagree with ordered or zero_inflated columns.",
+      call. = FALSE
+    )
+  }
+
+  for (j in which(resolved == "d")) {
+    if (!is.ordered(data[[j]])) {
+      x <- data[[j]]
+      if (any(!is.na(x) & (!is.finite(x) | x != floor(x)))) {
+        stop(
+          sprintf("discrete variable %d must be integer-valued.", j),
+          call. = FALSE
+        )
+      }
+    }
+  }
+  resolved
+}
+
+expand_margin_types <- function(type, d, arg) {
+  type <- normalize_margin_types(type, arg)
+  if (!length(type) %in% c(1L, d)) {
+    stop(sprintf("'%s' must have length one or %d.", arg, d), call. = FALSE)
+  }
+  rep(type, length.out = d)
 }
 
 prep_for_margins <- function(data) {
