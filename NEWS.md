@@ -69,6 +69,9 @@ for the complete backend changes.
 
 ### BUG FIXES
 
+* Document the `type` marginal control and include its continuous default in
+  `vine()`'s displayed arguments ([#309](https://github.com/vinecopulib/rvinecopulib/issues/309)).
+
 * Make inverse Rosenblatt transforms thread-safe and custom tree criteria safe
   under multithreaded fitting.
 

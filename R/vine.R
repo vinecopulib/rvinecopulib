@@ -13,7 +13,8 @@
 #'   `rvinecopulib:::expand_factors()`.
 #'   * `xmin` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `xmax` numeric vector of length d; see [kde1d::kde1d()].
-#'   * `type` numeric vector of length d; see [kde1d::kde1d()].
+#'   * `type` character vector of length one or d; variable type, with the same
+#'   allowed values as [kde1d::kde1d()]. Defaults to `"c"` (continuous).
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `deg` numeric vector of length one or d; [kde1d::kde1d()].
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
@@ -96,6 +97,7 @@ vine <- function(
     mult = NULL,
     xmin = NaN,
     xmax = NaN,
+    type = "c",
     bw = NA,
     deg = 2
   ),
