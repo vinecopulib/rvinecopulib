@@ -49,6 +49,35 @@ test_that("margin_dist validates its minimal contract", {
   expect_equal(attr(logLik(margin_dist(dnorm, pnorm, qnorm)), "df"), 0)
 })
 
+test_that("left-limit probabilities follow the declared margin type", {
+  continuous <- margin_dist(dnorm, pnorm, qnorm)
+  discrete <- margin_dist(
+    function(x) dpois(x, 1),
+    function(x) ppois(x, 1),
+    function(p) qpois(p, 1),
+    type = "d"
+  )
+  zi <- margin_dist(
+    d = function(x) {
+      ifelse(x == 0, 0.25, ifelse(x > 0, 0.75 * dexp(x), 0))
+    },
+    p = function(x) {
+      ifelse(x < 0, 0, ifelse(x == 0, 0.25, 0.25 + 0.75 * pexp(x)))
+    },
+    q = function(p) {
+      ifelse(p <= 0.25, 0, qexp((p - 0.25) / 0.75))
+    },
+    type = "zi"
+  )
+
+  expect_equal(pmargin_sub(c(-1, 0, 1), continuous), pnorm(c(-1, 0, 1)))
+  expect_equal(pmargin_sub(c(0, 3), discrete), ppois(c(-1, 2), 1))
+  expect_equal(
+    pmargin_sub(c(-1, 0, 1), zi),
+    c(0, 0, pmargin(1, zi))
+  )
+})
+
 test_that("legacy fixed margins retain all supported distributions", {
   margins <- list(
     list(distr = "beta", shape1 = 2, shape2 = 3),

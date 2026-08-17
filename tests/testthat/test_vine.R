@@ -178,3 +178,50 @@ test_that("discrete variables work", {
   expect_no_error(pvine(x, fit))
   expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
 })
+
+test_that("variable types can be declared by class or argument", {
+  n <- 50
+  x <- data.frame(
+    continuous = rnorm(n),
+    zero = zero_inflated(c(rep(0, 10), rexp(n - 10)))
+  )
+  expect_s3_class(x$zero, "zero_inflated")
+  expect_s3_class(x[1:5, , drop = FALSE]$zero, "zero_inflated")
+
+  fit <- vine(x, copula_controls = list(family_set = "indep"))
+  expect_equal(fit$margins_controls$type, c("c", "zi"))
+  expect_equal(fit$copula$var_types, c("c", "d"))
+
+  y <- cbind(rnorm(n), rpois(n, 2))
+  fit <- vine(
+    y,
+    var_types = c("c", "d"),
+    copula_controls = list(family_set = "indep")
+  )
+  expect_equal(fit$margins_controls$type, c("c", "d"))
+  expect_error(
+    vine(cbind(rnorm(n), runif(n)), var_types = c("c", "d")),
+    "integer-valued"
+  )
+})
+
+test_that("conflicting variable type declarations are rejected", {
+  x <- data.frame(a = ordered(rep(1:3, 10)), b = rnorm(30))
+  expect_error(vine(x, var_types = c("c", "c")), "disagree")
+
+  z <- data.frame(a = zero_inflated(rexp(30)), b = rnorm(30))
+  expect_error(vine(z, var_types = c("d", "c")), "disagree")
+
+  expect_error(
+    vine(
+      cbind(rnorm(30), rpois(30, 1)),
+      var_types = c("c", "d"),
+      margins_controls = list(type = c("c", "c"))
+    ),
+    "disagree"
+  )
+  expect_error(
+    vine(matrix(rnorm(90), ncol = 3), var_types = c("c", "d")),
+    "length one or 3"
+  )
+})

@@ -34,6 +34,10 @@ for the complete backend changes.
 * Add the `dmargin()`, `pmargin()`, and `qmargin()` protocol and
   `margin_dist()` constructor for custom fitted or fixed margins.
 
+* Add `zero_inflated()` and a top-level `var_types` argument to `vine()`;
+  continuous, integer-valued discrete, and zero-inflated left-limit CDFs are
+  handled centrally by the margin protocol.
+
 * Add conditional simulation to `rvinecop()` and `rvine()`. Conditioning values
   can be common or observation-specific, and `conditioning_set` accepts indices
   or names. `vinecop()` and `vine()` also accept `conditioning_set` for

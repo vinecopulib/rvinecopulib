@@ -16,7 +16,8 @@ vine(
     = NULL),
   weights = numeric(),
   keep_data = FALSE,
-  cores = 1
+  cores = 1,
+  var_types = NULL
 )
 
 vine_dist(margins, pair_copulas, structure)
@@ -49,6 +50,11 @@ store the pseudo-observations used for fitting the copula, use the
 \code{copula_controls} argument.}
 
 \item{cores}{the number of cores to use for parallel computations.}
+
+\item{var_types}{optional variable types, one for each variable after factor
+expansion: \code{"c"} for continuous, \code{"d"} for integer-valued discrete, or
+\code{"zi"} for continuous with an atom at zero. Types are inferred from
+\code{\link[=ordered]{ordered()}} and \code{\link[=zero_inflated]{zero_inflated()}} columns when omitted.}
 
 \item{margins}{a list containing one marginal distribution per variable.
 Each margin can be a \code{\link[=margin_dist]{margin_dist()}} object, another fitted object

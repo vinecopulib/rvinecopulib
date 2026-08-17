@@ -86,6 +86,30 @@ margin_dist <- function(
   )
 }
 
+#' Declare zero-inflated data
+#'
+#' Marks a numeric vector as having a continuous distribution with an atom at
+#' zero. The class is preserved when the vector is stored in a data frame and
+#' is detected automatically by [vine()].
+#'
+#' @param x a numeric vector.
+#'
+#' @return `x` with an additional `zero_inflated` class.
+#' @export
+zero_inflated <- function(x) {
+  if (!is.numeric(x)) {
+    stop("'x' must be numeric.", call. = FALSE)
+  }
+  structure(x, class = unique(c("zero_inflated", class(x))))
+}
+
+#' @export
+`[.zero_inflated` <- function(x, ...) {
+  out <- NextMethod("[")
+  class(out) <- class(x)
+  out
+}
+
 #' @rdname margin_protocol
 #' @export
 dmargin <- function(x, margin) {
@@ -242,6 +266,74 @@ margin_loglik <- function(margin) {
     return(NA_real_)
   }
   as.numeric(stats::logLik(margin))
+}
+
+margin_type <- function(margin) {
+  type <- NULL
+  if (inherits(margin, "margin_dist")) {
+    type <- margin$type
+  } else if (inherits(margin, "kde1d")) {
+    type <- margin$type
+  } else if (is_legacy_margin(margin)) {
+    type <- "c"
+  } else {
+    type <- attr(margin, "type", exact = TRUE)
+    if (is.null(type)) {
+      continuous <- attr(margin, "continuous", exact = TRUE)
+      if (isTRUE(continuous)) {
+        type <- "c"
+      }
+      if (isFALSE(continuous)) type <- "d"
+    }
+  }
+  if (is.null(type) || length(type) != 1L) {
+    stop("a fitted margin must declare its type.", call. = FALSE)
+  }
+  normalize_margin_types(type, "margin type")
+}
+
+normalize_margin_types <- function(type, arg = "type") {
+  if (!is.character(type) || anyNA(type)) {
+    stop(sprintf("'%s' must be a character vector.", arg), call. = FALSE)
+  }
+  normalized <- type
+  normalized[type %in% c("cont", "continuous")] <- "c"
+  normalized[type %in% c("disc", "discrete")] <- "d"
+  normalized[type %in% c("zinf", "zero-inflated")] <- "zi"
+  if (any(!normalized %in% c("c", "d", "zi"))) {
+    stop(
+      sprintf("'%s' must contain only 'c', 'd', or 'zi'.", arg),
+      call. = FALSE
+    )
+  }
+  normalized
+}
+
+pmargin_sub <- function(x, margin) {
+  type <- margin_type(margin)
+  if (type == "c") {
+    return(pmargin(x, margin))
+  }
+  if (type == "d") {
+    if (inherits(margin, "kde1d") && is.ordered(margin$x)) {
+      xnum <- as.numeric(x)
+      levels <- levels(margin$x)
+      previous <- ordered(
+        levels[ifelse(xnum > 1, xnum - 1, NA)],
+        levels = levels
+      )
+      return(pmargin(previous, margin))
+    }
+    return(pmargin(x - 1, margin))
+  }
+
+  out <- pmargin(x, margin)
+  at_zero <- !is.na(x) & x == 0
+  out[at_zero] <- pmax(
+    out[at_zero] - dmargin(x[at_zero], margin),
+    0
+  )
+  out
 }
 
 margin_family_name <- function(margin) {

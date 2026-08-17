@@ -339,30 +339,13 @@ dpq_marg <- function(x, vine, what = "p") {
   do.call(cbind, res)
 }
 
-get_x_sub <- function(x, margin) {
-  if (inherits(margin, "kde1d")) {
-    if (margin$type == "discrete") {
-      if (is.ordered(margin$x)) {
-        xnum <- as.numeric(x)
-        lvls <- levels(margin$x)
-        x <- ordered(lvls[ifelse(xnum > 1, xnum - 1, NA)], lvls)
-      } else {
-        x <- x - 1
-      }
-    } else if (margin$type == "zero-inflated") {
-      x[x == 0] <- -.Machine$double.xmin
-    }
-  }
-  x
-}
-
 eval_one_dpq <- function(x, margin, what = "p") {
   dpq <- switch(
     what,
     p = pmargin(x, margin),
     d = dmargin(x, margin),
     q = qmargin(x, margin),
-    p_sub = pmargin(get_x_sub(x, margin), margin)
+    p_sub = pmargin_sub(x, margin)
   )
   if (is.factor(dpq)) {
     dpq <- as.data.frame(dpq)
