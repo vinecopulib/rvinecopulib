@@ -14,6 +14,17 @@ zero_inflated(x)
 }
 \description{
 Marks a numeric vector as having a continuous distribution with an atom at
-zero. The class is preserved when the vector is stored in a data frame and
-is detected automatically by \code{\link[=vine]{vine()}}.
+zero. The atom is always assumed to be located at zero. The class is
+preserved when the vector is stored in or subset from a data frame and is
+detected automatically by \code{\link[=vine]{vine()}}. Alternatively, use \code{var_types = "zi"}.
+}
+\details{
+For a fitted zero-inflated margin, rvinecopulib uses the ordinary CDF away
+from zero. At zero, its left limit is computed as
+\code{pmargin(0, margin) - dmargin(0, margin)}, so \code{dmargin(0, margin)} must return
+the atom's probability mass rather than a continuous density value.
+}
+\examples{
+x <- zero_inflated(c(0, 0, rexp(8)))
+inherits(data.frame(x = x)$x, "zero_inflated")
 }

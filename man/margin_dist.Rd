@@ -36,7 +36,16 @@ An object of class \code{margin_dist} implementing the
 }
 \description{
 \code{margin_dist()} creates a fitted or fixed margin from three minimal
-evaluation functions. The functions must each accept one vector argument.
+evaluation functions. The functions must each accept one vector argument
+and return a vector of the same length. They are stored in the resulting
+object, so closures can capture fitted parameter values.
+}
+\details{
+A finite \code{loglik} is needed when the object competes with other candidates
+during \code{\link[=vine]{vine()}} fitting. It may be \code{NA} for a fixed margin supplied directly
+to \code{\link[=vine_dist]{vine_dist()}} or when it is the only fitted candidate. \code{npars} is used in
+AIC and BIC calculations and may be non-integer for effective degrees of
+freedom.
 }
 \examples{
 normal_margin <- margin_dist(

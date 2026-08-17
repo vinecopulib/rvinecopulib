@@ -26,7 +26,46 @@ A numeric vector containing density or probability mass values for
 for \code{qmargin()}.
 }
 \description{
-Evaluate a fitted marginal distribution. Margin classes can integrate with
-\code{rvinecopulib} by implementing these three S3 methods and a \code{\link[=logLik]{logLik()}} method
-whose return value has a finite \code{df} attribute.
+Evaluate a fitted marginal distribution. These generics dispatch on
+\code{margin}, their second argument. This lets another package integrate its
+fitted distribution class without changing the usual data-first calling
+convention.
+}
+\details{
+A fitted margin class must provide methods for all three generics and a
+\code{\link[=logLik]{logLik()}} method whose return value has a finite \code{df} attribute. It must
+declare its variable type through \code{attr(margin, "type")}, using \code{"c"} for a
+continuous distribution, \code{"d"} for an integer-supported distribution, or
+\code{"zi"} for a continuous distribution with an atom at zero. For compatibility
+with \code{univariateML}, a logical \code{attr(margin, "continuous")} is also
+recognized. An optional \code{"family"} or \code{"model"} attribute supplies the name
+shown in summaries.
+
+Methods must be vectorized and return one value for every element of \code{x} or
+\code{p}. For discrete margins, \code{dmargin()} returns probability mass and
+rvinecopulib computes the left limit as \code{pmargin(x - 1, margin)}. For a
+\code{"zi"} margin, \code{dmargin(0, margin)} is the mass at zero and the left limit at
+zero is \code{pmargin(0, margin) - dmargin(0, margin)}. At nonzero values its left
+limit equals its CDF.
+}
+\examples{
+fitted_normal <- structure(
+  c(mean = 1, sd = 2),
+  class = "example_normal_margin",
+  type = "c",
+  family = "normal"
+)
+dmargin.example_normal_margin <- function(x, margin) {
+  dnorm(x, margin[["mean"]], margin[["sd"]])
+}
+pmargin.example_normal_margin <- function(x, margin) {
+  pnorm(x, margin[["mean"]], margin[["sd"]])
+}
+qmargin.example_normal_margin <- function(p, margin) {
+  qnorm(p, margin[["mean"]], margin[["sd"]])
+}
+logLik.example_normal_margin <- function(object, ...) {
+  structure(-10, class = "logLik", df = 2)
+}
+pmargin(1, fitted_normal)
 }

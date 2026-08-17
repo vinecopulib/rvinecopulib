@@ -123,16 +123,26 @@ of \code{bicop_dist} objects and a quadratic structure matrix.
 smoothing parameters as \code{\link[kde1d:kde1d]{kde1d::kde1d()}} (except for \code{x}). \code{copula_controls}
 is a list with the same parameters as \code{\link[=vinecop]{vinecop()}} (except for \code{data}).
 
-A character \code{margins_controls$family_set} is used for every variable. A list
-supplies one candidate set per variable, for example
-\code{list(c("norm", "cauchy"), c("pois", "geom"))}. The aliases \code{"par"} and
-\code{"parametric"} expand to all \code{univariateML} families, \code{"nonpar"} and
-\code{"nonparametric"} select \code{"kde1d"}, and \code{"all"} combines both. Candidates
-incompatible with a variable's type are removed before fitting. rvinecopulib
-fits every remaining candidate and selects the best according to \code{selcrit}.
-Competing custom candidates therefore need a finite \code{\link[=logLik]{logLik()}} value.
-Observation weights are currently supported only when every candidate is
-\code{"kde1d"}.
+A character \code{margins_controls$family_set} is used for every variable. Its
+entries can be \code{"kde1d"} or names from
+\link[univariateML:univariateML_models]{univariateML::univariateML_models}. A list supplies one candidate set per
+variable, for example \code{list(c("norm", "cauchy"), c("pois", "geom"))}.
+Each entry may itself be a character vector, a \code{\link[=margin_family]{margin_family()}} object, or a
+list combining both. An unnamed list is matched by position; a named list
+must contain every expanded variable name exactly once and is reordered to
+match the data.
+
+The aliases \code{"par"} and \code{"parametric"} expand to all \code{univariateML}
+families, \code{"nonpar"} and \code{"nonparametric"} select \code{"kde1d"}, and \code{"all"}
+combines both. Parametric names and aliases require the suggested
+\code{univariateML} package; the default \code{"kde1d"} and custom \code{\link[=margin_family]{margin_family()}}
+objects do not. Duplicate candidate names are fitted only once.
+
+Candidates incompatible with a variable's type are removed before fitting.
+rvinecopulib fits every remaining candidate and selects the first minimum of
+\code{-logLik}, AIC, or BIC according to \code{selcrit}. Competing custom candidates
+therefore need a finite \code{\link[=logLik]{logLik()}} value. Observation weights are currently
+supported only when every candidate is \code{"kde1d"}.
 }
 \examples{
 # specify pair-copulas
