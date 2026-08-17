@@ -1,16 +1,47 @@
 #' High Performance Algorithms for Vine Copula Modeling
 #'
-#' Provides an interface to 'vinecopulib', a C++ library for vine copula
-#' modeling based on 'Boost' and 'Eigen'. The 'rvinecopulib' package implements
-#' the core features of the popular 'VineCopula' package, in particular
-#' inference algorithms for both vine copula and bivariate copula models.
-#' Advantages over 'VineCopula' are a sleeker and more modern API, improved
-#' performances, especially in high dimensions, nonparametric and
-#' multi-parameter families. The 'rvinecopulib' package includes 'vinecopulib'
-#' as header-only C++ library (currently version 0.6.2). Thus users do not need
-#' to install 'vinecopulib' itself in order to use 'rvinecopulib'. Since their
-#' initial releases, 'vinecopulib' is licensed under the MIT License, and
-#' 'rvinecopulib' is licensed under the GNU GPL version 3.
+#' rvinecopulib provides high-performance tools for constructing, fitting,
+#' selecting, simulating, and visualizing bivariate and vine copula models. It
+#' also fits complete multivariate distributions by combining marginal models
+#' with a vine copula. Continuous, integer-valued discrete, mixed, and
+#' zero-inflated variables are supported.
+#'
+#' The package is the R interface to the header-only 'vinecopulib' C++ library,
+#' which is bundled with rvinecopulib. Users do not need to install the C++
+#' library separately. 'vinecopulib' is licensed under the MIT License and
+#' rvinecopulib under the GNU GPL version 3.
+#'
+#' @section Main capabilities:
+#' rvinecopulib provides:
+#' \itemize{
+#'   \item parametric, nonparametric, rotated, and extreme-value pair copulas;
+#'   \item automatic pair-copula family, vine structure, truncation, and
+#'     threshold selection;
+#'   \item complete multivariate distributions with nonparametric,
+#'     parametric, or custom margins;
+#'   \item continuous, integer-valued discrete, mixed, and zero-inflated data;
+#'   \item observation weights and parallel fitting;
+#'   \item conditional simulation and Rosenblatt transforms;
+#'   \item likelihood scores, Hessians, and observation-specific parameters;
+#'   \item custom marginal families and custom tree-selection criteria.
+#' }
+#'
+#' @section Modeling interfaces:
+#' The framework is exposed at three levels. [vine()] models observations on
+#' their original scale by fitting the marginal distributions and dependence
+#' model together. [vinecop()] models uniform pseudo-observations when only the
+#' dependence model is required. [bicop()] provides the corresponding
+#' two-variable workflow.
+#'
+#' The constructors [vine_dist()], [vinecop_dist()], and [bicop_dist()] create
+#' models from explicitly specified components.
+#'
+#' @section Learning more:
+#' Start with `vignette("getting-started")`. Dedicated articles cover
+#' bivariate copulas, vine structures and selection, marginal models,
+#' discrete data, conditional simulation, and likelihood derivatives. The
+#' [package website](https://vinecopulib.github.io/rvinecopulib/) contains the
+#' rendered articles and complete function reference.
 #'
 #' @name rvinecopulib
 #' @docType package
@@ -22,40 +53,21 @@
 #' @keywords package
 #'
 #' @examples
-#' ## bicop_dist objects
-#' bicop_dist("gaussian", 0, 0.5)
-#' str(bicop_dist("gauss", 0, 0.5))
-#' bicop <- bicop_dist("clayton", 90, 3)
-#'
-#' ## bicop objects
-#' u <- rbicop(500, "gauss", 0, 0.5)
-#' fit1 <- bicop(u, family = "par")
-#' fit1
-#'
-#' ## vinecop_dist objects
-#' ## specify pair-copulas
-#' bicop <- bicop_dist("bb1", 90, c(3, 2))
-#' pcs <- list(
-#'   list(bicop, bicop), # pair-copulas in first tree
-#'   list(bicop) # pair-copulas in second tree
+#' ## complete distribution on the original data scale
+#' x <- data.frame(a = rnorm(50), b = rexp(50), n = rpois(50, 2))
+#' fit <- vine(
+#'   x,
+#'   var_types = c("c", "c", "d"),
+#'   copula_controls = list(family_set = "onepar")
 #' )
-#' ## specify R-vine matrix
-#' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
-#' ## build the vinecop_dist object
-#' vc <- vinecop_dist(pcs, mat)
-#' summary(vc)
+#' rvine(3, fit)
 #'
-#' ## vinecop objects
-#' u <- sapply(1:3, function(i) runif(50))
-#' vc <- vinecop(u, family = "par")
-#' summary(vc)
+#' ## dependence model on the copula scale
+#' u <- pseudo_obs(as.matrix(USArrests))
+#' copula_fit <- vinecop(u, family_set = "onepar")
+#' summary(copula_fit)
 #'
-#' ## vine_dist objects
-#' vc <- vine_dist(list(list(distr = "norm")), pcs, mat)
-#' summary(vc)
-#'
-#' ## vine objects
-#' x <- sapply(1:3, function(i) rnorm(50))
-#' vc <- vine(x, copula_controls = list(family_set = "par"))
-#' summary(vc)
+#' ## bivariate model
+#' uv <- rbicop(100, "gaussian", 0, 0.5)
+#' bicop(uv, family_set = "par")
 "_PACKAGE"

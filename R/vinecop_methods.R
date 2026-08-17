@@ -75,7 +75,7 @@
 #' u <- pseudo_obs(x)
 #'
 #' ## fit a model
-#' vc <- vinecop(u, family = "clayton")
+#' vc <- vinecop(u, family_set = "clayton")
 #'
 #' # simulate from the model
 #' u <- rvinecop(100, vc)
@@ -107,7 +107,11 @@
 #' pairs(rvinecop(200, vc))
 #'
 #' ## Conditional simulation
-#' vc_cond <- vinecop(u, family = "gaussian", conditioning_set = c(2, 4))
+#' vc_cond <- vinecop(
+#'   u,
+#'   family_set = "gaussian",
+#'   conditioning_set = c(2, 4)
+#' )
 #' u_cond <- c(0.25, 0.75)
 #' uc <- rvinecop(
 #'   100,
@@ -406,7 +410,7 @@ summary.vinecop_dist <- function(
 #' @rdname predict_vinecop
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, family = "par", keep_data = TRUE)
+#' fit <- vinecop(u, family_set = "par", keep_data = TRUE)
 #' all.equal(predict(fit, u), fitted(fit), check.environment = FALSE)
 predict.vinecop <- function(
   object,
@@ -492,7 +496,7 @@ logLik.vinecop <- function(object, ...) {
 #' @export mBICV
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, family = "par", keep_data = TRUE)
+#' fit <- vinecop(u, family_set = "par", keep_data = TRUE)
 #' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 #' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 mBICV <- function(object, psi0 = 0.9, newdata = NULL) {

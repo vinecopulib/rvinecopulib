@@ -48,8 +48,6 @@ done in parallel on \code{cores} batches .}
 \item{keep_all}{if \code{TRUE}, \code{dvinecop()} returns additional intermediate
 quantities computed during density evaluation.}
 
-\item{...}{unused.}
-
 \item{parameters}{optional observation-specific parameters for \code{dvinecop()},
 \code{scores()}, and \code{hessian()}. For a model with one parameter, this may be a
 vector with one entry per observation. Otherwise, it must be a matrix with
@@ -57,6 +55,8 @@ one row per observation and one column per model parameter. For vine
 copulas, columns follow the \verb{(tree, edge, parameter)} order of \code{scores()}.
 Parameters are not recycled. Only continuous parametric models are
 supported.}
+
+\item{...}{unused.}
 
 \item{step_wise}{if \code{FALSE}, the score/Hessian is computed for the full
 likelihood; if \code{TRUE}, gradients are computed per pair-copula as in
@@ -129,7 +129,7 @@ x <- rnorm(30) * matrix(1, 30, 5) + 0.5 * matrix(rnorm(30 * 5), 30, 5)
 u <- pseudo_obs(x)
 
 ## fit a model
-vc <- vinecop(u, family = "clayton")
+vc <- vinecop(u, family_set = "clayton")
 
 # simulate from the model
 u <- rvinecop(100, vc)
@@ -161,7 +161,11 @@ pvinecop(u_disc[1:5, ], vc)
 pairs(rvinecop(200, vc))
 
 ## Conditional simulation
-vc_cond <- vinecop(u, family = "gaussian", conditioning_set = c(2, 4))
+vc_cond <- vinecop(
+  u,
+  family_set = "gaussian",
+  conditioning_set = c(2, 4)
+)
 u_cond <- c(0.25, 0.75)
 uc <- rvinecop(
   100,

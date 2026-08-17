@@ -1,3 +1,61 @@
 template:
   bootstrap: 5
 url: https://vinecopulib.github.io/rvinecopulib/
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    articles:
+      text: Articles
+      menu:
+      - text: Marginal models
+        href: articles/marginal-models.html
+
+reference:
+- title: Full distributions and margins
+  contents:
+  - vine
+  - vine_dist
+  - vine_distributions
+  - vine_predict_and_fitted
+  - margin_dist
+  - margin_family
+  - margin_protocol
+  - zero_inflated
+- title: Vine copula models
+  contents:
+  - vinecop
+  - vinecop_dist
+  - vinecop_distributions
+  - vinecop_predict_and_fitted
+  - rosenblatt
+  - truncate_model
+  - mBICV
+- title: Bivariate copula models
+  contents:
+  - bicop
+  - bicop_dist
+  - bicop_distributions
+  - bicop_dependence
+  - bicop_predict_and_fitted
+  - plot.bicop_dist
+  - par_to_ktau
+  - as.bicop
+- title: R-vine structures
+  contents:
+  - rvine_structure
+  - as_rvine_structure
+  - rvine_structure_sim
+  - plot.rvine_structure
+  - getters
+- title: Diagnostics and utilities
+  contents:
+  - pseudo_obs
+  - emp_cdf
+  - pairs_copula_data
+  - plot.vinecop_dist
+- title: Package
+  contents:
+  - rvinecopulib

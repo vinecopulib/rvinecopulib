@@ -47,7 +47,7 @@
 #'   `"random_unweighted"`) during the tree-wise structure selection.
 #'   `"mst_prim"` and `"mst_kruskal"` use Prim's and Kruskal's algorithms
 #'   respectively to select the maximum spanning tree, maximizing
-#'   the sum of the edge weights (i.e., `tree_criterion`).
+#'   the sum of the edge weights (i.e., `tree_crit`).
 #'   `"random_weighted"` and `"random_unweighted"` use Wilson's
 #'   algorithm to generate a random spanning tree, either with probability
 #'   proportional to the product of the edge weights (weighted) or
@@ -87,13 +87,13 @@
 #' financial returns.* Computational Statistics & Data Analysis, 59 (1),
 #' 52-69.
 #' The dependence measure used to select trees (default: Kendall's tau) is
-#' corrected for ties and can be changed using the `tree_criterion`
+#' corrected for ties and can be changed using the `tree_crit`
 #' argument, which can be set to `"tau"`, `"rho"` or `"hoeffd"`.
-#' Both Prim's (default: `"mst_prim"`) and Kruskal's ()`"mst_kruskal"`)
+#' Both Prim's (default: `"mst_prim"`) and Kruskal's (`"mst_kruskal"`)
 #' algorithms are available through `tree_algorithm` to set the
 #' maximum spanning tree selection algorithm.
 #' An alternative to the maximum spanning tree selection is to use random
-#' spanning trees, which can be selected using `controls.tree_algorithm` and
+#' spanning trees, which can be selected using `tree_algorithm` and
 #' come in two flavors, both using Wilson's algorithm loop erased random walks:
 #'
 #'   - "random_weighted"` generates a random spanning tree with probability
@@ -144,19 +144,24 @@
 #' plot(fit)
 #' contour(fit)
 #'
-#' ## select by log-likelihood criterion from one-paramter families
+#' ## select by BIC from one-parameter families
 #' fit <- vinecop(u, family_set = "onepar", selcrit = "bic")
 #' summary(fit)
 #'
 #' ## 1-truncated, Gaussian D-vine
-#' fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss", trunc_lvl = 1)
+#' fit <- vinecop(
+#'   u,
+#'   structure = dvine_structure(1:5),
+#'   family_set = "gauss",
+#'   trunc_lvl = 1
+#' )
 #' plot(fit)
 #' contour(fit)
 #'
 #' ## Partial structure selection with only first tree specified
 #' structure <- rvine_structure(order = 1:5, list(rep(5, 4)))
 #' structure
-#' fit <- vinecop(u, structure = structure, family = "gauss")
+#' fit <- vinecop(u, structure = structure, family_set = "gauss")
 #' plot(fit)
 #'
 #' ## Model for discrete data
