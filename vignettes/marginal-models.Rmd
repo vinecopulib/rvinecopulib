@@ -1,0 +1,228 @@
+---
+title: "Marginal models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Marginal models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(rvinecopulib)
+set.seed(11)
+```
+
+`vine()` separates marginal modeling from copula modeling. Each fitted margin
+provides a density or probability mass function, a distribution function, and
+a quantile function. rvinecopulib uses those functions to move between the data
+scale and the copula scale.
+
+This vignette covers the default nonparametric margins, optional parametric
+selection, custom families, discrete and zero-inflated variables, and the
+protocol that other packages can implement.
+
+## Default nonparametric margins
+
+The default remains a `kde1d` fit for every variable. Existing calls therefore
+retain their previous behavior.
+
+```{r default}
+x <- data.frame(
+  first = rnorm(60),
+  second = rgamma(60, shape = 2)
+)
+fit_kde <- vine(
+  x,
+  copula_controls = list(family_set = "indep")
+)
+summary(fit_kde)$margins
+```
+
+The usual KDE controls, including `mult`, `xmin`, `xmax`, `bw`, and `deg`, stay
+inside `margins_controls`. Observation weights are currently available only
+when all marginal candidates are `"kde1d"`.
+
+## Parametric selection with univariateML
+
+The suggested `univariateML` package supplies named parametric families. A
+character vector is a common candidate set for every variable; rvinecopulib
+fits every compatible candidate and performs the selection itself.
+
+```{r parametric, eval=requireNamespace("univariateML", quietly = TRUE)}
+fit_parametric <- vine(
+  x,
+  margins_controls = list(
+    family_set = c("norm", "cauchy", "gamma"),
+    selcrit = "bic"
+  ),
+  copula_controls = list(family_set = "indep")
+)
+summary(fit_parametric)$margins
+```
+
+Available criteria are `"loglik"`, `"aic"`, and `"bic"`. The aliases
+`"parametric"` and `"par"` expand to all univariateML families, while
+`"all"` also includes `"kde1d"`. These names require univariateML; custom
+families and the default KDE fit do not.
+
+Use a list to specify candidates separately by variable:
+
+```{r per-variable, eval=FALSE}
+fit_mixed <- vine(
+  data.frame(amount = rexp(100), count = rpois(100, 3)),
+  var_types = c("c", "d"),
+  margins_controls = list(
+    family_set = list(
+      amount = c("exp", "gamma", "weibull"),
+      count = c("pois", "nbinom")
+    )
+  )
+)
+```
+
+A named list must contain every variable name exactly once. An unnamed list is
+matched by position.
+
+## Custom fitted families
+
+`margin_family()` wraps a one-argument fitting function. The function receives
+one data vector and returns a fitted object implementing the margin protocol.
+`margin_dist()` is the simplest way to construct such an object.
+
+```{r custom-family}
+normal_family <- margin_family(
+  fit = function(x) {
+    mu <- mean(x)
+    sigma <- sqrt(mean((x - mu)^2))
+    margin_dist(
+      d = function(y) dnorm(y, mu, sigma),
+      p = function(y) pnorm(y, mu, sigma),
+      q = function(p) qnorm(p, mu, sigma),
+      family = "custom_normal",
+      npars = 2,
+      loglik = sum(dnorm(x, mu, sigma, log = TRUE))
+    )
+  },
+  family = "custom_normal",
+  type = "c"
+)
+
+fit_custom <- vine(
+  x,
+  margins_controls = list(family_set = normal_family),
+  copula_controls = list(family_set = "indep")
+)
+summary(fit_custom)$margins
+```
+
+The fitting callback can capture additional settings in its environment. When
+several candidates compete, each fitted object needs a finite `logLik()` value
+with a finite `df` attribute. If one candidate fails, selection continues with
+the remaining fits; if all fail, `vine()` reports the collected errors.
+
+To combine named and custom candidates separately by variable, use nested
+lists:
+
+```{r nested, eval=FALSE}
+margins_controls <- list(
+  family_set = list(
+    list("norm", normal_family),
+    list("gamma", "weibull")
+  ),
+  selcrit = "aic"
+)
+```
+
+## The fitted-margin protocol
+
+Packages can integrate their own fitted classes by implementing four S3
+methods. The `dmargin()`, `pmargin()`, and `qmargin()` generics dispatch on
+their second argument, `margin`.
+
+```{r protocol, eval=FALSE}
+dmargin.my_margin <- function(x, margin) { ... }
+pmargin.my_margin <- function(x, margin) { ... }
+qmargin.my_margin <- function(p, margin) { ... }
+logLik.my_margin <- function(object, ...) {
+  structure(object$loglik, class = "logLik", df = object$npars)
+}
+```
+
+The fitted object must also declare `attr(object, "type")` as `"c"`, `"d"`,
+or `"zi"`. Optional `"family"` or `"model"` attributes provide the label
+shown by `summary()`. See `?margin_protocol` for the complete return-value and
+left-limit contract.
+
+## Integer-valued discrete variables
+
+All discrete margins use integer support. Declare an ordinary numeric column
+with `var_types = "d"`, or use an `ordered` column. Ordered factors are fitted
+internally using the integer codes `0, 1, ...`; simulations restore the
+original ordered levels.
+
+```{r ordered-default}
+ordered_data <- data.frame(
+  rating = ordered(
+    sample(c("low", "middle", "high"), 80, replace = TRUE),
+    levels = c("low", "middle", "high")
+  ),
+  value = rnorm(80)
+)
+fit_ordered <- vine(
+  ordered_data,
+  copula_controls = list(family_set = "indep")
+)
+str(rvine(4, fit_ordered))
+```
+
+For integer-supported margins, rvinecopulib computes the left-limit CDF as
+`F(x - 1)`.
+
+## Continuous variables with an atom at zero
+
+`zero_inflated()` marks a numeric vector as continuous away from zero with an
+atom at zero. The marker survives data-frame storage and subsetting. The same
+type can be declared explicitly with `var_types = "zi"`.
+
+```{r zero-inflated-data}
+zero_data <- data.frame(
+  claim = zero_inflated(c(rep(0, 20), rexp(60))),
+  score = rnorm(80)
+)
+inherits(zero_data$claim, "zero_inflated")
+```
+
+A custom zero-inflated family declares `type = "zi"` in both its candidate and
+its fitted margin. At zero, `dmargin()` must return the atom probability.
+rvinecopulib then computes the left limit as `F(0) - f(0)`; away from zero the
+left limit equals the ordinary CDF.
+
+## Fixed margins and persistence
+
+`vine_dist()` continues to accept all existing fixed `stats` distribution
+specifications, including `norm`, `lnorm`, `gamma`, and `weibull`.
+
+```{r fixed}
+fixed_model <- vine_dist(
+  margins = list(
+    list(distr = "norm", mean = 0, sd = 1),
+    list(distr = "lnorm", meanlog = 0, sdlog = 0.5)
+  ),
+  pair_copulas = list(list(bicop_dist())),
+  structure = dvine_structure(1:2)
+)
+rvine(3, fixed_model)
+```
+
+Fitted margins, including callback-based `margin_dist()` objects, are stored in
+the vine model. Standard R serialization therefore preserves the complete
+model:
+
+```{r persistence}
+path <- tempfile(fileext = ".rds")
+saveRDS(fit_custom, path)
+restored <- readRDS(path)
+unlink(path)
+all.equal(dvine(x, restored), dvine(x, fit_custom))
+```

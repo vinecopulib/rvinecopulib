@@ -35,8 +35,11 @@ Suggests:
     igraph,
     ggplot2,
     ggraph,
+    knitr,
+    rmarkdown,
     testthat,
     univariateML
+VignetteBuilder: knitr
 LinkingTo: 
     BH (>= 1.75.0-0),
     Rcpp,

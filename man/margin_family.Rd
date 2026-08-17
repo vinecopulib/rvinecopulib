@@ -22,7 +22,20 @@ An object of class \code{margin_family}, suitable for
 \code{margin_family()} defines how \code{\link[=vine]{vine()}} fits one candidate family. The fitting
 function has a deliberately small interface: it receives the observed
 vector and returns an object implementing the
-\link[=margin_protocol]{margin protocol}.
+\link[=margin_protocol]{margin protocol}. Additional settings can be captured in
+the fitting function's environment.
+}
+\details{
+The fitted object must declare the same type as the data being fitted. If
+several candidates are supplied, it must also have a finite log-likelihood
+and parameter count. Candidate fitting errors are ignored while another
+candidate succeeds; if all candidates fail, \code{\link[=vine]{vine()}} reports their error
+messages together. Observation weights are currently supported only by the
+\code{"kde1d"} candidate.
+
+A \code{margin_family} object can be used for every variable directly. In a
+per-variable \code{family_set}, wrap multiple candidates in a nested list; see
+the example below and \code{\link[=vine]{vine()}} for the full family-set syntax.
 }
 \examples{
 normal_family <- margin_family(
@@ -40,4 +53,13 @@ normal_family <- margin_family(
   },
   family = "normal"
 )
+x <- cbind(rnorm(30), rnorm(30, 2))
+fit <- vine(
+  x,
+  margins_controls = list(
+    family_set = list(list(normal_family), list(normal_family))
+  ),
+  copula_controls = list(family_set = "indep")
+)
+summary(fit)$margins
 }

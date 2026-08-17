@@ -41,16 +41,26 @@
 #' smoothing parameters as [kde1d::kde1d()] (except for `x`). `copula_controls`
 #' is a list with the same parameters as [vinecop()] (except for `data`).
 #'
-#' A character `margins_controls$family_set` is used for every variable. A list
-#' supplies one candidate set per variable, for example
-#' `list(c("norm", "cauchy"), c("pois", "geom"))`. The aliases `"par"` and
-#' `"parametric"` expand to all `univariateML` families, `"nonpar"` and
-#' `"nonparametric"` select `"kde1d"`, and `"all"` combines both. Candidates
-#' incompatible with a variable's type are removed before fitting. rvinecopulib
-#' fits every remaining candidate and selects the best according to `selcrit`.
-#' Competing custom candidates therefore need a finite [logLik()] value.
-#' Observation weights are currently supported only when every candidate is
-#' `"kde1d"`.
+#' A character `margins_controls$family_set` is used for every variable. Its
+#' entries can be `"kde1d"` or names from
+#' [univariateML::univariateML_models]. A list supplies one candidate set per
+#' variable, for example `list(c("norm", "cauchy"), c("pois", "geom"))`.
+#' Each entry may itself be a character vector, a [margin_family()] object, or a
+#' list combining both. An unnamed list is matched by position; a named list
+#' must contain every expanded variable name exactly once and is reordered to
+#' match the data.
+#'
+#' The aliases `"par"` and `"parametric"` expand to all `univariateML`
+#' families, `"nonpar"` and `"nonparametric"` select `"kde1d"`, and `"all"`
+#' combines both. Parametric names and aliases require the suggested
+#' `univariateML` package; the default `"kde1d"` and custom [margin_family()]
+#' objects do not. Duplicate candidate names are fitted only once.
+#'
+#' Candidates incompatible with a variable's type are removed before fitting.
+#' rvinecopulib fits every remaining candidate and selects the first minimum of
+#' `-logLik`, AIC, or BIC according to `selcrit`. Competing custom candidates
+#' therefore need a finite [logLik()] value. Observation weights are currently
+#' supported only when every candidate is `"kde1d"`.
 #'
 #' @return Objects inheriting from `vine_dist` for [vine_dist()], and
 #' `vine` and `vine_dist` for [vine()].
