@@ -6,15 +6,20 @@
 #' @param data a matrix or data.frame. Discrete variables have to be declared as
 #' `ordered()`.
 #' @param margins_controls a list with arguments to be passed to
-#' [kde1d::kde1d()]. Currently, there can be
+#' marginal fitting. Currently, there can be
+#'   * `family_set` candidate families used for every variable, or a list with
+#'   one entry per variable. The default `"kde1d"` preserves nonparametric
+#'   margin fitting. Other character names refer to `univariateML` families;
+#'   custom candidates can be defined with [margin_family()].
+#'   * `selcrit` selection criterion, one of `"loglik"`, `"aic"`, or `"bic"`.
 #'   * `mult` numeric vector of length one or d; all bandwidths for marginal
 #'   kernel density estimation are multiplied with `mult`. Defaults to
 #'   `log(1 + d)` where `d` is the number of variables after applying
 #'   `rvinecopulib:::expand_factors()`.
 #'   * `xmin` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `xmax` numeric vector of length d; see [kde1d::kde1d()].
-#'   * `type` character vector of length one or d; variable type, with the same
-#'   allowed values as [kde1d::kde1d()]. Defaults to `"c"` (continuous).
+#'   * `type` legacy variable-type control, a character vector of length one or
+#'   d. Prefer the top-level `var_types` argument for new code.
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `deg` numeric vector of length one or d; [kde1d::kde1d()].
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
@@ -32,9 +37,20 @@
 #' of `bicop_dist` objects and a quadratic structure matrix.
 #'
 #' `vine()` provides automated fitting for vine copula models.
-#' `margins_controls` is a list with the same parameters as
-#' [kde1d::kde1d()] (except for `x`). `copula_controls` is a list
-#' with the same parameters as [vinecop()] (except for `data`).
+#' `margins_controls` controls marginal family selection and contains the same
+#' smoothing parameters as [kde1d::kde1d()] (except for `x`). `copula_controls`
+#' is a list with the same parameters as [vinecop()] (except for `data`).
+#'
+#' A character `margins_controls$family_set` is used for every variable. A list
+#' supplies one candidate set per variable, for example
+#' `list(c("norm", "cauchy"), c("pois", "geom"))`. The aliases `"par"` and
+#' `"parametric"` expand to all `univariateML` families, `"nonpar"` and
+#' `"nonparametric"` select `"kde1d"`, and `"all"` combines both. Candidates
+#' incompatible with a variable's type are removed before fitting. rvinecopulib
+#' fits every remaining candidate and selects the best according to `selcrit`.
+#' Competing custom candidates therefore need a finite [logLik()] value.
+#' Observation weights are currently supported only when every candidate is
+#' `"kde1d"`.
 #'
 #' @return Objects inheriting from `vine_dist` for [vine_dist()], and
 #' `vine` and `vine_dist` for [vine()].
@@ -47,8 +63,8 @@
 #' For objects from the `vine` class, `copula` is also an object of the class
 #' `vine`, see [vinecop()]. Additionally, objects from the `vine` class contain:
 #'
-#' * `margins_controls`, a `list` with the set of fit controls that was passed
-#' to [kde1d::kde1d()] when estimating the margins.
+#' * `margins_controls`, a `list` with the controls used to fit and select the
+#' marginal families.
 #' * `copula_controls`, a `list` with the set of fit controls that was passed
 #' to [vinecop()] when estimating the copula.
 #' * `data` (optionally, if `keep_data = TRUE` was used), the dataset that was
@@ -60,8 +76,8 @@
 #'
 #' * For objects created with [vine_dist()], it simply corresponds to the `margins`
 #' argument.
-#' * For objects created with [vine()], it is a list of objects of class `kde1d`,
-#' see [kde1d::kde1d()].
+#' * For objects created with [vine()], it is a list of fitted objects
+#' implementing the [margin protocol][margin_protocol].
 #'
 #' @examples
 #' # specify pair-copulas
@@ -87,6 +103,14 @@
 #' fit <- vine(x, copula_controls = list(family_set = "par"))
 #' summary(fit)
 #'
+#' # parametric margin selection (requires the suggested univariateML package)
+#' if (requireNamespace("univariateML", quietly = TRUE)) {
+#'   fit_par_margins <- vine(
+#'     x,
+#'     margins_controls = list(family_set = c("norm", "cauchy"))
+#'   )
+#' }
+#'
 #' ## model for discrete data
 #' x <- as.data.frame(x)
 #' x[, 1] <- ordered(round(x[, 1]), levels = seq.int(-5, 5))
@@ -98,6 +122,8 @@
 vine <- function(
   data,
   margins_controls = list(
+    family_set = "kde1d",
+    selcrit = "aic",
     mult = NULL,
     xmin = NaN,
     xmax = NaN,
@@ -136,7 +162,16 @@ vine <- function(
   d <- ncol(data)
 
   assert_that(is.list(margins_controls))
-  allowed_margins_controls <- c("xmin", "xmax", "type", "mult", "bw", "deg")
+  allowed_margins_controls <- c(
+    "family_set",
+    "selcrit",
+    "xmin",
+    "xmax",
+    "type",
+    "mult",
+    "bw",
+    "deg"
+  )
   assert_that(in_set(names(margins_controls), allowed_margins_controls))
   var_types <- resolve_margin_types(
     data,
@@ -152,7 +187,33 @@ vine <- function(
   copula_controls$cores <- cores
 
   ## expand the required arguments and compute default mult if needed
-  margins_controls <- expand_margin_controls(margins_controls, d, data)
+  family_set <- margins_controls$family_set
+  if (is.null(family_set)) {
+    family_set <- "kde1d"
+  }
+  family_set <- expand_margin_family_set(family_set, d, colnames(data))
+  selcrit <- margins_controls$selcrit
+  if (is.null(selcrit)) {
+    selcrit <- "aic"
+  }
+  if (!is.character(selcrit) || length(selcrit) != 1L || is.na(selcrit)) {
+    stop("'margins_controls$selcrit' must be a single string.", call. = FALSE)
+  }
+  selcrit <- tolower(selcrit)
+  if (!selcrit %in% c("loglik", "aic", "bic")) {
+    stop(
+      "'margins_controls$selcrit' must be 'loglik', 'aic', or 'bic'.",
+      call. = FALSE
+    )
+  }
+  kde_controls <- margins_controls[
+    intersect(
+      names(margins_controls),
+      c("xmin", "xmax", "type", "mult", "bw", "deg")
+    )
+  ]
+  kde_controls <- expand_margin_controls(kde_controls, d, data)
+  margins_controls <- kde_controls
   margins_controls$type <- var_types
   for (k in which(sapply(data, is.ordered))) {
     margins_controls$type[k] <- "d"
@@ -162,17 +223,42 @@ vine <- function(
 
   ## estimation of the marginals
   vine <- list()
-  vine$margins <- fit_margins_cpp(
-    prep_for_margins(data),
-    xmin = margins_controls$xmin,
-    xmax = margins_controls$xmax,
-    type = margins_controls$type,
-    mult = margins_controls$mult,
-    bw = margins_controls$bw,
-    deg = margins_controls$deg,
-    weights = weights,
-    cores
-  )
+  margin_data <- prep_for_margins(data)
+  only_kde1d <- all(vapply(
+    family_set,
+    function(candidates) {
+      length(candidates) == 1L && identical(candidates[[1L]], "kde1d")
+    },
+    logical(1)
+  ))
+  if (only_kde1d) {
+    vine$margins <- fit_margins_cpp(
+      margin_data,
+      xmin = margins_controls$xmin,
+      xmax = margins_controls$xmax,
+      type = margins_controls$type,
+      mult = margins_controls$mult,
+      bw = margins_controls$bw,
+      deg = margins_controls$deg,
+      weights = weights,
+      cores
+    )
+  } else {
+    vine$margins <- lapply(seq_len(d), function(j) {
+      controls <- lapply(margins_controls, `[[`, j)
+      select_margin(
+        margin_data[, j],
+        family_set[[j]],
+        var_types[j],
+        controls,
+        weights,
+        selcrit,
+        j
+      )
+    })
+  }
+  margins_controls$family_set <- family_set
+  margins_controls$selcrit <- selcrit
   vine$margins_controls <- margins_controls
   vine$margins <- finalize_margins(data, vine$margins)
 
@@ -373,8 +459,12 @@ expand_margin_controls <- function(controls, d, data) {
 
 finalize_margins <- function(data, margins) {
   for (k in seq_along(margins)) {
-    margins[[k]]$x <- data[[k]]
-    margins[[k]]$nobs <- nrow(data)
+    if (inherits(margins[[k]], "kde1d")) {
+      margins[[k]]$x <- data[[k]]
+      margins[[k]]$nobs <- nrow(data)
+    } else if (is.ordered(data[[k]])) {
+      attr(margins[[k]], "levels") <- levels(data[[k]])
+    }
   }
   margins
 }

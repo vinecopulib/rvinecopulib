@@ -201,6 +201,23 @@ rvine <- function(
 
   # use quantile transformation for marginals
   X <- dpq_marg(U, vine, "q")
+  if (!is.null(vine$var_levels)) {
+    for (k in which(lengths(vine$var_levels) > 0L)) {
+      values <- if (is.data.frame(X)) X[[k]] else X[, k]
+      if (!is.ordered(values)) {
+        restored <- ordered(
+          vine$var_levels[[k]][as.integer(values) + 1L],
+          levels = vine$var_levels[[k]]
+        )
+        if (is.data.frame(X)) {
+          X[[k]] <- restored
+        } else {
+          X <- as.data.frame(X)
+          X[[k]] <- restored
+        }
+      }
+    }
+  }
   if (!is.null(x_cond)) {
     for (i in seq_along(conditioned_variables)) {
       if (is.data.frame(X)) {
@@ -319,6 +336,17 @@ summary.vine <- function(object, ...) {
 }
 
 get_vine_margin_summary <- function(object) {
+  if (!all(vapply(object$margins, inherits, logical(1), "kde1d"))) {
+    info <- data.frame(
+      margin = seq_along(object$margins),
+      name = object$names,
+      family = vapply(object$margins, margin_family_name, character(1)),
+      npars = vapply(object$margins, margin_npars, numeric(1)),
+      loglik = vapply(object$margins, margin_loglik, numeric(1))
+    )
+    class(info) <- c("summary_df", "data.frame")
+    return(info)
+  }
   capture.output(info <- sapply(object$margins, summary))
   info <- as.data.frame(t(info))
   info <- cbind(
@@ -340,6 +368,9 @@ dpq_marg <- function(x, vine, what = "p") {
 }
 
 eval_one_dpq <- function(x, margin, what = "p") {
+  if (is.ordered(x) && !inherits(margin, "kde1d") && what != "q") {
+    x <- as.numeric(x) - 1L
+  }
   dpq <- switch(
     what,
     p = pmargin(x, margin),

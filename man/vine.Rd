@@ -7,8 +7,8 @@
 \usage{
 vine(
   data,
-  margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN, type = "c", bw = NA,
-    deg = 2),
+  margins_controls = list(family_set = "kde1d", selcrit = "aic", mult = NULL, xmin = NaN,
+    xmax = NaN, type = "c", bw = NA, deg = 2),
   copula_controls = list(family_set = "all", structure = NA, par_method = "mle",
     nonpar_method = "constant", mult = 1, selcrit = "aic", psi0 = 0.9, presel = TRUE,
     allow_rotations = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data
@@ -27,16 +27,21 @@ vine_dist(margins, pair_copulas, structure)
 \code{ordered()}.}
 
 \item{margins_controls}{a list with arguments to be passed to
-\code{\link[kde1d:kde1d]{kde1d::kde1d()}}. Currently, there can be
+marginal fitting. Currently, there can be
 \itemize{
+\item \code{family_set} candidate families used for every variable, or a list with
+one entry per variable. The default \code{"kde1d"} preserves nonparametric
+margin fitting. Other character names refer to \code{univariateML} families;
+custom candidates can be defined with \code{\link[=margin_family]{margin_family()}}.
+\item \code{selcrit} selection criterion, one of \code{"loglik"}, \code{"aic"}, or \code{"bic"}.
 \item \code{mult} numeric vector of length one or d; all bandwidths for marginal
 kernel density estimation are multiplied with \code{mult}. Defaults to
 \code{log(1 + d)} where \code{d} is the number of variables after applying
 \code{rvinecopulib:::expand_factors()}.
 \item \code{xmin} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 \item \code{xmax} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
-\item \code{type} character vector of length one or d; variable type, with the same
-allowed values as \code{\link[kde1d:kde1d]{kde1d::kde1d()}}. Defaults to \code{"c"} (continuous).
+\item \code{type} legacy variable-type control, a character vector of length one or
+d. Prefer the top-level \code{var_types} argument for new code.
 \item \code{bw} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 \item \code{deg} numeric vector of length one or d; \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 }}
@@ -88,8 +93,8 @@ Objects from the \code{vine_dist} class are lists containing:
 For objects from the \code{vine} class, \code{copula} is also an object of the class
 \code{vine}, see \code{\link[=vinecop]{vinecop()}}. Additionally, objects from the \code{vine} class contain:
 \itemize{
-\item \code{margins_controls}, a \code{list} with the set of fit controls that was passed
-to \code{\link[kde1d:kde1d]{kde1d::kde1d()}} when estimating the margins.
+\item \code{margins_controls}, a \code{list} with the controls used to fit and select the
+marginal families.
 \item \code{copula_controls}, a \code{list} with the set of fit controls that was passed
 to \code{\link[=vinecop]{vinecop()}} when estimating the copula.
 \item \code{data} (optionally, if \code{keep_data = TRUE} was used), the dataset that was
@@ -102,8 +107,8 @@ Concerning \code{margins}:
 \itemize{
 \item For objects created with \code{\link[=vine_dist]{vine_dist()}}, it simply corresponds to the \code{margins}
 argument.
-\item For objects created with \code{\link[=vine]{vine()}}, it is a list of objects of class \code{kde1d},
-see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
+\item For objects created with \code{\link[=vine]{vine()}}, it is a list of fitted objects
+implementing the \link[=margin_protocol]{margin protocol}.
 }
 }
 \description{
@@ -114,9 +119,20 @@ Automated fitting or creation of custom vine copula models
 of \code{bicop_dist} objects and a quadratic structure matrix.
 
 \code{vine()} provides automated fitting for vine copula models.
-\code{margins_controls} is a list with the same parameters as
-\code{\link[kde1d:kde1d]{kde1d::kde1d()}} (except for \code{x}). \code{copula_controls} is a list
-with the same parameters as \code{\link[=vinecop]{vinecop()}} (except for \code{data}).
+\code{margins_controls} controls marginal family selection and contains the same
+smoothing parameters as \code{\link[kde1d:kde1d]{kde1d::kde1d()}} (except for \code{x}). \code{copula_controls}
+is a list with the same parameters as \code{\link[=vinecop]{vinecop()}} (except for \code{data}).
+
+A character \code{margins_controls$family_set} is used for every variable. A list
+supplies one candidate set per variable, for example
+\code{list(c("norm", "cauchy"), c("pois", "geom"))}. The aliases \code{"par"} and
+\code{"parametric"} expand to all \code{univariateML} families, \code{"nonpar"} and
+\code{"nonparametric"} select \code{"kde1d"}, and \code{"all"} combines both. Candidates
+incompatible with a variable's type are removed before fitting. rvinecopulib
+fits every remaining candidate and selects the best according to \code{selcrit}.
+Competing custom candidates therefore need a finite \code{\link[=logLik]{logLik()}} value.
+Observation weights are currently supported only when every candidate is
+\code{"kde1d"}.
 }
 \examples{
 # specify pair-copulas
@@ -141,6 +157,14 @@ x <- rvine(50, vc)
 # estimate a vine copula model
 fit <- vine(x, copula_controls = list(family_set = "par"))
 summary(fit)
+
+# parametric margin selection (requires the suggested univariateML package)
+if (requireNamespace("univariateML", quietly = TRUE)) {
+  fit_par_margins <- vine(
+    x,
+    margins_controls = list(family_set = c("norm", "cauchy"))
+  )
+}
 
 ## model for discrete data
 x <- as.data.frame(x)

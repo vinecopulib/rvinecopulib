@@ -225,3 +225,164 @@ test_that("conflicting variable type declarations are rejected", {
     "length one or 3"
   )
 })
+
+test_that("rvinecopulib selects among custom margin families", {
+  make_location_family <- function(offset, family) {
+    margin_family(
+      fit = function(x) {
+        location <- mean(x) + offset
+        margin_dist(
+          d = function(y) dnorm(y, location, 1),
+          p = function(y) pnorm(y, location, 1),
+          q = function(p) qnorm(p, location, 1),
+          family = family,
+          npars = 1,
+          loglik = sum(dnorm(x, location, 1, log = TRUE))
+        )
+      },
+      family = family
+    )
+  }
+  good <- make_location_family(0, "good")
+  bad <- make_location_family(10, "bad")
+  x <- cbind(rnorm(40), rnorm(40, 2))
+
+  fit <- vine(
+    x,
+    margins_controls = list(
+      family_set = list(list(good, bad), list(good, bad)),
+      selcrit = "bic"
+    ),
+    copula_controls = list(family_set = "indep")
+  )
+
+  expect_equal(
+    vapply(fit$margins, margin_family_name, character(1)),
+    c("good", "good")
+  )
+  expect_true(is.finite(as.numeric(logLik(fit))))
+  expect_equal(length(fit$margins_controls$family_set), 2)
+})
+
+test_that("custom families can fit zero-inflated margins", {
+  zi_exponential <- margin_family(
+    fit = function(x) {
+      atom <- mean(x == 0)
+      rate <- 1 / mean(x[x > 0])
+      margin_dist(
+        d = function(y) {
+          ifelse(y == 0, atom, (1 - atom) * dexp(y, rate))
+        },
+        p = function(y) {
+          ifelse(y < 0, 0, atom + (1 - atom) * pexp(y, rate))
+        },
+        q = function(p) {
+          ifelse(p <= atom, 0, qexp((p - atom) / (1 - atom), rate))
+        },
+        family = "zi_exponential",
+        type = "zi",
+        npars = 2,
+        loglik = sum(ifelse(
+          x == 0,
+          log(atom),
+          log(1 - atom) + dexp(x, rate, log = TRUE)
+        ))
+      )
+    },
+    family = "zi_exponential",
+    type = "zi"
+  )
+  x <- data.frame(
+    zero = zero_inflated(c(rep(0, 20), rexp(60))),
+    continuous = rnorm(80)
+  )
+  fit <- vine(
+    x,
+    margins_controls = list(
+      family_set = list(zi_exponential, "kde1d")
+    ),
+    copula_controls = list(family_set = "indep")
+  )
+
+  expect_equal(margin_type(fit$margins[[1]]), "zi")
+  expect_equal(pmargin_sub(rep(0, 3), fit$margins[[1]]), rep(0, 3))
+  expect_no_error(dvine(x, fit))
+})
+
+test_that("univariateML families implement the margin protocol", {
+  skip_if_not_installed("univariateML")
+  set.seed(12)
+  x <- cbind(continuous = rnorm(80), count = rpois(80, 3))
+  fit <- vine(
+    x,
+    margins_controls = list(
+      family_set = list(c("norm", "cauchy"), c("pois", "geom")),
+      selcrit = "aic"
+    ),
+    var_types = c("c", "d"),
+    copula_controls = list(family_set = "indep")
+  )
+
+  expect_true(all(vapply(fit$margins, inherits, logical(1), "univariateML")))
+  expect_equal(
+    dmargin(x[, 1], fit$margins[[1]]),
+    univariateML::dml(x[, 1], fit$margins[[1]])
+  )
+  expect_equal(
+    pmargin(x[, 2], fit$margins[[2]]),
+    univariateML::pml(x[, 2], fit$margins[[2]])
+  )
+  expect_equal(
+    pmargin_sub(x[, 2], fit$margins[[2]]),
+    univariateML::pml(x[, 2] - 1, fit$margins[[2]])
+  )
+  expect_no_error(rvine(5, fit))
+
+  set.seed(1)
+  ordered_data <- data.frame(
+    category = ordered(
+      rbinom(200, 4, 0.4),
+      levels = 0:4,
+      labels = c("very low", "low", "middle", "high", "very high")
+    ),
+    continuous = rnorm(200)
+  )
+  ordered_fit <- vine(
+    ordered_data,
+    margins_controls = list(family_set = list("binom", "norm")),
+    copula_controls = list(family_set = "indep")
+  )
+  expect_no_error(dvine(ordered_data, ordered_fit))
+  simulated <- rvine(5, ordered_fit)
+  expect_true(is.ordered(simulated$category))
+  expect_equal(levels(simulated$category), levels(ordered_data$category))
+})
+
+test_that("margin candidate controls are validated", {
+  skip_if_not_installed("univariateML")
+  x <- cbind(rnorm(30), rpois(30, 2))
+
+  expect_error(
+    vine(
+      x,
+      margins_controls = list(family_set = list("norm", "norm")),
+      var_types = c("c", "d")
+    ),
+    "no candidate margin"
+  )
+  expect_error(
+    vine(
+      x[, 1, drop = FALSE],
+      margins_controls = list(family_set = "norm", selcrit = "invalid")
+    ),
+    "must be 'loglik', 'aic', or 'bic'"
+  )
+  expect_error(
+    vine(
+      x[, 1, drop = FALSE],
+      margins_controls = list(family_set = "norm"),
+      weights = rep(1, nrow(x))
+    ),
+    "do not support 'weights'"
+  )
+})

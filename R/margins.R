@@ -86,6 +86,55 @@ margin_dist <- function(
   )
 }
 
+#' Define a candidate marginal family
+#'
+#' `margin_family()` defines how [vine()] fits one candidate family. The fitting
+#' function has a deliberately small interface: it receives the observed
+#' vector and returns an object implementing the
+#' [margin protocol][margin_protocol].
+#'
+#' @param fit a function of one argument, the observed data vector.
+#' @param family a descriptive family name.
+#' @param type variable types supported by the family: any of `"c"`, `"d"`,
+#'   and `"zi"`.
+#'
+#' @return An object of class `margin_family`, suitable for
+#'   `margins_controls$family_set` in [vine()].
+#' @export
+#'
+#' @examples
+#' normal_family <- margin_family(
+#'   fit = function(x) {
+#'     mu <- mean(x)
+#'     sigma <- sd(x)
+#'     margin_dist(
+#'       d = function(y) dnorm(y, mu, sigma),
+#'       p = function(y) pnorm(y, mu, sigma),
+#'       q = function(p) qnorm(p, mu, sigma),
+#'       family = "normal",
+#'       npars = 2,
+#'       loglik = sum(dnorm(x, mu, sigma, log = TRUE))
+#'     )
+#'   },
+#'   family = "normal"
+#' )
+margin_family <- function(fit, family = "custom", type = "c") {
+  if (!is.function(fit)) {
+    stop("'fit' must be a function.", call. = FALSE)
+  }
+  if (!is.character(family) || length(family) != 1L || is.na(family)) {
+    stop("'family' must be a single character string.", call. = FALSE)
+  }
+  type <- unique(normalize_margin_types(type))
+  if (!length(type)) {
+    stop("'type' must contain at least one variable type.", call. = FALSE)
+  }
+  structure(
+    list(fit = fit, family = family, type = type),
+    class = "margin_family"
+  )
+}
+
 #' Declare zero-inflated data
 #'
 #' Marks a numeric vector as having a continuous distribution with an atom at
@@ -167,6 +216,24 @@ pmargin.kde1d <- function(x, margin) {
 #' @export
 qmargin.kde1d <- function(p, margin) {
   qkde1d(p, margin)
+}
+
+#' @export
+dmargin.univariateML <- function(x, margin) {
+  check_univariateML()
+  univariateML::dml(x, margin)
+}
+
+#' @export
+pmargin.univariateML <- function(x, margin) {
+  check_univariateML()
+  univariateML::pml(x, margin)
+}
+
+#' @export
+qmargin.univariateML <- function(p, margin) {
+  check_univariateML()
+  univariateML::qml(p, margin)
 }
 
 #' @export
@@ -314,6 +381,9 @@ pmargin_sub <- function(x, margin) {
   if (type == "c") {
     return(pmargin(x, margin))
   }
+  if (is.ordered(x) && !inherits(margin, "kde1d")) {
+    x <- as.numeric(x) - 1L
+  }
   if (type == "d") {
     if (inherits(margin, "kde1d") && is.ordered(margin$x)) {
       xnum <- as.numeric(x)
@@ -351,4 +421,264 @@ margin_family_name <- function(margin) {
     family <- class(margin)[1L]
   }
   as.character(family)[1L]
+}
+
+check_univariateML <- function() {
+  if (!requireNamespace("univariateML", quietly = TRUE)) {
+    stop(
+      "package 'univariateML' is required for parametric margin families.",
+      call. = FALSE
+    )
+  }
+}
+
+expand_margin_family_set <- function(family_set, d, variable_names = NULL) {
+  if (!is.list(family_set) || inherits(family_set, "margin_family")) {
+    family_set <- rep(list(family_set), d)
+  } else {
+    if (length(family_set) != d) {
+      stop(
+        sprintf(
+          "a list 'family_set' must have one entry for each of %d variables.",
+          d
+        ),
+        call. = FALSE
+      )
+    }
+    if (
+      !is.null(names(family_set)) &&
+        !is.null(variable_names) &&
+        all(variable_names %in% names(family_set))
+    ) {
+      family_set <- family_set[variable_names]
+    }
+  }
+  lapply(family_set, normalize_margin_candidates)
+}
+
+normalize_margin_candidates <- function(candidates) {
+  if (inherits(candidates, "margin_family")) {
+    candidates <- list(candidates)
+  } else if (is.character(candidates)) {
+    if (!length(candidates) || anyNA(candidates)) {
+      stop("margin family sets must be non-empty and cannot contain NA.")
+    }
+    candidates <- as.list(candidates)
+  } else if (is.list(candidates)) {
+    candidates <- unlist(
+      lapply(candidates, function(candidate) {
+        if (is.character(candidate)) as.list(candidate) else list(candidate)
+      }),
+      recursive = FALSE
+    )
+  } else {
+    stop(
+      "margin family candidates must be names or margin_family() objects.",
+      call. = FALSE
+    )
+  }
+
+  if (!length(candidates)) {
+    stop("margin family sets must be non-empty.", call. = FALSE)
+  }
+  valid <- vapply(
+    candidates,
+    function(candidate) {
+      inherits(candidate, "margin_family") ||
+        (is.character(candidate) &&
+          length(candidate) == 1L &&
+          !is.na(candidate))
+    },
+    logical(1)
+  )
+  if (!all(valid)) {
+    stop(
+      "margin family candidates must be names or margin_family() objects.",
+      call. = FALSE
+    )
+  }
+  expand_margin_family_aliases(candidates)
+}
+
+expand_margin_family_aliases <- function(candidates) {
+  aliases <- vapply(
+    candidates,
+    function(candidate) {
+      if (is.character(candidate)) candidate else ""
+    },
+    character(1)
+  )
+  aliases[aliases %in% c("nonpar", "nonparametric")] <- "kde1d"
+  candidates[aliases == "kde1d"] <- "kde1d"
+
+  expand <- aliases %in% c("all", "par", "parametric")
+  if (any(expand)) {
+    check_univariateML()
+    replacements <- lapply(aliases[expand], function(alias) {
+      families <- as.list(univariateML::univariateML_models)
+      if (alias == "all") c(list("kde1d"), families) else families
+    })
+    candidates[which(expand)] <- replacements
+    candidates <- unlist(candidates, recursive = FALSE)
+  }
+  candidates[
+    !duplicated(vapply(candidates, margin_candidate_name, character(1)))
+  ]
+}
+
+margin_candidate_name <- function(candidate) {
+  if (inherits(candidate, "margin_family")) candidate$family else candidate
+}
+
+is_kde1d_candidate <- function(candidate) {
+  is.character(candidate) && identical(candidate, "kde1d")
+}
+
+margin_candidate_supports <- function(candidate, type) {
+  if (inherits(candidate, "margin_family")) {
+    return(type %in% candidate$type)
+  }
+  if (candidate == "kde1d") {
+    return(TRUE)
+  }
+  if (type == "zi") {
+    return(FALSE)
+  }
+  check_univariateML()
+  metadata <- univariateML::univariateML_metadata[[paste0("ml", candidate)]]
+  if (is.null(metadata)) {
+    stop(sprintf("unknown marginal family: \"%s\".", candidate), call. = FALSE)
+  }
+  support_type <- attr(metadata$support, "type")
+  identical(support_type, if (type == "d") "Z" else "R")
+}
+
+fit_margin_candidate <- function(x, candidate, type, controls, weights) {
+  if (inherits(candidate, "margin_family")) {
+    fit <- candidate$fit(x)
+  } else if (candidate == "kde1d") {
+    fit <- kde1d::kde1d(
+      x,
+      xmin = controls$xmin,
+      xmax = controls$xmax,
+      type = type,
+      mult = controls$mult,
+      bw = controls$bw,
+      deg = controls$deg,
+      weights = weights
+    )
+  } else {
+    check_univariateML()
+    fitter <- getExportedValue("univariateML", paste0("ml", candidate))
+    fit <- fitter(x)
+    attr(fit, "family") <- candidate
+  }
+
+  check <- check_distr(fit)
+  if (!isTRUE(check)) {
+    stop(check, call. = FALSE)
+  }
+  fitted_type <- margin_type(fit)
+  if (fitted_type != type) {
+    stop(
+      sprintf(
+        "fitted family \"%s\" declared type \"%s\", expected \"%s\".",
+        margin_candidate_name(candidate),
+        fitted_type,
+        type
+      ),
+      call. = FALSE
+    )
+  }
+  fit
+}
+
+select_margin <- function(
+  x,
+  candidates,
+  type,
+  controls,
+  weights,
+  selcrit,
+  variable
+) {
+  compatible <- vapply(
+    candidates,
+    margin_candidate_supports,
+    logical(1),
+    type = type
+  )
+  candidates <- candidates[compatible]
+  if (!length(candidates)) {
+    stop(
+      sprintf(
+        "variable %d has no candidate margin supporting type \"%s\".",
+        variable,
+        type
+      ),
+      call. = FALSE
+    )
+  }
+  if (
+    length(weights) &&
+      any(!vapply(candidates, is_kde1d_candidate, logical(1)))
+  ) {
+    stop(
+      "parametric and custom margin families do not support 'weights'.",
+      call. = FALSE
+    )
+  }
+
+  errors <- character()
+  fits <- lapply(candidates, function(candidate) {
+    tryCatch(
+      suppressWarnings(
+        fit_margin_candidate(x, candidate, type, controls, weights)
+      ),
+      error = function(error) {
+        errors[[margin_candidate_name(candidate)]] <<- conditionMessage(error)
+        NULL
+      }
+    )
+  })
+  ok <- !vapply(fits, is.null, logical(1))
+  fits <- fits[ok]
+  candidates <- candidates[ok]
+  if (!length(fits)) {
+    details <- paste(names(errors), errors, sep = ": ", collapse = "; ")
+    stop(
+      sprintf(
+        "could not fit a margin for variable %d (%s).",
+        variable,
+        details
+      ),
+      call. = FALSE
+    )
+  }
+  if (length(fits) == 1L) {
+    return(fits[[1L]])
+  }
+
+  loglik <- vapply(fits, margin_loglik, numeric(1))
+  npars <- vapply(fits, margin_npars, numeric(1))
+  valid <- is.finite(loglik) & is.finite(npars)
+  if (!any(valid)) {
+    stop(
+      sprintf(
+        "no candidate margin for variable %d has a finite log-likelihood.",
+        variable
+      ),
+      call. = FALSE
+    )
+  }
+  fits <- fits[valid]
+  loglik <- loglik[valid]
+  npars <- npars[valid]
+  criterion <- switch(
+    selcrit,
+    loglik = -loglik,
+    aic = -2 * loglik + 2 * npars,
+    bic = -2 * loglik + log(length(x)) * npars
+  )
+  fits[[which.min(criterion)]]
 }

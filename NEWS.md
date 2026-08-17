@@ -38,6 +38,11 @@ for the complete backend changes.
   continuous, integer-valued discrete, and zero-inflated left-limit CDFs are
   handled centrally by the margin protocol.
 
+* Allow `vine()` to select marginal families through
+  `margins_controls$family_set`. Parametric families from `univariateML` and
+  user-defined `margin_family()` candidates are supported alongside the
+  existing `kde1d` margins.
+
 * Add conditional simulation to `rvinecop()` and `rvine()`. Conditioning values
   can be common or observation-specific, and `conditioning_set` accepts indices
   or names. `vinecop()` and `vine()` also accept `conditioning_set` for
