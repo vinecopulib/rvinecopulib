@@ -48,7 +48,10 @@ top-level \code{var_types} argument for new code.
 
 \item{copula_controls}{a list with arguments to be passed to \code{\link[=vinecop]{vinecop()}}.}
 
-\item{weights}{optional vector of weights for each observation.}
+\item{weights}{optional numeric vector of weights for each observation,
+used for both marginal and copula estimation. The \code{"kde1d"} margin and
+custom \code{\link[=margin_family]{margin_family()}} fitters that accept a named \code{weights} argument can
+use them; unsupported margin candidates fail normally during selection.}
 
 \item{keep_data}{whether the original data should be stored; if you want to
 store the pseudo-observations used for fitting the copula, use the
@@ -141,8 +144,10 @@ objects do not. Duplicate candidate names are fitted only once.
 Candidates incompatible with a variable's type are removed before fitting.
 rvinecopulib fits every remaining candidate and selects the first minimum of
 \code{-logLik}, AIC, or BIC according to \code{selcrit}. Competing custom candidates
-therefore need a finite \code{\link[=logLik]{logLik()}} value. Observation weights are currently
-supported only when every candidate is \code{"kde1d"}.
+therefore need a finite \code{\link[=logLik]{logLik()}} value. Observation weights are passed to
+\code{"kde1d"} and custom \code{\link[=margin_family]{margin_family()}} fitters. An unsupported candidate may
+fail while another candidate succeeds. The built-in univariateML adapter
+does not support weights.
 }
 \examples{
 # specify pair-copulas

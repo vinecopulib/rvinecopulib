@@ -7,7 +7,9 @@
 margin_family(fit, family = "custom", type = "c")
 }
 \arguments{
-\item{fit}{a function of one argument, the observed data vector.}
+\item{fit}{a function whose first argument is the observed data vector. When
+observation weights are supplied, it is also called with a named \code{weights}
+argument containing the corresponding numeric vector.}
 
 \item{family}{a descriptive family name.}
 
@@ -21,17 +23,21 @@ An object of class \code{margin_family}, suitable for
 \description{
 \code{margin_family()} defines how \code{\link[=vine]{vine()}} fits one candidate family. The fitting
 function has a deliberately small interface: it receives the observed
-vector and returns an object implementing the
+vector and, when supplied to \code{\link[=vine]{vine()}}, a named \code{weights} argument. It returns
+an object implementing the
 \link[=margin_protocol]{margin protocol}. Additional settings can be captured in
-the fitting function's environment.
+the fitting function's environment. For backward compatibility, \code{fit} is
+called with only the observed vector when no observation weights are used.
 }
 \details{
 The fitted object must declare the same type as the data being fitted. If
 several candidates are supplied, it must also have a finite log-likelihood
 and parameter count. Candidate fitting errors are ignored while another
 candidate succeeds; if all candidates fail, \code{\link[=vine]{vine()}} reports their error
-messages together. Observation weights are currently supported only by the
-\code{"kde1d"} candidate.
+messages together. The \code{"kde1d"} candidate supports observation weights.
+Custom fitters may support them by accepting \code{weights}; otherwise that
+candidate fails normally and another candidate may still be selected. The
+built-in univariateML adapter does not support weights.
 
 A \code{margin_family} object can be used for every variable directly. In a
 per-variable \code{family_set}, wrap multiple candidates in a nested list; see

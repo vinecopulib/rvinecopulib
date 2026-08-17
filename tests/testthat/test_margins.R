@@ -449,17 +449,112 @@ test_that("selection handles candidate failures and invalid fitted objects", {
     ),
     "no candidate margin"
   )
+})
+
+test_that("observation weights are passed to supporting margin candidates", {
+  x <- c(-2, -1, 0, 3)
+  weights <- c(1, 2, 3, 8)
+  weighted <- margin_family(
+    function(x, weights) {
+      mu <- weighted.mean(x, weights)
+      sigma <- sqrt(weighted.mean((x - mu)^2, weights))
+      fit <- margin_dist(
+        function(y) dnorm(y, mu, sigma),
+        function(y) pnorm(y, mu, sigma),
+        function(p) qnorm(p, mu, sigma),
+        family = "weighted-normal",
+        npars = 2,
+        loglik = sum(weights * dnorm(x, mu, sigma, log = TRUE))
+      )
+      attr(fit, "fit_weights") <- weights
+      fit
+    },
+    family = "weighted-normal"
+  )
+
+  selected <- select_margin(
+    x,
+    list(weighted),
+    "c",
+    margin_test_controls,
+    weights,
+    "aic",
+    1
+  )
+  expect_equal(attr(selected, "fit_weights"), weights)
+  expect_equal(qmargin(0.5, selected), weighted.mean(x, weights))
+
+  data <- data.frame(first = x, second = x + 1)
+  fit <- vine(
+    data,
+    margins_controls = list(family_set = weighted),
+    copula_controls = list(family_set = "indep"),
+    weights = weights
+  )
+  expect_equal(attr(fit$margins[[1]], "fit_weights"), weights)
+  expect_equal(attr(fit$margins[[2]], "fit_weights"), weights)
+})
+
+test_that("unsupported weighted candidates fail without blocking fallbacks", {
+  unsupported <- margin_family(
+    function(x) margin_dist(dnorm, pnorm, qnorm, family = "unsupported"),
+    family = "unsupported"
+  )
+  x <- rnorm(30)
+  weights <- seq_along(x)
+
+  expect_s3_class(
+    select_margin(
+      x,
+      list(unsupported, "kde1d"),
+      "c",
+      margin_test_controls,
+      weights,
+      "aic",
+      1
+    ),
+    "kde1d"
+  )
+  expect_error(
+    select_margin(
+      x,
+      list(unsupported),
+      "c",
+      margin_test_controls,
+      weights,
+      "aic",
+      1
+    ),
+    "unused argument.*weights"
+  )
+
+  expect_s3_class(
+    select_margin(
+      x,
+      list(unsupported),
+      "c",
+      margin_test_controls,
+      numeric(),
+      "aic",
+      1
+    ),
+    "margin_dist"
+  )
+})
+
+test_that("the univariateML adapter rejects weights explicitly", {
+  skip_if_not_installed("univariateML")
   expect_error(
     select_margin(
       rnorm(20),
-      list(good),
+      list("norm"),
       "c",
       margin_test_controls,
       rep(1, 20),
       "aic",
       1
     ),
-    "do not support 'weights'"
+    "univariateML.*do not support observation weights"
   )
 })
 

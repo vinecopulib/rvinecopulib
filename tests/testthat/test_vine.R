@@ -380,6 +380,6 @@ test_that("margin candidate controls are validated", {
       margins_controls = list(family_set = "norm"),
       weights = rep(1, nrow(x))
     ),
-    "do not support 'weights'"
+    "univariateML.*do not support observation weights"
   )
 })
