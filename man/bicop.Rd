@@ -35,7 +35,7 @@ additional options.}
 
 \item{par_method}{the estimation method for parametric models, either \code{"mle"}
 for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
-available for one-parameter families and \code{"t"}.}
+available for one-parameter families and \code{"t"}).}
 
 \item{nonpar_method}{the estimation method for nonparametric models, either
 \code{"constant"} for the standard transformation estimator, or
@@ -114,7 +114,7 @@ following convenience definitions:
 \itemize{
 \item \code{"twopar"} contains the parametric families with two parameters,
 (\code{"t"}, \code{"bb1"}, \code{"bb6"}, \code{"bb7"}, and \code{"bb8"}),
-\item \code{"threepar"} contains the paramtric families with three parameters,
+\item \code{"threepar"} contains the parametric families with three parameters,
 (\code{"tawn"}),
 \item \code{"elliptical"} contains the elliptical families,
 \item \code{"archimedean"} contains the archimedean families,
