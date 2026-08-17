@@ -85,6 +85,9 @@ test_that("conditioning-aware selection is passed to the copula fit", {
 })
 
 test_that("margins_controls works", {
+  default_controls <- eval(formals(vine)$margins_controls)
+  expect_identical(default_controls$type, "c")
+
   fit_mult <- vine(u, margins_controls = list(mult = 2))
   expect_eql(
     sapply(fit_mult$margins, "[[", "mult"),

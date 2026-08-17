@@ -7,7 +7,8 @@
 \usage{
 vine(
   data,
-  margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN, bw = NA, deg = 2),
+  margins_controls = list(mult = NULL, xmin = NaN, xmax = NaN, type = "c", bw = NA,
+    deg = 2),
   copula_controls = list(family_set = "all", structure = NA, par_method = "mle",
     nonpar_method = "constant", mult = 1, selcrit = "aic", psi0 = 0.9, presel = TRUE,
     allow_rotations = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data
@@ -33,7 +34,8 @@ kernel density estimation are multiplied with \code{mult}. Defaults to
 \code{rvinecopulib:::expand_factors()}.
 \item \code{xmin} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 \item \code{xmax} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
-\item \code{type} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
+\item \code{type} character vector of length one or d; variable type, with the same
+allowed values as \code{\link[kde1d:kde1d]{kde1d::kde1d()}}. Defaults to \code{"c"} (continuous).
 \item \code{bw} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 \item \code{deg} numeric vector of length one or d; \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 }}
