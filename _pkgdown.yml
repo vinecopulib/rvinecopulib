@@ -10,6 +10,13 @@ navbar:
     articles:
       text: Articles
       menu:
+      - text: Getting started
+        href: articles/getting-started.html
+      - text: Bivariate copula models
+        href: articles/bivariate-copulas.html
+      - text: Vine copula models and structures
+        href: articles/vine-copula-models.html
+      - text: Margins and data types
       - text: Marginal models
         href: articles/marginal-models.html
 

@@ -1,0 +1,232 @@
+---
+title: "Vine copula models and structures"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vine copula models and structures}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(rvinecopulib)
+set.seed(301)
+```
+
+A vine copula decomposes a multivariate dependence model into a sequence of
+bivariate copulas. The structure determines which conditioned and conditioning
+variables belong to each edge; one `bicop_dist` object supplies the model for
+that edge.
+
+## Read an R-vine structure
+
+Consider the triangular array
+
+```
+4 4 4 4
+3 3 3
+2 2
+1
+```
+
+It represents these pair copulas:
+
+| Tree | Edge | Conditioned pair | Conditioning set |
+|---:|---:|---|---|
+| 1 | 1 | 1, 4 | — |
+| 1 | 2 | 2, 4 | — |
+| 1 | 3 | 3, 4 | — |
+| 2 | 1 | 1, 3 | 4 |
+| 2 | 2 | 2, 3 | 4 |
+| 3 | 1 | 1, 2 | 3, 4 |
+
+In R, the structure can be constructed from its order and off-diagonal rows:
+
+```{r structure}
+structure <- rvine_structure(
+  order = 1:4,
+  struct_array = list(c(4, 4, 4), c(3, 3), 2)
+)
+structure
+as_rvine_matrix(structure)
+```
+
+The square R-vine matrix contains the same information with zeros filling the
+unused triangle. `as_rvine_structure()` converts it back to the compressed
+representation.
+
+`cvine_structure()` and `dvine_structure()` construct the two common
+order-determined special cases. Random valid structures are available through
+`rvine_structure_sim()`.
+
+```{r special-structures}
+cvine_structure(c(4, 1, 3, 2))
+dvine_structure(c(4, 1, 3, 2))
+rvine_structure_sim(4)
+```
+
+See `?rvine_structure` for the complete validity and proximity conditions.
+
+## Construct a vine copula from components
+
+For a three-dimensional model, the first tree has two pair copulas and the
+second has one. The nested list follows `pair_copulas[[tree]][[edge]]`.
+
+```{r construct-model}
+pair_copulas <- list(
+  list(
+    bicop_dist("gaussian", parameters = 0.6),
+    bicop_dist("clayton", parameters = 1.5)
+  ),
+  list(bicop_dist("frank", parameters = 2))
+)
+model <- vinecop_dist(
+  pair_copulas,
+  structure = dvine_structure(1:3)
+)
+model
+summary(model)
+```
+
+The model can immediately be evaluated and simulated:
+
+```{r use-model}
+u <- rvinecop(5, model)
+dvinecop(u, model)
+pvinecop(u[1:2, ], model, n_mc = 1000)
+```
+
+## Fit and select a model
+
+With no structure supplied, `vinecop()` selects trees sequentially using the
+Dissmann algorithm and fits a pair copula on every selected edge.
+
+```{r fit-model}
+n <- 150
+z <- rnorm(n)
+x <- cbind(
+  z + rnorm(n, sd = 0.7),
+  0.6 * z + rnorm(n),
+  -0.4 * z + rnorm(n),
+  rnorm(n)
+)
+u <- pseudo_obs(x)
+
+fit <- vinecop(u, family_set = "onepar", selcrit = "bic")
+fit
+summary(fit)
+```
+
+The most important pair-copula controls (`family_set`, `par_method`,
+`nonpar_method`, `mult`, `selcrit`, `weights`, `presel`, and
+`allow_rotations`) have the same meaning as in `bicop()`. The [bivariate
+copula guide](bivariate-copulas.html) describes the available families,
+rotations, and estimation methods.
+
+## Inspect the selected trees
+
+Getters work on both manually constructed and fitted models. Tree and edge
+indices are one-based in the R interface.
+
+```{r inspect}
+get_structure(fit)
+get_matrix(fit)
+get_pair_copula(fit, tree = 1, edge = 1)
+get_family(fit, tree = 1, edge = 1)
+get_parameters(fit, tree = 1, edge = 1)
+get_ktau(fit, tree = 1, edge = 1)
+get_all_families(fit)
+```
+
+`summary(fit)` returns the edge table invisibly, which is convenient for
+programmatic inspection.
+
+## Control structure selection
+
+The edge weight used to build each tree is selected by `tree_crit`:
+
+- `"tau"` for absolute Kendall's tau;
+- `"rho"` for absolute Spearman's rho;
+- `"hoeffd"` for Hoeffding's D;
+- `"mcor"` for maximum correlation;
+- `"joe"` for a Gaussian-copula mutual-information criterion;
+- a custom function of `data` and `weights`.
+
+`tree_algorithm = "mst_prim"` and `"mst_kruskal"` select a maximum spanning
+tree. `"random_weighted"` and `"random_unweighted"` draw random spanning
+trees, which can be useful in ensemble or exploratory workflows.
+
+```{r structure-controls, eval=FALSE}
+custom_strength <- function(data, weights) {
+  if (length(weights)) {
+    abs(weighted.mean(data[, 1] * data[, 2], weights))
+  } else {
+    abs(mean(data[, 1] * data[, 2]))
+  }
+}
+
+custom_fit <- vinecop(u, tree_crit = custom_strength)
+random_fit <- vinecop(u, tree_algorithm = "random_weighted")
+```
+
+Custom criteria run on the calling thread. Pair-copula fitting may still use
+multiple `cores`.
+
+## Fix all or part of a structure
+
+Supply a full structure to keep it fixed while selecting pair-copula families.
+A truncated structure fixes its existing trees and asks `vinecop()` to select
+the remaining trees up to `trunc_lvl`.
+
+```{r fixed-structure}
+fixed_structure_fit <- vinecop(
+  u,
+  structure = dvine_structure(1:4),
+  family_set = c("gaussian", "clayton")
+)
+
+first_tree <- rvine_structure(order = 1:4, struct_array = list(rep(4, 3)))
+partial_fit <- vinecop(
+  u,
+  structure = first_tree,
+  family_set = "onepar"
+)
+```
+
+## Truncation and thresholding
+
+`trunc_lvl` limits the number of fitted trees. Pair copulas above that level are
+independence copulas. `threshold` replaces edges whose selection strength is
+below the threshold by independence copulas.
+
+```{r sparse-models}
+truncated <- vinecop(u, family_set = "onepar", trunc_lvl = 1)
+thresholded <- vinecop(u, family_set = "onepar", threshold = 0.1)
+truncate_model(fit, trunc_lvl = 1)
+```
+
+Set `trunc_lvl = NA` or `threshold = NA` to select the value automatically with
+mBICV. The fitted threshold and truncation level are visible in the model
+summary.
+
+## Refit an existing model
+
+Pass a fitted model through `vinecop_object` to update parameters while keeping
+its structure and families fixed. This is useful for rolling windows or
+bootstrap samples.
+
+```{r refit}
+refitted <- vinecop(u, vinecop_object = fit)
+stopifnot(identical(get_all_families(refitted), get_all_families(fit)))
+```
+
+For a manually constructed distribution, use `vinecop()` to select from data
+or construct a new `vinecop_dist()` after changing its components.
+
+## Related documentation
+
+- [Bivariate copula models](bivariate-copulas.html) provides the details of
+  the pair-copula building blocks.
+- The [`vinecop()` reference](../reference/vinecop.html) lists all fitting and
+  selection arguments; the [structure reference](../reference/rvine_structure.html)
+  gives the formal matrix validity conditions.
