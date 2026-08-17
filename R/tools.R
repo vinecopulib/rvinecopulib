@@ -11,7 +11,9 @@
 #'
 #' @noRd
 if_vec_to_matrix <- function(u, to_col = FALSE) {
-  if (is.null(u)) return(NULL)
+  if (is.null(u)) {
+    return(NULL)
+  }
   assert_that(is.numeric(u) | is.data.frame(u))
   if (NCOL(u) == 1) {
     if (to_col) {
@@ -323,9 +325,23 @@ check_distr <- function(distr) {
     return(TRUE)
   }
 
+  ## fitted objects can implement the generic margin protocol
+  if (has_margin_protocol(distr) && !is_legacy_margin(distr)) {
+    e <- tryCatch(margin_npars(distr), error = function(e) e)
+    if (inherits(e, "error")) {
+      return(e$message)
+    }
+    return(TRUE)
+  }
+
   ## basic sanity checks
   if (!is.list(distr)) {
-    return("a distribution should be a kde1d object or a list")
+    return(
+      paste(
+        "a distribution should implement the margin protocol,",
+        "be a kde1d object, or be a supported distribution list"
+      )
+    )
   }
   if (!any(is.element(names(distr), "distr"))) {
     return(

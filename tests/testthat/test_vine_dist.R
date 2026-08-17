@@ -15,6 +15,66 @@ test_that("constructor creates proper `vine_dist` object", {
   expect_identical(names(vc), c("margins", "copula", "npars", "loglik"))
 })
 
+test_that("custom fitted margins implement the minimal protocol", {
+  margin <- margin_dist(
+    dnorm,
+    pnorm,
+    qnorm,
+    family = "normal",
+    npars = 2,
+    loglik = -10
+  )
+  custom <- vine_dist(list(margin), pcs, mat)
+  legacy <- vine_dist(list(list(distr = "norm")), pcs, mat)
+
+  expect_identical(custom$margins, rep(list(margin), 3))
+  expect_equal(dmargin(c(-1, 0, 1), margin), dnorm(c(-1, 0, 1)))
+  expect_equal(pmargin(c(-1, 0, 1), margin), pnorm(c(-1, 0, 1)))
+  expect_equal(qmargin(c(0.1, 0.5, 0.9), margin), qnorm(c(0.1, 0.5, 0.9)))
+  expect_equal(dvine(matrix(0, 1, 3), custom), dvine(matrix(0, 1, 3), legacy))
+  expect_equal(summary(custom)$margins$distr, rep("normal", 3))
+  expect_equal(custom$npars, legacy$npars)
+
+  path <- tempfile(fileext = ".rds")
+  saveRDS(custom, path)
+  restored <- readRDS(path)
+  unlink(path)
+  expect_equal(dvine(matrix(0, 1, 3), restored), dvine(matrix(0, 1, 3), custom))
+})
+
+test_that("margin_dist validates its minimal contract", {
+  expect_error(margin_dist(1, pnorm, qnorm), "must be functions")
+  expect_error(margin_dist(dnorm, pnorm, qnorm, type = "mixed"), "'type'")
+  expect_error(margin_dist(dnorm, pnorm, qnorm, npars = -1), "'npars'")
+  expect_equal(attr(logLik(margin_dist(dnorm, pnorm, qnorm)), "df"), 0)
+})
+
+test_that("legacy fixed margins retain all supported distributions", {
+  margins <- list(
+    list(distr = "beta", shape1 = 2, shape2 = 3),
+    list(distr = "cauchy", location = 0, scale = 2),
+    list(distr = "chisq", df = 4),
+    list(distr = "exp", rate = 2),
+    list(distr = "f", df1 = 4, df2 = 8),
+    list(distr = "gamma", shape = 2, rate = 3),
+    list(distr = "logis", location = 1, scale = 2),
+    list(distr = "lnorm", meanlog = 0, sdlog = 0.5),
+    list(distr = "norm", mean = 1, sd = 2),
+    list(distr = "t", df = 5),
+    list(distr = "unif", min = -1, max = 2),
+    list(distr = "weibull", shape = 2, scale = 3)
+  )
+
+  for (margin in margins) {
+    q <- qmargin(0.37, margin)
+    expect_equal(pmargin(q, margin), 0.37, tolerance = 1e-8)
+    expect_equal(
+      dmargin(q, margin),
+      eval_legacy_margin("d", q, "x", margin)
+    )
+  }
+})
+
 
 test_that("d/p/r- functions work", {
   u <- rvine(50, vc)

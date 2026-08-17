@@ -48,10 +48,12 @@ store the pseudo-observations used for fitting the copula, use the
 
 \item{cores}{the number of cores to use for parallel computations.}
 
-\item{margins}{A list with with each element containing the specification of a
-marginal \link[stats:Distributions]{stats::Distributions}. Each marginal specification
-should be a list with containing at least the distribution family (\code{"distr"})
-and optionally the parameters, e.g.
+\item{margins}{a list containing one marginal distribution per variable.
+Each margin can be a \code{\link[=margin_dist]{margin_dist()}} object, another fitted object
+implementing the \link[=margin_protocol]{margin protocol}, a \code{kde1d} object, or a
+fixed \link[stats:Distributions]{stats::Distributions} specification. Fixed specifications must be a
+list containing at least the distribution family (\code{"distr"}) and optionally
+the parameters, e.g.
 \code{list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))}.
 Note that parameters that have no default values have to be provided.
 Furthermore, if \code{margins} has length one, it will be recycled for every component.}
