@@ -23,7 +23,10 @@
 #'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
 #'   * `deg` numeric vector of length one or d; [kde1d::kde1d()].
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
-#' @param weights optional vector of weights for each observation.
+#' @param weights optional numeric vector of weights for each observation,
+#'   used for both marginal and copula estimation. The `"kde1d"` margin and
+#'   custom [margin_family()] fitters that accept a named `weights` argument can
+#'   use them; unsupported margin candidates fail normally during selection.
 #' @param keep_data whether the original data should be stored; if you want to
 #'   store the pseudo-observations used for fitting the copula, use the
 #'   `copula_controls` argument.
@@ -59,8 +62,10 @@
 #' Candidates incompatible with a variable's type are removed before fitting.
 #' rvinecopulib fits every remaining candidate and selects the first minimum of
 #' `-logLik`, AIC, or BIC according to `selcrit`. Competing custom candidates
-#' therefore need a finite [logLik()] value. Observation weights are currently
-#' supported only when every candidate is `"kde1d"`.
+#' therefore need a finite [logLik()] value. Observation weights are passed to
+#' `"kde1d"` and custom [margin_family()] fitters. An unsupported candidate may
+#' fail while another candidate succeeds. The built-in univariateML adapter
+#' does not support weights.
 #'
 #' @return Objects inheriting from `vine_dist` for [vine_dist()], and
 #' `vine` and `vine_dist` for [vine()].

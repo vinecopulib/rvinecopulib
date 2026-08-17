@@ -40,8 +40,38 @@ summary(fit_kde)$margins
 ```
 
 The usual KDE controls, including `mult`, `xmin`, `xmax`, `bw`, and `deg`, stay
-inside `margins_controls`. Observation weights are currently available only
-when all marginal candidates are `"kde1d"`.
+inside `margins_controls`.
+
+## Observation weights
+
+The `weights` argument to `vine()` is used for both the margins and copula.
+`kde1d` supports weights directly. A custom family supports them by accepting
+a named `weights` argument in its fitting function:
+
+```{r weighted-custom, eval=FALSE}
+weighted_normal <- margin_family(
+  fit = function(x, weights) {
+    mu <- weighted.mean(x, weights)
+    sigma <- sqrt(weighted.mean((x - mu)^2, weights))
+    margin_dist(
+      d = function(y) dnorm(y, mu, sigma),
+      p = function(y) pnorm(y, mu, sigma),
+      q = function(p) qnorm(p, mu, sigma),
+      family = "weighted-normal",
+      npars = 2,
+      loglik = sum(weights * dnorm(x, mu, sigma, log = TRUE))
+    )
+  },
+  family = "weighted-normal"
+)
+fit_weighted <- vine(x, margins_controls = list(family_set = weighted_normal),
+                     weights = runif(nrow(x)))
+```
+
+When no weights are supplied, custom fitters are still called with `x` only.
+With weights, a fitter that does not accept `weights` fails as an individual
+candidate; selection can continue if another candidate succeeds. The built-in
+univariateML adapter does not currently support observation weights.
 
 ## Parametric selection with univariateML
 

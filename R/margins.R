@@ -145,22 +145,28 @@ margin_dist <- function(
 #'
 #' `margin_family()` defines how [vine()] fits one candidate family. The fitting
 #' function has a deliberately small interface: it receives the observed
-#' vector and returns an object implementing the
+#' vector and, when supplied to [vine()], a named `weights` argument. It returns
+#' an object implementing the
 #' [margin protocol][margin_protocol]. Additional settings can be captured in
-#' the fitting function's environment.
+#' the fitting function's environment. For backward compatibility, `fit` is
+#' called with only the observed vector when no observation weights are used.
 #'
 #' The fitted object must declare the same type as the data being fitted. If
 #' several candidates are supplied, it must also have a finite log-likelihood
 #' and parameter count. Candidate fitting errors are ignored while another
 #' candidate succeeds; if all candidates fail, [vine()] reports their error
-#' messages together. Observation weights are currently supported only by the
-#' `"kde1d"` candidate.
+#' messages together. The `"kde1d"` candidate supports observation weights.
+#' Custom fitters may support them by accepting `weights`; otherwise that
+#' candidate fails normally and another candidate may still be selected. The
+#' built-in univariateML adapter does not support weights.
 #'
 #' A `margin_family` object can be used for every variable directly. In a
 #' per-variable `family_set`, wrap multiple candidates in a nested list; see
 #' the example below and [vine()] for the full family-set syntax.
 #'
-#' @param fit a function of one argument, the observed data vector.
+#' @param fit a function whose first argument is the observed data vector. When
+#'   observation weights are supplied, it is also called with a named `weights`
+#'   argument containing the corresponding numeric vector.
 #' @param family a descriptive family name.
 #' @param type variable types supported by the family: any of `"c"`, `"d"`,
 #'   and `"zi"`.
@@ -628,10 +634,6 @@ margin_candidate_name <- function(candidate) {
   if (inherits(candidate, "margin_family")) candidate$family else candidate
 }
 
-is_kde1d_candidate <- function(candidate) {
-  is.character(candidate) && identical(candidate, "kde1d")
-}
-
 margin_candidate_supports <- function(candidate, type) {
   if (inherits(candidate, "margin_family")) {
     return(type %in% candidate$type)
@@ -653,7 +655,11 @@ margin_candidate_supports <- function(candidate, type) {
 
 fit_margin_candidate <- function(x, candidate, type, controls, weights) {
   if (inherits(candidate, "margin_family")) {
-    fit <- candidate$fit(x)
+    if (length(weights)) {
+      fit <- candidate$fit(x, weights = weights)
+    } else {
+      fit <- candidate$fit(x)
+    }
   } else if (candidate == "kde1d") {
     fit <- kde1d::kde1d(
       x,
@@ -667,6 +673,12 @@ fit_margin_candidate <- function(x, candidate, type, controls, weights) {
     )
   } else {
     check_univariateML()
+    if (length(weights)) {
+      stop(
+        "univariateML margin families do not support observation weights.",
+        call. = FALSE
+      )
+    }
     fitter <- getExportedValue("univariateML", paste0("ml", candidate))
     fit <- fitter(x)
     attr(fit, "family") <- candidate
@@ -717,16 +729,6 @@ select_margin <- function(
       call. = FALSE
     )
   }
-  if (
-    length(weights) &&
-      any(!vapply(candidates, is_kde1d_candidate, logical(1)))
-  ) {
-    stop(
-      "parametric and custom margin families do not support 'weights'.",
-      call. = FALSE
-    )
-  }
-
   errors <- character()
   fits <- lapply(candidates, function(candidate) {
     tryCatch(
