@@ -186,5 +186,8 @@ stopifnot(isTRUE(all.equal(draws1, draws2)))
   building blocks and family-selection controls.
 - [Vine copula models and structures](vine-copula-models.html) covers
   high-dimensional dependence modeling.
+- [Discrete data](discrete-data.html), [conditional
+  simulation](conditional-simulation.html), and [likelihood
+  inference](likelihood-inference.html) introduce advanced workflows.
 - The [function reference](../reference/index.html) lists the complete API by
   modeling task.
