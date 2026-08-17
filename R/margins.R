@@ -1,8 +1,25 @@
 #' Marginal distribution protocol
 #'
-#' Evaluate a fitted marginal distribution. Margin classes can integrate with
-#' `rvinecopulib` by implementing these three S3 methods and a [logLik()] method
-#' whose return value has a finite `df` attribute.
+#' Evaluate a fitted marginal distribution. These generics dispatch on
+#' `margin`, their second argument. This lets another package integrate its
+#' fitted distribution class without changing the usual data-first calling
+#' convention.
+#'
+#' A fitted margin class must provide methods for all three generics and a
+#' [logLik()] method whose return value has a finite `df` attribute. It must
+#' declare its variable type through `attr(margin, "type")`, using `"c"` for a
+#' continuous distribution, `"d"` for an integer-supported distribution, or
+#' `"zi"` for a continuous distribution with an atom at zero. For compatibility
+#' with `univariateML`, a logical `attr(margin, "continuous")` is also
+#' recognized. An optional `"family"` or `"model"` attribute supplies the name
+#' shown in summaries.
+#'
+#' Methods must be vectorized and return one value for every element of `x` or
+#' `p`. For discrete margins, `dmargin()` returns probability mass and
+#' rvinecopulib computes the left limit as `pmargin(x - 1, margin)`. For a
+#' `"zi"` margin, `dmargin(0, margin)` is the mass at zero and the left limit at
+#' zero is `pmargin(0, margin) - dmargin(0, margin)`. At nonzero values its left
+#' limit equals its CDF.
 #'
 #' @param x vector of evaluation points.
 #' @param p vector of probabilities.
@@ -13,12 +30,41 @@
 #'   for `qmargin()`.
 #'
 #' @name margin_protocol
+#'
+#' @examples
+#' fitted_normal <- structure(
+#'   c(mean = 1, sd = 2),
+#'   class = "example_normal_margin",
+#'   type = "c",
+#'   family = "normal"
+#' )
+#' dmargin.example_normal_margin <- function(x, margin) {
+#'   dnorm(x, margin[["mean"]], margin[["sd"]])
+#' }
+#' pmargin.example_normal_margin <- function(x, margin) {
+#'   pnorm(x, margin[["mean"]], margin[["sd"]])
+#' }
+#' qmargin.example_normal_margin <- function(p, margin) {
+#'   qnorm(p, margin[["mean"]], margin[["sd"]])
+#' }
+#' logLik.example_normal_margin <- function(object, ...) {
+#'   structure(-10, class = "logLik", df = 2)
+#' }
+#' pmargin(1, fitted_normal)
 NULL
 
 #' Create a custom marginal distribution
 #'
 #' `margin_dist()` creates a fitted or fixed margin from three minimal
-#' evaluation functions. The functions must each accept one vector argument.
+#' evaluation functions. The functions must each accept one vector argument
+#' and return a vector of the same length. They are stored in the resulting
+#' object, so closures can capture fitted parameter values.
+#'
+#' A finite `loglik` is needed when the object competes with other candidates
+#' during [vine()] fitting. It may be `NA` for a fixed margin supplied directly
+#' to [vine_dist()] or when it is the only fitted candidate. `npars` is used in
+#' AIC and BIC calculations and may be non-integer for effective degrees of
+#' freedom.
 #'
 #' @param d density or probability mass function.
 #' @param p distribution function.
@@ -56,8 +102,13 @@ margin_dist <- function(
   if (!is.function(d) || !is.function(p) || !is.function(q)) {
     stop("'d', 'p', and 'q' must be functions.", call. = FALSE)
   }
-  if (!is.character(family) || length(family) != 1L || is.na(family)) {
-    stop("'family' must be a single character string.", call. = FALSE)
+  if (
+    !is.character(family) ||
+      length(family) != 1L ||
+      is.na(family) ||
+      !nzchar(family)
+  ) {
+    stop("'family' must be a non-empty character string.", call. = FALSE)
   }
   if (
     !is.character(type) || length(type) != 1L || !type %in% c("c", "d", "zi")
@@ -69,8 +120,12 @@ margin_dist <- function(
   ) {
     stop("'npars' must be a finite non-negative number.", call. = FALSE)
   }
-  if (!is.numeric(loglik) || length(loglik) != 1L) {
-    stop("'loglik' must be a single number or NA.", call. = FALSE)
+  if (
+    !is.numeric(loglik) ||
+      length(loglik) != 1L ||
+      !(is.finite(loglik) || (is.na(loglik) && !is.nan(loglik)))
+  ) {
+    stop("'loglik' must be a finite number or NA.", call. = FALSE)
   }
   structure(
     list(
@@ -91,7 +146,19 @@ margin_dist <- function(
 #' `margin_family()` defines how [vine()] fits one candidate family. The fitting
 #' function has a deliberately small interface: it receives the observed
 #' vector and returns an object implementing the
-#' [margin protocol][margin_protocol].
+#' [margin protocol][margin_protocol]. Additional settings can be captured in
+#' the fitting function's environment.
+#'
+#' The fitted object must declare the same type as the data being fitted. If
+#' several candidates are supplied, it must also have a finite log-likelihood
+#' and parameter count. Candidate fitting errors are ignored while another
+#' candidate succeeds; if all candidates fail, [vine()] reports their error
+#' messages together. Observation weights are currently supported only by the
+#' `"kde1d"` candidate.
+#'
+#' A `margin_family` object can be used for every variable directly. In a
+#' per-variable `family_set`, wrap multiple candidates in a nested list; see
+#' the example below and [vine()] for the full family-set syntax.
 #'
 #' @param fit a function of one argument, the observed data vector.
 #' @param family a descriptive family name.
@@ -118,12 +185,26 @@ margin_dist <- function(
 #'   },
 #'   family = "normal"
 #' )
+#' x <- cbind(rnorm(30), rnorm(30, 2))
+#' fit <- vine(
+#'   x,
+#'   margins_controls = list(
+#'     family_set = list(list(normal_family), list(normal_family))
+#'   ),
+#'   copula_controls = list(family_set = "indep")
+#' )
+#' summary(fit)$margins
 margin_family <- function(fit, family = "custom", type = "c") {
   if (!is.function(fit)) {
     stop("'fit' must be a function.", call. = FALSE)
   }
-  if (!is.character(family) || length(family) != 1L || is.na(family)) {
-    stop("'family' must be a single character string.", call. = FALSE)
+  if (
+    !is.character(family) ||
+      length(family) != 1L ||
+      is.na(family) ||
+      !nzchar(family)
+  ) {
+    stop("'family' must be a non-empty character string.", call. = FALSE)
   }
   type <- unique(normalize_margin_types(type))
   if (!length(type)) {
@@ -138,13 +219,23 @@ margin_family <- function(fit, family = "custom", type = "c") {
 #' Declare zero-inflated data
 #'
 #' Marks a numeric vector as having a continuous distribution with an atom at
-#' zero. The class is preserved when the vector is stored in a data frame and
-#' is detected automatically by [vine()].
+#' zero. The atom is always assumed to be located at zero. The class is
+#' preserved when the vector is stored in or subset from a data frame and is
+#' detected automatically by [vine()]. Alternatively, use `var_types = "zi"`.
+#'
+#' For a fitted zero-inflated margin, rvinecopulib uses the ordinary CDF away
+#' from zero. At zero, its left limit is computed as
+#' `pmargin(0, margin) - dmargin(0, margin)`, so `dmargin(0, margin)` must return
+#' the atom's probability mass rather than a continuous density value.
 #'
 #' @param x a numeric vector.
 #'
 #' @return `x` with an additional `zero_inflated` class.
 #' @export
+#'
+#' @examples
+#' x <- zero_inflated(c(0, 0, rexp(8)))
+#' inherits(data.frame(x = x)$x, "zero_inflated")
 zero_inflated <- function(x) {
   if (!is.numeric(x)) {
     stop("'x' must be numeric.", call. = FALSE)
@@ -445,11 +536,18 @@ expand_margin_family_set <- function(family_set, d, variable_names = NULL) {
         call. = FALSE
       )
     }
-    if (
-      !is.null(names(family_set)) &&
-        !is.null(variable_names) &&
-        all(variable_names %in% names(family_set))
-    ) {
+    if (!is.null(names(family_set))) {
+      if (
+        is.null(variable_names) ||
+          any(!nzchar(names(family_set))) ||
+          anyDuplicated(names(family_set)) ||
+          !setequal(names(family_set), variable_names)
+      ) {
+        stop(
+          "a named 'family_set' must contain each variable name exactly once.",
+          call. = FALSE
+        )
+      }
       family_set <- family_set[variable_names]
     }
   }
