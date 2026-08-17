@@ -13,28 +13,32 @@ bicop_select_cpp <- function(data, family_set, par_method, nonpar_method, mult, 
     .Call(`_rvinecopulib_bicop_select_cpp`, data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads, allow_rotations, var_types)
 }
 
-bicop_pdf_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_pdf_cpp`, u, bicop_r)
+bicop_pdf_cpp <- function(u, bicop_r, cores = 1L) {
+    .Call(`_rvinecopulib_bicop_pdf_cpp`, u, bicop_r, cores)
 }
 
 bicop_cdf_cpp <- function(u, bicop_r) {
     .Call(`_rvinecopulib_bicop_cdf_cpp`, u, bicop_r)
 }
 
-bicop_hfunc1_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_hfunc1_cpp`, u, bicop_r)
+bicop_hfunc1_cpp <- function(u, bicop_r, cores = 1L) {
+    .Call(`_rvinecopulib_bicop_hfunc1_cpp`, u, bicop_r, cores)
 }
 
-bicop_hfunc2_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_hfunc2_cpp`, u, bicop_r)
+bicop_hfunc2_cpp <- function(u, bicop_r, cores = 1L) {
+    .Call(`_rvinecopulib_bicop_hfunc2_cpp`, u, bicop_r, cores)
 }
 
-bicop_hinv1_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_hinv1_cpp`, u, bicop_r)
+bicop_hinv1_cpp <- function(u, bicop_r, cores = 1L) {
+    .Call(`_rvinecopulib_bicop_hinv1_cpp`, u, bicop_r, cores)
 }
 
-bicop_hinv2_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_hinv2_cpp`, u, bicop_r)
+bicop_hinv2_cpp <- function(u, bicop_r, cores = 1L) {
+    .Call(`_rvinecopulib_bicop_hinv2_cpp`, u, bicop_r, cores)
+}
+
+bicop_deriv_cpp <- function(u, bicop_r, what, deriv, order, cores) {
+    .Call(`_rvinecopulib_bicop_deriv_cpp`, u, bicop_r, what, deriv, order, cores)
 }
 
 bicop_sim_cpp <- function(bicop_r, n, qrng, seeds) {

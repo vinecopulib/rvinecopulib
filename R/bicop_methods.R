@@ -19,7 +19,13 @@
 #' @param var_types variable types, a length 2 vector; e.g., `c("c", "c")` for
 #'   both continuous (default), or `c("c", "d")` for first variable continuous
 #'   and second discrete.
-#' @param cores number of cores used for derivatives with per-observation
+#' @param log whether to return the log-density or a derivative of the
+#'   log-density.
+#' @param deriv `NULL` for ordinary evaluation, or a character vector of length
+#'   one or two specifying a first- or second-order partial derivative. Each
+#'   component is one of `"u1"`, `"u2"`, or `"par<k>"`; `"par"` is an alias
+#'   for `"par1"`.
+#' @param cores number of cores used when evaluating observation-specific
 #'   parameters.
 #' @param vinecop a `bicop_dist` object for `scores()` and `hessian()`.
 #' @param ... unused.
@@ -43,6 +49,20 @@
 #' When inverting H-functions, the inverse is then taken with respect to the
 #' other variable, that is `v` when `cond_var = 1` and `u` when `cond_var = 2`.
 #'
+#' ## Derivatives
+#'
+#' Setting `deriv` evaluates a selected first- or second-order derivative of
+#' the density, log-density, or h-function. For example, `deriv = "u1"`
+#' differentiates with respect to the first argument and
+#' `deriv = c("u1", "par2")` evaluates the corresponding mixed second
+#' derivative. Derivative order is immaterial. Parameter derivatives use the
+#' natural parameters of the (possibly rotated) copula.
+#'
+#' Derivatives are available only for continuous parametric copulas. The
+#' backend uses analytic formulas where available and finite-difference
+#' fallbacks where needed. Derivatives of inverse h-functions are not
+#' available.
+#'
 #' ## Discrete variables
 #' When at least one variable is discrete, more than two columns are required
 #' for `u`: the first \eqn{n \times 2} block contains realizations of
@@ -54,10 +74,13 @@
 #' second block.
 #'
 #' @return
-#' `dbicop()` gives the density, `pbicop()` gives the distribution function,
+#' `dbicop()` gives the density or log-density, and `pbicop()` gives the
+#' distribution function.
 #' `rbicop()` generates random deviates, and `hbicop()` gives the h-functions
-#' (and their inverses). `scores()` gives the observation-wise score matrix and
-#' `hessian()` gives the average Hessian matrix for a `bicop_dist` object.
+#' (and their inverses). If `deriv` is set, `dbicop()` and `hbicop()` return
+#' the selected observation-wise derivative. `scores()` gives the
+#' observation-wise score matrix and `hessian()` gives the average Hessian
+#' matrix for a `bicop_dist` object.
 #'
 #' The length of the result is determined by `n` for `rbicop()`, and
 #' the number of rows in `u` for the other functions.
@@ -87,6 +110,11 @@
 #' # h_2^{-1}(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
 #'
+#' ## derivatives
+#' dbicop(c(0.2, 0.4), joe_cop, deriv = "u1")
+#' dbicop(c(0.2, 0.4), joe_cop, log = TRUE, deriv = "par1")
+#' hbicop(c(0.2, 0.4), 1, joe_cop, deriv = c("u1", "par1"))
+#'
 #' ## mixed discrete and continuous data
 #' x <- cbind(rpois(10, 1), rnorm(10, 1))
 #' u <- cbind(ppois(x[, 1], 1), pnorm(x[, 2]), ppois(x[, 1] - 1, 1))
@@ -94,10 +122,35 @@
 #'
 #' @rdname bicop_methods
 #' @export
-dbicop <- function(u, family, rotation, parameters, var_types = c("c", "c")) {
+dbicop <- function(
+  u,
+  family,
+  rotation,
+  parameters,
+  var_types = c("c", "c"),
+  log = FALSE,
+  deriv = NULL,
+  cores = 1
+) {
+  assert_that(is.flag(log), is.number(cores), cores > 0)
+  deriv <- normalize_bicop_deriv(deriv)
   u <- if_vec_to_matrix(u)
   bicop <- args2bicop(family, rotation, parameters, var_types)
-  bicop_pdf_cpp(u, bicop)
+
+  if (is.null(deriv)) {
+    density <- bicop_pdf_cpp(u, bicop, cores)
+    return(if (log) base::log(density) else density)
+  }
+
+  what <- if (log) "logpdf" else "pdf"
+  bicop_deriv_cpp(
+    u,
+    bicop,
+    what,
+    paste0(deriv, collapse = ""),
+    length(deriv),
+    cores
+  )
 }
 #' @rdname bicop_methods
 #' @export
@@ -180,23 +233,46 @@ hbicop <- function(
   rotation,
   parameters,
   inverse = FALSE,
-  var_types = c("c", "c")
+  var_types = c("c", "c"),
+  deriv = NULL,
+  cores = 1
 ) {
-  assert_that(in_set(cond_var, 1:2), is.flag(inverse))
+  assert_that(
+    in_set(cond_var, 1:2),
+    is.flag(inverse),
+    is.number(cores),
+    cores > 0
+  )
+  deriv <- normalize_bicop_deriv(deriv)
+  if (inverse && !is.null(deriv)) {
+    stop("derivatives of inverse h-functions are not available.", call. = FALSE)
+  }
   bicop <- args2bicop(family, rotation, parameters, var_types)
   u <- if_vec_to_matrix(u)
 
+  if (!is.null(deriv)) {
+    what <- if (cond_var == 1) "hfunc1" else "hfunc2"
+    return(bicop_deriv_cpp(
+      u,
+      bicop,
+      what,
+      paste0(deriv, collapse = ""),
+      length(deriv),
+      cores
+    ))
+  }
+
   if (!inverse) {
     if (cond_var == 1) {
-      return(bicop_hfunc1_cpp(u, bicop))
+      return(bicop_hfunc1_cpp(u, bicop, cores))
     } else {
-      return(bicop_hfunc2_cpp(u, bicop))
+      return(bicop_hfunc2_cpp(u, bicop, cores))
     }
   } else {
     if (cond_var == 1) {
-      return(bicop_hinv1_cpp(u, bicop))
+      return(bicop_hinv1_cpp(u, bicop, cores))
     } else {
-      return(bicop_hinv2_cpp(u, bicop))
+      return(bicop_hinv2_cpp(u, bicop, cores))
     }
   }
 }

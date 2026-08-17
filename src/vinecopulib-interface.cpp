@@ -84,12 +84,13 @@ Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_pdf_cpp(const Eigen::MatrixXd& u,
-                              const Rcpp::List& bicop_r)
+                              const Rcpp::List& bicop_r,
+                              const size_t cores = 1)
 {
   Bicop bicop_cpp = bicop_wrap(bicop_r);
   Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
   if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
-    return bicop_cpp.pdf(u, parameters);
+    return bicop_cpp.pdf(u, parameters, cores);
   }
   return bicop_cpp.pdf(u);
 }
@@ -108,50 +109,107 @@ Eigen::VectorXd bicop_cdf_cpp(const Eigen::MatrixXd& u,
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hfunc1_cpp(const Eigen::MatrixXd& u,
-                                 const Rcpp::List& bicop_r)
+                                 const Rcpp::List& bicop_r,
+                                 const size_t cores = 1)
 {
   Bicop bicop_cpp = bicop_wrap(bicop_r);
   Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
   if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
-    return bicop_cpp.hfunc1(u, parameters);
+    return bicop_cpp.hfunc1(u, parameters, cores);
   }
   return bicop_cpp.hfunc1(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hfunc2_cpp(const Eigen::MatrixXd& u,
-                                 const Rcpp::List& bicop_r)
+                                 const Rcpp::List& bicop_r,
+                                 const size_t cores = 1)
 {
   Bicop bicop_cpp = bicop_wrap(bicop_r);
   Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
   if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
-    return bicop_cpp.hfunc2(u, parameters);
+    return bicop_cpp.hfunc2(u, parameters, cores);
   }
   return bicop_cpp.hfunc2(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hinv1_cpp(const Eigen::MatrixXd& u,
-                                const Rcpp::List& bicop_r)
+                                const Rcpp::List& bicop_r,
+                                const size_t cores = 1)
 {
   Bicop bicop_cpp = bicop_wrap(bicop_r);
   Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
   if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
-    return bicop_cpp.hinv1(u, parameters);
+    return bicop_cpp.hinv1(u, parameters, cores);
   }
   return bicop_cpp.hinv1(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hinv2_cpp(const Eigen::MatrixXd& u,
-                                const Rcpp::List& bicop_r)
+                                const Rcpp::List& bicop_r,
+                                const size_t cores = 1)
 {
   Bicop bicop_cpp = bicop_wrap(bicop_r);
   Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
   if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
-    return bicop_cpp.hinv2(u, parameters);
+    return bicop_cpp.hinv2(u, parameters, cores);
   }
   return bicop_cpp.hinv2(u);
+}
+
+// [[Rcpp::export()]]
+Eigen::VectorXd bicop_deriv_cpp(const Eigen::MatrixXd& u,
+                                const Rcpp::List& bicop_r,
+                                const std::string& what,
+                                const std::string& deriv,
+                                const size_t order,
+                                const size_t cores)
+{
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  const bool vectorized =
+    has_vectorized_bicop_parameters(bicop_cpp, parameters);
+
+  if ((order != 1) && (order != 2)) {
+    throw std::runtime_error("derivative order must be one or two");
+  }
+
+  if (what == "pdf") {
+    if (vectorized) {
+      return order == 1 ? bicop_cpp.pdf_deriv(u, deriv, parameters, cores)
+                        : bicop_cpp.pdf_deriv2(u, deriv, parameters, cores);
+    }
+    return order == 1 ? bicop_cpp.pdf_deriv(u, deriv)
+                      : bicop_cpp.pdf_deriv2(u, deriv);
+  }
+  if (what == "logpdf") {
+    if (vectorized) {
+      return order == 1 ? bicop_cpp.logpdf_deriv(u, deriv, parameters, cores)
+                        : bicop_cpp.logpdf_deriv2(u, deriv, parameters, cores);
+    }
+    return order == 1 ? bicop_cpp.logpdf_deriv(u, deriv)
+                      : bicop_cpp.logpdf_deriv2(u, deriv);
+  }
+  if (what == "hfunc1") {
+    if (vectorized) {
+      return order == 1 ? bicop_cpp.hfunc1_deriv(u, deriv, parameters, cores)
+                        : bicop_cpp.hfunc1_deriv2(u, deriv, parameters, cores);
+    }
+    return order == 1 ? bicop_cpp.hfunc1_deriv(u, deriv)
+                      : bicop_cpp.hfunc1_deriv2(u, deriv);
+  }
+  if (what == "hfunc2") {
+    if (vectorized) {
+      return order == 1 ? bicop_cpp.hfunc2_deriv(u, deriv, parameters, cores)
+                        : bicop_cpp.hfunc2_deriv2(u, deriv, parameters, cores);
+    }
+    return order == 1 ? bicop_cpp.hfunc2_deriv(u, deriv)
+                      : bicop_cpp.hfunc2_deriv2(u, deriv);
+  }
+
+  throw std::runtime_error("unknown derivative target: " + what);
 }
 
 // [[Rcpp::export()]]
