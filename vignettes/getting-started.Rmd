@@ -1,0 +1,190 @@
+---
+title: "Getting started with rvinecopulib"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with rvinecopulib}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(rvinecopulib)
+set.seed(101)
+```
+
+rvinecopulib has three main modeling interfaces. The right one depends on the
+scale of the data and whether the marginal distributions are part of the model.
+
+| Starting point | Function | Result |
+|---|---|---|
+| Original observations | `vine()` | Margins and a vine copula |
+| Uniform pseudo-observations | `vinecop()` | A vine copula |
+| Two uniform variables | `bicop()` | A bivariate copula |
+
+The fitted classes add fit information to distribution classes. A `vine`
+object is also a `vine_dist`, a `vinecop` is also a `vinecop_dist`, and a
+`bicop` is also a `bicop_dist`. Simulation and evaluation therefore use the
+same functions for fitted and manually constructed models.
+
+## A complete model on the data scale
+
+Use `vine()` when the observations are on their original scale. It estimates a
+marginal distribution for every variable, transforms the data to the copula
+scale, and fits the dependence model.
+
+```{r fit-vine}
+n <- 120
+z <- rnorm(n)
+x <- data.frame(
+  amount = exp(z + rnorm(n, sd = 0.5)),
+  duration = exp(0.5 * z + rnorm(n, sd = 0.8)),
+  events = rpois(n, exp(0.3 + 0.25 * z))
+)
+
+fit <- vine(
+  x,
+  var_types = c("c", "c", "d"),
+  copula_controls = list(family_set = "onepar"),
+  keep_data = TRUE
+)
+fit
+summary(fit)
+```
+
+Integer-valued discrete columns are declared with `var_types = "d"`. Ordered
+factors are detected automatically. See [Marginal
+models](marginal-models.html) for the default KDE margins, parametric
+selection, custom margin families, zero inflation, and observation weights.
+
+The fitted object represents the joint distribution. Its density or mass can
+be evaluated on the original data scale, and new observations can be drawn
+with their original column names and types.
+
+```{r use-vine}
+dvine(x[1:4, ], fit)
+predict(fit, x[1:4, ], what = "pdf")
+logLik(fit)
+AIC(fit)
+
+simulated <- rvine(5, fit)
+simulated
+```
+
+`pvine()` and `predict(..., what = "cdf")` approximate a multivariate CDF by
+Monte Carlo. Increase `n_mc` when accurate tail probabilities are important.
+
+## A dependence model on the copula scale
+
+Use `vinecop()` when the margins are not part of the model. Its input consists
+of approximately uniform pseudo-observations. For continuous data,
+`pseudo_obs()` applies scaled ranks column by column.
+
+```{r fit-vinecop}
+u <- pseudo_obs(as.matrix(USArrests))
+copula_fit <- vinecop(
+  u,
+  family_set = c("gaussian", "clayton", "gumbel", "frank")
+)
+summary(copula_fit)
+```
+
+The result can be evaluated and simulated directly on the unit hypercube.
+
+```{r use-vinecop}
+new_u <- rvinecop(6, copula_fit)
+dvinecop(new_u, copula_fit)
+pvinecop(new_u[1:2, ], copula_fit, n_mc = 1000)
+```
+
+Do not apply ordinary ranks blindly to discrete data. Discrete copula models
+need both `F(x)` and its left limit `F(x-)`; the dedicated discrete-data article
+explains the accepted layouts. `vine()` constructs these quantities
+automatically from its fitted margins. See [Vine copula models and
+structures](vine-copula-models.html) for structure selection, truncation,
+thresholding, and model inspection.
+
+## A bivariate model
+
+Use `bicop()` for two-dimensional copula data. It estimates each compatible
+candidate and selects a family using AIC by default.
+
+```{r fit-bicop}
+u2 <- rbicop(200, "clayton", 90, 2)
+bivariate_fit <- bicop(u2, family_set = "par")
+bivariate_fit
+
+dbicop(u2[1:4, ], bivariate_fit)
+tail_dep(bivariate_fit)
+```
+
+The [bivariate-model guide](bivariate-copulas.html) covers rotations,
+h-functions, dependence measures, family sets, vectorized parameters, and
+nonparametric models.
+
+## Fixed and fitted models
+
+The `*_dist()` constructors are useful when the model components are known.
+For example, a Gaussian copula with correlation 0.7 is a complete bivariate
+distribution even though it has not been fitted:
+
+```{r fixed-model}
+fixed <- bicop_dist("gaussian", parameters = 0.7)
+dbicop(c(0.25, 0.8), fixed)
+rbicop(3, fixed)
+```
+
+Fitted objects additionally store a log-likelihood, observation count, and fit
+controls. Set `keep_data = TRUE` only when methods such as `fitted()` need the
+training data.
+
+## Selection controls
+
+The most frequently used controls are:
+
+- `family_set`: candidate pair-copula families or a predefined collection;
+- `selcrit`: `"loglik"`, `"aic"`, `"bic"`, `"mbic"`, or `"mbicv"` where
+  applicable;
+- `par_method`: maximum likelihood (`"mle"`) or Kendall's tau inversion
+  (`"itau"`) for supported families;
+- `allow_rotations`: whether rotated Archimedean families may be selected;
+- `weights`: optional observation weights;
+- `cores`: parallel workers used by supported operations.
+
+`vinecop()` additionally controls structure selection, truncation, and
+thresholding. These options are developed in the vine-model article rather
+than hidden in a single large example.
+
+## Reproducibility and persistence
+
+Ordinary model fitting is deterministic. Simulation uses R's random-number
+state, so `set.seed()` makes it reproducible. Quasi-random simulation is
+available through `qrng = TRUE`.
+
+All model objects can be stored with `saveRDS()` and restored with `readRDS()`.
+Custom margin classes remain usable after restoration as long as their S3
+methods are available in the R session.
+
+```{r persistence}
+path <- tempfile(fileext = ".rds")
+saveRDS(copula_fit, path)
+restored <- readRDS(path)
+unlink(path)
+
+set.seed(102)
+draws1 <- rvinecop(4, copula_fit)
+set.seed(102)
+draws2 <- rvinecop(4, restored)
+stopifnot(isTRUE(all.equal(draws1, draws2)))
+```
+
+## Where to go next
+
+- [Marginal models](marginal-models.html) develops full distributions on the
+  original data scale.
+- [Bivariate copula models](bivariate-copulas.html) documents the pair-copula
+  building blocks and family-selection controls.
+- [Vine copula models and structures](vine-copula-models.html) covers
+  high-dimensional dependence modeling.
+- The [function reference](../reference/index.html) lists the complete API by
+  modeling task.
