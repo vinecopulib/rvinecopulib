@@ -141,11 +141,15 @@ test_that("margin_family validates its fitting contract", {
 test_that("fitted-margin validation probes at most the first three observations", {
   margin <- margin_dist(
     d = function(x) {
-      if (any(x > 3, na.rm = TRUE)) stop("evaluated too far", call. = FALSE)
+      if (any(x > 3, na.rm = TRUE)) {
+        stop("evaluated too far", call. = FALSE)
+      }
       dnorm(x)
     },
     p = function(x) {
-      if (any(x > 3, na.rm = TRUE)) stop("evaluated too far", call. = FALSE)
+      if (any(x > 3, na.rm = TRUE)) {
+        stop("evaluated too far", call. = FALSE)
+      }
       pnorm(x)
     },
     q = qnorm
