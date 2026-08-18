@@ -341,21 +341,14 @@ summary.vine <- function(object, ...) {
 
 get_vine_margin_summary <- function(object) {
   infos <- lapply(object$margins, margin_info)
+  support <- t(vapply(infos, `[[`, numeric(2), "support"))
   info <- data.frame(
     margin = seq_along(object$margins),
     name = object$names,
     family = vapply(infos, `[[`, character(1), "family_name"),
     type = vapply(infos, `[[`, character(1), "type"),
-    xmin = vapply(
-      infos,
-      function(info) info$support[1L],
-      numeric(1)
-    ),
-    xmax = vapply(
-      infos,
-      function(info) info$support[2L],
-      numeric(1)
-    ),
+    xmin = support[, 1L],
+    xmax = support[, 2L],
     npars = vapply(infos, `[[`, numeric(1), "npars"),
     loglik = vapply(infos, `[[`, numeric(1), "loglik")
   )

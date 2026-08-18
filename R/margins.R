@@ -54,37 +54,6 @@ margin_info <- function(object) {
   UseMethod("margin_info")
 }
 
-#' @export
-dmargin.default <- function(x, margin) {
-  stop_margin_method("dmargin", margin)
-}
-
-#' @export
-pmargin.default <- function(x, margin) {
-  stop_margin_method("pmargin", margin)
-}
-
-#' @export
-qmargin.default <- function(p, margin) {
-  stop_margin_method("qmargin", margin)
-}
-
-#' @export
-margin_info.default <- function(object) {
-  stop_margin_method("margin_info", object)
-}
-
-stop_margin_method <- function(generic, margin) {
-  stop(
-    sprintf(
-      "no %s() method is available for margin class <%s>",
-      generic,
-      paste(class(margin), collapse = "/")
-    ),
-    call. = FALSE
-  )
-}
-
 #' Create a fitted or fixed custom margin
 #'
 #' `margin_dist()` creates a fitted or fixed margin from evaluation functions
@@ -211,24 +180,23 @@ stats_margin <- function(family, ...) {
       call. = FALSE
     )
   }
-  margin <- structure(
-    list(
+  args <- list(...)
+  d <- getExportedValue("stats", paste0("d", family))
+  p <- getExportedValue("stats", paste0("p", family))
+  q <- getExportedValue("stats", paste0("q", family))
+  structure(
+    margin_dist(
+      d = function(x) do.call(d, c(list(x = x), args)),
+      p = function(x) do.call(p, c(list(q = x), args)),
+      q = function(probabilities) {
+        do.call(q, c(list(p = probabilities), args))
+      },
       family = family,
-      args = list(...),
-      type = stats_margin_types[[family]]
+      type = stats_margin_types[[family]],
+      support = unname(do.call(q, c(list(p = c(0, 1)), args)))
     ),
-    class = c("stats_margin", "list")
+    class = c("stats_margin", "margin_dist", "list")
   )
-  tryCatch(
-    qmargin(c(0, 0.5, 1), margin),
-    error = function(error) {
-      stop(conditionMessage(error), call. = FALSE)
-    }
-  )
-  margin$support <- unname(qmargin(c(0, 1), margin))
-  validate_margin_support(margin$support)
-  validate_margin(margin)
-  margin
 }
 
 stats_margin_types <- c(
@@ -252,38 +220,6 @@ stats_margin_types <- c(
   signrank = "d",
   wilcox = "d"
 )
-
-#' @export
-dmargin.stats_margin <- function(x, margin) {
-  eval_stats_margin("d", x, "x", margin)
-}
-
-#' @export
-pmargin.stats_margin <- function(x, margin) {
-  eval_stats_margin("p", x, "q", margin)
-}
-
-#' @export
-qmargin.stats_margin <- function(p, margin) {
-  eval_stats_margin("q", p, "p", margin)
-}
-
-eval_stats_margin <- function(prefix, values, value_name, margin) {
-  args <- margin$args
-  args[[value_name]] <- values
-  do.call(getExportedValue("stats", paste0(prefix, margin$family)), args)
-}
-
-#' @export
-margin_info.stats_margin <- function(object) {
-  list(
-    family_name = object$family,
-    type = object$type,
-    support = object$support,
-    npars = 0,
-    loglik = NA_real_
-  )
-}
 
 #' @export
 dmargin.kde1d <- function(x, margin) {
@@ -374,20 +310,12 @@ margin_info.univariateML <- function(object) {
 #' @return A validated fitted margin.
 #' @export
 as_margin <- function(margin) {
-  UseMethod("as_margin")
-}
-
-#' @export
-as_margin.default <- function(margin) {
-  validate_margin(margin)
-  margin
-}
-
-#' @export
-as_margin.list <- function(margin) {
   if (has_margin_protocol(margin)) {
     validate_margin(margin)
     return(margin)
+  }
+  if (!inherits(margin, "list")) {
+    validate_margin(margin)
   }
   if (
     is.null(margin$distr) ||
@@ -406,19 +334,20 @@ as_margin.list <- function(margin) {
 }
 
 has_margin_protocol <- function(margin) {
-  all(vapply(
-    c("dmargin", "pmargin", "qmargin", "margin_info"),
-    has_s3_method,
-    logical(1),
-    object = margin
-  ))
+  has_s3_methods(margin, c("dmargin", "pmargin", "qmargin", "margin_info"))
 }
 
-has_s3_method <- function(generic, object) {
-  any(vapply(
-    class(object),
-    function(class) {
-      !is.null(utils::getS3method(generic, class, optional = TRUE))
+has_s3_methods <- function(object, generics) {
+  all(vapply(
+    generics,
+    function(generic) {
+      any(vapply(
+        class(object),
+        function(class) {
+          !is.null(utils::getS3method(generic, class, optional = TRUE))
+        },
+        logical(1)
+      ))
     },
     logical(1)
   ))
@@ -471,17 +400,6 @@ is_margin_info <- function(info, fields) {
     !anyDuplicated(names(info)) &&
     all(fields %in% names(info))
 }
-
-check_distr <- function(distr) {
-  tryCatch(
-    {
-      as_margin(distr)
-      TRUE
-    },
-    error = function(error) conditionMessage(error)
-  )
-}
-
 
 stop_wo_call <- function(message) {
   stop(message, call. = FALSE)
@@ -630,17 +548,6 @@ NULL
 #' @export
 fit_margin <- function(family, x, weights = numeric(), type = "c") {
   UseMethod("fit_margin")
-}
-
-#' @export
-fit_margin.default <- function(family, x, weights = numeric(), type = "c") {
-  stop(
-    sprintf(
-      "object of class <%s> does not implement the margin-family protocol.",
-      paste(class(family), collapse = "/")
-    ),
-    call. = FALSE
-  )
 }
 
 #' Define a custom margin family
@@ -894,12 +801,7 @@ check_univariateML <- function() {
 }
 
 has_margin_family_protocol <- function(family) {
-  all(vapply(
-    c("fit_margin", "margin_info"),
-    has_s3_method,
-    logical(1),
-    object = family
-  ))
+  has_s3_methods(family, c("fit_margin", "margin_info"))
 }
 
 validate_margin_family <- function(family) {

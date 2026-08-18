@@ -420,11 +420,7 @@ expand_legacy_kde_controls <- function(controls, d) {
   if (is.null(controls$mult)) {
     controls$mult <- log(1 + d)
   }
-  for (control in names(controls)) {
-    if (length(controls[[control]]) != d) {
-      controls[[control]] <- rep(controls[[control]], d)
-    }
-  }
+  controls <- lapply(controls, rep_len, length.out = d)
   controls[c("xmin", "xmax", "mult", "bw", "deg")]
 }
 
@@ -575,14 +571,12 @@ vine_dist <- function(margins, pair_copulas, structure) {
   structure <- as_rvine_structure(structure)
 
   # sanity checks for the marg
-  if (!(length(margins) %in% c(1, dim(structure)[1]))) {
+  if (!is.list(margins) || !length(margins) %in% c(1, dim(structure)[1])) {
     stop("marg should have length 1 or dim(structure)[1]")
   }
-  stopifnot(is.list(margins))
   if (length(margins) == 1) {
     margins <- replicate(dim(structure)[1], margins[[1]], simplify = FALSE)
   }
-  stopifnot(length(margins) == dim(structure)[1])
   margins <- lapply(margins, as_margin)
   info <- lapply(margins, margin_info)
   npars_marg <- sum(vapply(info, `[[`, numeric(1), "npars"))
@@ -608,16 +602,13 @@ vine_dist <- function(margins, pair_copulas, structure) {
 
 finalize_vine <- function(vine, data, weights, keep_data) {
   ## compute npars/loglik
-  npars <- loglik <- 0
-  for (k in seq_len(ncol(data))) {
-    info <- margin_info(vine$margins[[k]])
-    npars <- npars + info$npars
-    loglik <- loglik + info$loglik
-  }
+  info <- lapply(vine$margins, margin_info)
 
   ## add the npars/loglik of the copulas
-  vine$npars <- npars + vine$copula$npars
-  vine$loglik <- loglik + vine$copula$loglik
+  vine$npars <- sum(vapply(info, `[[`, numeric(1), "npars")) +
+    vine$copula$npars
+  vine$loglik <- sum(vapply(info, `[[`, numeric(1), "loglik")) +
+    vine$copula$loglik
 
   ## add data
   if (keep_data) {

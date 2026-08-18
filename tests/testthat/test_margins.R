@@ -53,7 +53,7 @@ test_that("margin_dist validates and implements the fitted-margin protocol", {
   )
   expect_s3_class(margin, "margin_dist")
   expect_true(has_margin_protocol(margin))
-  expect_true(check_distr(margin))
+  expect_identical(as_margin(margin), margin)
   expect_equal(dmargin(0, margin), dnorm(0))
   expect_equal(pmargin(0, margin), 0.5)
   expect_equal(qmargin(0.5, margin), 0)
@@ -240,7 +240,6 @@ test_that("independent S3 classes can implement both protocols", {
 
   margin <- fit_margin(family, c(-1, 1), weights = c(1, 3), type = "c")
   expect_true(has_margin_protocol(margin))
-  expect_true(check_distr(margin))
   expect_identical(as_margin(margin), margin)
   expect_equal(margin$location, 0.5)
   expect_equal(
@@ -258,10 +257,10 @@ test_that("independent S3 classes can implement both protocols", {
 test_that("malformed protocol implementations fail near their boundary", {
   expect_error(
     dmargin(0, structure(list(), class = "unknown_margin")),
-    "no dmargin"
+    "no applicable method.*dmargin"
   )
-  expect_match(
-    check_distr(structure(list(), class = "unknown_margin")),
+  expect_error(
+    as_margin(structure(list(), class = "unknown_margin")),
     "protocol"
   )
 
@@ -270,7 +269,7 @@ test_that("malformed protocol implementations fail near their boundary", {
     list(location = 0, scale = 1, type = "continuous", loglik = -1),
     class = "frontend_test_margin"
   )
-  expect_match(check_distr(noncanonical), "canonical")
+  expect_error(as_margin(noncanonical), "canonical")
 })
 
 test_that("margin types determine central left-limit formulas", {
