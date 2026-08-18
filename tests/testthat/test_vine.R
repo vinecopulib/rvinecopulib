@@ -27,6 +27,7 @@ test_that("returns proper 'vine' object", {
       "var_levels"
     )
   )
+  expect_identical(fit$margins_controls$cores, 1)
 })
 
 test_that("S3 generics work", {
@@ -88,6 +89,7 @@ test_that("margins_controls works", {
   default_controls <- eval(formals(vine)$margins_controls)
   expect_identical(default_controls$family_set, "kde1d")
   expect_identical(default_controls$selcrit, "aic")
+  expect_null(default_controls$cores)
 
   fit_mult <- vine(
     u,
@@ -144,6 +146,66 @@ test_that("weights work", {
   )
   expect_eql(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
+})
+
+test_that("margin fitting can use multiple cores", {
+  margin_data <- prep_for_margins(as.data.frame(u))
+  family_set <- expand_margin_family_set("kde1d", ncol(u), colnames(u))
+  serial <- fit_vine_margins(
+    margin_data,
+    family_set,
+    rep("c", ncol(u)),
+    numeric(),
+    "aic",
+    1
+  )
+  multicore <- fit_vine_margins(
+    margin_data,
+    family_set,
+    rep("c", ncol(u)),
+    numeric(),
+    "aic",
+    2
+  )
+  expect_equal(multicore, serial)
+
+  failing <- margin_family(
+    function(x, weights, type) stop("margin fit failed", call. = FALSE),
+    family_name = "failing"
+  )
+  expect_error(
+    fit_vine_margins(
+      margin_data[1:2],
+      list(list(failing), family_set[[2]]),
+      c("c", "c"),
+      numeric(),
+      "aic",
+      2
+    ),
+    "margin fit failed"
+  )
+
+  fit_override <- vine(
+    u,
+    margins_controls = list(cores = 1),
+    copula_controls = list(family_set = "indep"),
+    cores = 2
+  )
+  expect_identical(fit_override$margins_controls$cores, 1)
+  expect_identical(fit_override$copula_controls$cores, 2)
+
+  fit_parallel_override <- vine(
+    u[, 1:2],
+    margins_controls = list(cores = 2),
+    copula_controls = list(family_set = "indep"),
+    cores = 1
+  )
+  expect_identical(fit_parallel_override$margins_controls$cores, 2)
+  expect_identical(fit_parallel_override$copula_controls$cores, 1)
+  expect_error(
+    vine(u, margins_controls = list(cores = 0)),
+    "must be positive"
+  )
 })
 
 test_that("custom tree criteria are available through vine", {

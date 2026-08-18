@@ -7,7 +7,7 @@
 \usage{
 vine(
   data,
-  margins_controls = list(family_set = "kde1d", selcrit = "aic"),
+  margins_controls = list(family_set = "kde1d", selcrit = "aic", cores = NULL),
   copula_controls = list(family_set = "all", structure = NA, par_method = "mle",
     nonpar_method = "constant", mult = 1, selcrit = "aic", psi0 = 0.9, presel = TRUE,
     allow_rotations = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data
@@ -34,6 +34,8 @@ margin fitting. Other character names refer to \code{univariateML} families;
 configured built-in and custom candidates are created with
 \code{\link[=kde1d_family]{kde1d_family()}}, \code{\link[=univariateML_family]{univariateML_family()}}, and \code{\link[=margin_family]{margin_family()}}.
 \item \code{selcrit} selection criterion, one of \code{"loglik"}, \code{"aic"}, or \code{"bic"}.
+\item \code{cores} number of cores used for marginal fitting. \code{NULL} inherits the
+top-level \code{cores} argument.
 }}
 
 \item{copula_controls}{a list with arguments to be passed to \code{\link[=vinecop]{vinecop()}}.}
@@ -46,7 +48,9 @@ these weights and is responsible for using or explicitly rejecting them.}
 store the pseudo-observations used for fitting the copula, use the
 \code{copula_controls} argument.}
 
-\item{cores}{the number of cores to use for parallel computations.}
+\item{cores}{the number of cores to use for parallel computations. Unless
+overridden by \code{margins_controls$cores}, margins are fitted in forked
+processes when \code{cores > 1} on non-Windows systems and serially on Windows.}
 
 \item{var_types}{optional variable types, one for each variable after factor
 expansion: \code{"c"} for continuous, \code{"d"} for integer-valued discrete, or

@@ -55,6 +55,10 @@ for the complete backend changes.
   user-defined `margin_family()` candidates are supported alongside the
   existing `kde1d` margins.
 
+* Fit margins in parallel with forked processes when `cores > 1` on
+  non-Windows systems. Margin fitting remains serial on Windows and can be
+  controlled separately with `margins_controls$cores`.
+
 * Add conditional simulation to `rvinecop()` and `rvine()`. Conditioning values
   can be common or observation-specific, and `conditioning_set` accepts indices
   or names. `vinecop()` and `vine()` also accept `conditioning_set` for

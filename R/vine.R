@@ -13,6 +13,8 @@
 #'   configured built-in and custom candidates are created with
 #'   [kde1d_family()], [univariateML_family()], and [margin_family()].
 #'   * `selcrit` selection criterion, one of `"loglik"`, `"aic"`, or `"bic"`.
+#'   * `cores` number of cores used for marginal fitting. `NULL` inherits the
+#'   top-level `cores` argument.
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
 #' @param weights optional numeric vector of weights for each observation,
 #'   used for both marginal and copula estimation. Every margin family receives
@@ -20,7 +22,9 @@
 #' @param keep_data whether the original data should be stored; if you want to
 #'   store the pseudo-observations used for fitting the copula, use the
 #'   `copula_controls` argument.
-#' @param cores the number of cores to use for parallel computations.
+#' @param cores the number of cores to use for parallel computations. Unless
+#'   overridden by `margins_controls$cores`, margins are fitted in forked
+#'   processes when `cores > 1` on non-Windows systems and serially on Windows.
 #' @param var_types optional variable types, one for each variable after factor
 #'   expansion: `"c"` for continuous, `"d"` for integer-valued discrete, or
 #'   `"zi"` for continuous with an atom at zero. Types are inferred from
@@ -129,7 +133,8 @@ vine <- function(
   data,
   margins_controls = list(
     family_set = "kde1d",
-    selcrit = "aic"
+    selcrit = "aic",
+    cores = NULL
   ),
   copula_controls = list(
     family_set = "all",
@@ -161,7 +166,7 @@ vine <- function(
   d <- ncol(data)
 
   assert_that(is.list(margins_controls))
-  allowed_margins_controls <- c("family_set", "selcrit")
+  allowed_margins_controls <- c("family_set", "selcrit", "cores")
   # BEGIN legacy margins_controls compatibility
   allowed_margins_controls <- c(
     allowed_margins_controls,
@@ -185,6 +190,11 @@ vine <- function(
   # END legacy margins_controls compatibility
   var_types <- resolve_margin_types(data, var_types)
   validate_vine_weights(weights, nrow(data))
+  marg_cores <- margins_controls$cores
+  marg_cores <- ifelse(is.null(marg_cores), cores, marg_cores)
+  if (!is.number(marg_cores) || !is.finite(marg_cores) || marg_cores <= 0) {
+    stop("'cores' arguments must be positive and finite.", call. = FALSE)
+  }
 
   assert_that(is.list(copula_controls))
   if (is.null(copula_controls$keep_data)) {
@@ -228,17 +238,19 @@ vine <- function(
   ## estimation of the marginals
   vine <- list()
   margin_data <- prep_for_margins(data)
-  vine$margins <- lapply(seq_len(d), function(j) {
-    select_margin(
-      margin_data[[j]],
-      family_set[[j]],
-      var_types[j],
-      weights,
-      selcrit,
-      j
-    )
-  })
-  vine$margins_controls <- list(family_set = family_set, selcrit = selcrit)
+  vine$margins <- fit_vine_margins(
+    margin_data,
+    family_set,
+    var_types,
+    weights,
+    selcrit,
+    marg_cores
+  )
+  vine$margins_controls <- list(
+    family_set = family_set,
+    selcrit = selcrit,
+    cores = marg_cores
+  )
 
   ## estimation of the R-vine copula --------------
   vine$copula <- list(var_types = simplify_var_types(var_types))
@@ -251,6 +263,60 @@ vine <- function(
   ]
 
   finalize_vine(vine, data, weights, keep_data)
+}
+
+fit_vine_margins <- function(
+  margin_data,
+  family_set,
+  var_types,
+  weights,
+  selcrit,
+  cores
+) {
+  cores <- min(cores, length(margin_data))
+  if (.Platform$OS.type == "windows") {
+    cores <- 1L
+  }
+  fits <- parallel::mclapply(
+    seq_along(margin_data),
+    fit_one_vine_margin,
+    margin_data = margin_data,
+    family_set = family_set,
+    var_types = var_types,
+    weights = weights,
+    selcrit = selcrit,
+    mc.cores = cores
+  )
+  failed <- which(vapply(
+    fits,
+    function(fit) inherits(fit, c("error", "try-error")),
+    logical(1)
+  ))
+  if (length(failed)) {
+    stop(fits[[failed[1L]]])
+  }
+  fits
+}
+
+fit_one_vine_margin <- function(
+  j,
+  margin_data,
+  family_set,
+  var_types,
+  weights,
+  selcrit
+) {
+  tryCatch(
+    select_margin(
+      margin_data[[j]],
+      family_set[[j]],
+      var_types[j],
+      weights,
+      selcrit,
+      j
+    ),
+    error = identity
+  )
 }
 
 # BEGIN legacy margins_controls compatibility
