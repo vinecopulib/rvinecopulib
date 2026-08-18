@@ -34,9 +34,14 @@ reference:
   - vine_dist
   - vine_distributions
   - vine_predict_and_fitted
+  - as_margin
   - margin_dist
+  - stats_margin
   - margin_family
+  - kde1d_family
+  - univariateML_family
   - margin_protocol
+  - margin_family_protocol
   - zero_inflated
 - title: Vine copula models
   contents:

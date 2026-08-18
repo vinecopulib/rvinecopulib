@@ -86,7 +86,7 @@ zi_fit <- vine(
   zi_data,
   copula_controls = list(family_set = "indep")
 )
-zi_fit$margins_controls$type
+summary(zi_fit)$margins[, c("name", "type")]
 ```
 
 The atom is always located at zero. A custom zero-inflated margin must return
