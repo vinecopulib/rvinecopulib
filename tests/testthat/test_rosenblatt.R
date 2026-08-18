@@ -198,7 +198,7 @@ test_that("discrete rosenblatt works with vine distributions", {
   )
   vd <- vine(
     x,
-    margins_controls = list(type = c("d", "c", "zi")),
+    var_types = c("d", "c", "zi"),
     copula_controls = list(family_set = "gauss")
   )
   u <- rvine(50, vd)

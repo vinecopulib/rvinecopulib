@@ -6,27 +6,17 @@
 #' @param data a matrix or data.frame. Discrete variables have to be declared as
 #' `ordered()`.
 #' @param margins_controls a list with arguments to be passed to
-#' marginal fitting. Currently, there can be
+#' marginal fitting. The supported entries are
 #'   * `family_set` candidate families used for every variable, or a list with
 #'   one entry per variable. The default `"kde1d"` preserves nonparametric
 #'   margin fitting. Other character names refer to `univariateML` families;
-#'   custom candidates can be defined with [margin_family()].
+#'   configured built-in and custom candidates are created with
+#'   [kde1d_family()], [univariateML_family()], and [margin_family()].
 #'   * `selcrit` selection criterion, one of `"loglik"`, `"aic"`, or `"bic"`.
-#'   * `mult` numeric vector of length one or d; all bandwidths for marginal
-#'   kernel density estimation are multiplied with `mult`. Defaults to
-#'   `log(1 + d)` where `d` is the number of variables after applying
-#'   `rvinecopulib:::expand_factors()`.
-#'   * `xmin` numeric vector of length d; see [kde1d::kde1d()].
-#'   * `xmax` numeric vector of length d; see [kde1d::kde1d()].
-#'   * `type` legacy variable-type control, a character vector of length one or
-#'   d. Prefer the top-level `var_types` argument for new code.
-#'   * `bw` numeric vector of length d; see [kde1d::kde1d()].
-#'   * `deg` numeric vector of length one or d; [kde1d::kde1d()].
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
 #' @param weights optional numeric vector of weights for each observation,
-#'   used for both marginal and copula estimation. The `"kde1d"` margin and
-#'   custom [margin_family()] fitters that accept a named `weights` argument can
-#'   use them; unsupported margin candidates fail normally during selection.
+#'   used for both marginal and copula estimation. Every margin family receives
+#'   these weights and is responsible for using or explicitly rejecting them.
 #' @param keep_data whether the original data should be stored; if you want to
 #'   store the pseudo-observations used for fitting the copula, use the
 #'   `copula_controls` argument.
@@ -39,16 +29,17 @@
 #' `vine_dist()` creates a vine copula by specifying the margins, a nested list
 #' of `bicop_dist` objects and a quadratic structure matrix.
 #'
-#' `vine()` provides automated fitting for vine copula models.
-#' `margins_controls` controls marginal family selection and contains the same
-#' smoothing parameters as [kde1d::kde1d()] (except for `x`). `copula_controls`
-#' is a list with the same parameters as [vinecop()] (except for `data`).
+#' `vine()` provides automated fitting for vine copula models. Margin-specific
+#' fitting options are properties of the family specification, not controls
+#' interpreted by `vine()`. For example, use
+#' `kde1d_family(xmin = 0, mult = 2)` in `family_set`. `copula_controls` is a
+#' list with the same parameters as [vinecop()] (except for `data`).
 #'
 #' A character `margins_controls$family_set` is used for every variable. Its
-#' entries can be `"kde1d"` or names from
-#' [univariateML::univariateML_models]. A list supplies one candidate set per
+#' entries can be `"kde1d"` or names of models available in univariateML. A
+#' list supplies one candidate set per
 #' variable, for example `list(c("norm", "cauchy"), c("pois", "geom"))`.
-#' Each entry may itself be a character vector, a [margin_family()] object, or a
+#' Each entry may itself be a character vector, a margin-family object, or a
 #' list combining both. An unnamed list is matched by position; a named list
 #' must contain every expanded variable name exactly once and is reordered to
 #' match the data.
@@ -56,16 +47,16 @@
 #' The aliases `"par"` and `"parametric"` expand to all `univariateML`
 #' families, `"nonpar"` and `"nonparametric"` select `"kde1d"`, and `"all"`
 #' combines both. Parametric names and aliases require the suggested
-#' `univariateML` package; the default `"kde1d"` and custom [margin_family()]
-#' objects do not. Duplicate candidate names are fitted only once.
+#' `univariateML` package; the default `"kde1d"`, [kde1d_family()], and custom
+#' [margin_family()] objects do not. Identical candidate specifications are
+#' fitted only once.
 #'
 #' Candidates incompatible with a variable's type are removed before fitting.
 #' rvinecopulib fits every remaining candidate and selects the first minimum of
-#' `-logLik`, AIC, or BIC according to `selcrit`. Competing custom candidates
-#' therefore need a finite [logLik()] value. Observation weights are passed to
-#' `"kde1d"` and custom [margin_family()] fitters. An unsupported candidate may
-#' fail while another candidate succeeds. The built-in univariateML adapter
-#' does not support weights.
+#' negative log-likelihood, AIC, or BIC according to `selcrit`. Competing
+#' candidates therefore need a finite [margin_loglik()] value. An unsupported
+#' candidate may fail while another candidate succeeds. The built-in
+#' univariateML family explicitly rejects observation weights.
 #'
 #' @return Objects inheriting from `vine_dist` for [vine_dist()], and
 #' `vine` and `vine_dist` for [vine()].
@@ -106,7 +97,7 @@
 #' mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
 #'
 #' # set up vine copula model with Gaussian margins
-#' vc <- vine_dist(list(list(distr = "norm")), pcs, mat)
+#' vc <- vine_dist(list(stats_margin("norm")), pcs, mat)
 #'
 #' # show model
 #' summary(vc)
@@ -138,13 +129,7 @@ vine <- function(
   data,
   margins_controls = list(
     family_set = "kde1d",
-    selcrit = "aic",
-    mult = NULL,
-    xmin = NaN,
-    xmax = NaN,
-    type = "c",
-    bw = NA,
-    deg = 2
+    selcrit = "aic"
   ),
   copula_controls = list(
     family_set = "all",
@@ -171,29 +156,15 @@ vine <- function(
   var_types = NULL
 ) {
   ## basic sanity checks (copula_controls are checked by vinecop)
-  margins_controls_supplied <- !missing(margins_controls)
   data <- expand_factors(data)
 
   d <- ncol(data)
 
   assert_that(is.list(margins_controls))
-  allowed_margins_controls <- c(
-    "family_set",
-    "selcrit",
-    "xmin",
-    "xmax",
-    "type",
-    "mult",
-    "bw",
-    "deg"
-  )
+  allowed_margins_controls <- c("family_set", "selcrit")
   assert_that(in_set(names(margins_controls), allowed_margins_controls))
-  var_types <- resolve_margin_types(
-    data,
-    var_types,
-    margins_controls,
-    margins_controls_supplied
-  )
+  var_types <- resolve_margin_types(data, var_types)
+  validate_vine_weights(weights, nrow(data))
 
   assert_that(is.list(copula_controls))
   if (is.null(copula_controls$keep_data)) {
@@ -206,7 +177,11 @@ vine <- function(
   if (is.null(family_set)) {
     family_set <- "kde1d"
   }
-  family_set <- expand_margin_family_set(family_set, d, colnames(data))
+  family_set <- expand_margin_family_set(
+    family_set,
+    d,
+    colnames(data)
+  )
   selcrit <- margins_controls$selcrit
   if (is.null(selcrit)) {
     selcrit <- "aic"
@@ -221,64 +196,23 @@ vine <- function(
       call. = FALSE
     )
   }
-  kde_controls <- margins_controls[
-    intersect(
-      names(margins_controls),
-      c("xmin", "xmax", "type", "mult", "bw", "deg")
-    )
-  ]
-  kde_controls <- expand_margin_controls(kde_controls, d, data)
-  margins_controls <- kde_controls
-  margins_controls$type <- var_types
-  for (k in which(sapply(data, is.ordered))) {
-    margins_controls$type[k] <- "d"
-    margins_controls$xmin[k] <- 0
-    margins_controls$xmax[k] <- nlevels(data[[k]]) - 1
-  }
-
   ## estimation of the marginals
   vine <- list()
   margin_data <- prep_for_margins(data)
-  only_kde1d <- all(vapply(
-    family_set,
-    function(candidates) {
-      length(candidates) == 1L && identical(candidates[[1L]], "kde1d")
-    },
-    logical(1)
-  ))
-  if (only_kde1d) {
-    vine$margins <- fit_margins_cpp(
-      margin_data,
-      xmin = margins_controls$xmin,
-      xmax = margins_controls$xmax,
-      type = margins_controls$type,
-      mult = margins_controls$mult,
-      bw = margins_controls$bw,
-      deg = margins_controls$deg,
-      weights = weights,
-      cores
+  vine$margins <- lapply(seq_len(d), function(j) {
+    select_margin(
+      margin_data[[j]],
+      family_set[[j]],
+      var_types[j],
+      weights,
+      selcrit,
+      j
     )
-  } else {
-    vine$margins <- lapply(seq_len(d), function(j) {
-      controls <- lapply(margins_controls, `[[`, j)
-      select_margin(
-        margin_data[, j],
-        family_set[[j]],
-        var_types[j],
-        controls,
-        weights,
-        selcrit,
-        j
-      )
-    })
-  }
-  margins_controls$family_set <- family_set
-  margins_controls$selcrit <- selcrit
-  vine$margins_controls <- margins_controls
-  vine$margins <- finalize_margins(data, vine$margins)
+  })
+  vine$margins_controls <- list(family_set = family_set, selcrit = selcrit)
 
   ## estimation of the R-vine copula --------------
-  vine$copula <- list(var_types = simplify_var_types(margins_controls$type))
+  vine$copula <- list(var_types = simplify_var_types(var_types))
   copula_controls$var_types <- vine$copula$var_types
   copula_controls$data <- compute_pseudo_obs(data, vine)
   copula_controls$weights <- weights
@@ -290,42 +224,17 @@ vine <- function(
   finalize_vine(vine, data, weights, keep_data)
 }
 
-resolve_margin_types <- function(
-  data,
-  var_types,
-  margins_controls,
-  margins_controls_supplied
-) {
+resolve_margin_types <- function(data, var_types) {
   d <- ncol(data)
   inferred <- rep("c", d)
   inferred[vapply(data, is.ordered, logical(1))] <- "d"
   inferred[vapply(data, inherits, logical(1), "zero_inflated")] <- "zi"
 
-  controls_type <- if (margins_controls_supplied) {
-    margins_controls$type
-  } else {
-    NULL
-  }
-  if (!is.null(controls_type)) {
-    controls_type <- expand_margin_types(
-      controls_type,
-      d,
-      "margins_controls$type"
-    )
-  }
   if (!is.null(var_types)) {
     var_types <- expand_margin_types(var_types, d, "var_types")
   }
-  if (
-    !is.null(var_types) &&
-      !is.null(controls_type) &&
-      !identical(var_types, controls_type)
-  ) {
-    stop("'var_types' and 'margins_controls$type' disagree.", call. = FALSE)
-  }
 
-  explicit <- if (!is.null(var_types)) var_types else controls_type
-  resolved <- if (is.null(explicit)) inferred else explicit
+  resolved <- if (is.null(var_types)) inferred else var_types
   marked <- inferred != "c"
   if (any(marked & resolved != inferred)) {
     stop(
@@ -348,6 +257,26 @@ resolve_margin_types <- function(
   resolved
 }
 
+validate_vine_weights <- function(weights, n) {
+  if (
+    !is.numeric(weights) ||
+      !length(weights) %in% c(0L, n) ||
+      anyNA(weights) ||
+      any(!is.finite(weights)) ||
+      any(weights < 0) ||
+      (length(weights) && sum(weights) <= 0)
+  ) {
+    stop(
+      sprintf(
+        "'weights' must be empty or contain %d finite non-negative values with positive sum.",
+        n
+      ),
+      call. = FALSE
+    )
+  }
+  invisible(weights)
+}
+
 expand_margin_types <- function(type, d, arg) {
   type <- normalize_margin_types(type, arg)
   if (!length(type) %in% c(1L, d)) {
@@ -357,8 +286,12 @@ expand_margin_types <- function(type, d, arg) {
 }
 
 prep_for_margins <- function(data) {
-  data <- lapply(data, function(x) if (is.ordered(x)) as.numeric(x) - 1 else x)
-  do.call(cbind, data)
+  lapply(data, function(x) {
+    if (!is.ordered(x)) {
+      return(x)
+    }
+    structure(as.numeric(x) - 1, margin_levels = levels(x))
+  })
 }
 
 compute_pseudo_obs <- function(data, vine) {
@@ -395,12 +328,9 @@ expand_factors <- function(data) {
 #' @param margins a list containing one marginal distribution per variable.
 #' Each margin can be a [margin_dist()] object, another fitted object
 #' implementing the [margin protocol][margin_protocol], a `kde1d` object, or a
-#' fixed [stats::Distributions] specification. Fixed specifications must be a
-#' list containing at least the distribution family (`"distr"`) and optionally
-#' the parameters, e.g.
-#' `list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))`.
-#' Note that parameters that have no default values have to be provided.
-#' Furthermore, if `margins` has length one, it will be recycled for every component.
+#' [stats_margin()] object. Legacy `list(distr = ...)` specifications are
+#' converted through [stats_margin()]. If `margins` has length one, it is
+#' recycled for every component.
 #' @param pair_copulas A nested list of 'bicop_dist' objects, where
 #'    \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge `e` in
 #'    tree `t`.
@@ -422,28 +352,15 @@ vine_dist <- function(margins, pair_copulas, structure) {
     margins <- replicate(dim(structure)[1], margins[[1]], simplify = FALSE)
   }
   stopifnot(length(margins) == dim(structure)[1])
-  check_marg <- lapply(margins, check_distr)
-
-  is_ok <- sapply(check_marg, isTRUE)
-  if (!all(is_ok)) {
-    msg <- "Some objects in marg aren't properly defined.\n"
-    msg <- c(
-      msg,
-      paste0(
-        "margin ",
-        seq_along(check_marg)[!is_ok],
-        " : ",
-        unlist(check_marg[!is_ok]),
-        ".",
-        sep = "\n"
-      )
-    )
-    stop(msg)
-  }
+  margins <- lapply(margins, as_margin)
   npars_marg <- sum(vapply(margins, margin_npars, numeric(1)))
 
   # create the vinecop object
-  copula <- vinecop_dist(pair_copulas, structure)
+  copula <- vinecop_dist(
+    pair_copulas,
+    structure,
+    var_types = simplify_var_types(vapply(margins, margin_type, character(1)))
+  )
 
   # create object
   structure(
@@ -455,33 +372,6 @@ vine_dist <- function(margins, pair_copulas, structure) {
     ),
     class = "vine_dist"
   )
-}
-
-expand_margin_controls <- function(controls, d, data) {
-  default_controls <-
-    list(xmin = NaN, xmax = NaN, type = "c", mult = NULL, bw = NA, deg = 2)
-  controls <- modifyList(default_controls, controls)
-  if (is.null(controls[["mult"]])) {
-    controls[["mult"]] <- log(1 + d)
-  }
-  for (par in names(controls)) {
-    if (length(controls[[par]]) != ncol(data)) {
-      controls[[par]] <- rep(controls[[par]], ncol(data))
-    }
-  }
-  controls
-}
-
-finalize_margins <- function(data, margins) {
-  for (k in seq_along(margins)) {
-    if (inherits(margins[[k]], "kde1d")) {
-      margins[[k]]$x <- data[[k]]
-      margins[[k]]$nobs <- nrow(data)
-    } else if (is.ordered(data[[k]])) {
-      attr(margins[[k]], "levels") <- levels(data[[k]])
-    }
-  }
-  margins
 }
 
 finalize_vine <- function(vine, data, weights, keep_data) {

@@ -1,260 +1,34 @@
-#' Marginal distribution protocol
+#' Fitted marginal distribution protocol
 #'
-#' Evaluate a fitted marginal distribution. These generics dispatch on
-#' `margin`, their second argument. This lets another package integrate its
-#' fitted distribution class without changing the usual data-first calling
-#' convention.
+#' Fitted margins provide distribution evaluation and model metadata through a
+#' small set of S3 generics. Methods for `dmargin()`, `pmargin()`, and
+#' `qmargin()` dispatch on `margin`, their second argument. Metadata methods
+#' dispatch on their only argument.
 #'
-#' A fitted margin class must provide methods for all three generics and a
-#' [logLik()] method whose return value has a finite `df` attribute. It must
-#' declare its variable type through `attr(margin, "type")`, using `"c"` for a
+#' A fitted margin class must implement all eight generics documented here.
+#' Evaluation methods must be vectorized. `margin_type()` returns `"c"` for a
 #' continuous distribution, `"d"` for an integer-supported distribution, or
-#' `"zi"` for a continuous distribution with an atom at zero. For compatibility
-#' with `univariateML`, a logical `attr(margin, "continuous")` is also
-#' recognized. An optional `"family"` or `"model"` attribute supplies the name
-#' shown in summaries.
+#' `"zi"` for a continuous distribution with an atom at zero.
+#' `margin_support()` returns the mathematical support as its lower and upper
+#' bounds. The parameter count must be non-negative or `NA` when unavailable;
+#' the log-likelihood may be `NA` for a fixed margin.
 #'
-#' Methods must be vectorized and return one value for every element of `x` or
-#' `p`. For discrete margins, `dmargin()` returns probability mass and
-#' rvinecopulib computes the left limit as `pmargin(x - 1, margin)`. For a
-#' `"zi"` margin, `dmargin(0, margin)` is the mass at zero and the left limit at
-#' zero is `pmargin(0, margin) - dmargin(0, margin)`. At nonzero values its left
-#' limit equals its CDF.
+#' The type determines left limits throughout rvinecopulib. They are `F(x)` for
+#' continuous margins, `F(x - 1)` for integer-supported margins, and
+#' `F(0) - P(X = 0)` at zero for zero-inflated margins. Consequently,
+#' `dmargin(0, margin)` must return the atom's mass for a zero-inflated margin.
 #'
 #' @param x vector of evaluation points.
 #' @param p vector of probabilities.
 #' @param margin a fitted marginal distribution object.
 #'
-#' @return A numeric vector containing density or probability mass values for
-#'   `dmargin()`, distribution function values for `pmargin()`, and quantiles
-#'   for `qmargin()`.
+#' @return `dmargin()`, `pmargin()`, and `qmargin()` return numeric vectors.
+#'   `margin_type()` and `margin_family_name()` return character scalars,
+#'   `margin_support()` returns the two support bounds, and `margin_npars()` and
+#'   `margin_loglik()` return numeric scalars.
 #'
 #' @name margin_protocol
-#'
-#' @examples
-#' fitted_normal <- structure(
-#'   c(mean = 1, sd = 2),
-#'   class = "example_normal_margin",
-#'   type = "c",
-#'   family = "normal"
-#' )
-#' dmargin.example_normal_margin <- function(x, margin) {
-#'   dnorm(x, margin[["mean"]], margin[["sd"]])
-#' }
-#' pmargin.example_normal_margin <- function(x, margin) {
-#'   pnorm(x, margin[["mean"]], margin[["sd"]])
-#' }
-#' qmargin.example_normal_margin <- function(p, margin) {
-#'   qnorm(p, margin[["mean"]], margin[["sd"]])
-#' }
-#' logLik.example_normal_margin <- function(object, ...) {
-#'   structure(-10, class = "logLik", df = 2)
-#' }
-#' pmargin(1, fitted_normal)
 NULL
-
-#' Create a custom marginal distribution
-#'
-#' `margin_dist()` creates a fitted or fixed margin from three minimal
-#' evaluation functions. The functions must each accept one vector argument
-#' and return a vector of the same length. They are stored in the resulting
-#' object, so closures can capture fitted parameter values.
-#'
-#' A finite `loglik` is needed when the object competes with other candidates
-#' during [vine()] fitting. It may be `NA` for a fixed margin supplied directly
-#' to [vine_dist()] or when it is the only fitted candidate. `npars` is used in
-#' AIC and BIC calculations and may be non-integer for effective degrees of
-#' freedom.
-#'
-#' @param d density or probability mass function.
-#' @param p distribution function.
-#' @param q quantile function.
-#' @param family descriptive family name.
-#' @param type margin type: `"c"` for continuous, `"d"` for integer-valued
-#'   discrete, or `"zi"` for a continuous distribution with an atom at zero.
-#' @param npars effective number of fitted parameters.
-#' @param loglik maximized marginal log-likelihood, or `NA` for a fixed margin.
-#'
-#' @return An object of class `margin_dist` implementing the
-#'   [margin protocol][margin_protocol].
-#' @export
-#'
-#' @examples
-#' normal_margin <- margin_dist(
-#'   d = function(x) dnorm(x, mean = 1, sd = 2),
-#'   p = function(x) pnorm(x, mean = 1, sd = 2),
-#'   q = function(p) qnorm(p, mean = 1, sd = 2),
-#'   family = "norm",
-#'   npars = 2
-#' )
-#' dmargin(1, normal_margin)
-#' pmargin(1, normal_margin)
-#' qmargin(0.5, normal_margin)
-margin_dist <- function(
-  d,
-  p,
-  q,
-  family = "custom",
-  type = "c",
-  npars = 0,
-  loglik = NA_real_
-) {
-  if (!is.function(d) || !is.function(p) || !is.function(q)) {
-    stop("'d', 'p', and 'q' must be functions.", call. = FALSE)
-  }
-  if (
-    !is.character(family) ||
-      length(family) != 1L ||
-      is.na(family) ||
-      !nzchar(family)
-  ) {
-    stop("'family' must be a non-empty character string.", call. = FALSE)
-  }
-  if (
-    !is.character(type) || length(type) != 1L || !type %in% c("c", "d", "zi")
-  ) {
-    stop("'type' must be one of 'c', 'd', or 'zi'.", call. = FALSE)
-  }
-  if (
-    !is.numeric(npars) || length(npars) != 1L || !is.finite(npars) || npars < 0
-  ) {
-    stop("'npars' must be a finite non-negative number.", call. = FALSE)
-  }
-  if (
-    !is.numeric(loglik) ||
-      length(loglik) != 1L ||
-      !(is.finite(loglik) || (is.na(loglik) && !is.nan(loglik)))
-  ) {
-    stop("'loglik' must be a finite number or NA.", call. = FALSE)
-  }
-  structure(
-    list(
-      d = d,
-      p = p,
-      q = q,
-      family = family,
-      type = type,
-      npars = npars,
-      loglik = loglik
-    ),
-    class = c("margin_dist", "list")
-  )
-}
-
-#' Define a candidate marginal family
-#'
-#' `margin_family()` defines how [vine()] fits one candidate family. The fitting
-#' function has a deliberately small interface: it receives the observed
-#' vector and, when supplied to [vine()], a named `weights` argument. It returns
-#' an object implementing the
-#' [margin protocol][margin_protocol]. Additional settings can be captured in
-#' the fitting function's environment. For backward compatibility, `fit` is
-#' called with only the observed vector when no observation weights are used.
-#'
-#' The fitted object must declare the same type as the data being fitted. If
-#' several candidates are supplied, it must also have a finite log-likelihood
-#' and parameter count. Candidate fitting errors are ignored while another
-#' candidate succeeds; if all candidates fail, [vine()] reports their error
-#' messages together. The `"kde1d"` candidate supports observation weights.
-#' Custom fitters may support them by accepting `weights`; otherwise that
-#' candidate fails normally and another candidate may still be selected. The
-#' built-in univariateML adapter does not support weights.
-#'
-#' A `margin_family` object can be used for every variable directly. In a
-#' per-variable `family_set`, wrap multiple candidates in a nested list; see
-#' the example below and [vine()] for the full family-set syntax.
-#'
-#' @param fit a function whose first argument is the observed data vector. When
-#'   observation weights are supplied, it is also called with a named `weights`
-#'   argument containing the corresponding numeric vector.
-#' @param family a descriptive family name.
-#' @param type variable types supported by the family: any of `"c"`, `"d"`,
-#'   and `"zi"`.
-#'
-#' @return An object of class `margin_family`, suitable for
-#'   `margins_controls$family_set` in [vine()].
-#' @export
-#'
-#' @examples
-#' normal_family <- margin_family(
-#'   fit = function(x) {
-#'     mu <- mean(x)
-#'     sigma <- sd(x)
-#'     margin_dist(
-#'       d = function(y) dnorm(y, mu, sigma),
-#'       p = function(y) pnorm(y, mu, sigma),
-#'       q = function(p) qnorm(p, mu, sigma),
-#'       family = "normal",
-#'       npars = 2,
-#'       loglik = sum(dnorm(x, mu, sigma, log = TRUE))
-#'     )
-#'   },
-#'   family = "normal"
-#' )
-#' x <- cbind(rnorm(30), rnorm(30, 2))
-#' fit <- vine(
-#'   x,
-#'   margins_controls = list(
-#'     family_set = list(list(normal_family), list(normal_family))
-#'   ),
-#'   copula_controls = list(family_set = "indep")
-#' )
-#' summary(fit)$margins
-margin_family <- function(fit, family = "custom", type = "c") {
-  if (!is.function(fit)) {
-    stop("'fit' must be a function.", call. = FALSE)
-  }
-  if (
-    !is.character(family) ||
-      length(family) != 1L ||
-      is.na(family) ||
-      !nzchar(family)
-  ) {
-    stop("'family' must be a non-empty character string.", call. = FALSE)
-  }
-  type <- unique(normalize_margin_types(type))
-  if (!length(type)) {
-    stop("'type' must contain at least one variable type.", call. = FALSE)
-  }
-  structure(
-    list(fit = fit, family = family, type = type),
-    class = "margin_family"
-  )
-}
-
-#' Declare zero-inflated data
-#'
-#' Marks a numeric vector as having a continuous distribution with an atom at
-#' zero. The atom is always assumed to be located at zero. The class is
-#' preserved when the vector is stored in or subset from a data frame and is
-#' detected automatically by [vine()]. Alternatively, use `var_types = "zi"`.
-#'
-#' For a fitted zero-inflated margin, rvinecopulib uses the ordinary CDF away
-#' from zero. At zero, its left limit is computed as
-#' `pmargin(0, margin) - dmargin(0, margin)`, so `dmargin(0, margin)` must return
-#' the atom's probability mass rather than a continuous density value.
-#'
-#' @param x a numeric vector.
-#'
-#' @return `x` with an additional `zero_inflated` class.
-#' @export
-#'
-#' @examples
-#' x <- zero_inflated(c(0, 0, rexp(8)))
-#' inherits(data.frame(x = x)$x, "zero_inflated")
-zero_inflated <- function(x) {
-  if (!is.numeric(x)) {
-    stop("'x' must be numeric.", call. = FALSE)
-  }
-  structure(x, class = unique(c("zero_inflated", class(x))))
-}
-
-#' @export
-`[.zero_inflated` <- function(x, ...) {
-  out <- NextMethod("[")
-  class(out) <- class(x)
-  out
-}
 
 #' @rdname margin_protocol
 #' @export
@@ -274,6 +48,36 @@ qmargin <- function(p, margin) {
   UseMethod("qmargin", margin)
 }
 
+#' @rdname margin_protocol
+#' @export
+margin_type <- function(margin) {
+  UseMethod("margin_type")
+}
+
+#' @rdname margin_protocol
+#' @export
+margin_support <- function(margin) {
+  UseMethod("margin_support")
+}
+
+#' @rdname margin_protocol
+#' @export
+margin_family_name <- function(margin) {
+  UseMethod("margin_family_name")
+}
+
+#' @rdname margin_protocol
+#' @export
+margin_npars <- function(margin) {
+  UseMethod("margin_npars")
+}
+
+#' @rdname margin_protocol
+#' @export
+margin_loglik <- function(margin) {
+  UseMethod("margin_loglik")
+}
+
 #' @export
 dmargin.default <- function(x, margin) {
   stop_margin_method("dmargin", margin)
@@ -289,6 +93,31 @@ qmargin.default <- function(p, margin) {
   stop_margin_method("qmargin", margin)
 }
 
+#' @export
+margin_type.default <- function(margin) {
+  stop_margin_method("margin_type", margin)
+}
+
+#' @export
+margin_support.default <- function(margin) {
+  stop_margin_method("margin_support", margin)
+}
+
+#' @export
+margin_family_name.default <- function(margin) {
+  stop_margin_method("margin_family_name", margin)
+}
+
+#' @export
+margin_npars.default <- function(margin) {
+  stop_margin_method("margin_npars", margin)
+}
+
+#' @export
+margin_loglik.default <- function(margin) {
+  stop_margin_method("margin_loglik", margin)
+}
+
 stop_margin_method <- function(generic, margin) {
   stop(
     sprintf(
@@ -300,19 +129,275 @@ stop_margin_method <- function(generic, margin) {
   )
 }
 
+#' Create a fitted or fixed custom margin
+#'
+#' `margin_dist()` creates a fitted or fixed margin from evaluation functions
+#' and explicit metadata. The functions must each accept one vector argument
+#' and return a numeric vector of the same length.
+#'
+#' @param d density or probability mass function.
+#' @param p distribution function.
+#' @param q quantile function.
+#' @param family descriptive family name.
+#' @param type margin type: `"c"`, `"d"`, or `"zi"`.
+#' @param support mathematical support as its lower and upper bounds.
+#' @param npars effective number of fitted parameters.
+#' @param loglik maximized marginal log-likelihood, or `NA` for a fixed margin.
+#'
+#' @return A fitted margin implementing the [margin protocol][margin_protocol].
+#' @export
+#'
+#' @examples
+#' normal_margin <- margin_dist(
+#'   d = function(x) dnorm(x, mean = 1, sd = 2),
+#'   p = function(x) pnorm(x, mean = 1, sd = 2),
+#'   q = function(p) qnorm(p, mean = 1, sd = 2),
+#'   family = "norm",
+#'   support = c(-Inf, Inf),
+#'   npars = 2
+#' )
+#' dmargin(1, normal_margin)
+#' pmargin(1, normal_margin)
+#' qmargin(0.5, normal_margin)
+margin_dist <- function(
+  d,
+  p,
+  q,
+  family = "custom",
+  type = "c",
+  support = c(-Inf, Inf),
+  npars = 0,
+  loglik = NA_real_
+) {
+  if (!is.function(d) || !is.function(p) || !is.function(q)) {
+    stop("'d', 'p', and 'q' must be functions.", call. = FALSE)
+  }
+  validate_margin_family_name(family)
+  type <- normalize_margin_types(type, "type")
+  if (length(type) != 1L) {
+    stop("'type' must have length one.", call. = FALSE)
+  }
+  validate_margin_support(support)
+  validate_margin_npars(npars)
+  validate_margin_loglik(loglik)
+  margin <- structure(
+    list(
+      d = d,
+      p = p,
+      q = q,
+      family = family,
+      type = type,
+      support = unname(support),
+      npars = unname(npars),
+      loglik = unname(loglik)
+    ),
+    class = c("margin_dist", "list")
+  )
+  validate_margin(margin)
+  margin
+}
+
+#' @export
+dmargin.margin_dist <- function(x, margin) {
+  margin$d(x)
+}
+
+#' @export
+pmargin.margin_dist <- function(x, margin) {
+  margin$p(x)
+}
+
+#' @export
+qmargin.margin_dist <- function(p, margin) {
+  margin$q(p)
+}
+
+#' @export
+margin_type.margin_dist <- function(margin) {
+  margin$type
+}
+
+#' @export
+margin_support.margin_dist <- function(margin) {
+  margin$support
+}
+
+#' @export
+margin_family_name.margin_dist <- function(margin) {
+  margin$family
+}
+
+#' @export
+margin_npars.margin_dist <- function(margin) {
+  margin$npars
+}
+
+#' @export
+margin_loglik.margin_dist <- function(margin) {
+  margin$loglik
+}
+
+#' @export
+logLik.margin_dist <- function(object, ...) {
+  structure(object$loglik, df = object$npars, class = "logLik")
+}
+
+#' Create a fixed margin from a stats distribution
+#'
+#' `stats_margin()` adapts the univariate distributions documented in
+#' [stats::Distributions] to the fitted-margin protocol. Distribution
+#' parameters are supplied through `...`; the resulting margin is fixed and
+#' therefore has zero fitted parameters and no fitted log-likelihood.
+#'
+#' @param family distribution suffix such as `"norm"`, `"pois"`, or `"binom"`.
+#' @param ... parameters passed to the distribution's density, CDF, and quantile
+#'   functions.
+#'
+#' @return A fixed margin implementing the [margin protocol][margin_protocol].
+#' @export
+#'
+#' @examples
+#' normal <- stats_margin("norm", mean = 1, sd = 2)
+#' poisson <- stats_margin("pois", lambda = 3)
+#' margin_type(normal)
+#' margin_type(poisson)
+stats_margin <- function(family, ...) {
+  validate_margin_family_name(family)
+  if (!family %in% names(stats_margin_types)) {
+    stop(
+      sprintf("unsupported stats distribution: \"%s\".", family),
+      call. = FALSE
+    )
+  }
+  margin <- structure(
+    list(
+      family = family,
+      args = list(...),
+      type = stats_margin_types[[family]]
+    ),
+    class = c("stats_margin", "list")
+  )
+  tryCatch(
+    qmargin(c(0, 0.5, 1), margin),
+    error = function(error) {
+      stop(conditionMessage(error), call. = FALSE)
+    }
+  )
+  margin$support <- unname(qmargin(c(0, 1), margin))
+  validate_margin_support(margin$support)
+  validate_margin(margin)
+  margin
+}
+
+stats_margin_types <- c(
+  beta = "c",
+  cauchy = "c",
+  chisq = "c",
+  exp = "c",
+  f = "c",
+  gamma = "c",
+  logis = "c",
+  lnorm = "c",
+  norm = "c",
+  t = "c",
+  unif = "c",
+  weibull = "c",
+  binom = "d",
+  geom = "d",
+  hyper = "d",
+  nbinom = "d",
+  pois = "d",
+  signrank = "d",
+  wilcox = "d"
+)
+
+#' @export
+dmargin.stats_margin <- function(x, margin) {
+  eval_stats_margin("d", x, "x", margin)
+}
+
+#' @export
+pmargin.stats_margin <- function(x, margin) {
+  eval_stats_margin("p", x, "q", margin)
+}
+
+#' @export
+qmargin.stats_margin <- function(p, margin) {
+  eval_stats_margin("q", p, "p", margin)
+}
+
+eval_stats_margin <- function(prefix, values, value_name, margin) {
+  args <- margin$args
+  args[[value_name]] <- values
+  do.call(getExportedValue("stats", paste0(prefix, margin$family)), args)
+}
+
+#' @export
+margin_type.stats_margin <- function(margin) {
+  margin$type
+}
+
+#' @export
+margin_support.stats_margin <- function(margin) {
+  margin$support
+}
+
+#' @export
+margin_family_name.stats_margin <- function(margin) {
+  margin$family
+}
+
+#' @export
+margin_npars.stats_margin <- function(margin) {
+  0
+}
+
+#' @export
+margin_loglik.stats_margin <- function(margin) {
+  NA_real_
+}
+
 #' @export
 dmargin.kde1d <- function(x, margin) {
-  dkde1d(x, margin)
+  kde1d::dkde1d(x, margin)
 }
 
 #' @export
 pmargin.kde1d <- function(x, margin) {
-  pkde1d(x, margin)
+  kde1d::pkde1d(x, margin)
 }
 
 #' @export
 qmargin.kde1d <- function(p, margin) {
-  qkde1d(p, margin)
+  kde1d::qkde1d(p, margin)
+}
+
+#' @export
+margin_type.kde1d <- function(margin) {
+  normalize_margin_types(margin$type, "margin type")
+}
+
+#' @export
+margin_support.kde1d <- function(margin) {
+  c(
+    if (is.nan(margin$xmin)) -Inf else margin$xmin,
+    if (is.nan(margin$xmax)) Inf else margin$xmax
+  )
+}
+
+#' @export
+margin_family_name.kde1d <- function(margin) {
+  "kde1d"
+}
+
+#' @export
+margin_npars.kde1d <- function(margin) {
+  if (is.nan(margin$edf)) NA_real_ else margin$edf
+}
+
+#' @export
+margin_loglik.kde1d <- function(margin) {
+  margin$loglik
 }
 
 #' @export
@@ -334,126 +419,235 @@ qmargin.univariateML <- function(p, margin) {
 }
 
 #' @export
-dmargin.margin_dist <- function(x, margin) {
-  margin$d(x)
-}
-
-#' @export
-pmargin.margin_dist <- function(x, margin) {
-  margin$p(x)
-}
-
-#' @export
-qmargin.margin_dist <- function(p, margin) {
-  margin$q(p)
-}
-
-#' @export
-logLik.margin_dist <- function(object, ...) {
-  structure(object$loglik, df = object$npars, class = "logLik")
-}
-
-#' @export
-dmargin.list <- function(x, margin) {
-  eval_legacy_margin("d", x, "x", margin)
-}
-
-#' @export
-pmargin.list <- function(x, margin) {
-  eval_legacy_margin("p", x, "q", margin)
-}
-
-#' @export
-qmargin.list <- function(p, margin) {
-  eval_legacy_margin("q", p, "p", margin)
-}
-
-eval_legacy_margin <- function(prefix, values, value_name, margin) {
-  if (!is_legacy_margin(margin)) {
-    stop_margin_method(paste0(prefix, "margin"), margin)
+margin_type.univariateML <- function(margin) {
+  type <- attr(margin, "rvine_margin_type", exact = TRUE)
+  if (is.null(type)) {
+    continuous <- attr(margin, "continuous", exact = TRUE)
+    type <- if (isTRUE(continuous)) "c" else if (isFALSE(continuous)) "d"
   }
-  args <- margin[names(margin) != "distr"]
-  args[[length(args) + 1L]] <- values
-  names(args)[length(args)] <- value_name
-  do.call(get(paste0(prefix, margin$distr)), args)
+  normalize_margin_types(type, "margin type")
 }
 
-is_legacy_margin <- function(margin) {
-  is.list(margin) &&
-    is.character(margin$distr) &&
-    length(margin$distr) == 1L &&
-    margin$distr %in% supported_distributions
+#' @export
+margin_support.univariateML <- function(margin) {
+  support <- attr(margin, "rvine_margin_support", exact = TRUE)
+  if (is.null(support)) {
+    support <- qmargin(c(0, 1), margin)
+  }
+  unname(support)
+}
+
+#' @export
+margin_family_name.univariateML <- function(margin) {
+  family <- attr(margin, "rvine_margin_family", exact = TRUE)
+  if (is.null(family)) {
+    family <- attr(margin, "model", exact = TRUE)
+  }
+  if (is.null(family)) class(margin)[1L] else as.character(family)[1L]
+}
+
+#' @export
+margin_npars.univariateML <- function(margin) {
+  npars <- attr(stats::logLik(margin), "df")
+  validate_margin_npars(npars)
+  unname(npars)
+}
+
+#' @export
+margin_loglik.univariateML <- function(margin) {
+  as.numeric(stats::logLik(margin))
+}
+
+#' Normalize an object to the fitted-margin protocol
+#'
+#' `as_margin()` validates fitted margins and adapts the legacy
+#' `list(distr = ...)` representation through [stats_margin()].
+#'
+#' @param margin a fitted margin or legacy stats distribution list.
+#'
+#' @return A validated fitted margin.
+#' @export
+as_margin <- function(margin) {
+  UseMethod("as_margin")
+}
+
+#' @export
+as_margin.default <- function(margin) {
+  validate_margin(margin)
+  margin
+}
+
+#' @export
+as_margin.list <- function(margin) {
+  if (has_margin_protocol(margin)) {
+    validate_margin(margin)
+    return(margin)
+  }
+  if (
+    is.null(margin$distr) ||
+      !is.character(margin$distr) ||
+      length(margin$distr) != 1L
+  ) {
+    stop(
+      "a legacy stats margin must be a list with one 'distr' value.",
+      call. = FALSE
+    )
+  }
+  do.call(
+    stats_margin,
+    c(list(family = margin$distr), margin[names(margin) != "distr"])
+  )
 }
 
 has_margin_protocol <- function(margin) {
-  classes <- class(margin)
-  if (identical(classes, "list")) {
-    return(is_legacy_margin(margin))
-  }
-  generics <- c("dmargin", "pmargin", "qmargin")
   all(vapply(
-    generics,
-    function(generic) {
-      any(vapply(
-        classes,
-        function(class) {
-          !is.null(utils::getS3method(generic, class, optional = TRUE)) &&
-            class != "default"
-        },
-        logical(1)
-      ))
+    c(
+      "dmargin",
+      "pmargin",
+      "qmargin",
+      "margin_type",
+      "margin_support",
+      "margin_family_name",
+      "margin_npars",
+      "margin_loglik"
+    ),
+    has_s3_method,
+    logical(1),
+    object = margin
+  ))
+}
+
+has_s3_method <- function(generic, object) {
+  any(vapply(
+    class(object),
+    function(class) {
+      !is.null(utils::getS3method(generic, class, optional = TRUE))
     },
     logical(1)
   ))
 }
 
-margin_npars <- function(margin) {
-  if (inherits(margin, "kde1d")) {
-    return(margin$edf)
+validate_margin <- function(margin, x = NULL) {
+  if (!has_margin_protocol(margin)) {
+    stop(
+      sprintf(
+        "object of class <%s> does not implement the fitted-margin protocol.",
+        paste(class(margin), collapse = "/")
+      ),
+      call. = FALSE
+    )
   }
-  if (is_legacy_margin(margin)) {
-    return(get_npars_distr(margin))
+  type <- margin_type(margin)
+  normalized <- normalize_margin_types(type, "margin_type() result")
+  if (length(type) != 1L || !identical(type, normalized)) {
+    stop(
+      "margin_type() must return one canonical variable type.",
+      call. = FALSE
+    )
   }
-  ll <- stats::logLik(margin)
-  npars <- attr(ll, "df")
-  if (is.null(npars) || length(npars) != 1L || !is.finite(npars)) {
-    stop("logLik() for a fitted margin must have a finite 'df' attribute.")
-  }
-  unname(npars)
+  validate_margin_support(margin_support(margin))
+  validate_margin_family_name(margin_family_name(margin))
+  validate_margin_npars(margin_npars(margin))
+  validate_margin_loglik(margin_loglik(margin))
+  validate_margin_evaluation(margin, x)
+  invisible(margin)
 }
 
-margin_loglik <- function(margin) {
-  if (inherits(margin, "kde1d")) {
-    return(margin$loglik)
-  }
-  if (is_legacy_margin(margin)) {
-    return(NA_real_)
-  }
-  as.numeric(stats::logLik(margin))
+check_distr <- function(distr) {
+  tryCatch(
+    {
+      as_margin(distr)
+      TRUE
+    },
+    error = function(error) conditionMessage(error)
+  )
 }
 
-margin_type <- function(margin) {
-  type <- NULL
-  if (inherits(margin, "margin_dist")) {
-    type <- margin$type
-  } else if (inherits(margin, "kde1d")) {
-    type <- margin$type
-  } else if (is_legacy_margin(margin)) {
-    type <- "c"
-  } else {
-    type <- attr(margin, "type", exact = TRUE)
-    if (is.null(type)) {
-      continuous <- attr(margin, "continuous", exact = TRUE)
-      if (isTRUE(continuous)) {
-        type <- "c"
-      }
-      if (isFALSE(continuous)) type <- "d"
+validate_margin_evaluation <- function(margin, x) {
+  quantiles <- qmargin(c(0.25, 0.75), margin)
+  if (
+    !is.numeric(quantiles) ||
+      length(quantiles) != 2L ||
+      anyNA(quantiles)
+  ) {
+    stop("qmargin() must return one numeric value per input.", call. = FALSE)
+  }
+  probes <- if (is.null(x)) quantiles else x[!is.na(x)]
+  if (length(probes) > 3L) {
+    probes <- probes[seq_len(3L)]
+  }
+  if (length(probes)) {
+    density <- dmargin(probes, margin)
+    probability <- pmargin(probes, margin)
+    if (!is.numeric(density) || length(density) != length(probes)) {
+      stop("dmargin() must return one numeric value per input.", call. = FALSE)
+    }
+    if (anyNA(density) || any(density < 0)) {
+      stop("dmargin() returned a missing or negative value.", call. = FALSE)
+    }
+    if (!is.numeric(probability) || length(probability) != length(probes)) {
+      stop("pmargin() must return one numeric value per input.", call. = FALSE)
+    }
+    if (anyNA(probability) || any(probability < 0 | probability > 1)) {
+      stop(
+        "pmargin() returned a missing value or a value outside [0, 1].",
+        call. = FALSE
+      )
     }
   }
-  if (is.null(type) || length(type) != 1L) {
-    stop("a fitted margin must declare its type.", call. = FALSE)
+  invisible(margin)
+}
+
+validate_margin_family_name <- function(family) {
+  if (
+    !is.character(family) ||
+      length(family) != 1L ||
+      is.na(family) ||
+      !nzchar(family)
+  ) {
+    stop(
+      "a margin family name must be a non-empty character scalar.",
+      call. = FALSE
+    )
   }
-  normalize_margin_types(type, "margin type")
+  invisible(family)
+}
+
+validate_margin_support <- function(support) {
+  if (
+    !is.numeric(support) ||
+      length(support) != 2L ||
+      anyNA(support) ||
+      support[1L] > support[2L]
+  ) {
+    stop(
+      "margin support must contain ordered numeric lower and upper bounds.",
+      call. = FALSE
+    )
+  }
+  invisible(support)
+}
+
+validate_margin_npars <- function(npars) {
+  if (
+    !is.numeric(npars) ||
+      length(npars) != 1L ||
+      !(is.finite(npars) && npars >= 0 || is.na(npars) && !is.nan(npars))
+  ) {
+    stop("'npars' must be finite and non-negative or NA.", call. = FALSE)
+  }
+  invisible(npars)
+}
+
+validate_margin_loglik <- function(loglik) {
+  if (
+    !is.numeric(loglik) ||
+      length(loglik) != 1L ||
+      !(is.finite(loglik) || (is.na(loglik) && !is.nan(loglik)))
+  ) {
+    stop("'loglik' must be finite or NA.", call. = FALSE)
+  }
+  invisible(loglik)
 }
 
 normalize_margin_types <- function(type, arg = "type") {
@@ -478,59 +672,346 @@ pmargin_sub <- function(x, margin) {
   if (type == "c") {
     return(pmargin(x, margin))
   }
-  if (is.ordered(x) && !inherits(margin, "kde1d")) {
+  if (is.ordered(x)) {
     x <- as.numeric(x) - 1L
   }
   if (type == "d") {
-    if (inherits(margin, "kde1d") && is.ordered(margin$x)) {
-      xnum <- as.numeric(x)
-      levels <- levels(margin$x)
-      previous <- ordered(
-        levels[ifelse(xnum > 1, xnum - 1, NA)],
-        levels = levels
-      )
-      return(pmargin(previous, margin))
-    }
     return(pmargin(x - 1, margin))
   }
-
-  out <- pmargin(x, margin)
+  probability <- pmargin(x, margin)
   at_zero <- !is.na(x) & x == 0
-  out[at_zero] <- pmax(
-    out[at_zero] - dmargin(x[at_zero], margin),
+  probability[at_zero] <- pmax(
+    probability[at_zero] - dmargin(x[at_zero], margin),
     0
   )
-  out
+  probability
 }
 
-margin_family_name <- function(margin) {
-  if (is_legacy_margin(margin)) {
-    return(margin$distr)
+#' Margin-family fitting protocol
+#'
+#' Margin families describe how a candidate is fitted. Implementations declare
+#' a name and their supported variable types and provide a `fit_margin()`
+#' method. Every fitter receives the observations, observation weights, and the
+#' requested variable type. It must either use the weights or reject them.
+#'
+#' @param family a margin-family specification.
+#' @param x observed values.
+#' @param weights observation weights, or `numeric()`.
+#' @param type requested variable type.
+#'
+#' @return `fit_margin()` returns a fitted margin. `margin_family_types()`
+#'   returns the supported variable types.
+#' @name margin_family_protocol
+NULL
+
+#' @rdname margin_family_protocol
+#' @export
+fit_margin <- function(family, x, weights = numeric(), type = "c") {
+  UseMethod("fit_margin")
+}
+
+#' @rdname margin_family_protocol
+#' @export
+margin_family_types <- function(family) {
+  UseMethod("margin_family_types")
+}
+
+#' @export
+fit_margin.default <- function(family, x, weights = numeric(), type = "c") {
+  stop(
+    sprintf(
+      "object of class <%s> does not implement the margin-family protocol.",
+      paste(class(family), collapse = "/")
+    ),
+    call. = FALSE
+  )
+}
+
+#' @export
+margin_family_types.default <- function(family) {
+  stop(
+    sprintf(
+      "no margin_family_types() method is available for class <%s>.",
+      paste(class(family), collapse = "/")
+    ),
+    call. = FALSE
+  )
+}
+
+#' Define a custom margin family
+#'
+#' `margin_family()` defines a candidate family for [vine()]. Its fitting
+#' function must accept `x`, `weights`, and `type`, and return an object
+#' implementing the [fitted-margin protocol][margin_protocol]. Additional
+#' settings can be captured in the fitting function's environment.
+#'
+#' @param fit function accepting `x`, `weights`, and `type`.
+#' @param family descriptive family name.
+#' @param types supported variable types.
+#'
+#' @return A margin-family specification.
+#' @export
+#'
+#' @examples
+#' normal_family <- margin_family(
+#'   fit = function(x, weights, type) {
+#'     if (length(weights)) {
+#'       location <- weighted.mean(x, weights)
+#'       scale <- sqrt(weighted.mean((x - location)^2, weights))
+#'     } else {
+#'       location <- mean(x)
+#'       scale <- sd(x)
+#'     }
+#'     margin_dist(
+#'       d = function(y) dnorm(y, location, scale),
+#'       p = function(y) pnorm(y, location, scale),
+#'       q = function(p) qnorm(p, location, scale),
+#'       family = "normal",
+#'       type = type,
+#'       npars = 2,
+#'       loglik = sum(dnorm(x, location, scale, log = TRUE))
+#'     )
+#'   },
+#'   family = "normal"
+#' )
+margin_family <- function(fit, family = "custom", types = "c") {
+  if (!is.function(fit)) {
+    stop("'fit' must be a function.", call. = FALSE)
   }
-  if (inherits(margin, "margin_dist")) {
-    return(margin$family)
+  arguments <- names(formals(fit))
+  if (
+    !length(arguments) ||
+      !"x" %in% arguments ||
+      (!all(c("weights", "type") %in% arguments) && !"..." %in% arguments)
+  ) {
+    stop("'fit' must accept 'x', 'weights', and 'type'.", call. = FALSE)
   }
-  family <- attr(margin, "family", exact = TRUE)
-  if (is.null(family)) {
-    family <- attr(margin, "model", exact = TRUE)
+  validate_margin_family_name(family)
+  types <- unique(normalize_margin_types(types, "types"))
+  if (!length(types)) {
+    stop("'types' must contain at least one variable type.", call. = FALSE)
   }
-  if (is.null(family)) {
-    family <- class(margin)[1L]
+  structure(
+    list(fit = fit, family = family, types = types),
+    class = c("custom_margin_family", "margin_family")
+  )
+}
+
+#' @export
+fit_margin.custom_margin_family <- function(
+  family,
+  x,
+  weights = numeric(),
+  type = "c"
+) {
+  family$fit(x = x, weights = weights, type = type)
+}
+
+#' @export
+margin_family_types.custom_margin_family <- function(family) {
+  family$types
+}
+
+#' @export
+margin_family_name.custom_margin_family <- function(margin) {
+  margin$family
+}
+
+#' Define a kde1d margin family
+#'
+#' The arguments configure [kde1d::kde1d()] and travel with the family object,
+#' rather than being interpreted by [vine()].
+#'
+#' @param xmin,xmax,mult,bw,deg arguments passed to [kde1d::kde1d()].
+#'
+#' @return A margin-family specification supporting all rvinecopulib variable
+#'   types.
+#' @export
+kde1d_family <- function(xmin = NaN, xmax = NaN, mult = 1, bw = NA, deg = 2) {
+  if (
+    !is.numeric(xmin) ||
+      length(xmin) != 1L ||
+      (is.na(xmin) && !is.nan(xmin))
+  ) {
+    stop("'xmin' must be one number or NaN.", call. = FALSE)
   }
-  as.character(family)[1L]
+  if (
+    !is.numeric(xmax) ||
+      length(xmax) != 1L ||
+      (is.na(xmax) && !is.nan(xmax))
+  ) {
+    stop("'xmax' must be one number or NaN.", call. = FALSE)
+  }
+  if (!is.nan(xmin) && !is.nan(xmax) && xmin >= xmax) {
+    stop("'xmin' must be smaller than 'xmax'.", call. = FALSE)
+  }
+  if (
+    !is.numeric(mult) || length(mult) != 1L || !is.finite(mult) || mult <= 0
+  ) {
+    stop("'mult' must be one positive finite number.", call. = FALSE)
+  }
+  if (
+    length(bw) != 1L ||
+      !(is.na(bw) && !is.nan(bw) || is.numeric(bw) && is.finite(bw) && bw > 0)
+  ) {
+    stop("'bw' must be one positive finite number or NA.", call. = FALSE)
+  }
+  if (
+    !is.numeric(deg) ||
+      length(deg) != 1L ||
+      is.na(deg) ||
+      !deg %in% 0:2
+  ) {
+    stop("'deg' must be 0, 1, or 2.", call. = FALSE)
+  }
+  structure(
+    list(xmin = xmin, xmax = xmax, mult = mult, bw = as.numeric(bw), deg = deg),
+    class = c("kde1d_margin_family", "margin_family")
+  )
+}
+
+#' @export
+fit_margin.kde1d_margin_family <- function(
+  family,
+  x,
+  weights = numeric(),
+  type = "c"
+) {
+  xmin <- family$xmin
+  xmax <- family$xmax
+  levels <- attr(x, "margin_levels", exact = TRUE)
+  if (length(levels)) {
+    if (is.nan(xmin)) xmin <- 0
+    if (is.nan(xmax)) xmax <- length(levels) - 1
+  }
+  kde1d::kde1d(
+    x,
+    xmin = xmin,
+    xmax = xmax,
+    type = type,
+    mult = family$mult,
+    bw = family$bw,
+    deg = family$deg,
+    weights = weights
+  )
+}
+
+#' @export
+margin_family_types.kde1d_margin_family <- function(family) {
+  c("c", "d", "zi")
+}
+
+#' @export
+margin_family_name.kde1d_margin_family <- function(margin) {
+  "kde1d"
+}
+
+#' Define a univariateML margin family
+#'
+#' `univariateML_family()` adapts one of univariateML's available models to the
+#' margin-family protocol.
+#'
+#' @param family a univariateML family name.
+#'
+#' @return A parametric margin-family specification.
+#' @export
+univariateML_family <- function(family) {
+  check_univariateML()
+  validate_margin_family_name(family)
+  metadata <- univariateML::univariateML_metadata[[paste0("ml", family)]]
+  if (is.null(metadata)) {
+    stop(sprintf("unknown univariateML family: \"%s\".", family), call. = FALSE)
+  }
+  support_type <- attr(metadata$support, "type")
+  structure(
+    list(
+      family = family,
+      types = if (identical(support_type, "Z")) "d" else "c"
+    ),
+    class = c("univariateML_margin_family", "margin_family")
+  )
+}
+
+#' @export
+fit_margin.univariateML_margin_family <- function(
+  family,
+  x,
+  weights = numeric(),
+  type = "c"
+) {
+  check_univariateML()
+  if (length(weights)) {
+    stop(
+      "univariateML margin families do not support observation weights.",
+      call. = FALSE
+    )
+  }
+  fit <- getExportedValue("univariateML", paste0("ml", family$family))(x)
+  attr(fit, "rvine_margin_family") <- family$family
+  attr(fit, "rvine_margin_type") <- type
+  attr(fit, "rvine_margin_support") <- unname(qmargin(c(0, 1), fit))
+  fit
+}
+
+#' @export
+margin_family_types.univariateML_margin_family <- function(family) {
+  family$types
+}
+
+#' @export
+margin_family_name.univariateML_margin_family <- function(margin) {
+  margin$family
 }
 
 check_univariateML <- function() {
   if (!requireNamespace("univariateML", quietly = TRUE)) {
     stop(
-      "package 'univariateML' is required for parametric margin families.",
+      paste(
+        "package 'univariateML' is required to fit named parametric",
+        "margin families in vine()."
+      ),
       call. = FALSE
     )
   }
 }
 
-expand_margin_family_set <- function(family_set, d, variable_names = NULL) {
-  if (!is.list(family_set) || inherits(family_set, "margin_family")) {
+has_margin_family_protocol <- function(family) {
+  all(vapply(
+    c("fit_margin", "margin_family_types", "margin_family_name"),
+    has_s3_method,
+    logical(1),
+    object = family
+  ))
+}
+
+validate_margin_family <- function(family) {
+  if (!has_margin_family_protocol(family)) {
+    stop(
+      sprintf(
+        "object of class <%s> does not implement the margin-family protocol.",
+        paste(class(family), collapse = "/")
+      ),
+      call. = FALSE
+    )
+  }
+  validate_margin_family_name(margin_family_name(family))
+  types <- margin_family_types(family)
+  normalized <- normalize_margin_types(types, "margin family types")
+  if (!length(normalized) || !identical(types, normalized)) {
+    stop(
+      "margin_family_types() must return supported canonical variable types.",
+      call. = FALSE
+    )
+  }
+  invisible(family)
+}
+
+expand_margin_family_set <- function(
+  family_set,
+  d,
+  variable_names = NULL
+) {
+  if (!is.list(family_set) || has_margin_family_protocol(family_set)) {
     family_set <- rep(list(family_set), d)
   } else {
     if (length(family_set) != d) {
@@ -561,7 +1042,7 @@ expand_margin_family_set <- function(family_set, d, variable_names = NULL) {
 }
 
 normalize_margin_candidates <- function(candidates) {
-  if (inherits(candidates, "margin_family")) {
+  if (has_margin_family_protocol(candidates)) {
     candidates <- list(candidates)
   } else if (is.character(candidates)) {
     if (!length(candidates) || anyNA(candidates)) {
@@ -577,124 +1058,63 @@ normalize_margin_candidates <- function(candidates) {
     )
   } else {
     stop(
-      "margin family candidates must be names or margin_family() objects.",
+      "margin family candidates must be names or family objects.",
       call. = FALSE
     )
   }
-
   if (!length(candidates)) {
     stop("margin family sets must be non-empty.", call. = FALSE)
   }
-  valid <- vapply(
-    candidates,
-    function(candidate) {
-      inherits(candidate, "margin_family") ||
-        (is.character(candidate) &&
-          length(candidate) == 1L &&
-          !is.na(candidate))
-    },
-    logical(1)
+  candidates <- unlist(
+    lapply(candidates, expand_margin_family_alias),
+    recursive = FALSE
   )
-  if (!all(valid)) {
+  candidates <- lapply(candidates, as_margin_family)
+  lapply(candidates, validate_margin_family)
+  candidates[!duplicated(candidates)]
+}
+
+expand_margin_family_alias <- function(candidate) {
+  if (!is.character(candidate) || length(candidate) != 1L) {
+    return(list(candidate))
+  }
+  if (candidate %in% c("nonpar", "nonparametric")) {
+    return(list("kde1d"))
+  }
+  if (candidate %in% c("all", "par", "parametric")) {
+    check_univariateML()
+    families <- as.list(univariateML::univariateML_models)
+    if (candidate == "all") c(list("kde1d"), families) else families
+  } else {
+    list(candidate)
+  }
+}
+
+as_margin_family <- function(family) {
+  if (has_margin_family_protocol(family)) {
+    return(family)
+  }
+  if (!is.character(family) || length(family) != 1L || is.na(family)) {
     stop(
-      "margin family candidates must be names or margin_family() objects.",
+      "margin family candidates must be names or family objects.",
       call. = FALSE
     )
   }
-  expand_margin_family_aliases(candidates)
+  if (family == "kde1d") {
+    return(kde1d_family())
+  }
+  univariateML_family(family)
 }
 
-expand_margin_family_aliases <- function(candidates) {
-  aliases <- vapply(
-    candidates,
-    function(candidate) {
-      if (is.character(candidate)) candidate else ""
-    },
-    character(1)
-  )
-  aliases[aliases %in% c("nonpar", "nonparametric")] <- "kde1d"
-  candidates[aliases == "kde1d"] <- "kde1d"
-
-  expand <- aliases %in% c("all", "par", "parametric")
-  if (any(expand)) {
-    check_univariateML()
-    replacements <- lapply(aliases[expand], function(alias) {
-      families <- as.list(univariateML::univariateML_models)
-      if (alias == "all") c(list("kde1d"), families) else families
-    })
-    candidates[which(expand)] <- replacements
-    candidates <- unlist(candidates, recursive = FALSE)
-  }
-  candidates[
-    !duplicated(vapply(candidates, margin_candidate_name, character(1)))
-  ]
-}
-
-margin_candidate_name <- function(candidate) {
-  if (inherits(candidate, "margin_family")) candidate$family else candidate
-}
-
-margin_candidate_supports <- function(candidate, type) {
-  if (inherits(candidate, "margin_family")) {
-    return(type %in% candidate$type)
-  }
-  if (candidate == "kde1d") {
-    return(TRUE)
-  }
-  if (type == "zi") {
-    return(FALSE)
-  }
-  check_univariateML()
-  metadata <- univariateML::univariateML_metadata[[paste0("ml", candidate)]]
-  if (is.null(metadata)) {
-    stop(sprintf("unknown marginal family: \"%s\".", candidate), call. = FALSE)
-  }
-  support_type <- attr(metadata$support, "type")
-  identical(support_type, if (type == "d") "Z" else "R")
-}
-
-fit_margin_candidate <- function(x, candidate, type, controls, weights) {
-  if (inherits(candidate, "margin_family")) {
-    if (length(weights)) {
-      fit <- candidate$fit(x, weights = weights)
-    } else {
-      fit <- candidate$fit(x)
-    }
-  } else if (candidate == "kde1d") {
-    fit <- kde1d::kde1d(
-      x,
-      xmin = controls$xmin,
-      xmax = controls$xmax,
-      type = type,
-      mult = controls$mult,
-      bw = controls$bw,
-      deg = controls$deg,
-      weights = weights
-    )
-  } else {
-    check_univariateML()
-    if (length(weights)) {
-      stop(
-        "univariateML margin families do not support observation weights.",
-        call. = FALSE
-      )
-    }
-    fitter <- getExportedValue("univariateML", paste0("ml", candidate))
-    fit <- fitter(x)
-    attr(fit, "family") <- candidate
-  }
-
-  check <- check_distr(fit)
-  if (!isTRUE(check)) {
-    stop(check, call. = FALSE)
-  }
-  fitted_type <- margin_type(fit)
-  if (fitted_type != type) {
+fit_margin_candidate <- function(x, family, type, weights) {
+  fit <- fit_margin(family, x, weights = weights, type = type)
+  validate_margin(fit, x)
+  if (margin_type(fit) != type) {
     stop(
       sprintf(
         "fitted family \"%s\" declared type \"%s\", expected \"%s\".",
-        margin_candidate_name(candidate),
-        fitted_type,
+        margin_family_name(family),
+        margin_type(fit),
         type
       ),
       call. = FALSE
@@ -707,16 +1127,14 @@ select_margin <- function(
   x,
   candidates,
   type,
-  controls,
   weights,
   selcrit,
   variable
 ) {
   compatible <- vapply(
     candidates,
-    margin_candidate_supports,
-    logical(1),
-    type = type
+    function(candidate) type %in% margin_family_types(candidate),
+    logical(1)
   )
   candidates <- candidates[compatible]
   if (!length(candidates)) {
@@ -732,25 +1150,28 @@ select_margin <- function(
   errors <- character()
   fits <- lapply(candidates, function(candidate) {
     tryCatch(
-      suppressWarnings(
-        fit_margin_candidate(x, candidate, type, controls, weights)
-      ),
+      suppressWarnings(fit_margin_candidate(x, candidate, type, weights)),
       error = function(error) {
-        errors[[margin_candidate_name(candidate)]] <<- conditionMessage(error)
+        errors <<- c(
+          errors,
+          sprintf(
+            "%s: %s",
+            margin_family_name(candidate),
+            conditionMessage(error)
+          )
+        )
         NULL
       }
     )
   })
-  ok <- !vapply(fits, is.null, logical(1))
-  fits <- fits[ok]
-  candidates <- candidates[ok]
+  fitted <- !vapply(fits, is.null, logical(1))
+  fits <- fits[fitted]
   if (!length(fits)) {
-    details <- paste(names(errors), errors, sep = ": ", collapse = "; ")
     stop(
       sprintf(
         "could not fit a margin for variable %d (%s).",
         variable,
-        details
+        paste(errors, collapse = "; ")
       ),
       call. = FALSE
     )
@@ -758,10 +1179,8 @@ select_margin <- function(
   if (length(fits) == 1L) {
     return(fits[[1L]])
   }
-
   loglik <- vapply(fits, margin_loglik, numeric(1))
-  npars <- vapply(fits, margin_npars, numeric(1))
-  valid <- is.finite(loglik) & is.finite(npars)
+  valid <- is.finite(loglik)
   if (!any(valid)) {
     stop(
       sprintf(
@@ -773,12 +1192,51 @@ select_margin <- function(
   }
   fits <- fits[valid]
   loglik <- loglik[valid]
-  npars <- npars[valid]
+  npars <- vapply(fits, margin_npars, numeric(1))
+  if (selcrit != "loglik") {
+    valid <- is.finite(npars)
+    if (!any(valid)) {
+      stop(
+        sprintf(
+          "no candidate margin for variable %d has a finite parameter count.",
+          variable
+        ),
+        call. = FALSE
+      )
+    }
+    fits <- fits[valid]
+    loglik <- loglik[valid]
+    npars <- npars[valid]
+  }
   criterion <- switch(
     selcrit,
     loglik = -loglik,
     aic = -2 * loglik + 2 * npars,
-    bic = -2 * loglik + log(length(x)) * npars
+    bic = -2 * loglik + log(sum(!is.na(x))) * npars
   )
   fits[[which.min(criterion)]]
+}
+
+#' Declare zero-inflated data
+#'
+#' Marks a numeric vector as continuous with an atom at zero. The class is
+#' preserved when stored in or subset from a data frame and is detected by
+#' [vine()]. Alternatively, use `var_types = "zi"`.
+#'
+#' @param x a numeric vector.
+#'
+#' @return `x` with an additional `zero_inflated` class.
+#' @export
+zero_inflated <- function(x) {
+  if (!is.numeric(x)) {
+    stop("'x' must be numeric.", call. = FALSE)
+  }
+  structure(x, class = unique(c("zero_inflated", class(x))))
+}
+
+#' @export
+`[.zero_inflated` <- function(x, ...) {
+  out <- NextMethod("[")
+  class(out) <- class(x)
+  out
 }

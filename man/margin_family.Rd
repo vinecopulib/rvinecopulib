@@ -2,70 +2,46 @@
 % Please edit documentation in R/margins.R
 \name{margin_family}
 \alias{margin_family}
-\title{Define a candidate marginal family}
+\title{Define a custom margin family}
 \usage{
-margin_family(fit, family = "custom", type = "c")
+margin_family(fit, family = "custom", types = "c")
 }
 \arguments{
-\item{fit}{a function whose first argument is the observed data vector. When
-observation weights are supplied, it is also called with a named \code{weights}
-argument containing the corresponding numeric vector.}
+\item{fit}{function accepting \code{x}, \code{weights}, and \code{type}.}
 
-\item{family}{a descriptive family name.}
+\item{family}{descriptive family name.}
 
-\item{type}{variable types supported by the family: any of \code{"c"}, \code{"d"},
-and \code{"zi"}.}
+\item{types}{supported variable types.}
 }
 \value{
-An object of class \code{margin_family}, suitable for
-\code{margins_controls$family_set} in \code{\link[=vine]{vine()}}.
+A margin-family specification.
 }
 \description{
-\code{margin_family()} defines how \code{\link[=vine]{vine()}} fits one candidate family. The fitting
-function has a deliberately small interface: it receives the observed
-vector and, when supplied to \code{\link[=vine]{vine()}}, a named \code{weights} argument. It returns
-an object implementing the
-\link[=margin_protocol]{margin protocol}. Additional settings can be captured in
-the fitting function's environment. For backward compatibility, \code{fit} is
-called with only the observed vector when no observation weights are used.
-}
-\details{
-The fitted object must declare the same type as the data being fitted. If
-several candidates are supplied, it must also have a finite log-likelihood
-and parameter count. Candidate fitting errors are ignored while another
-candidate succeeds; if all candidates fail, \code{\link[=vine]{vine()}} reports their error
-messages together. The \code{"kde1d"} candidate supports observation weights.
-Custom fitters may support them by accepting \code{weights}; otherwise that
-candidate fails normally and another candidate may still be selected. The
-built-in univariateML adapter does not support weights.
-
-A \code{margin_family} object can be used for every variable directly. In a
-per-variable \code{family_set}, wrap multiple candidates in a nested list; see
-the example below and \code{\link[=vine]{vine()}} for the full family-set syntax.
+\code{margin_family()} defines a candidate family for \code{\link[=vine]{vine()}}. Its fitting
+function must accept \code{x}, \code{weights}, and \code{type}, and return an object
+implementing the \link[=margin_protocol]{fitted-margin protocol}. Additional
+settings can be captured in the fitting function's environment.
 }
 \examples{
 normal_family <- margin_family(
-  fit = function(x) {
-    mu <- mean(x)
-    sigma <- sd(x)
+  fit = function(x, weights, type) {
+    if (length(weights)) {
+      location <- weighted.mean(x, weights)
+      scale <- sqrt(weighted.mean((x - location)^2, weights))
+    } else {
+      location <- mean(x)
+      scale <- sd(x)
+    }
     margin_dist(
-      d = function(y) dnorm(y, mu, sigma),
-      p = function(y) pnorm(y, mu, sigma),
-      q = function(p) qnorm(p, mu, sigma),
+      d = function(y) dnorm(y, location, scale),
+      p = function(y) pnorm(y, location, scale),
+      q = function(p) qnorm(p, location, scale),
       family = "normal",
+      type = type,
       npars = 2,
-      loglik = sum(dnorm(x, mu, sigma, log = TRUE))
+      loglik = sum(dnorm(x, location, scale, log = TRUE))
     )
   },
   family = "normal"
 )
-x <- cbind(rnorm(30), rnorm(30, 2))
-fit <- vine(
-  x,
-  margins_controls = list(
-    family_set = list(list(normal_family), list(normal_family))
-  ),
-  copula_controls = list(family_set = "indep")
-)
-summary(fit)$margins
 }

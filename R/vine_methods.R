@@ -47,7 +47,7 @@
 #'
 #' # set up vine copula model
 #' mat <- rvine_matrix_sim(3)
-#' vc <- vine_dist(list(list(distr = "norm")), pcs, mat)
+#' vc <- vine_dist(list(stats_margin("norm")), pcs, mat)
 #'
 #' # simulate from the model
 #' x <- rvine(200, vc)
@@ -336,22 +336,23 @@ summary.vine <- function(object, ...) {
 }
 
 get_vine_margin_summary <- function(object) {
-  if (!all(vapply(object$margins, inherits, logical(1), "kde1d"))) {
-    info <- data.frame(
-      margin = seq_along(object$margins),
-      name = object$names,
-      family = vapply(object$margins, margin_family_name, character(1)),
-      npars = vapply(object$margins, margin_npars, numeric(1)),
-      loglik = vapply(object$margins, margin_loglik, numeric(1))
-    )
-    class(info) <- c("summary_df", "data.frame")
-    return(info)
-  }
-  capture.output(info <- sapply(object$margins, summary))
-  info <- as.data.frame(t(info))
-  info <- cbind(
-    data.frame(margin = seq_len(nrow(info)), name = object$names),
-    info
+  info <- data.frame(
+    margin = seq_along(object$margins),
+    name = object$names,
+    family = vapply(object$margins, margin_family_name, character(1)),
+    type = vapply(object$margins, margin_type, character(1)),
+    xmin = vapply(
+      object$margins,
+      function(margin) margin_support(margin)[1L],
+      numeric(1)
+    ),
+    xmax = vapply(
+      object$margins,
+      function(margin) margin_support(margin)[2L],
+      numeric(1)
+    ),
+    npars = vapply(object$margins, margin_npars, numeric(1)),
+    loglik = vapply(object$margins, margin_loglik, numeric(1))
   )
   class(info) <- c("summary_df", "data.frame")
   info
@@ -368,7 +369,7 @@ dpq_marg <- function(x, vine, what = "p") {
 }
 
 eval_one_dpq <- function(x, margin, what = "p") {
-  if (is.ordered(x) && !inherits(margin, "kde1d") && what != "q") {
+  if (is.ordered(x) && what != "q") {
     x <- as.numeric(x) - 1L
   }
   dpq <- switch(

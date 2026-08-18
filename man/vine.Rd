@@ -7,8 +7,7 @@
 \usage{
 vine(
   data,
-  margins_controls = list(family_set = "kde1d", selcrit = "aic", mult = NULL, xmin = NaN,
-    xmax = NaN, type = "c", bw = NA, deg = 2),
+  margins_controls = list(family_set = "kde1d", selcrit = "aic"),
   copula_controls = list(family_set = "all", structure = NA, par_method = "mle",
     nonpar_method = "constant", mult = 1, selcrit = "aic", psi0 = 0.9, presel = TRUE,
     allow_rotations = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data
@@ -27,31 +26,21 @@ vine_dist(margins, pair_copulas, structure)
 \code{ordered()}.}
 
 \item{margins_controls}{a list with arguments to be passed to
-marginal fitting. Currently, there can be
+marginal fitting. The supported entries are
 \itemize{
 \item \code{family_set} candidate families used for every variable, or a list with
 one entry per variable. The default \code{"kde1d"} preserves nonparametric
 margin fitting. Other character names refer to \code{univariateML} families;
-custom candidates can be defined with \code{\link[=margin_family]{margin_family()}}.
+configured built-in and custom candidates are created with
+\code{\link[=kde1d_family]{kde1d_family()}}, \code{\link[=univariateML_family]{univariateML_family()}}, and \code{\link[=margin_family]{margin_family()}}.
 \item \code{selcrit} selection criterion, one of \code{"loglik"}, \code{"aic"}, or \code{"bic"}.
-\item \code{mult} numeric vector of length one or d; all bandwidths for marginal
-kernel density estimation are multiplied with \code{mult}. Defaults to
-\code{log(1 + d)} where \code{d} is the number of variables after applying
-\code{rvinecopulib:::expand_factors()}.
-\item \code{xmin} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
-\item \code{xmax} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
-\item \code{type} legacy variable-type control, a character vector of length one or
-d. Prefer the top-level \code{var_types} argument for new code.
-\item \code{bw} numeric vector of length d; see \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
-\item \code{deg} numeric vector of length one or d; \code{\link[kde1d:kde1d]{kde1d::kde1d()}}.
 }}
 
 \item{copula_controls}{a list with arguments to be passed to \code{\link[=vinecop]{vinecop()}}.}
 
 \item{weights}{optional numeric vector of weights for each observation,
-used for both marginal and copula estimation. The \code{"kde1d"} margin and
-custom \code{\link[=margin_family]{margin_family()}} fitters that accept a named \code{weights} argument can
-use them; unsupported margin candidates fail normally during selection.}
+used for both marginal and copula estimation. Every margin family receives
+these weights and is responsible for using or explicitly rejecting them.}
 
 \item{keep_data}{whether the original data should be stored; if you want to
 store the pseudo-observations used for fitting the copula, use the
@@ -67,12 +56,9 @@ expansion: \code{"c"} for continuous, \code{"d"} for integer-valued discrete, or
 \item{margins}{a list containing one marginal distribution per variable.
 Each margin can be a \code{\link[=margin_dist]{margin_dist()}} object, another fitted object
 implementing the \link[=margin_protocol]{margin protocol}, a \code{kde1d} object, or a
-fixed \link[stats:Distributions]{stats::Distributions} specification. Fixed specifications must be a
-list containing at least the distribution family (\code{"distr"}) and optionally
-the parameters, e.g.
-\code{list(list(distr = "norm"), list(distr = "norm", mu = 1), list(distr = "beta", shape1 = 1, shape2 = 1))}.
-Note that parameters that have no default values have to be provided.
-Furthermore, if \code{margins} has length one, it will be recycled for every component.}
+\code{\link[=stats_margin]{stats_margin()}} object. Legacy \code{list(distr = ...)} specifications are
+converted through \code{\link[=stats_margin]{stats_margin()}}. If \code{margins} has length one, it is
+recycled for every component.}
 
 \item{pair_copulas}{A nested list of 'bicop_dist' objects, where
 \code{pair_copulas[[t]][[e]]} corresponds to the pair-copula at edge \code{e} in
@@ -121,16 +107,17 @@ Automated fitting or creation of custom vine copula models
 \code{vine_dist()} creates a vine copula by specifying the margins, a nested list
 of \code{bicop_dist} objects and a quadratic structure matrix.
 
-\code{vine()} provides automated fitting for vine copula models.
-\code{margins_controls} controls marginal family selection and contains the same
-smoothing parameters as \code{\link[kde1d:kde1d]{kde1d::kde1d()}} (except for \code{x}). \code{copula_controls}
-is a list with the same parameters as \code{\link[=vinecop]{vinecop()}} (except for \code{data}).
+\code{vine()} provides automated fitting for vine copula models. Margin-specific
+fitting options are properties of the family specification, not controls
+interpreted by \code{vine()}. For example, use
+\code{kde1d_family(xmin = 0, mult = 2)} in \code{family_set}. \code{copula_controls} is a
+list with the same parameters as \code{\link[=vinecop]{vinecop()}} (except for \code{data}).
 
 A character \code{margins_controls$family_set} is used for every variable. Its
-entries can be \code{"kde1d"} or names from
-\link[univariateML:univariateML_models]{univariateML::univariateML_models}. A list supplies one candidate set per
+entries can be \code{"kde1d"} or names of models available in univariateML. A
+list supplies one candidate set per
 variable, for example \code{list(c("norm", "cauchy"), c("pois", "geom"))}.
-Each entry may itself be a character vector, a \code{\link[=margin_family]{margin_family()}} object, or a
+Each entry may itself be a character vector, a margin-family object, or a
 list combining both. An unnamed list is matched by position; a named list
 must contain every expanded variable name exactly once and is reordered to
 match the data.
@@ -138,16 +125,16 @@ match the data.
 The aliases \code{"par"} and \code{"parametric"} expand to all \code{univariateML}
 families, \code{"nonpar"} and \code{"nonparametric"} select \code{"kde1d"}, and \code{"all"}
 combines both. Parametric names and aliases require the suggested
-\code{univariateML} package; the default \code{"kde1d"} and custom \code{\link[=margin_family]{margin_family()}}
-objects do not. Duplicate candidate names are fitted only once.
+\code{univariateML} package; the default \code{"kde1d"}, \code{\link[=kde1d_family]{kde1d_family()}}, and custom
+\code{\link[=margin_family]{margin_family()}} objects do not. Identical candidate specifications are
+fitted only once.
 
 Candidates incompatible with a variable's type are removed before fitting.
 rvinecopulib fits every remaining candidate and selects the first minimum of
-\code{-logLik}, AIC, or BIC according to \code{selcrit}. Competing custom candidates
-therefore need a finite \code{\link[=logLik]{logLik()}} value. Observation weights are passed to
-\code{"kde1d"} and custom \code{\link[=margin_family]{margin_family()}} fitters. An unsupported candidate may
-fail while another candidate succeeds. The built-in univariateML adapter
-does not support weights.
+negative log-likelihood, AIC, or BIC according to \code{selcrit}. Competing
+candidates therefore need a finite \code{\link[=margin_loglik]{margin_loglik()}} value. An unsupported
+candidate may fail while another candidate succeeds. The built-in
+univariateML family explicitly rejects observation weights.
 }
 \examples{
 # specify pair-copulas
@@ -161,7 +148,7 @@ pcs <- list(
 mat <- matrix(c(1, 2, 3, 1, 2, 0, 1, 0, 0), 3, 3)
 
 # set up vine copula model with Gaussian margins
-vc <- vine_dist(list(list(distr = "norm")), pcs, mat)
+vc <- vine_dist(list(stats_margin("norm")), pcs, mat)
 
 # show model
 summary(vc)

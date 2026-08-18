@@ -24,8 +24,7 @@ protocol that other packages can implement.
 
 ## Default nonparametric margins
 
-The default remains a `kde1d` fit for every variable. Existing calls therefore
-retain their previous behavior.
+The default is a `kde1d` fit for every variable.
 
 ```{r default}
 x <- data.frame(
@@ -39,27 +38,41 @@ fit_kde <- vine(
 summary(fit_kde)$margins
 ```
 
-The usual KDE controls, including `mult`, `xmin`, `xmax`, `bw`, and `deg`, stay
-inside `margins_controls`.
+KDE controls belong to the family specification. This keeps `vine()` free of
+method-specific options:
+
+```{r configured-kde}
+fit_bounded <- vine(
+  transform(x, second = pmin(second, 10)),
+  margins_controls = list(
+    family_set = list(
+      kde1d_family(mult = 1.5),
+      kde1d_family(xmin = 0, xmax = 10, deg = 1)
+    )
+  ),
+  copula_controls = list(family_set = "indep")
+)
+```
 
 ## Observation weights
 
 The `weights` argument to `vine()` is used for both the margins and copula.
-`kde1d` supports weights directly. A custom family supports them by accepting
-a named `weights` argument in its fitting function:
+`kde1d` supports weights directly. Every margin-family fitter receives `x`,
+`weights`, and `type`; it must use the weights or reject them explicitly:
 
 ```{r weighted-custom, eval=FALSE}
 weighted_normal <- margin_family(
-  fit = function(x, weights) {
-    mu <- weighted.mean(x, weights)
-    sigma <- sqrt(weighted.mean((x - mu)^2, weights))
+  fit = function(x, weights, type) {
+    location <- weighted.mean(x, weights)
+    scale <- sqrt(weighted.mean((x - location)^2, weights))
     margin_dist(
-      d = function(y) dnorm(y, mu, sigma),
-      p = function(y) pnorm(y, mu, sigma),
-      q = function(p) qnorm(p, mu, sigma),
+      d = function(y) dnorm(y, location, scale),
+      p = function(y) pnorm(y, location, scale),
+      q = function(p) qnorm(p, location, scale),
       family = "weighted-normal",
+      type = type,
       npars = 2,
-      loglik = sum(weights * dnorm(x, mu, sigma, log = TRUE))
+      loglik = sum(weights * dnorm(x, location, scale, log = TRUE))
     )
   },
   family = "weighted-normal"
@@ -68,10 +81,9 @@ fit_weighted <- vine(x, margins_controls = list(family_set = weighted_normal),
                      weights = runif(nrow(x)))
 ```
 
-When no weights are supplied, custom fitters are still called with `x` only.
-With weights, a fitter that does not accept `weights` fails as an individual
-candidate; selection can continue if another candidate succeeds. The built-in
-univariateML adapter does not currently support observation weights.
+When no weights are supplied, `weights` is `numeric()`. The built-in
+univariateML family rejects non-empty weights. A failed candidate does not stop
+selection if another candidate succeeds.
 
 ## Parametric selection with univariateML
 
@@ -116,26 +128,27 @@ matched by position.
 
 ## Custom fitted families
 
-`margin_family()` wraps a one-argument fitting function. The function receives
-one data vector and returns a fitted object implementing the margin protocol.
-`margin_dist()` is the simplest way to construct such an object.
+`margin_family()` wraps a fitting function with the canonical `x`, `weights`,
+and `type` interface. It returns a fitted object implementing the fitted-margin
+protocol. `margin_dist()` is the simplest way to construct such an object.
 
 ```{r custom-family}
 normal_family <- margin_family(
-  fit = function(x) {
-    mu <- mean(x)
-    sigma <- sqrt(mean((x - mu)^2))
+  fit = function(x, weights, type) {
+    location <- mean(x)
+    scale <- sqrt(mean((x - location)^2))
     margin_dist(
-      d = function(y) dnorm(y, mu, sigma),
-      p = function(y) pnorm(y, mu, sigma),
-      q = function(p) qnorm(p, mu, sigma),
+      d = function(y) dnorm(y, location, scale),
+      p = function(y) pnorm(y, location, scale),
+      q = function(p) qnorm(p, location, scale),
       family = "custom_normal",
+      type = type,
       npars = 2,
-      loglik = sum(dnorm(x, mu, sigma, log = TRUE))
+      loglik = sum(dnorm(x, location, scale, log = TRUE))
     )
   },
   family = "custom_normal",
-  type = "c"
+  types = "c"
 )
 
 fit_custom <- vine(
@@ -147,9 +160,10 @@ summary(fit_custom)$margins
 ```
 
 The fitting callback can capture additional settings in its environment. When
-several candidates compete, each fitted object needs a finite `logLik()` value
-with a finite `df` attribute. If one candidate fails, selection continues with
-the remaining fits; if all fail, `vine()` reports the collected errors.
+several candidates compete, each fitted object needs a finite
+`margin_loglik()` result; AIC and BIC additionally require a finite
+`margin_npars()` result. If one candidate fails, selection continues with the
+remaining fits; if all fail, `vine()` reports the collected errors.
 
 To combine named and custom candidates separately by variable, use nested
 lists:
@@ -166,23 +180,29 @@ margins_controls <- list(
 
 ## The fitted-margin protocol
 
-Packages can integrate their own fitted classes by implementing four S3
+Packages can integrate their own fitted classes by implementing eight S3
 methods. The `dmargin()`, `pmargin()`, and `qmargin()` generics dispatch on
-their second argument, `margin`.
+their second argument, `margin`; the other methods provide model metadata.
 
 ```{r protocol, eval=FALSE}
 dmargin.my_margin <- function(x, margin) { ... }
 pmargin.my_margin <- function(x, margin) { ... }
 qmargin.my_margin <- function(p, margin) { ... }
-logLik.my_margin <- function(object, ...) {
-  structure(object$loglik, class = "logLik", df = object$npars)
-}
+margin_type.my_margin <- function(margin) "c"
+margin_support.my_margin <- function(margin) c(-Inf, Inf)
+margin_family_name.my_margin <- function(margin) "my-family"
+margin_npars.my_margin <- function(margin) margin$npars
+margin_loglik.my_margin <- function(margin) margin$loglik
 ```
 
-The fitted object must also declare `attr(object, "type")` as `"c"`, `"d"`,
-or `"zi"`. Optional `"family"` or `"model"` attributes provide the label
-shown by `summary()`. See `?margin_protocol` for the complete return-value and
+The metadata methods are part of the protocol rather than attributes that the
+core code interprets. See `?margin_protocol` for the complete return-value and
 left-limit contract.
+
+A package can likewise implement the margin-family protocol directly with
+`fit_margin()`, `margin_family_types()`, and `margin_family_name()` methods.
+This is how the built-in kde1d and univariateML adapters integrate with
+`vine()`; the core selection path treats them like any other implementation.
 
 ## Integer-valued discrete variables
 
@@ -223,21 +243,22 @@ zero_data <- data.frame(
 inherits(zero_data$claim, "zero_inflated")
 ```
 
-A custom zero-inflated family declares `type = "zi"` in both its candidate and
-its fitted margin. At zero, `dmargin()` must return the atom probability.
+A custom zero-inflated family declares `types = "zi"`; its fitted margin
+returns `"zi"` from `margin_type()`. At zero, `dmargin()` must return the atom probability.
 rvinecopulib then computes the left limit as `F(0) - f(0)`; away from zero the
 left limit equals the ordinary CDF.
 
 ## Fixed margins and persistence
 
-`vine_dist()` continues to accept all existing fixed `stats` distribution
-specifications, including `norm`, `lnorm`, `gamma`, and `weibull`.
+`stats_margin()` adapts fixed `stats` distributions, including `norm`, `lnorm`,
+`gamma`, and `weibull`, to the fitted-margin protocol. Legacy
+`list(distr = ...)` specifications remain accepted by `vine_dist()`.
 
 ```{r fixed}
 fixed_model <- vine_dist(
   margins = list(
-    list(distr = "norm", mean = 0, sd = 1),
-    list(distr = "lnorm", meanlog = 0, sdlog = 0.5)
+    stats_margin("norm", mean = 0, sd = 1),
+    stats_margin("lnorm", meanlog = 0, sdlog = 0.5)
   ),
   pair_copulas = list(list(bicop_dist())),
   structure = dvine_structure(1:2)

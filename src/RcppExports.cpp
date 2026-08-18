@@ -481,25 +481,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// fit_margins_cpp
-std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data, const Eigen::VectorXd& xmin, const Eigen::VectorXd& xmax, const std::vector<std::string>& type, const Eigen::VectorXd& mult, const Eigen::VectorXd& bw, const Eigen::VectorXi& deg, const Eigen::VectorXd& weights, size_t num_threads);
-RcppExport SEXP _rvinecopulib_fit_margins_cpp(SEXP dataSEXP, SEXP xminSEXP, SEXP xmaxSEXP, SEXP typeSEXP, SEXP multSEXP, SEXP bwSEXP, SEXP degSEXP, SEXP weightsSEXP, SEXP num_threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type xmin(xminSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type xmax(xmaxSEXP);
-    Rcpp::traits::input_parameter< const std::vector<std::string>& >::type type(typeSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mult(multSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type bw(bwSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXi& >::type deg(degSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type weights(weightsSEXP);
-    Rcpp::traits::input_parameter< size_t >::type num_threads(num_threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(fit_margins_cpp(data, xmin, xmax, type, mult, bw, deg, weights, num_threads));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_pseudo_obs_cpp", (DL_FUNC) &_rvinecopulib_pseudo_obs_cpp, 2},
@@ -535,7 +516,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvinecopulib_vinecop_hessian_cpp", (DL_FUNC) &_rvinecopulib_vinecop_hessian_cpp, 5},
     {"_rvinecopulib_vinecop_select_cpp", (DL_FUNC) &_rvinecopulib_vinecop_select_cpp, 24},
     {"_rvinecopulib_vinecop_fit_cpp", (DL_FUNC) &_rvinecopulib_vinecop_fit_cpp, 10},
-    {"_rvinecopulib_fit_margins_cpp", (DL_FUNC) &_rvinecopulib_fit_margins_cpp, 9},
     {NULL, NULL, 0}
 };
 

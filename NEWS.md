@@ -16,6 +16,12 @@ for the complete backend changes.
   and edge orientation representing a model can differ from earlier releases;
   densities and log-likelihoods are unchanged.
 
+* Marginal fitting now uses explicit margin-family and fitted-margin S3
+  protocols. KDE options (`xmin`, `xmax`, `mult`, `bw`, and `deg`) are configured
+  with `kde1d_family()` instead of being entries in `margins_controls`; variable
+  types are declared with the top-level `var_types` argument. Custom
+  `margin_family()` fitters now receive `x`, `weights`, and `type` on every call.
+
 ### BEHAVIOR CHANGES
 
 * TLL fits change slightly because the backend no longer clamps interpolation
@@ -31,8 +37,14 @@ for the complete backend changes.
 
 ### NEW FEATURES
 
-* Add the `dmargin()`, `pmargin()`, and `qmargin()` protocol and
-  `margin_dist()` constructor for custom fitted or fixed margins.
+* Add fitted-margin generics for distribution evaluation, type, support,
+  family name, parameter count, and log-likelihood, together with the
+  `margin_dist()` constructor. Add the complementary `fit_margin()`,
+  `margin_family_types()`, and `margin_family_name()` family protocol.
+
+* Add `kde1d_family()`, `univariateML_family()`, and `stats_margin()` adapters.
+  Core vine fitting and evaluation use only the two protocols and contain no
+  backend-specific dispatch.
 
 * Add `zero_inflated()` and a top-level `var_types` argument to `vine()`;
   continuous, integer-valued discrete, and zero-inflated left-limit CDFs are
@@ -80,9 +92,6 @@ for the complete backend changes.
   pseudo-observations, integration, and shared Eigen/thread primitives.
 
 ### BUG FIXES
-
-* Document the `type` marginal control and include its continuous default in
-  `vine()`'s displayed arguments ([#309](https://github.com/vinecopulib/rvinecopulib/issues/309)).
 
 * Make inverse Rosenblatt transforms thread-safe and custom tree criteria safe
   under multithreaded fitting.

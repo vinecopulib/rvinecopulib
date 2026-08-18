@@ -5,13 +5,28 @@
 \alias{dmargin}
 \alias{pmargin}
 \alias{qmargin}
-\title{Marginal distribution protocol}
+\alias{margin_type}
+\alias{margin_support}
+\alias{margin_family_name}
+\alias{margin_npars}
+\alias{margin_loglik}
+\title{Fitted marginal distribution protocol}
 \usage{
 dmargin(x, margin)
 
 pmargin(x, margin)
 
 qmargin(p, margin)
+
+margin_type(margin)
+
+margin_support(margin)
+
+margin_family_name(margin)
+
+margin_npars(margin)
+
+margin_loglik(margin)
 }
 \arguments{
 \item{x}{vector of evaluation points.}
@@ -21,51 +36,28 @@ qmargin(p, margin)
 \item{p}{vector of probabilities.}
 }
 \value{
-A numeric vector containing density or probability mass values for
-\code{dmargin()}, distribution function values for \code{pmargin()}, and quantiles
-for \code{qmargin()}.
+\code{dmargin()}, \code{pmargin()}, and \code{qmargin()} return numeric vectors.
+\code{margin_type()} and \code{margin_family_name()} return character scalars,
+\code{margin_support()} returns the two support bounds, and \code{margin_npars()} and
+\code{margin_loglik()} return numeric scalars.
 }
 \description{
-Evaluate a fitted marginal distribution. These generics dispatch on
-\code{margin}, their second argument. This lets another package integrate its
-fitted distribution class without changing the usual data-first calling
-convention.
+Fitted margins provide distribution evaluation and model metadata through a
+small set of S3 generics. Methods for \code{dmargin()}, \code{pmargin()}, and
+\code{qmargin()} dispatch on \code{margin}, their second argument. Metadata methods
+dispatch on their only argument.
 }
 \details{
-A fitted margin class must provide methods for all three generics and a
-\code{\link[=logLik]{logLik()}} method whose return value has a finite \code{df} attribute. It must
-declare its variable type through \code{attr(margin, "type")}, using \code{"c"} for a
+A fitted margin class must implement all eight generics documented here.
+Evaluation methods must be vectorized. \code{margin_type()} returns \code{"c"} for a
 continuous distribution, \code{"d"} for an integer-supported distribution, or
-\code{"zi"} for a continuous distribution with an atom at zero. For compatibility
-with \code{univariateML}, a logical \code{attr(margin, "continuous")} is also
-recognized. An optional \code{"family"} or \code{"model"} attribute supplies the name
-shown in summaries.
+\code{"zi"} for a continuous distribution with an atom at zero.
+\code{margin_support()} returns the mathematical support as its lower and upper
+bounds. The parameter count must be non-negative or \code{NA} when unavailable;
+the log-likelihood may be \code{NA} for a fixed margin.
 
-Methods must be vectorized and return one value for every element of \code{x} or
-\code{p}. For discrete margins, \code{dmargin()} returns probability mass and
-rvinecopulib computes the left limit as \code{pmargin(x - 1, margin)}. For a
-\code{"zi"} margin, \code{dmargin(0, margin)} is the mass at zero and the left limit at
-zero is \code{pmargin(0, margin) - dmargin(0, margin)}. At nonzero values its left
-limit equals its CDF.
-}
-\examples{
-fitted_normal <- structure(
-  c(mean = 1, sd = 2),
-  class = "example_normal_margin",
-  type = "c",
-  family = "normal"
-)
-dmargin.example_normal_margin <- function(x, margin) {
-  dnorm(x, margin[["mean"]], margin[["sd"]])
-}
-pmargin.example_normal_margin <- function(x, margin) {
-  pnorm(x, margin[["mean"]], margin[["sd"]])
-}
-qmargin.example_normal_margin <- function(p, margin) {
-  qnorm(p, margin[["mean"]], margin[["sd"]])
-}
-logLik.example_normal_margin <- function(object, ...) {
-  structure(-10, class = "logLik", df = 2)
-}
-pmargin(1, fitted_normal)
+The type determines left limits throughout rvinecopulib. They are \code{F(x)} for
+continuous margins, \code{F(x - 1)} for integer-supported margins, and
+\code{F(0) - P(X = 0)} at zero for zero-inflated margins. Consequently,
+\code{dmargin(0, margin)} must return the atom's mass for a zero-inflated margin.
 }

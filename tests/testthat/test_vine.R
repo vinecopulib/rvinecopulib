@@ -86,9 +86,13 @@ test_that("conditioning-aware selection is passed to the copula fit", {
 
 test_that("margins_controls works", {
   default_controls <- eval(formals(vine)$margins_controls)
-  expect_identical(default_controls$type, "c")
+  expect_identical(default_controls$family_set, "kde1d")
+  expect_identical(default_controls$selcrit, "aic")
 
-  fit_mult <- vine(u, margins_controls = list(mult = 2))
+  fit_mult <- vine(
+    u,
+    margins_controls = list(family_set = kde1d_family(mult = 2))
+  )
   expect_eql(
     sapply(fit_mult$margins, "[[", "mult"),
     rep(2, ncol(u))
@@ -96,10 +100,13 @@ test_that("margins_controls works", {
 
   fit_xmin <- vine(
     abs(u),
-    margins_controls = list(xmin = 0, deg = 1, mult = 1:5)
+    margins_controls = list(
+      family_set = kde1d_family(xmin = 0, deg = 1)
+    )
   )
   expect_eql(sapply(fit_xmin$margins, "[[", "xmin"), rep(0, 5))
   expect_eql(sapply(fit_xmin$margins, "[[", "deg"), rep(1, 5))
+  expect_error(vine(u, margins_controls = list(mult = 2)), "margins_controls")
 })
 
 test_that("weights work", {
@@ -152,10 +159,13 @@ test_that("discrete variables work", {
   expect_no_error(
     fit <- vine(
       x,
-      margin = list(
-        type = c("d", "c", "c"),
-        xmin = c(1, NaN, NaN),
-        xmax = c(4, NaN, NaN)
+      var_types = c("d", "c", "c"),
+      margins_controls = list(
+        family_set = list(
+          kde1d_family(xmin = 1, xmax = 4),
+          kde1d_family(),
+          kde1d_family()
+        )
       )
     )
   )
@@ -172,7 +182,7 @@ test_that("discrete variables work", {
   expect_equiv(p, pvine(x2, fit2))
   expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
 
-  expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "zi"))))
+  expect_no_error(fit <- vine(x, var_types = c("d", "c", "zi")))
   expect_equal(fit$copula$var_types, c("d", "c", "d"))
   expect_no_error(dvine(x, fit))
   expect_no_error(pvine(x, fit))
@@ -189,7 +199,7 @@ test_that("variable types can be declared by class or argument", {
   expect_s3_class(x[1:5, , drop = FALSE]$zero, "zero_inflated")
 
   fit <- vine(x, copula_controls = list(family_set = "indep"))
-  expect_equal(fit$margins_controls$type, c("c", "zi"))
+  expect_equal(vapply(fit$margins, margin_type, character(1)), c("c", "zi"))
   expect_equal(fit$copula$var_types, c("c", "d"))
 
   y <- cbind(rnorm(n), rpois(n, 2))
@@ -198,7 +208,7 @@ test_that("variable types can be declared by class or argument", {
     var_types = c("c", "d"),
     copula_controls = list(family_set = "indep")
   )
-  expect_equal(fit$margins_controls$type, c("c", "d"))
+  expect_equal(vapply(fit$margins, margin_type, character(1)), c("c", "d"))
   expect_error(
     vine(cbind(rnorm(n), runif(n)), var_types = c("c", "d")),
     "integer-valued"
@@ -218,7 +228,7 @@ test_that("conflicting variable type declarations are rejected", {
       var_types = c("c", "d"),
       margins_controls = list(type = c("c", "c"))
     ),
-    "disagree"
+    "margins_controls"
   )
   expect_error(
     vine(matrix(rnorm(90), ncol = 3), var_types = c("c", "d")),
@@ -229,13 +239,14 @@ test_that("conflicting variable type declarations are rejected", {
 test_that("rvinecopulib selects among custom margin families", {
   make_location_family <- function(offset, family) {
     margin_family(
-      fit = function(x) {
+      fit = function(x, weights, type) {
         location <- mean(x) + offset
         margin_dist(
           d = function(y) dnorm(y, location, 1),
           p = function(y) pnorm(y, location, 1),
           q = function(p) qnorm(p, location, 1),
           family = family,
+          type = type,
           npars = 1,
           loglik = sum(dnorm(x, location, 1, log = TRUE))
         )
@@ -266,7 +277,7 @@ test_that("rvinecopulib selects among custom margin families", {
 
 test_that("custom families can fit zero-inflated margins", {
   zi_exponential <- margin_family(
-    fit = function(x) {
+    fit = function(x, weights, type) {
       atom <- mean(x == 0)
       rate <- 1 / mean(x[x > 0])
       margin_dist(
@@ -280,7 +291,7 @@ test_that("custom families can fit zero-inflated margins", {
           ifelse(p <= atom, 0, qexp((p - atom) / (1 - atom), rate))
         },
         family = "zi_exponential",
-        type = "zi",
+        type = type,
         npars = 2,
         loglik = sum(ifelse(
           x == 0,
@@ -290,7 +301,7 @@ test_that("custom families can fit zero-inflated margins", {
       )
     },
     family = "zi_exponential",
-    type = "zi"
+    types = "zi"
   )
   x <- data.frame(
     zero = zero_inflated(c(rep(0, 20), rexp(60))),

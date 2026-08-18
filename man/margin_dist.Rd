@@ -2,7 +2,7 @@
 % Please edit documentation in R/margins.R
 \name{margin_dist}
 \alias{margin_dist}
-\title{Create a custom marginal distribution}
+\title{Create a fitted or fixed custom margin}
 \usage{
 margin_dist(
   d,
@@ -10,6 +10,7 @@ margin_dist(
   q,
   family = "custom",
   type = "c",
+  support = c(-Inf, Inf),
   npars = 0,
   loglik = NA_real_
 )
@@ -23,29 +24,21 @@ margin_dist(
 
 \item{family}{descriptive family name.}
 
-\item{type}{margin type: \code{"c"} for continuous, \code{"d"} for integer-valued
-discrete, or \code{"zi"} for a continuous distribution with an atom at zero.}
+\item{type}{margin type: \code{"c"}, \code{"d"}, or \code{"zi"}.}
+
+\item{support}{mathematical support as its lower and upper bounds.}
 
 \item{npars}{effective number of fitted parameters.}
 
 \item{loglik}{maximized marginal log-likelihood, or \code{NA} for a fixed margin.}
 }
 \value{
-An object of class \code{margin_dist} implementing the
-\link[=margin_protocol]{margin protocol}.
+A fitted margin implementing the \link[=margin_protocol]{margin protocol}.
 }
 \description{
-\code{margin_dist()} creates a fitted or fixed margin from three minimal
-evaluation functions. The functions must each accept one vector argument
-and return a vector of the same length. They are stored in the resulting
-object, so closures can capture fitted parameter values.
-}
-\details{
-A finite \code{loglik} is needed when the object competes with other candidates
-during \code{\link[=vine]{vine()}} fitting. It may be \code{NA} for a fixed margin supplied directly
-to \code{\link[=vine_dist]{vine_dist()}} or when it is the only fitted candidate. \code{npars} is used in
-AIC and BIC calculations and may be non-integer for effective degrees of
-freedom.
+\code{margin_dist()} creates a fitted or fixed margin from evaluation functions
+and explicit metadata. The functions must each accept one vector argument
+and return a numeric vector of the same length.
 }
 \examples{
 normal_margin <- margin_dist(
@@ -53,6 +46,7 @@ normal_margin <- margin_dist(
   p = function(x) pnorm(x, mean = 1, sd = 2),
   q = function(p) qnorm(p, mean = 1, sd = 2),
   family = "norm",
+  support = c(-Inf, Inf),
   npars = 2
 )
 dmargin(1, normal_margin)

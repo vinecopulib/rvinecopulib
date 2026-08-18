@@ -78,7 +78,7 @@ pcs <- list(
 
 # set up vine copula model
 mat <- rvine_matrix_sim(3)
-vc <- vine_dist(list(list(distr = "norm")), pcs, mat)
+vc <- vine_dist(list(stats_margin("norm")), pcs, mat)
 
 # simulate from the model
 x <- rvine(200, vc)
