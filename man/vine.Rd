@@ -136,7 +136,7 @@ fitted only once.
 Candidates incompatible with a variable's type are removed before fitting.
 rvinecopulib fits every remaining candidate and selects the first minimum of
 negative log-likelihood, AIC, or BIC according to \code{selcrit}. Competing
-candidates therefore need a finite \code{\link[=margin_loglik]{margin_loglik()}} value. An unsupported
+candidates therefore need a finite \code{margin_info()$loglik} value. An unsupported
 candidate may fail while another candidate succeeds. The built-in
 univariateML family explicitly rejects observation weights.
 }

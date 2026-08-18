@@ -253,7 +253,11 @@ get_vine_dist_margin_summary <- function(vd) {
   }
   df <- data.frame(
     margin = seq_along(margins),
-    distr = vapply(margins, margin_family_name, character(1))
+    distr = vapply(
+      margins,
+      function(margin) margin_info(margin)$family_name,
+      character(1)
+    )
   )
   class(df) <- c("summary_df", class(df))
   df
@@ -336,23 +340,24 @@ summary.vine <- function(object, ...) {
 }
 
 get_vine_margin_summary <- function(object) {
+  infos <- lapply(object$margins, margin_info)
   info <- data.frame(
     margin = seq_along(object$margins),
     name = object$names,
-    family = vapply(object$margins, margin_family_name, character(1)),
-    type = vapply(object$margins, margin_type, character(1)),
+    family = vapply(infos, `[[`, character(1), "family_name"),
+    type = vapply(infos, `[[`, character(1), "type"),
     xmin = vapply(
-      object$margins,
-      function(margin) margin_support(margin)[1L],
+      infos,
+      function(info) info$support[1L],
       numeric(1)
     ),
     xmax = vapply(
-      object$margins,
-      function(margin) margin_support(margin)[2L],
+      infos,
+      function(info) info$support[2L],
       numeric(1)
     ),
-    npars = vapply(object$margins, margin_npars, numeric(1)),
-    loglik = vapply(object$margins, margin_loglik, numeric(1))
+    npars = vapply(infos, `[[`, numeric(1), "npars"),
+    loglik = vapply(infos, `[[`, numeric(1), "loglik")
   )
   class(info) <- c("summary_df", "data.frame")
   info

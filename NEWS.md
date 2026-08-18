@@ -37,10 +37,10 @@ for the complete backend changes.
 
 ### NEW FEATURES
 
-* Add fitted-margin generics for distribution evaluation, type, support,
-  family name, parameter count, and log-likelihood, together with the
-  `margin_dist()` constructor. Add the complementary `fit_margin()`,
-  `margin_family_types()`, and `margin_family_name()` family protocol.
+* Add fitted-margin generics for distribution evaluation and model information,
+  together with the `margin_dist()` constructor. Add the complementary
+  `fit_margin()` family protocol. Both fitted margins and family specifications
+  expose their metadata through `margin_info()`.
 
 * Add `kde1d_family()`, `univariateML_family()`, and `stats_margin()` adapters.
   Core vine fitting and evaluation use only the two protocols and contain no

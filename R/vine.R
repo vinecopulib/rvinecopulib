@@ -58,7 +58,7 @@
 #' Candidates incompatible with a variable's type are removed before fitting.
 #' rvinecopulib fits every remaining candidate and selects the first minimum of
 #' negative log-likelihood, AIC, or BIC according to `selcrit`. Competing
-#' candidates therefore need a finite [margin_loglik()] value. An unsupported
+#' candidates therefore need a finite `margin_info()$loglik` value. An unsupported
 #' candidate may fail while another candidate succeeds. The built-in
 #' univariateML family explicitly rejects observation weights.
 #'
@@ -167,19 +167,15 @@ vine <- function(
 
   assert_that(is.list(margins_controls))
   allowed_margins_controls <- c("family_set", "selcrit", "cores")
-  # BEGIN legacy margins_controls compatibility
-  allowed_margins_controls <- c(
-    allowed_margins_controls,
-    "xmin",
-    "xmax",
-    "type",
-    "mult",
-    "bw",
-    "deg"
-  )
-  # END legacy margins_controls compatibility
+
+  # BEGIN legacy margins_controls compatibility ---------
+  legacy_args <- c("xmin", "xmax", "type", "mult", "bw", "deg")
+  allowed_margins_controls <- c(allowed_margins_controls, legacy_args)
+  # END legacy margins_controls compatibility -----------
+
   assert_that(in_set(names(margins_controls), allowed_margins_controls))
-  # BEGIN legacy margins_controls compatibility
+
+  # BEGIN legacy margins_controls compatibility ---------
   legacy_controls <- upgrade_legacy_margin_controls(
     margins_controls,
     data,
@@ -187,7 +183,8 @@ vine <- function(
   )
   margins_controls <- legacy_controls$margins_controls
   var_types <- legacy_controls$var_types
-  # END legacy margins_controls compatibility
+  # END legacy margins_controls compatibility -----------
+
   var_types <- resolve_margin_types(data, var_types)
   validate_vine_weights(weights, nrow(data))
   marg_cores <- margins_controls$cores
@@ -212,7 +209,8 @@ vine <- function(
     d,
     colnames(data)
   )
-  # BEGIN legacy margins_controls compatibility
+
+  # BEGIN legacy margins_controls compatibility -----------
   if (!is.null(legacy_controls$kde)) {
     family_set <- apply_legacy_kde_controls(
       family_set,
@@ -220,7 +218,8 @@ vine <- function(
       data
     )
   }
-  # END legacy margins_controls compatibility
+  # END legacy margins_controls compatibility ---------------
+
   selcrit <- margins_controls$selcrit
   if (is.null(selcrit)) {
     selcrit <- "aic"
@@ -319,7 +318,7 @@ fit_one_vine_margin <- function(
   )
 }
 
-# BEGIN legacy margins_controls compatibility
+# BEGIN legacy margins_controls compatibility ----------------------------------
 legacy_margin_controls_state <- new.env(parent = emptyenv())
 
 upgrade_legacy_margin_controls <- function(margins_controls, data, var_types) {
@@ -399,13 +398,18 @@ upgrade_legacy_margin_controls <- function(margins_controls, data, var_types) {
 }
 
 contains_kde1d_family <- function(family_set) {
-  if (inherits(family_set, "kde1d_margin_family")) {
+  if (is_kde1d_family(family_set)) {
     return(TRUE)
   }
   if (has_margin_family_protocol(family_set) || !is.list(family_set)) {
     return(FALSE)
   }
   any(vapply(family_set, contains_kde1d_family, logical(1)))
+}
+
+is_kde1d_family <- function(family) {
+  inherits(family, "custom_margin_family") &&
+    identical(family$fit, fit_kde1d_margin)
 }
 
 expand_legacy_kde_controls <- function(controls, d) {
@@ -428,7 +432,7 @@ apply_legacy_kde_controls <- function(family_set, controls, data) {
   structure(
     lapply(seq_along(family_set), function(j) {
       lapply(family_set[[j]], function(family) {
-        if (!inherits(family, "kde1d_margin_family")) {
+        if (!is_kde1d_family(family)) {
           return(family)
         }
         xmin <- controls$xmin[j]
@@ -449,7 +453,7 @@ apply_legacy_kde_controls <- function(family_set, controls, data) {
     names = names(family_set)
   )
 }
-# END legacy margins_controls compatibility
+# END legacy margins_controls compatibility ------------------------------------
 
 resolve_margin_types <- function(data, var_types) {
   d <- ncol(data)
@@ -580,13 +584,14 @@ vine_dist <- function(margins, pair_copulas, structure) {
   }
   stopifnot(length(margins) == dim(structure)[1])
   margins <- lapply(margins, as_margin)
-  npars_marg <- sum(vapply(margins, margin_npars, numeric(1)))
+  info <- lapply(margins, margin_info)
+  npars_marg <- sum(vapply(info, `[[`, numeric(1), "npars"))
 
   # create the vinecop object
   copula <- vinecop_dist(
     pair_copulas,
     structure,
-    var_types = simplify_var_types(vapply(margins, margin_type, character(1)))
+    var_types = simplify_var_types(vapply(info, `[[`, character(1), "type"))
   )
 
   # create object
@@ -605,8 +610,9 @@ finalize_vine <- function(vine, data, weights, keep_data) {
   ## compute npars/loglik
   npars <- loglik <- 0
   for (k in seq_len(ncol(data))) {
-    npars <- npars + margin_npars(vine$margins[[k]])
-    loglik <- loglik + margin_loglik(vine$margins[[k]])
+    info <- margin_info(vine$margins[[k]])
+    npars <- npars + info$npars
+    loglik <- loglik + info$loglik
   }
 
   ## add the npars/loglik of the copulas

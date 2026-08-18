@@ -4,7 +4,7 @@
 \alias{margin_family}
 \title{Define a custom margin family}
 \usage{
-margin_family(fit, family_name = "custom", types = "c")
+margin_family(fit, family_name = "custom", types = "c", fit_args = list())
 }
 \arguments{
 \item{fit}{function accepting \code{x}, \code{weights}, and \code{type}.}
@@ -12,6 +12,8 @@ margin_family(fit, family_name = "custom", types = "c")
 \item{family_name}{descriptive family name.}
 
 \item{types}{supported variable types.}
+
+\item{fit_args}{named list of additional arguments passed to \code{fit}.}
 }
 \value{
 A margin-family specification.
@@ -20,7 +22,7 @@ A margin-family specification.
 \code{margin_family()} defines a candidate family for \code{\link[=vine]{vine()}}. Its fitting
 function must accept \code{x}, \code{weights}, and \code{type}, and return an object
 implementing the \link[=margin_protocol]{fitted-margin protocol}. Additional
-settings can be captured in the fitting function's environment.
+named fitting arguments can be stored in \code{fit_args}.
 }
 \examples{
 normal_family <- margin_family(

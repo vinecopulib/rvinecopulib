@@ -5,11 +5,7 @@
 \alias{dmargin}
 \alias{pmargin}
 \alias{qmargin}
-\alias{margin_type}
-\alias{margin_support}
-\alias{margin_family_name}
-\alias{margin_npars}
-\alias{margin_loglik}
+\alias{margin_info}
 \title{Fitted marginal distribution protocol}
 \usage{
 dmargin(x, margin)
@@ -18,15 +14,7 @@ pmargin(x, margin)
 
 qmargin(p, margin)
 
-margin_type(margin)
-
-margin_support(margin)
-
-margin_family_name(margin)
-
-margin_npars(margin)
-
-margin_loglik(margin)
+margin_info(object)
 }
 \arguments{
 \item{x}{vector of evaluation points.}
@@ -34,27 +22,28 @@ margin_loglik(margin)
 \item{margin}{a fitted marginal distribution object.}
 
 \item{p}{vector of probabilities.}
+
+\item{object}{a fitted margin or margin-family specification.}
 }
 \value{
 \code{dmargin()}, \code{pmargin()}, and \code{qmargin()} return numeric vectors.
-\code{margin_type()} and \code{margin_family_name()} return character scalars,
-\code{margin_support()} returns the two support bounds, and \code{margin_npars()} and
-\code{margin_loglik()} return numeric scalars.
+\code{margin_info()} returns a list of model information.
 }
 \description{
 Fitted margins provide distribution evaluation and model metadata through a
 small set of S3 generics. Methods for \code{dmargin()}, \code{pmargin()}, and
-\code{qmargin()} dispatch on \code{margin}, their second argument. Metadata methods
-dispatch on their only argument.
+\code{qmargin()} dispatch on \code{margin}, their second argument. \code{margin_info()}
+dispatches on its only argument.
 }
 \details{
-A fitted margin class must implement all eight generics documented here.
-Evaluation methods must be vectorized. \code{margin_type()} returns \code{"c"} for a
-continuous distribution, \code{"d"} for an integer-supported distribution, or
-\code{"zi"} for a continuous distribution with an atom at zero.
-\code{margin_support()} returns the mathematical support as its lower and upper
-bounds. The parameter count must be non-negative or \code{NA} when unavailable;
-the log-likelihood may be \code{NA} for a fixed margin.
+A fitted margin class must implement all four generics documented here.
+Evaluation methods must be vectorized. \code{margin_info()} returns a list with
+entries \code{family_name}, \code{type}, \code{support}, \code{npars}, and \code{loglik}. \code{type} is
+\code{"c"} for a continuous distribution, \code{"d"} for an integer-supported
+distribution, or \code{"zi"} for a continuous distribution with an atom at zero.
+\code{support} contains the mathematical lower and upper bounds. \code{npars} must be
+non-negative or \code{NA} when unavailable; \code{loglik} may be \code{NA} for a fixed
+margin.
 
 The type determines left limits throughout rvinecopulib. They are \code{F(x)} for
 continuous margins, \code{F(x - 1)} for integer-supported margins, and

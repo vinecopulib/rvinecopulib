@@ -24,6 +24,6 @@ therefore has zero fitted parameters and no fitted log-likelihood.
 \examples{
 normal <- stats_margin("norm", mean = 1, sd = 2)
 poisson <- stats_margin("pois", lambda = 3)
-margin_type(normal)
-margin_type(poisson)
+margin_info(normal)
+margin_info(poisson)
 }

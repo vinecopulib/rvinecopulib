@@ -57,11 +57,16 @@ test_that("margin_dist validates and implements the fitted-margin protocol", {
   expect_equal(dmargin(0, margin), dnorm(0))
   expect_equal(pmargin(0, margin), 0.5)
   expect_equal(qmargin(0.5, margin), 0)
-  expect_identical(margin_type(margin), "c")
-  expect_equal(margin_support(margin), c(-Inf, Inf))
-  expect_identical(margin_family_name(margin), "normal")
-  expect_equal(margin_npars(margin), 1.5)
-  expect_equal(margin_loglik(margin), -4)
+  expect_equal(
+    margin_info(margin),
+    list(
+      family_name = "normal",
+      type = "c",
+      support = c(-Inf, Inf),
+      npars = 1.5,
+      loglik = -4
+    )
+  )
   expect_equal(as.numeric(logLik(margin)), -4)
   expect_equal(attr(logLik(margin), "df"), 1.5)
 })
@@ -73,14 +78,14 @@ test_that("stats distributions are fixed fitted-margin implementations", {
   expect_equal(dmargin(1, normal), dnorm(1, 1, 2))
   expect_equal(pmargin(1, normal), pnorm(1, 1, 2))
   expect_equal(qmargin(0.5, normal), 1)
-  expect_identical(margin_type(normal), "c")
-  expect_equal(margin_support(normal), c(-Inf, Inf))
-  expect_identical(margin_npars(normal), 0)
-  expect_true(is.na(margin_loglik(normal)))
+  expect_identical(margin_info(normal)$type, "c")
+  expect_equal(margin_info(normal)$support, c(-Inf, Inf))
+  expect_identical(margin_info(normal)$npars, 0)
+  expect_true(is.na(margin_info(normal)$loglik))
 
   expect_equal(dmargin(2, poisson), dpois(2, 3))
-  expect_identical(margin_type(poisson), "d")
-  expect_equal(margin_support(poisson), c(0, Inf))
+  expect_identical(margin_info(poisson)$type, "d")
+  expect_equal(margin_info(poisson)$support, c(0, Inf))
   expect_error(stats_margin("not-a-distribution"), "unsupported")
   expect_error(stats_margin("gamma"), "shape")
 })
@@ -88,7 +93,7 @@ test_that("stats distributions are fixed fitted-margin implementations", {
 test_that("legacy stats lists normalize once through the stats adapter", {
   margin <- as_margin(list(distr = "beta", shape1 = 2, shape2 = 3))
   expect_s3_class(margin, "stats_margin")
-  expect_identical(margin_family_name(margin), "beta")
+  expect_identical(margin_info(margin)$family_name, "beta")
   expect_equal(dmargin(0.5, margin), dbeta(0.5, 2, 3))
   expect_error(as_margin(list(not_a_distribution = TRUE)), "legacy stats")
 })
@@ -102,6 +107,12 @@ test_that("margin_family validates its fitting contract", {
   expect_error(margin_family(fit, family_name = ""), "family")
   expect_error(margin_family(fit, types = character()), "at least one")
   expect_error(margin_family(fit, types = "mixed"), "types")
+  expect_error(margin_family(fit, fit_args = list(1)), "uniquely named")
+  expect_error(
+    margin_family(fit, fit_args = list(type = "c")),
+    "cannot contain"
+  )
+  expect_error(margin_family(fit, fit_args = list(extra = 1)), "accepted")
 
   family <- margin_family(
     fit,
@@ -109,10 +120,22 @@ test_that("margin_family validates its fitting contract", {
     types = c("continuous", "discrete", "zero-inflated", "c")
   )
   expect_s3_class(family, "margin_family")
-  expect_identical(family$family_name, "mixed support")
-  expect_equal(margin_family_types(family), c("c", "d", "zi"))
-  expect_identical(margin_family_name(family), "mixed support")
+  expect_equal(
+    margin_info(family),
+    list(family_name = "mixed support", types = c("c", "d", "zi"))
+  )
   expect_s3_class(fit_margin(family, 1:3, type = "c"), "margin_dist")
+
+  configured_fit <- function(x, weights, type, location) {
+    margin_dist(
+      function(y) dnorm(y, location),
+      function(y) pnorm(y, location),
+      function(p) qnorm(p, location),
+      type = type
+    )
+  }
+  configured <- margin_family(configured_fit, fit_args = list(location = 2))
+  expect_equal(qmargin(0.5, fit_margin(configured, 1:3)), 2)
 })
 
 test_that("fitted-margin validation probes at most the first three observations", {
@@ -154,11 +177,15 @@ qmargin.frontend_test_margin <- function(p, margin) {
   qnorm(p, margin$location, margin$scale)
 }
 
-margin_type.frontend_test_margin <- function(margin) margin$type
-margin_support.frontend_test_margin <- function(margin) c(-Inf, Inf)
-margin_family_name.frontend_test_margin <- function(margin) "frontend-normal"
-margin_npars.frontend_test_margin <- function(margin) 2
-margin_loglik.frontend_test_margin <- function(margin) margin$loglik
+margin_info.frontend_test_margin <- function(object) {
+  list(
+    family_name = "frontend-normal",
+    type = object$type,
+    support = c(-Inf, Inf),
+    npars = 2,
+    loglik = object$loglik
+  )
+}
 
 fit_margin.frontend_test_family <- function(
   family,
@@ -177,19 +204,16 @@ fit_margin.frontend_test_family <- function(
   )
 }
 
-margin_family_types.frontend_test_family <- function(family) c("c", "zi")
-margin_family_name.frontend_test_family <- function(margin) "frontend-normal"
+margin_info.frontend_test_family <- function(object) {
+  list(family_name = "frontend-normal", types = c("c", "zi"))
+}
 
 register_margin_test_methods <- function() {
   for (generic in c(
     "dmargin",
     "pmargin",
     "qmargin",
-    "margin_type",
-    "margin_support",
-    "margin_family_name",
-    "margin_npars",
-    "margin_loglik"
+    "margin_info"
   )) {
     registerS3method(
       generic,
@@ -198,11 +222,7 @@ register_margin_test_methods <- function() {
       envir = asNamespace("rvinecopulib")
     )
   }
-  for (generic in c(
-    "fit_margin",
-    "margin_family_types",
-    "margin_family_name"
-  )) {
+  for (generic in c("fit_margin", "margin_info")) {
     registerS3method(
       generic,
       "frontend_test_family",
@@ -223,11 +243,16 @@ test_that("independent S3 classes can implement both protocols", {
   expect_true(check_distr(margin))
   expect_identical(as_margin(margin), margin)
   expect_equal(margin$location, 0.5)
-  expect_identical(margin_type(margin), "c")
-  expect_identical(margin_family_name(margin), "frontend-normal")
-  expect_equal(margin_support(margin), c(-Inf, Inf))
-  expect_equal(margin_npars(margin), 2)
-  expect_equal(margin_loglik(margin), -2)
+  expect_equal(
+    margin_info(margin),
+    list(
+      family_name = "frontend-normal",
+      type = "c",
+      support = c(-Inf, Inf),
+      npars = 2,
+      loglik = -2
+    )
+  )
 })
 
 test_that("malformed protocol implementations fail near their boundary", {
@@ -296,11 +321,13 @@ test_that("kde1d family configuration owns all method-specific controls", {
   expect_error(kde1d_family(deg = 3), "deg")
 
   family <- kde1d_family(xmin = 0, xmax = 5, mult = 2, bw = 0.5, deg = 1)
-  expect_equal(margin_family_types(family), c("c", "d", "zi"))
-  expect_identical(margin_family_name(family), "kde1d")
+  expect_equal(
+    margin_info(family),
+    list(family_name = "kde1d", types = c("c", "d", "zi"))
+  )
   fit <- fit_margin(family, runif(40, 0, 5), type = "c")
   expect_s3_class(fit, "kde1d")
-  expect_equal(margin_support(fit), c(0, 5))
+  expect_equal(margin_info(fit)$support, c(0, 5))
   expect_equal(fit$mult, 2)
   expect_equal(fit$bw, 0.5)
   expect_equal(fit$deg, 1)
@@ -310,7 +337,7 @@ test_that("family sets normalize aliases, nesting, and variable names", {
   common <- expand_margin_family_set(c("kde1d", "kde1d"), 2)
   expect_equal(length(common), 2)
   expect_equal(lengths(common), c(1L, 1L))
-  expect_s3_class(common[[1]][[1]], "kde1d_margin_family")
+  expect_s3_class(common[[1]][[1]], "custom_margin_family")
 
   custom <- scored_margin_family("custom", -2, 1)
   nested <- expand_margin_family_set(
@@ -318,8 +345,8 @@ test_that("family sets normalize aliases, nesting, and variable names", {
     2,
     c("first", "second")
   )
-  expect_identical(margin_family_name(nested[[1]][[1]]), "kde1d")
-  expect_identical(margin_family_name(nested[[2]][[1]]), "kde1d")
+  expect_identical(margin_info(nested[[1]][[1]])$family_name, "kde1d")
+  expect_identical(margin_info(nested[[2]][[1]])$family_name, "kde1d")
   expect_s3_class(nested[[2]][[2]], "margin_family")
 
   variants <- normalize_margin_candidates(list(
@@ -328,7 +355,10 @@ test_that("family sets normalize aliases, nesting, and variable names", {
     kde1d_family(mult = 2)
   ))
   expect_equal(length(variants), 2)
-  expect_equal(vapply(variants, `[[`, numeric(1), "mult"), c(1, 2))
+  expect_equal(
+    vapply(variants, function(family) family$fit_args$mult, numeric(1)),
+    c(1, 2)
+  )
 
   expect_error(expand_margin_family_set(list("kde1d"), 2), "one entry")
   expect_error(expand_margin_family_set(list(), 1), "one entry")
@@ -361,10 +391,14 @@ test_that("parametric aliases use the optional univariateML adapter", {
   parametric <- expand_margin_family_set("par", 1)[[1]]
   all_families <- expand_margin_family_set("all", 1)[[1]]
   expect_setequal(
-    vapply(parametric, margin_family_name, character(1)),
+    vapply(
+      parametric,
+      function(family) margin_info(family)$family_name,
+      character(1)
+    ),
     univariateML::univariateML_models
   )
-  expect_identical(margin_family_name(all_families[[1]]), "kde1d")
+  expect_identical(margin_info(all_families[[1]])$family_name, "kde1d")
 })
 
 test_that("selection uses only generic fitted-margin metadata", {
@@ -381,23 +415,23 @@ test_that("selection uses only generic fitted-margin metadata", {
     )
   }
 
-  expect_identical(margin_family_name(select("loglik")), "complex")
-  expect_identical(margin_family_name(select("aic")), "complex")
-  expect_identical(margin_family_name(select("bic")), "simple")
+  expect_identical(margin_info(select("loglik"))$family_name, "complex")
+  expect_identical(margin_info(select("aic"))$family_name, "complex")
+  expect_identical(margin_info(select("bic"))$family_name, "simple")
 })
 
 test_that("selection handles incompatibility, candidate failures, and bad fits", {
   good <- scored_margin_family("good", -10, 1)
   failed <- scored_margin_family("failed", -9, 1, error = "optimizer exploded")
   expect_identical(
-    margin_family_name(select_margin(
+    margin_info(select_margin(
       rnorm(20),
       list(failed, good),
       "c",
       numeric(),
       "aic",
       2
-    )),
+    ))$family_name,
     "good"
   )
   expect_error(
@@ -482,11 +516,11 @@ test_that("univariateML family metadata and weight rejection are explicit", {
   skip_if_not_installed("univariateML")
   normal <- univariateML_family("norm")
   poisson <- univariateML_family("pois")
-  expect_identical(margin_family_types(normal), "c")
-  expect_identical(margin_family_types(poisson), "d")
+  expect_identical(margin_info(normal)$types, "c")
+  expect_identical(margin_info(poisson)$types, "d")
   fit <- fit_margin(normal, rnorm(30), type = "c")
   expect_s3_class(fit, "univariateML")
-  expect_identical(margin_type(fit), "c")
+  expect_identical(margin_info(fit)$type, "c")
   expect_error(
     fit_margin(normal, rnorm(30), weights = rep(1, 30), type = "c"),
     "do not support observation weights"

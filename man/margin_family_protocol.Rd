@@ -3,12 +3,9 @@
 \name{margin_family_protocol}
 \alias{margin_family_protocol}
 \alias{fit_margin}
-\alias{margin_family_types}
 \title{Margin-family fitting protocol}
 \usage{
 fit_margin(family, x, weights = numeric(), type = "c")
-
-margin_family_types(family)
 }
 \arguments{
 \item{family}{a margin-family specification.}
@@ -20,12 +17,12 @@ margin_family_types(family)
 \item{type}{requested variable type.}
 }
 \value{
-\code{fit_margin()} returns a fitted margin. \code{margin_family_types()}
-returns the supported variable types.
+\code{fit_margin()} returns a fitted margin.
 }
 \description{
-Margin families describe how a candidate is fitted. Implementations declare
-a name and their supported variable types and provide a \code{fit_margin()}
-method. Every fitter receives the observations, observation weights, and the
-requested variable type. It must either use the weights or reject them.
+Margin families describe how a candidate is fitted. Implementations provide
+\code{fit_margin()} and \code{margin_info()} methods. Their \code{margin_info()} result must
+contain \code{family_name} and \code{types}. Every fitter receives the observations,
+observation weights, and requested variable type. It must either use the
+weights or reject them.
 }

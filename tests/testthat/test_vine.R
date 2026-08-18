@@ -130,7 +130,11 @@ test_that("margins_controls works", {
     copula_controls = list(family_set = "indep")
   )
   expect_equal(
-    vapply(fit_legacy_type$margins, margin_type, character(1)),
+    vapply(
+      fit_legacy_type$margins,
+      function(margin) margin_info(margin)$type,
+      character(1)
+    ),
     c("c", "d")
   )
   # END legacy margins_controls compatibility
@@ -286,7 +290,14 @@ test_that("variable types can be declared by class or argument", {
   expect_s3_class(x[1:5, , drop = FALSE]$zero, "zero_inflated")
 
   fit <- vine(x, copula_controls = list(family_set = "indep"))
-  expect_equal(vapply(fit$margins, margin_type, character(1)), c("c", "zi"))
+  expect_equal(
+    vapply(
+      fit$margins,
+      function(margin) margin_info(margin)$type,
+      character(1)
+    ),
+    c("c", "zi")
+  )
   expect_equal(fit$copula$var_types, c("c", "d"))
 
   y <- cbind(rnorm(n), rpois(n, 2))
@@ -295,7 +306,14 @@ test_that("variable types can be declared by class or argument", {
     var_types = c("c", "d"),
     copula_controls = list(family_set = "indep")
   )
-  expect_equal(vapply(fit$margins, margin_type, character(1)), c("c", "d"))
+  expect_equal(
+    vapply(
+      fit$margins,
+      function(margin) margin_info(margin)$type,
+      character(1)
+    ),
+    c("c", "d")
+  )
   expect_error(
     vine(cbind(rnorm(n), runif(n)), var_types = c("c", "d")),
     "integer-valued"
@@ -359,7 +377,11 @@ test_that("rvinecopulib selects among custom margin families", {
   )
 
   expect_equal(
-    vapply(fit$margins, margin_family_name, character(1)),
+    vapply(
+      fit$margins,
+      function(margin) margin_info(margin)$family_name,
+      character(1)
+    ),
     c("good", "good")
   )
   expect_true(is.finite(as.numeric(logLik(fit))))
@@ -406,7 +428,7 @@ test_that("custom families can fit zero-inflated margins", {
     copula_controls = list(family_set = "indep")
   )
 
-  expect_equal(margin_type(fit$margins[[1]]), "zi")
+  expect_equal(margin_info(fit$margins[[1]])$type, "zi")
   expect_equal(pmargin_sub(rep(0, 3), fit$margins[[1]]), rep(0, 3))
   expect_no_error(dvine(x, fit))
 })

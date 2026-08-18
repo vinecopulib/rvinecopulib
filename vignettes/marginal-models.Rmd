@@ -159,11 +159,12 @@ fit_custom <- vine(
 summary(fit_custom)$margins
 ```
 
-The fitting callback can capture additional settings in its environment. When
-several candidates compete, each fitted object needs a finite
-`margin_loglik()` result; AIC and BIC additionally require a finite
-`margin_npars()` result. If one candidate fails, selection continues with the
-remaining fits; if all fail, `vine()` reports the collected errors.
+The fitting callback can capture additional settings in its environment or
+receive them through the `fit_args` argument to `margin_family()`. When several
+candidates compete, each fitted object's `margin_info()` result needs a finite
+`loglik` entry; AIC and BIC additionally require a finite `npars` entry. If one
+candidate fails, selection continues with the remaining fits; if all fail,
+`vine()` reports the collected errors.
 
 To combine named and custom candidates separately by variable, use nested
 lists:
@@ -180,19 +181,23 @@ margins_controls <- list(
 
 ## The fitted-margin protocol
 
-Packages can integrate their own fitted classes by implementing eight S3
+Packages can integrate their own fitted classes by implementing four S3
 methods. The `dmargin()`, `pmargin()`, and `qmargin()` generics dispatch on
-their second argument, `margin`; the other methods provide model metadata.
+their second argument, `margin`; `margin_info()` provides model metadata.
 
 ```{r protocol, eval=FALSE}
 dmargin.my_margin <- function(x, margin) { ... }
 pmargin.my_margin <- function(x, margin) { ... }
 qmargin.my_margin <- function(p, margin) { ... }
-margin_type.my_margin <- function(margin) "c"
-margin_support.my_margin <- function(margin) c(-Inf, Inf)
-margin_family_name.my_margin <- function(margin) "my-family"
-margin_npars.my_margin <- function(margin) margin$npars
-margin_loglik.my_margin <- function(margin) margin$loglik
+margin_info.my_margin <- function(object) {
+  list(
+    family_name = "my-family",
+    type = "c",
+    support = c(-Inf, Inf),
+    npars = object$npars,
+    loglik = object$loglik
+  )
+}
 ```
 
 The metadata methods are part of the protocol rather than attributes that the
@@ -200,9 +205,8 @@ core code interprets. See `?margin_protocol` for the complete return-value and
 left-limit contract.
 
 A package can likewise implement the margin-family protocol directly with
-`fit_margin()`, `margin_family_types()`, and `margin_family_name()` methods.
-This is how the built-in kde1d and univariateML adapters integrate with
-`vine()`; the core selection path treats them like any other implementation.
+`fit_margin()` and `margin_info()` methods. The core selection path treats such
+families like any other implementation.
 
 ## Integer-valued discrete variables
 
@@ -244,7 +248,7 @@ inherits(zero_data$claim, "zero_inflated")
 ```
 
 A custom zero-inflated family declares `types = "zi"`; its fitted margin
-returns `"zi"` from `margin_type()`. At zero, `dmargin()` must return the atom probability.
+returns `type = "zi"` from `margin_info()`. At zero, `dmargin()` must return the atom probability.
 rvinecopulib then computes the left limit as `F(0) - f(0)`; away from zero the
 left limit equals the ordinary CDF.
 
