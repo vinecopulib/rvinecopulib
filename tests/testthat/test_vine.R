@@ -251,7 +251,7 @@ test_that("rvinecopulib selects among custom margin families", {
           loglik = sum(dnorm(x, location, 1, log = TRUE))
         )
       },
-      family = family
+      family_name = family
     )
   }
   good <- make_location_family(0, "good")
@@ -300,7 +300,7 @@ test_that("custom families can fit zero-inflated margins", {
         ))
       )
     },
-    family = "zi_exponential",
+    family_name = "zi_exponential",
     types = "zi"
   )
   x <- data.frame(

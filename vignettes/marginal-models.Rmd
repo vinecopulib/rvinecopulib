@@ -75,7 +75,7 @@ weighted_normal <- margin_family(
       loglik = sum(weights * dnorm(x, location, scale, log = TRUE))
     )
   },
-  family = "weighted-normal"
+  family_name = "weighted-normal"
 )
 fit_weighted <- vine(x, margins_controls = list(family_set = weighted_normal),
                      weights = runif(nrow(x)))
@@ -147,7 +147,7 @@ normal_family <- margin_family(
       loglik = sum(dnorm(x, location, scale, log = TRUE))
     )
   },
-  family = "custom_normal",
+  family_name = "custom_normal",
   types = "c"
 )
 

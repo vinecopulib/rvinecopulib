@@ -4,12 +4,12 @@
 \alias{margin_family}
 \title{Define a custom margin family}
 \usage{
-margin_family(fit, family = "custom", types = "c")
+margin_family(fit, family_name = "custom", types = "c")
 }
 \arguments{
 \item{fit}{function accepting \code{x}, \code{weights}, and \code{type}.}
 
-\item{family}{descriptive family name.}
+\item{family_name}{descriptive family name.}
 
 \item{types}{supported variable types.}
 }
@@ -42,6 +42,6 @@ normal_family <- margin_family(
       loglik = sum(dnorm(x, location, scale, log = TRUE))
     )
   },
-  family = "normal"
+  family_name = "normal"
 )
 }

@@ -423,7 +423,11 @@ margin_type.univariateML <- function(margin) {
   type <- attr(margin, "rvine_margin_type", exact = TRUE)
   if (is.null(type)) {
     continuous <- attr(margin, "continuous", exact = TRUE)
-    type <- if (isTRUE(continuous)) "c" else if (isFALSE(continuous)) "d"
+    type <- if (isTRUE(continuous)) {
+      "c"
+    } else if (isFALSE(continuous)) {
+      "d"
+    }
   }
   normalize_margin_types(type, "margin type")
 }
@@ -563,6 +567,11 @@ check_distr <- function(distr) {
   )
 }
 
+
+stop_wo_call <- function(message) {
+  stop(message, call. = FALSE)
+}
+
 validate_margin_evaluation <- function(margin, x) {
   quantiles <- qmargin(c(0.25, 0.75), margin)
   if (
@@ -570,47 +579,49 @@ validate_margin_evaluation <- function(margin, x) {
       length(quantiles) != 2L ||
       anyNA(quantiles)
   ) {
-    stop("qmargin() must return one numeric value per input.", call. = FALSE)
+    stop_wo_call("qmargin() must return one numeric value per input.")
   }
-  probes <- if (is.null(x)) quantiles else x[!is.na(x)]
-  if (length(probes) > 3L) {
-    probes <- probes[seq_len(3L)]
+  if (is.null(x)) {
+    probes <- quantiles
+  } else {
+    probes <- x[seq_len(min(3L, length(x)))]
+    if (anyNA(x) && !anyNA(probes)) {
+      probes[length(probes)] <- NA
+    }
   }
   if (length(probes)) {
     density <- dmargin(probes, margin)
-    probability <- pmargin(probes, margin)
+    proba <- pmargin(probes, margin)
     if (!is.numeric(density) || length(density) != length(probes)) {
-      stop("dmargin() must return one numeric value per input.", call. = FALSE)
+      stop_wo_call("dmargin() must return one numeric value per input.")
     }
-    if (anyNA(density) || any(density < 0)) {
-      stop("dmargin() returned a missing or negative value.", call. = FALSE)
+    if (!all(is.na(density) == is.na(probes))) {
+      stop_wo_call("dmargin() must propagate missing values.")
     }
-    if (!is.numeric(probability) || length(probability) != length(probes)) {
-      stop("pmargin() must return one numeric value per input.", call. = FALSE)
+    if (any(density[!is.na(density)] < 0)) {
+      stop_wo_call("dmargin() returned a negative value.")
     }
-    if (anyNA(probability) || any(probability < 0 | probability > 1)) {
-      stop(
-        "pmargin() returned a missing value or a value outside [0, 1].",
-        call. = FALSE
-      )
+    if (!is.numeric(proba) || length(proba) != length(probes)) {
+      stop_wo_call("pmargin() must return one numeric value per input.")
+    }
+    if (!all(is.na(proba) == is.na(probes))) {
+      stop_wo_call("pmargin() must propagate missing values.")
+    }
+    if (any(proba[!is.na(proba)] < 0 | proba[!is.na(proba)] > 1)) {
+      stop_wo_call("pmargin() returned a value outside [0, 1].")
     }
   }
   invisible(margin)
 }
 
-validate_margin_family_name <- function(family) {
+
+validate_margin_family_name <- function(name) {
   if (
-    !is.character(family) ||
-      length(family) != 1L ||
-      is.na(family) ||
-      !nzchar(family)
+    !is.character(name) || length(name) != 1L || is.na(name) || !nzchar(name)
   ) {
-    stop(
-      "a margin family name must be a non-empty character scalar.",
-      call. = FALSE
-    )
+    stop_wo_call("a margin family name must be a non-empty character scalar.")
   }
-  invisible(family)
+  invisible(name)
 }
 
 validate_margin_support <- function(support) {
@@ -620,9 +631,8 @@ validate_margin_support <- function(support) {
       anyNA(support) ||
       support[1L] > support[2L]
   ) {
-    stop(
-      "margin support must contain ordered numeric lower and upper bounds.",
-      call. = FALSE
+    stop_wo_call(
+      "margin support must contain ordered numeric lower and upper bounds."
     )
   }
   invisible(support)
@@ -634,7 +644,7 @@ validate_margin_npars <- function(npars) {
       length(npars) != 1L ||
       !(is.finite(npars) && npars >= 0 || is.na(npars) && !is.nan(npars))
   ) {
-    stop("'npars' must be finite and non-negative or NA.", call. = FALSE)
+    stop_wo_call("'npars' must be finite and non-negative or NA.")
   }
   invisible(npars)
 }
@@ -645,24 +655,21 @@ validate_margin_loglik <- function(loglik) {
       length(loglik) != 1L ||
       !(is.finite(loglik) || (is.na(loglik) && !is.nan(loglik)))
   ) {
-    stop("'loglik' must be finite or NA.", call. = FALSE)
+    stop_wo_call("'loglik' must be finite or NA.")
   }
   invisible(loglik)
 }
 
 normalize_margin_types <- function(type, arg = "type") {
   if (!is.character(type) || anyNA(type)) {
-    stop(sprintf("'%s' must be a character vector.", arg), call. = FALSE)
+    stop_wo_call(sprintf("'%s' must be a character vector.", arg))
   }
   normalized <- type
   normalized[type %in% c("cont", "continuous")] <- "c"
   normalized[type %in% c("disc", "discrete")] <- "d"
   normalized[type %in% c("zinf", "zero-inflated")] <- "zi"
   if (any(!normalized %in% c("c", "d", "zi"))) {
-    stop(
-      sprintf("'%s' must contain only 'c', 'd', or 'zi'.", arg),
-      call. = FALSE
-    )
+    stop_wo_call(sprintf("'%s' must contain only 'c', 'd', or 'zi'.", arg))
   }
   normalized
 }
@@ -746,7 +753,7 @@ margin_family_types.default <- function(family) {
 #' settings can be captured in the fitting function's environment.
 #'
 #' @param fit function accepting `x`, `weights`, and `type`.
-#' @param family descriptive family name.
+#' @param family_name descriptive family name.
 #' @param types supported variable types.
 #'
 #' @return A margin-family specification.
@@ -772,9 +779,9 @@ margin_family_types.default <- function(family) {
 #'       loglik = sum(dnorm(x, location, scale, log = TRUE))
 #'     )
 #'   },
-#'   family = "normal"
+#'   family_name = "normal"
 #' )
-margin_family <- function(fit, family = "custom", types = "c") {
+margin_family <- function(fit, family_name = "custom", types = "c") {
   if (!is.function(fit)) {
     stop("'fit' must be a function.", call. = FALSE)
   }
@@ -786,13 +793,13 @@ margin_family <- function(fit, family = "custom", types = "c") {
   ) {
     stop("'fit' must accept 'x', 'weights', and 'type'.", call. = FALSE)
   }
-  validate_margin_family_name(family)
+  validate_margin_family_name(family_name)
   types <- unique(normalize_margin_types(types, "types"))
   if (!length(types)) {
     stop("'types' must contain at least one variable type.", call. = FALSE)
   }
   structure(
-    list(fit = fit, family = family, types = types),
+    list(fit = fit, family_name = family_name, types = types),
     class = c("custom_margin_family", "margin_family")
   )
 }
@@ -814,7 +821,7 @@ margin_family_types.custom_margin_family <- function(family) {
 
 #' @export
 margin_family_name.custom_margin_family <- function(margin) {
-  margin$family
+  margin$family_name
 }
 
 #' Define a kde1d margin family
@@ -881,7 +888,9 @@ fit_margin.kde1d_margin_family <- function(
   xmax <- family$xmax
   levels <- attr(x, "margin_levels", exact = TRUE)
   if (length(levels)) {
-    if (is.nan(xmin)) xmin <- 0
+    if (is.nan(xmin)) {
+      xmin <- 0
+    }
     if (is.nan(xmax)) xmax <- length(levels) - 1
   }
   kde1d::kde1d(

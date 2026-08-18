@@ -23,7 +23,7 @@ scored_margin_family <- function(
         loglik = loglik
       )
     },
-    family = family,
+    family_name = family,
     types = types
   )
 }
@@ -99,19 +99,47 @@ test_that("margin_family validates its fitting contract", {
   }
   expect_error(margin_family(1), "fit")
   expect_error(margin_family(identity), "x.*weights.*type")
-  expect_error(margin_family(fit, family = ""), "family")
+  expect_error(margin_family(fit, family_name = ""), "family")
   expect_error(margin_family(fit, types = character()), "at least one")
   expect_error(margin_family(fit, types = "mixed"), "types")
 
   family <- margin_family(
     fit,
-    family = "mixed support",
+    family_name = "mixed support",
     types = c("continuous", "discrete", "zero-inflated", "c")
   )
   expect_s3_class(family, "margin_family")
+  expect_identical(family$family_name, "mixed support")
   expect_equal(margin_family_types(family), c("c", "d", "zi"))
   expect_identical(margin_family_name(family), "mixed support")
   expect_s3_class(fit_margin(family, 1:3, type = "c"), "margin_dist")
+})
+
+test_that("fitted-margin validation probes at most the first three observations", {
+  margin <- margin_dist(
+    d = function(x) {
+      if (any(x > 3, na.rm = TRUE)) stop("evaluated too far", call. = FALSE)
+      dnorm(x)
+    },
+    p = function(x) {
+      if (any(x > 3, na.rm = TRUE)) stop("evaluated too far", call. = FALSE)
+      pnorm(x)
+    },
+    q = qnorm
+  )
+  expect_no_error(validate_margin(margin, c(1, 2, NA, 4, 5)))
+  expect_no_error(validate_margin(margin, c(1, 2, 3, 4, NA)))
+
+  no_na_propagation <- margin_dist(
+    d = function(x) rep(1, length(x)),
+    p = function(x) rep(0.5, length(x)),
+    q = qnorm
+  )
+  expect_no_error(validate_margin(no_na_propagation, 1:5))
+  expect_error(
+    validate_margin(no_na_propagation, c(1, 2, 3, NA)),
+    "propagate missing values"
+  )
 })
 
 dmargin.frontend_test_margin <- function(x, margin) {
@@ -391,7 +419,7 @@ test_that("selection handles incompatibility, candidate failures, and bad fits",
 
   malformed <- margin_family(
     function(x, weights, type) 1,
-    family = "malformed"
+    family_name = "malformed"
   )
   expect_error(
     select_margin(rnorm(20), list(malformed), "c", numeric(), "aic", 1),
@@ -423,7 +451,7 @@ test_that("every family receives weights and decides how to handle them", {
       attr(fit, "fit_weights") <- weights
       fit
     },
-    family = "weighted-normal"
+    family_name = "weighted-normal"
   )
   selected <- select_margin(x, list(weighted), "c", weights, "aic", 1)
   expect_equal(attr(selected, "fit_weights"), weights)
@@ -436,7 +464,7 @@ test_that("every family receives weights and decides how to handle them", {
       }
       margin_dist(dnorm, pnorm, qnorm, family = "unsupported", type = type)
     },
-    family = "unsupported"
+    family_name = "unsupported"
   )
   expect_error(
     select_margin(x, list(unsupported), "c", weights, "aic", 1),
