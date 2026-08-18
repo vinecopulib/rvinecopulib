@@ -106,7 +106,32 @@ test_that("margins_controls works", {
   )
   expect_eql(sapply(fit_xmin$margins, "[[", "xmin"), rep(0, 5))
   expect_eql(sapply(fit_xmin$margins, "[[", "deg"), rep(1, 5))
-  expect_error(vine(u, margins_controls = list(mult = 2)), "margins_controls")
+
+  # BEGIN legacy margins_controls compatibility
+  legacy_margin_controls_state$warning_issued <- FALSE
+  expect_warning(
+    fit_legacy <- vine(u, margins_controls = list(mult = 2)),
+    "deprecated"
+  )
+  expect_eql(sapply(fit_legacy$margins, "[[", "mult"), rep(2, ncol(u)))
+  expect_no_warning(
+    fit_legacy_xmin <- vine(abs(u), margins_controls = list(xmin = 0))
+  )
+  expect_eql(
+    sapply(fit_legacy_xmin$margins, "[[", "mult"),
+    rep(log1p(ncol(u)), ncol(u))
+  )
+
+  fit_legacy_type <- vine(
+    cbind(rnorm(30), rpois(30, 1)),
+    margins_controls = list(type = c("c", "d")),
+    copula_controls = list(family_set = "indep")
+  )
+  expect_equal(
+    vapply(fit_legacy_type$margins, margin_type, character(1)),
+    c("c", "d")
+  )
+  # END legacy margins_controls compatibility
 })
 
 test_that("weights work", {
@@ -222,14 +247,18 @@ test_that("conflicting variable type declarations are rejected", {
   z <- data.frame(a = zero_inflated(rexp(30)), b = rnorm(30))
   expect_error(vine(z, var_types = c("d", "c")), "disagree")
 
-  expect_error(
-    vine(
-      cbind(rnorm(30), rpois(30, 1)),
-      var_types = c("c", "d"),
-      margins_controls = list(type = c("c", "c"))
-    ),
-    "margins_controls"
+  # BEGIN legacy margins_controls compatibility
+  suppressWarnings(
+    expect_error(
+      vine(
+        cbind(rnorm(30), rpois(30, 1)),
+        var_types = c("c", "d"),
+        margins_controls = list(type = c("c", "c"))
+      ),
+      "disagree"
+    )
   )
+  # END legacy margins_controls compatibility
   expect_error(
     vine(matrix(rnorm(90), ncol = 3), var_types = c("c", "d")),
     "length one or 3"

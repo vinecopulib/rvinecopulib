@@ -162,7 +162,27 @@ vine <- function(
 
   assert_that(is.list(margins_controls))
   allowed_margins_controls <- c("family_set", "selcrit")
+  # BEGIN legacy margins_controls compatibility
+  allowed_margins_controls <- c(
+    allowed_margins_controls,
+    "xmin",
+    "xmax",
+    "type",
+    "mult",
+    "bw",
+    "deg"
+  )
+  # END legacy margins_controls compatibility
   assert_that(in_set(names(margins_controls), allowed_margins_controls))
+  # BEGIN legacy margins_controls compatibility
+  legacy_controls <- upgrade_legacy_margin_controls(
+    margins_controls,
+    data,
+    var_types
+  )
+  margins_controls <- legacy_controls$margins_controls
+  var_types <- legacy_controls$var_types
+  # END legacy margins_controls compatibility
   var_types <- resolve_margin_types(data, var_types)
   validate_vine_weights(weights, nrow(data))
 
@@ -182,6 +202,15 @@ vine <- function(
     d,
     colnames(data)
   )
+  # BEGIN legacy margins_controls compatibility
+  if (!is.null(legacy_controls$kde)) {
+    family_set <- apply_legacy_kde_controls(
+      family_set,
+      legacy_controls$kde,
+      data
+    )
+  }
+  # END legacy margins_controls compatibility
   selcrit <- margins_controls$selcrit
   if (is.null(selcrit)) {
     selcrit <- "aic"
@@ -223,6 +252,138 @@ vine <- function(
 
   finalize_vine(vine, data, weights, keep_data)
 }
+
+# BEGIN legacy margins_controls compatibility
+legacy_margin_controls_state <- new.env(parent = emptyenv())
+
+upgrade_legacy_margin_controls <- function(margins_controls, data, var_types) {
+  legacy_names <- intersect(
+    names(margins_controls),
+    c("xmin", "xmax", "type", "mult", "bw", "deg")
+  )
+  if (!length(legacy_names)) {
+    return(list(
+      margins_controls = margins_controls,
+      var_types = var_types,
+      kde = NULL
+    ))
+  }
+
+  if (!isTRUE(legacy_margin_controls_state$warning_issued)) {
+    legacy_margin_controls_state$warning_issued <- TRUE
+    warning(
+      paste0(
+        "Supplying 'xmin', 'xmax', 'mult', 'bw', 'deg', or 'type' in ",
+        "'margins_controls' is deprecated; configure KDE options with ",
+        "'kde1d_family()' in 'margins_controls$family_set' and supply ",
+        "'type' through 'var_types'."
+      ),
+      call. = FALSE
+    )
+  }
+
+  legacy_type <- margins_controls$type
+  if (!is.null(legacy_type)) {
+    legacy_type <- expand_margin_types(
+      legacy_type,
+      ncol(data),
+      "margins_controls$type"
+    )
+    if (
+      !is.null(var_types) &&
+        !identical(
+          expand_margin_types(var_types, ncol(data), "var_types"),
+          legacy_type
+        )
+    ) {
+      stop("'var_types' and 'margins_controls$type' disagree.", call. = FALSE)
+    }
+    var_types <- legacy_type
+  }
+
+  smoothing_names <- intersect(
+    legacy_names,
+    c("xmin", "xmax", "mult", "bw", "deg")
+  )
+  explicit_kde <- contains_kde1d_family(margins_controls$family_set)
+  if (length(smoothing_names) && explicit_kde) {
+    stop(
+      paste0(
+        "legacy KDE controls cannot be combined with an explicit ",
+        "'kde1d_family()' specification."
+      ),
+      call. = FALSE
+    )
+  }
+  kde <- NULL
+  if (!explicit_kde) {
+    kde <- expand_legacy_kde_controls(
+      margins_controls[legacy_names],
+      ncol(data)
+    )
+  }
+
+  list(
+    margins_controls = margins_controls[
+      !names(margins_controls) %in% legacy_names
+    ],
+    var_types = var_types,
+    kde = kde
+  )
+}
+
+contains_kde1d_family <- function(family_set) {
+  if (inherits(family_set, "kde1d_margin_family")) {
+    return(TRUE)
+  }
+  if (has_margin_family_protocol(family_set) || !is.list(family_set)) {
+    return(FALSE)
+  }
+  any(vapply(family_set, contains_kde1d_family, logical(1)))
+}
+
+expand_legacy_kde_controls <- function(controls, d) {
+  controls <- modifyList(
+    list(xmin = NaN, xmax = NaN, type = "c", mult = NULL, bw = NA, deg = 2),
+    controls
+  )
+  if (is.null(controls$mult)) {
+    controls$mult <- log(1 + d)
+  }
+  for (control in names(controls)) {
+    if (length(controls[[control]]) != d) {
+      controls[[control]] <- rep(controls[[control]], d)
+    }
+  }
+  controls[c("xmin", "xmax", "mult", "bw", "deg")]
+}
+
+apply_legacy_kde_controls <- function(family_set, controls, data) {
+  structure(
+    lapply(seq_along(family_set), function(j) {
+      lapply(family_set[[j]], function(family) {
+        if (!inherits(family, "kde1d_margin_family")) {
+          return(family)
+        }
+        xmin <- controls$xmin[j]
+        xmax <- controls$xmax[j]
+        if (is.ordered(data[[j]])) {
+          xmin <- 0
+          xmax <- nlevels(data[[j]]) - 1
+        }
+        kde1d_family(
+          xmin = xmin,
+          xmax = xmax,
+          mult = controls$mult[j],
+          bw = controls$bw[j],
+          deg = controls$deg[j]
+        )
+      })
+    }),
+    names = names(family_set)
+  )
+}
+# END legacy margins_controls compatibility
 
 resolve_margin_types <- function(data, var_types) {
   d <- ncol(data)
