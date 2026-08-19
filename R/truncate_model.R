@@ -92,7 +92,7 @@ truncate_model.vine_dist <- function(object, trunc_lvl, ...) {
 #' internal function
 #' @noRd
 truncate_column <- function(column, trunc_lvl) {
-  column[1:min(length(column), trunc_lvl)]
+  utils::head(column, trunc_lvl)
 }
 
 #' internal function
@@ -126,9 +126,12 @@ check_trunc_lvl <- function(object, trunc_lvl) {
 get_truncated_pcs <- function(object, trunc_lvl) {
   check_trunc_lvl(object, trunc_lvl)
   if (!is.null(object$copula)) {
-    pcs <- object$copula$pair_copulas[-seq_len(trunc_lvl)]
+    pcs <- object$copula$pair_copulas
   } else {
-    pcs <- object$pair_copulas[-seq_len(trunc_lvl)]
+    pcs <- object$pair_copulas
+  }
+  if (trunc_lvl > 0) {
+    pcs <- pcs[-seq_len(trunc_lvl)]
   }
   unlist(pcs, recursive = FALSE)
 }
