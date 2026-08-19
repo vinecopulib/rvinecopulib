@@ -586,7 +586,8 @@ expand_factors <- function(data) {
       if (is.numeric(x) | is.ordered(x)) {
         return(x)
       }
-      x <- model.matrix(~x)[, -1, drop = FALSE]
+      frame <- stats::model.frame(~x, na.action = stats::na.pass)
+      x <- model.matrix(attr(frame, "terms"), frame)[, -1, drop = FALSE]
       x <- as.data.frame(x)
       x <- lapply(x, function(y) ordered(y, levels = 0:1))
     })

@@ -111,6 +111,9 @@ for the complete backend changes.
 * Do not retain transformed copula data when partial `copula_controls` omit
   `keep_data`; retaining data now requires an explicit opt-in.
 
+* Preserve rows with missing unordered-factor values when expanding factors in
+  `vine()`.
+
 * Fix TLL CDF integration, Wilson random spanning trees, starting parameters for
   discrete models, edge-case per-row parameter shapes, and evaluation of models
   whose omitted pair copulas represent implicit independence.

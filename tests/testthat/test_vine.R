@@ -389,6 +389,26 @@ test_that("variable types can be declared by class or argument", {
   )
 })
 
+test_that("unordered factor expansion preserves missing rows", {
+  x <- data.frame(
+    category = factor(rep(c("a", "b", "c"), 10)),
+    continuous = rnorm(30)
+  )
+  x$category[c(2, 11)] <- NA
+
+  expanded <- expand_factors(x)
+  factor_columns <- setdiff(names(expanded), "continuous")
+  expect_equal(nrow(expanded), nrow(x))
+  expect_true(all(vapply(expanded[factor_columns], is.ordered, logical(1))))
+  expect_true(all(is.na(expanded[c(2, 11), factor_columns])))
+  expect_equal(expanded$continuous, x$continuous)
+
+  expect_no_error(
+    fit <- vine(x, copula_controls = list(family_set = "indep"))
+  )
+  expect_equal(fit$nobs, nrow(x))
+})
+
 test_that("conflicting variable type declarations are rejected", {
   x <- data.frame(a = ordered(rep(1:3, 10)), b = rnorm(30))
   expect_error(vine(x, var_types = c("c", "c")), "disagree")
