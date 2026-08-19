@@ -453,7 +453,7 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
 
 #' @export
 logLik.vinecop <- function(object, ...) {
-  structure(object$loglik, "df" = object$npars)
+  structure(object$loglik, df = object$npars, class = "logLik")
 }
 
 #' Modified vine copula Bayesian information criterion (mBICv)

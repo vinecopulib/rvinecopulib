@@ -120,6 +120,9 @@ for the complete backend changes.
 
 * Preserve and correctly trim variable names for discrete copula data.
 
+* Return standard `logLik` objects from fitted bivariate copula, vine copula,
+  and vine distribution models.
+
 ### BUILD SYSTEM AND DEPENDENCIES
 
 * Vendor the complete vinecopulib 1.0.0 header tree, while keeping the package

@@ -38,6 +38,7 @@ test_that("S3 generics work", {
     tolerance = 0.01
   )
   expect_error(predict(fit, u, what = "hfunc1"))
+  expect_s3_class(logLik(fit), "logLik")
   expect_length(attr(logLik(fit), "df"), 1)
   expect_length(predict(fit, u[1, ], what = "pdf"), 1)
 })

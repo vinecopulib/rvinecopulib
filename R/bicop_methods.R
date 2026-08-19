@@ -390,7 +390,7 @@ fitted.bicop <- function(object, what = "pdf", ...) {
 #' @importFrom stats logLik
 #' @export
 logLik.bicop <- function(object, ...) {
-  structure(object$loglik, "df" = object$npars)
+  structure(object$loglik, df = object$npars, class = "logLik")
 }
 
 #' @export

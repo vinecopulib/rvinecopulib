@@ -321,7 +321,7 @@ fitted.vine <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
 
 #' @export
 logLik.vine <- function(object, ...) {
-  structure(object$loglik, "df" = object$npars)
+  structure(object$loglik, df = object$npars, class = "logLik")
 }
 
 #' @export

@@ -78,6 +78,7 @@ test_that("S3 generics work", {
   expect_error(predict(fit, u, what = "hfunc1"))
   fit$data <- NULL
   expect_error(fitted(fit))
+  expect_s3_class(logLik(fit), "logLik")
   expect_length(attr(logLik(fit), "df"), 1)
 })
 
