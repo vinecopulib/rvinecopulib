@@ -9,7 +9,7 @@ for the complete backend changes.
 
 ### BREAKING API CHANGES
 
-* Require R >= 4.0.0, C++17, and Boost headers from BH >= 1.75.0-0.
+* Require R >= 4.3.0, C++17, and Boost headers from BH >= 1.75.0-0.
 
 * R-vine structures now follow the backend convention with the conditioned
   variable on the diagonal. Consequently, the matrix, order, structure array,
@@ -128,6 +128,8 @@ for the complete backend changes.
 
 * Compile the package as C++17 and require BH >= 1.75.0-0. The backend update
   also reduces its Boost surface to Graph, Math, and Random.
+
+* Require univariateML >= 1.5.0 for optional parametric margin support.
 
 * Modernize `src/update_vinecopulib.sh`: it accepts a branch or ref, imports via
   a temporary clone, preserves package-owned wrappers, copies all public
