@@ -384,6 +384,58 @@ test_that("d = 1 works", {
   expect_eql(dim(summary(vc))[1], 0)
 })
 
+test_that("mBICV uses the non-independence prior", {
+  indep <- bicop_dist()
+  dependent <- bicop_dist("gaussian", parameters = 0.3)
+  structure <- dvine_structure(1:4)
+  psi0 <- 0.9
+
+  cases <- list(
+    all_independent = list(
+      pair_copulas = list(
+        rep(list(indep), 3),
+        rep(list(indep), 2),
+        list(indep)
+      ),
+      non_independent = c(0, 0, 0)
+    ),
+    all_dependent = list(
+      pair_copulas = list(
+        rep(list(dependent), 3),
+        rep(list(dependent), 2),
+        list(dependent)
+      ),
+      non_independent = c(3, 2, 1)
+    ),
+    mixed = list(
+      pair_copulas = list(
+        list(dependent, indep, dependent),
+        list(indep, dependent),
+        list(indep)
+      ),
+      non_independent = c(2, 1, 0)
+    ),
+    truncated = list(
+      pair_copulas = list(list(dependent, indep, dependent)),
+      non_independent = c(2, 0, 0)
+    )
+  )
+
+  for (case in cases) {
+    vc <- vinecop_dist(case$pair_copulas, structure)
+    vc$loglik <- 0
+    vc$nobs <- 100
+    tree <- seq_len(dim(vc)[1] - 1)
+    n_edges <- dim(vc)[1] - tree
+    prior <- psi0^tree
+    q_t <- case$non_independent
+    log_prior <- q_t * log(prior) + (n_edges - q_t) * log(1 - prior)
+    expected <- vc$npars * log(vc$nobs) - 2 * sum(log_prior)
+
+    expect_eql(mBICV(vc, psi0), expected)
+  }
+})
+
 test_that("fitting only parameters works", {
   vc <- vinecop(u, family = "onepar")
   vc2 <- vinecop(u, vinecop_object = vc, show_trace = TRUE)

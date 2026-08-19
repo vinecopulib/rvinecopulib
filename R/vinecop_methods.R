@@ -463,7 +463,7 @@ logLik.vinecop <- function(object, ...) {
 #' The modified vine copula Bayesian information criterion (mBICv) is defined as
 #'
 #' \deqn{BIC = -2 loglik +  \nu log(n) - 2 \sum_{t=1}^{d - 1} (q_t log(\psi_0^t)
-#' - (d - t - q_t) log(1 - \psi_0^t)) }
+#' + (d - t - q_t) log(1 - \psi_0^t)) }
 #'
 #' where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
 #' (effective) number of parameters of the model, \eqn{t} is the tree level
@@ -503,15 +503,12 @@ mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
 compute_mBICV_penalty <- function(object, psi0) {
   d <- dim(object)[1]
   smr <- summary(object)
-  q_m <- tapply(smr$family, smr$tree, function(x) sum(x == "indep"))
-  q_m <- c(q_m, rep(0, d - 1 - length(q_m)))
+  q_t <- tapply(smr$family, smr$tree, function(x) sum(x != "indep"))
+  q_t <- c(q_t, rep(0, d - 1 - length(q_t)))
   m_seq <- seq_len(d - 1)
-  pen <- object$npars * log(object$nobs)
-  pen -
-    2 *
-      sum(
-        q_m * log(psi0^m_seq) + (d - seq_len(d - 1) - q_m) * log(1 - psi0^m_seq)
-      )
+  n_edges <- d - m_seq
+  log_prior <- q_t * log(psi0^m_seq) + (n_edges - q_t) * log(1 - psi0^m_seq)
+  object$npars * log(object$nobs) - 2 * sum(log_prior)
 }
 
 #' @export
