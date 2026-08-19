@@ -149,6 +149,22 @@ test_that("margins_controls works", {
   # END legacy margins_controls compatibility
 })
 
+test_that("partial copula_controls do not retain data by default", {
+  fit_default <- vine(
+    u[, 1:2],
+    copula_controls = list(family_set = "indep")
+  )
+  expect_false(fit_default$copula_controls$keep_data)
+  expect_null(fit_default$copula$data)
+
+  fit_keep <- vine(
+    u[, 1:2],
+    copula_controls = list(family_set = "indep", keep_data = TRUE)
+  )
+  expect_true(fit_keep$copula_controls$keep_data)
+  expect_equal(dim(fit_keep$copula$data), c(nrow(u), 2))
+})
+
 test_that("weights work", {
   w <- rexp(nrow(u))
   expect_warning(

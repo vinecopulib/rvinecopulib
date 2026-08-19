@@ -203,7 +203,7 @@ vine <- function(
 
   assert_that(is.list(copula_controls))
   if (is.null(copula_controls$keep_data)) {
-    copula_controls$keep_data <- TRUE
+    copula_controls$keep_data <- FALSE
   }
   copula_controls$cores <- cores
 
