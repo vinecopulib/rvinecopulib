@@ -26,5 +26,6 @@ backend_commit="$(git -C "$backend_dir" rev-parse HEAD)"
 # complete upstream header tree, including documentation headers.
 rm -rf -- "$include_dir/vinecopulib"
 cp -R "$backend_dir/include/." "$include_dir/"
+cp "$backend_dir/LICENSE" "$include_dir/vinecopulib/LICENSE"
 
 printf 'Imported vinecopulib %s at %s\n' "$backend_ref" "$backend_commit"
