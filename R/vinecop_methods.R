@@ -488,7 +488,10 @@ logLik.vinecop <- function(object, ...) {
 #' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 #' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
-  assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
+  assert_that(inherits(object, "vinecop_dist"))
+  if (!is.number(psi0) || !is.finite(psi0) || psi0 <= 0 || psi0 >= 1) {
+    stop("`psi0` must be a number strictly between 0 and 1.", call. = FALSE)
+  }
   ll <- ifelse(
     is.null(newdata),
     object$loglik,

@@ -378,6 +378,9 @@ test_that("d = 1 works", {
 
   expect_eql(AIC(vc), 0)
   expect_eql(mBICV(vc), 0)
+  for (psi0 in c(-1, 0, 1, 2, Inf, NA_real_)) {
+    expect_error(mBICV(vc, psi0), "strictly between 0 and 1")
+  }
   expect_eql(dim(summary(vc))[1], 0)
 })
 
