@@ -132,7 +132,8 @@ dbicop <- function(
   deriv = NULL,
   cores = 1
 ) {
-  assert_that(is.flag(log), is.number(cores), cores > 0)
+  assert_that(is.flag(log))
+  cores <- as_count(cores, "cores")
   deriv <- normalize_bicop_deriv(deriv)
   u <- if_vec_to_matrix(u)
   bicop <- args2bicop(family, rotation, parameters, var_types)
@@ -173,7 +174,8 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
   if (inherits(family, "bicop_dist") & !missing(rotation)) {
     qrng <- rotation
   }
-  assert_that(is.count(n), is.flag(qrng))
+  n <- as_count(n, "n")
+  assert_that(is.flag(qrng))
 
   bicop <- args2bicop(family, rotation, parameters)
   U <- bicop_sim_cpp(bicop, n, qrng, get_seeds())
@@ -193,7 +195,7 @@ scores.bicop_dist <- function(
   parameters = NULL,
   ...
 ) {
-  assert_that(is.number(cores), cores > 0)
+  cores <- as_count(cores, "cores")
   u <- if_vec_to_matrix(u)
   if (is.null(parameters)) {
     parameters <- matrix(numeric(), 0, 0)
@@ -211,7 +213,7 @@ hessian.bicop_dist <- function(
   parameters = NULL,
   ...
 ) {
-  assert_that(is.number(cores), cores > 0)
+  cores <- as_count(cores, "cores")
   u <- if_vec_to_matrix(u)
   if (is.null(parameters)) {
     parameters <- matrix(numeric(), 0, 0)
@@ -237,11 +239,10 @@ hbicop <- function(
   deriv = NULL,
   cores = 1
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     in_set(cond_var, 1:2),
-    is.flag(inverse),
-    is.number(cores),
-    cores > 0
+    is.flag(inverse)
   )
   deriv <- normalize_bicop_deriv(deriv)
   if (inverse && !is.null(deriv)) {

@@ -249,10 +249,12 @@ test_that("margin fitting can use multiple cores", {
   )
   expect_identical(fit_parallel_override$margins_controls$cores, 2)
   expect_identical(fit_parallel_override$copula_controls$cores, 1)
+  # as_count() replaces the hand-rolled check and additionally bounds the value
+  # by .Machine$integer.max; keep the broader set of invalid inputs
   for (invalid_cores in list(c(2, 3), NA_real_, Inf, 0, -1, 1.5)) {
     expect_error(
       vine(u, margins_controls = list(cores = invalid_cores)),
-      "must be positive integers"
+      "finite positive whole number"
     )
   }
 })

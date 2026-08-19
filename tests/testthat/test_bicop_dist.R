@@ -392,7 +392,7 @@ test_that("rbicop vectorization handles rotations and multiple parameters", {
 test_that("rbicop validates vectorized simulation inputs", {
   pars <- matrix(c(-0.3, 0.1), ncol = 1)
 
-  expect_error(rbicop(1.5, "gaussian", 0, 0.2), "not a count")
+  expect_error(rbicop(1.5, "gaussian", 0, 0.2), "finite positive whole number")
   expect_error(rbicop(3, "gaussian", 0, pars), "one row per row of u")
   expect_error(
     rbicop(2, "gaussian", 0, matrix(c(0.1, NA_real_), ncol = 1)),
@@ -467,8 +467,8 @@ test_that("bivariate derivative safeguards are enforced", {
   u_deriv <- matrix(c(0.2, 0.3, 0.7, 0.8), ncol = 2)
   cop <- bicop_dist("gaussian", parameters = 0.4)
 
-  expect_error(scores(u_deriv, cop, cores = 0), "not greater than 0")
-  expect_error(hessian(u_deriv, cop, cores = 0), "not greater than 0")
+  expect_error(scores(u_deriv, cop, cores = 0), "finite positive whole number")
+  expect_error(hessian(u_deriv, cop, cores = 0), "finite positive whole number")
   expect_error(scores(u_deriv, cop, parameters = "bad"), "not a numeric")
   expect_error(
     scores(u_deriv, cop, parameters = matrix(0.2, 1, 1)),
@@ -675,7 +675,10 @@ test_that("function derivative safeguards are enforced", {
   expect_error(dbicop(u, cop, deriv = "u3"), "components of 'deriv'")
   expect_error(dbicop(u, cop, deriv = "par0"), "components of 'deriv'")
   expect_error(dbicop(u, cop, deriv = "par2"), "parameter")
-  expect_error(dbicop(u, cop, deriv = "u1", cores = 0), "not greater than 0")
+  expect_error(
+    dbicop(u, cop, deriv = "u1", cores = 0),
+    "finite positive whole number"
+  )
   expect_error(
     hbicop(u, 1, cop, inverse = TRUE, deriv = "u1"),
     "inverse h-functions"

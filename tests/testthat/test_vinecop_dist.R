@@ -147,9 +147,9 @@ test_that("conditional simulation handles R-side ordering and recycling", {
     rvinecop(5, vc_cond, conditioning_set = "a"),
     "requires 'u_cond'"
   )
-  expect_error(rvinecop(1.5, vc_cond), "not a count")
+  expect_error(rvinecop(1.5, vc_cond), "finite positive whole number")
   expect_error(rvinecop(5, vc_cond, qrng = 1), "not a flag")
-  expect_error(rvinecop(5, vc_cond, cores = 0), "not greater than 0")
+  expect_error(rvinecop(5, vc_cond, cores = 0), "finite positive whole number")
   expect_error(
     rvinecop(5, vc_cond, u_cond = list(0.5)),
     "must be a vector, matrix, or data frame"

@@ -163,6 +163,7 @@ vine <- function(
   var_types = NULL
 ) {
   ## basic sanity checks (copula_controls are checked by vinecop)
+  cores <- as_count(cores, "cores")
   data <- expand_factors(data)
 
   d <- ncol(data)
@@ -197,19 +198,8 @@ vine <- function(
   var_types <- resolve_margin_types(data, var_types)
   validate_vine_weights(weights, nrow(data))
   marg_cores <- margins_controls$cores
-  if (is.null(marg_cores)) {
-    marg_cores <- cores
-  }
-  if (
-    !is.numeric(marg_cores) ||
-      length(marg_cores) != 1L ||
-      is.na(marg_cores) ||
-      !is.finite(marg_cores) ||
-      marg_cores <= 0 ||
-      marg_cores != floor(marg_cores)
-  ) {
-    stop("'cores' arguments must be positive integers.", call. = FALSE)
-  }
+  marg_cores <- ifelse(is.null(marg_cores), cores, marg_cores)
+  marg_cores <- as_count(marg_cores, "margins_controls$cores")
 
   assert_that(is.list(copula_controls))
   if (is.null(copula_controls$keep_data)) {

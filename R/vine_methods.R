@@ -60,6 +60,7 @@
 #' @export
 dvine <- function(x, vine, cores = 1) {
   stopifnot(inherits(vine, "vine_dist"))
+  cores <- as_count(cores, "cores")
   if (NCOL(x) == 1) {
     x <- t(x)
   }
@@ -88,6 +89,8 @@ dvine <- function(x, vine, cores = 1) {
 #' @export
 pvine <- function(x, vine, n_mc = 10^4, cores = 1) {
   stopifnot(inherits(vine, "vine_dist"))
+  n_mc <- as_count(n_mc, "n_mc")
+  cores <- as_count(cores, "cores")
 
   if (NCOL(x) == 1) {
     x <- t(x)
@@ -124,15 +127,13 @@ rvine <- function(
   x_cond = NULL,
   conditioning_set = NULL
 ) {
+  n <- as_count(n, "n")
+  cores <- as_count(cores, "cores")
   assert_that(
-    is.count(n),
     inherits(vine, "vine_dist"),
-    is.flag(qrng),
-    is.number(cores),
-    cores > 0
+    is.flag(qrng)
   )
 
-  n <- as.integer(n)
   if (is.null(x_cond)) {
     if (!is.null(conditioning_set) && length(conditioning_set) > 0) {
       stop("'conditioning_set' requires 'x_cond'.", call. = FALSE)

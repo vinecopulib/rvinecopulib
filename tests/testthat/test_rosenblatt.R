@@ -109,8 +109,14 @@ test_that("conditional rosenblatt safeguards are enforced", {
     rosenblatt(u, vc_cond, conditioning_set = 1.5),
     "indices or names"
   )
-  expect_error(rosenblatt(u, vc_cond, cores = 0), "not greater than 0")
-  expect_error(inverse_rosenblatt(u, vc_cond, cores = 0), "not greater than 0")
+  expect_error(
+    rosenblatt(u, vc_cond, cores = 0),
+    "finite positive whole number"
+  )
+  expect_error(
+    inverse_rosenblatt(u, vc_cond, cores = 0),
+    "finite positive whole number"
+  )
   expect_error(
     rosenblatt(u, vc_cond, randomize_discrete = 1),
     "not a flag"

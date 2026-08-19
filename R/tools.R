@@ -344,6 +344,34 @@ on_failure(in_set) <- function(call, env) {
   )
 }
 
+#' Test whether an object is a count accepted by native code
+#' @noRd
+is_count <- function(x) {
+  is.numeric(x) &&
+    length(x) == 1L &&
+    !is.na(x) &&
+    is.finite(x) &&
+    x > 0 &&
+    x == floor(x) &&
+    x <= .Machine$integer.max
+}
+
+#' Validate and convert a count passed to native code
+#' @noRd
+as_count <- function(x, arg) {
+  if (!is_count(x)) {
+    stop(
+      sprintf(
+        "`%s` must be a finite positive whole number no greater than %d.",
+        arg,
+        .Machine$integer.max
+      ),
+      call. = FALSE
+    )
+  }
+  as.double(x)
+}
+
 correct_var_types <- function(var_types, data) {
   is.character(var_types) && in_set(var_types, c("c", "d"))
 }

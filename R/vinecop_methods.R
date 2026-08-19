@@ -132,10 +132,9 @@ dvinecop <- function(
   keep_all = FALSE,
   parameters = NULL
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     inherits(vinecop, "vinecop_dist"),
-    is.number(cores),
-    cores > 0,
     is.flag(keep_all)
   )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
@@ -170,11 +169,10 @@ scores.vinecop_dist <- function(
   parameters = NULL,
   ...
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     inherits(vinecop, "vinecop_dist"),
-    is.flag(step_wise),
-    is.number(cores),
-    cores > 0
+    is.flag(step_wise)
   )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
   if (is.null(parameters)) {
@@ -200,11 +198,10 @@ hessian.vinecop_dist <- function(
   parameters = NULL,
   ...
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     inherits(vinecop, "vinecop_dist"),
-    is.flag(step_wise),
-    is.number(cores),
-    cores > 0
+    is.flag(step_wise)
   )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
   if (is.null(parameters)) {
@@ -216,14 +213,11 @@ hessian.vinecop_dist <- function(
 
 #' @rdname vinecop_methods
 #' @param n_mc number of samples used for quasi Monte Carlo integration.
-#' @importFrom assertthat is.count
 #' @export
 pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
-  assert_that(
-    inherits(vinecop, "vinecop_dist"),
-    is.number(n_mc),
-    is.count(cores)
-  )
+  n_mc <- as_count(n_mc, "n_mc")
+  cores <- as_count(cores, "cores")
+  assert_that(inherits(vinecop, "vinecop_dist"))
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
   vinecop_cdf_cpp(as.matrix(u), vinecop, n_mc, cores, get_seeds())
 }
@@ -242,15 +236,13 @@ rvinecop <- function(
   u_cond = NULL,
   conditioning_set = NULL
 ) {
+  n <- as_count(n, "n")
+  cores <- as_count(cores, "cores")
   assert_that(
-    is.count(n),
     inherits(vinecop, "vinecop_dist"),
-    is.flag(qrng),
-    is.number(cores),
-    cores > 0
+    is.flag(qrng)
   )
 
-  n <- as.integer(n)
   if (is.null(u_cond)) {
     if (!is.null(conditioning_set) && length(conditioning_set) > 0) {
       stop("'conditioning_set' requires 'u_cond'.", call. = FALSE)
@@ -420,11 +412,10 @@ predict.vinecop <- function(
   cores = 1,
   ...
 ) {
+  n_mc <- as_count(n_mc, "n_mc")
+  cores <- as_count(cores, "cores")
   assert_that(
-    in_set(what, c("pdf", "cdf")),
-    is.number(n_mc),
-    is.number(cores),
-    cores > 0
+    in_set(what, c("pdf", "cdf"))
   )
   newdata <- if_vec_to_matrix(newdata, dim(object)[1] == 1)
   switch(
@@ -445,12 +436,9 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
   if (is.null(object$data)) {
     stop("data have not been stored, use keep_data = TRUE when fitting.")
   }
-  assert_that(
-    in_set(what, c("pdf", "cdf")),
-    is.number(n_mc),
-    is.number(cores),
-    cores > 0
-  )
+  n_mc <- as_count(n_mc, "n_mc")
+  cores <- as_count(cores, "cores")
+  assert_that(in_set(what, c("pdf", "cdf")))
   switch(
     what,
     "pdf" = vinecop_pdf_cpp(

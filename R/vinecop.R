@@ -198,6 +198,7 @@ vinecop <- function(
   tree_algorithm = "mst_prim",
   conditioning_set = NULL
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||
@@ -218,8 +219,6 @@ vinecop <- function(
     is.string(tree_crit) || is.function(tree_crit),
     is.scalar(threshold),
     is.flag(keep_data),
-    is.number(cores),
-    cores > 0,
     correct_var_types(var_types),
     is.string(tree_algorithm)
   )
