@@ -86,10 +86,19 @@ test_that("conditioning-aware selection is passed to the copula fit", {
 })
 
 test_that("margins_controls works", {
-  default_controls <- eval(formals(vine)$margins_controls)
-  expect_identical(default_controls$family_set, "kde1d")
-  expect_identical(default_controls$selcrit, "aic")
-  expect_null(default_controls$cores)
+  expect_identical(eval(formals(vine)$margins_controls), list())
+  fit_defaults <- vine(
+    u[, 1:2],
+    margins_controls = list(cores = 1),
+    copula_controls = list(family_set = "indep")
+  )
+  expect_identical(fit_defaults$margins_controls$selcrit, "aic")
+  expect_identical(fit_defaults$margins_controls$cores, 1)
+  expect_true(all(vapply(
+    fit_defaults$margins,
+    function(margin) margin_info(margin)$family_name == "kde1d",
+    logical(1)
+  )))
 
   fit_mult <- vine(
     u,
@@ -142,11 +151,14 @@ test_that("margins_controls works", {
 
 test_that("weights work", {
   w <- rexp(nrow(u))
-  fit_weights <- vine(
-    u,
-    copula_controls = list(family_set = "nonpar"),
-    weights = w,
-    keep_data = TRUE
+  expect_warning(
+    fit_weights <- vine(
+      u,
+      copula_controls = list(family_set = "nonpar"),
+      weights = w,
+      keep_data = TRUE
+    ),
+    "AIC and BIC are unavailable"
   )
   expect_eql(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
@@ -188,6 +200,37 @@ test_that("margin fitting can use multiple cores", {
     ),
     "margin fit failed"
   )
+  expect_error(
+    collect_vine_margin_results(list(NULL)),
+    "variable 1.*cores = 1"
+  )
+
+  noisy <- margin_family(
+    function(x, weights, type) {
+      warning("margin fit warning")
+      margin_dist(
+        dnorm,
+        pnorm,
+        qnorm,
+        family = "noisy",
+        npars = 1,
+        loglik = -10
+      )
+    },
+    family_name = "noisy"
+  )
+  expect_warning(
+    fits <- fit_vine_margins(
+      margin_data[1:2],
+      rep(list(list(noisy)), 2),
+      c("c", "c"),
+      numeric(),
+      "aic",
+      2
+    ),
+    "margin fit warning"
+  )
+  expect_length(fits, 2)
 
   fit_override <- vine(
     u,
@@ -206,10 +249,12 @@ test_that("margin fitting can use multiple cores", {
   )
   expect_identical(fit_parallel_override$margins_controls$cores, 2)
   expect_identical(fit_parallel_override$copula_controls$cores, 1)
-  expect_error(
-    vine(u, margins_controls = list(cores = 0)),
-    "must be positive"
-  )
+  for (invalid_cores in list(c(2, 3), NA_real_, Inf, 0, -1, 1.5)) {
+    expect_error(
+      vine(u, margins_controls = list(cores = invalid_cores)),
+      "must be positive integers"
+    )
+  }
 })
 
 test_that("custom tree criteria are available through vine", {
@@ -273,7 +318,10 @@ test_that("discrete variables work", {
   expect_equiv(p, pvine(x2, fit2))
   expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
 
-  expect_no_error(fit <- vine(x, var_types = c("d", "c", "zi")))
+  expect_warning(
+    fit <- vine(x, var_types = c("d", "c", "zi")),
+    "AIC and BIC are unavailable"
+  )
   expect_equal(fit$copula$var_types, c("d", "c", "d"))
   expect_no_error(dvine(x, fit))
   expect_no_error(pvine(x, fit))
@@ -289,7 +337,10 @@ test_that("variable types can be declared by class or argument", {
   expect_s3_class(x$zero, "zero_inflated")
   expect_s3_class(x[1:5, , drop = FALSE]$zero, "zero_inflated")
 
-  fit <- vine(x, copula_controls = list(family_set = "indep"))
+  expect_warning(
+    fit <- vine(x, copula_controls = list(family_set = "indep")),
+    "AIC and BIC are unavailable"
+  )
   expect_equal(
     vapply(
       fit$margins,

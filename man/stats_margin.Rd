@@ -18,8 +18,8 @@ A fixed margin implementing the \link[=margin_protocol]{margin protocol}.
 \description{
 \code{stats_margin()} adapts the univariate distributions documented in
 \link[stats:Distributions]{stats::Distributions} to the fitted-margin protocol. Distribution
-parameters are supplied through \code{...}; the resulting margin is fixed and
-therefore has zero fitted parameters and no fitted log-likelihood.
+parameters are supplied through \code{...}; the resulting margin reports the
+distribution's parameter count but has no fitted log-likelihood.
 }
 \examples{
 normal <- stats_margin("norm", mean = 1, sd = 2)

@@ -83,7 +83,12 @@ fit_weighted <- vine(x, margins_controls = list(family_set = weighted_normal),
 
 When no weights are supplied, `weights` is `numeric()`. The built-in
 univariateML family rejects non-empty weights. A failed candidate does not stop
-selection if another candidate succeeds.
+selection if another candidate succeeds, but the failure is reported.
+
+On non-Windows systems, margins are fitted in forked processes when several
+cores are requested. Stochastic custom fitters may then depend on the number of
+processes; set `margins_controls = list(cores = 1)` when results must remain
+invariant to the core count. Margin fitting is always serial on Windows.
 
 ## Parametric selection with univariateML
 
@@ -164,7 +169,9 @@ receive them through the `fit_args` argument to `margin_family()`. When several
 candidates compete, each fitted object's `margin_info()` result needs a finite
 `loglik` entry; AIC and BIC additionally require a finite `npars` entry. If one
 candidate fails, selection continues with the remaining fits; if all fail,
-`vine()` reports the collected errors.
+`vine()` reports the collected errors. A sole candidate without a finite
+parameter count is retained with a warning, but model AIC and BIC are then
+unavailable.
 
 To combine named and custom candidates separately by variable, use nested
 lists:
@@ -256,7 +263,9 @@ left limit equals the ordinary CDF.
 
 `stats_margin()` adapts fixed `stats` distributions, including `norm`, `lnorm`,
 `gamma`, and `weibull`, to the fitted-margin protocol. Legacy
-`list(distr = ...)` specifications remain accepted by `vine_dist()`.
+`list(distr = ...)` specifications remain accepted by `vine_dist()`. These
+margins retain their distribution parameter counts because the supplied
+parameters may have been estimated before constructing the vine distribution.
 
 ```{r fixed}
 fixed_model <- vine_dist(

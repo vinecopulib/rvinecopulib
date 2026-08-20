@@ -33,7 +33,7 @@ test_that("custom fitted margins implement the minimal protocol", {
   expect_equal(qmargin(c(0.1, 0.5, 0.9), margin), qnorm(c(0.1, 0.5, 0.9)))
   expect_equal(dvine(matrix(0, 1, 3), custom), dvine(matrix(0, 1, 3), legacy))
   expect_equal(summary(custom)$margins$distr, rep("normal", 3))
-  expect_equal(custom$npars, legacy$npars + 6)
+  expect_equal(custom$npars, legacy$npars)
 
   path <- tempfile(fileext = ".rds")
   saveRDS(custom, path)
@@ -193,13 +193,13 @@ test_that("constructor catches wrong input", {
   expect_error(vine_dist(margs, cop, mat))
   expect_error(vine_dist(margs[1:2], cop, mat))
 
-  # fixed stats margins do not contribute fitted parameters
+  # fixed stats margins retain their distribution parameter counts
   margs <- list(
     list(distr = "weibull", shape = 1, scale = 1),
     list(distr = "t", df = 4, ncp = 1),
     list(distr = "cauchy", location = 0, scale = 1)
   )
-  expect_equiv(vine_dist(margs, pcs, mat)$npars, 6)
+  expect_equiv(vine_dist(margs, pcs, mat)$npars, 6 + 6)
 })
 
 test_that("print/summary/dim generics work", {

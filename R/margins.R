@@ -66,7 +66,7 @@ margin_info <- function(object) {
 #' @param family descriptive family name.
 #' @param type margin type: `"c"`, `"d"`, or `"zi"`.
 #' @param support mathematical support as its lower and upper bounds.
-#' @param npars effective number of fitted parameters.
+#' @param npars effective number of parameters.
 #' @param loglik maximized marginal log-likelihood, or `NA` for a fixed margin.
 #'
 #' @return A fitted margin implementing the [margin protocol][margin_protocol].
@@ -157,8 +157,8 @@ logLik.margin_dist <- function(object, ...) {
 #'
 #' `stats_margin()` adapts the univariate distributions documented in
 #' [stats::Distributions] to the fitted-margin protocol. Distribution
-#' parameters are supplied through `...`; the resulting margin is fixed and
-#' therefore has zero fitted parameters and no fitted log-likelihood.
+#' parameters are supplied through `...`; the resulting margin reports the
+#' distribution's parameter count but has no fitted log-likelihood.
 #'
 #' @param family distribution suffix such as `"norm"`, `"pois"`, or `"binom"`.
 #' @param ... parameters passed to the distribution's density, CDF, and quantile
@@ -193,7 +193,8 @@ stats_margin <- function(family, ...) {
       },
       family = family,
       type = stats_margin_types[[family]],
-      support = unname(do.call(q, c(list(p = c(0, 1)), args)))
+      support = unname(do.call(q, c(list(p = c(0, 1)), args))),
+      npars = get_stats_margin_npars(family, args)
     ),
     class = c("stats_margin", "margin_dist", "list")
   )
@@ -220,6 +221,37 @@ stats_margin_types <- c(
   signrank = "d",
   wilcox = "d"
 )
+
+get_stats_margin_npars <- function(family, args) {
+  npars <- c(
+    beta = 2,
+    cauchy = 2,
+    chisq = 2,
+    exp = 1,
+    f = 3,
+    gamma = 2,
+    logis = 2,
+    lnorm = 2,
+    norm = 2,
+    t = 2,
+    unif = 2,
+    weibull = 2,
+    binom = 2,
+    geom = 1,
+    hyper = 3,
+    nbinom = 2,
+    pois = 1,
+    signrank = 1,
+    wilcox = 2
+  )[[family]]
+  if (family %in% c("chisq", "t") && !"ncp" %in% names(args)) {
+    npars <- npars - 1
+  }
+  if (family == "weibull" && !"scale" %in% names(args)) {
+    npars <- npars - 1
+  }
+  npars
+}
 
 #' @export
 dmargin.kde1d <- function(x, margin) {
@@ -932,22 +964,34 @@ as_margin_family <- function(family) {
   univariateML_family(family)
 }
 
-fit_margin_candidate <- function(x, family, type, weights) {
-  fit <- fit_margin(family, x, weights = weights, type = type)
+validate_margin_candidate <- function(fit, x, family_name, type) {
   validate_margin(fit, x)
   fit_info <- margin_info(fit)
   if (fit_info$type != type) {
     stop(
       sprintf(
         "fitted family \"%s\" declared type \"%s\", expected \"%s\".",
-        margin_info(family)$family_name,
+        family_name,
         fit_info$type,
         type
       ),
       call. = FALSE
     )
   }
-  fit
+  observed <- x[!is.na(x)]
+  if (
+    any(observed < fit_info$support[1L]) ||
+      any(observed > fit_info$support[2L])
+  ) {
+    stop(
+      sprintf(
+        "fitted family \"%s\" has support that excludes observed values.",
+        family_name
+      ),
+      call. = FALSE
+    )
+  }
+  invisible(fit)
 }
 
 select_margin <- function(
@@ -974,75 +1018,143 @@ select_margin <- function(
       call. = FALSE
     )
   }
-  errors <- character()
+  family_names <- vapply(
+    candidates,
+    function(candidate) margin_info(candidate)$family_name,
+    character(1)
+  )
+  problems <- character()
   fits <- lapply(candidates, function(candidate) {
-    tryCatch(
-      suppressWarnings(fit_margin_candidate(x, candidate, type, weights)),
+    family_name <- margin_info(candidate)$family_name
+    fit <- tryCatch(
+      withCallingHandlers(
+        fit_margin(candidate, x, weights = weights, type = type),
+        warning = function(condition) {
+          problems <<- c(
+            problems,
+            sprintf(
+              "%s warned: %s",
+              family_name,
+              conditionMessage(condition)
+            )
+          )
+          invokeRestart("muffleWarning")
+        }
+      ),
       error = function(error) {
-        errors <<- c(
-          errors,
+        problems <<- c(
+          problems,
           sprintf(
-            "%s: %s",
-            margin_info(candidate)$family_name,
+            "%s failed: %s",
+            family_name,
             conditionMessage(error)
           )
         )
         NULL
       }
     )
+    if (is.null(fit)) {
+      return(NULL)
+    }
+    validate_margin_candidate(fit, x, family_name, type)
+    fit
   })
   fitted <- !vapply(fits, is.null, logical(1))
   fits <- fits[fitted]
+  family_names <- family_names[fitted]
   if (!length(fits)) {
     stop(
       sprintf(
         "could not fit a margin for variable %d (%s).",
         variable,
-        paste(errors, collapse = "; ")
+        paste(unique(problems), collapse = "; ")
       ),
       call. = FALSE
     )
   }
-  if (length(fits) == 1L) {
-    return(fits[[1L]])
-  }
   info <- lapply(fits, margin_info)
   loglik <- vapply(info, `[[`, numeric(1), "loglik")
   valid <- is.finite(loglik)
+  problems <- c(
+    problems,
+    sprintf(
+      "%s rejected: fitted margin has no finite log-likelihood",
+      family_names[!valid]
+    )
+  )
   if (!any(valid)) {
     stop(
       sprintf(
-        "no candidate margin for variable %d has a finite log-likelihood.",
-        variable
+        "could not fit a margin for variable %d (%s).",
+        variable,
+        paste(unique(problems), collapse = "; ")
       ),
       call. = FALSE
     )
   }
   fits <- fits[valid]
   info <- info[valid]
+  family_names <- family_names[valid]
   loglik <- loglik[valid]
   npars <- vapply(info, `[[`, numeric(1), "npars")
   if (selcrit != "loglik") {
     valid <- is.finite(npars)
-    if (!any(valid)) {
+    if (any(valid)) {
+      problems <- c(
+        problems,
+        sprintf(
+          "%s rejected: fitted margin has no finite parameter count",
+          family_names[!valid]
+        )
+      )
+      fits <- fits[valid]
+      family_names <- family_names[valid]
+      loglik <- loglik[valid]
+      npars <- npars[valid]
+    } else if (length(fits) > 1L) {
       stop(
         sprintf(
-          "no candidate margin for variable %d has a finite parameter count.",
+          paste0(
+            "could not select a margin for variable %d because no ",
+            "candidate has a finite parameter count."
+          ),
           variable
         ),
         call. = FALSE
       )
+    } else {
+      problems <- c(
+        problems,
+        sprintf(
+          paste0(
+            "%s has no finite parameter count; AIC and BIC are ",
+            "unavailable"
+          ),
+          family_names
+        )
+      )
     }
-    fits <- fits[valid]
-    loglik <- loglik[valid]
-    npars <- npars[valid]
   }
-  criterion <- switch(
-    selcrit,
-    loglik = -loglik,
-    aic = -2 * loglik + 2 * npars,
-    bic = -2 * loglik + log(sum(!is.na(x))) * npars
-  )
+  criterion <- if (length(fits) == 1L) {
+    1
+  } else {
+    switch(
+      selcrit,
+      loglik = -loglik,
+      aic = -2 * loglik + 2 * npars,
+      bic = -2 * loglik + log(sum(!is.na(x))) * npars
+    )
+  }
+  if (length(problems)) {
+    warning(
+      sprintf(
+        "margin selection for variable %d reported problems (%s).",
+        variable,
+        paste(unique(problems), collapse = "; ")
+      ),
+      call. = FALSE
+    )
+  }
   fits[[which.min(criterion)]]
 }
 

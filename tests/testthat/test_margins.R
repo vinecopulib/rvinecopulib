@@ -80,12 +80,19 @@ test_that("stats distributions are fixed fitted-margin implementations", {
   expect_equal(qmargin(0.5, normal), 1)
   expect_identical(margin_info(normal)$type, "c")
   expect_equal(margin_info(normal)$support, c(-Inf, Inf))
-  expect_identical(margin_info(normal)$npars, 0)
+  expect_identical(margin_info(normal)$npars, 2)
   expect_true(is.na(margin_info(normal)$loglik))
 
   expect_equal(dmargin(2, poisson), dpois(2, 3))
   expect_identical(margin_info(poisson)$type, "d")
   expect_equal(margin_info(poisson)$support, c(0, Inf))
+  expect_identical(margin_info(poisson)$npars, 1)
+  expect_identical(margin_info(stats_margin("chisq", df = 3))$npars, 1)
+  expect_identical(
+    margin_info(stats_margin("chisq", df = 3, ncp = 1))$npars,
+    2
+  )
+  expect_identical(margin_info(stats_margin("weibull", shape = 2))$npars, 1)
   expect_error(stats_margin("not-a-distribution"), "unsupported")
   expect_error(stats_margin("gamma"), "shape")
 })
@@ -426,15 +433,19 @@ test_that("selection uses only generic fitted-margin metadata", {
 test_that("selection handles incompatibility, candidate failures, and bad fits", {
   good <- scored_margin_family("good", -10, 1)
   failed <- scored_margin_family("failed", -9, 1, error = "optimizer exploded")
-  expect_identical(
-    margin_info(select_margin(
+  expect_warning(
+    selected <- select_margin(
       rnorm(20),
       list(failed, good),
       "c",
       numeric(),
       "aic",
       2
-    ))$family_name,
+    ),
+    "failed.*optimizer exploded"
+  )
+  expect_identical(
+    margin_info(selected)$family_name,
     "good"
   )
   expect_error(
@@ -461,6 +472,85 @@ test_that("selection handles incompatibility, candidate failures, and bad fits",
   expect_error(
     select_margin(rnorm(20), list(malformed), "c", numeric(), "aic", 1),
     "fitted-margin protocol"
+  )
+  expect_error(
+    select_margin(
+      rnorm(20),
+      list(malformed, good),
+      "c",
+      numeric(),
+      "aic",
+      1
+    ),
+    "fitted-margin protocol"
+  )
+
+  missing_loglik <- scored_margin_family("missing-loglik", NA_real_, 1)
+  expect_error(
+    select_margin(
+      rnorm(20),
+      list(missing_loglik),
+      "c",
+      numeric(),
+      "aic",
+      1
+    ),
+    "no finite log-likelihood"
+  )
+  missing_npars <- scored_margin_family("missing-npars", -10, NA_real_)
+  expect_warning(
+    selected <- select_margin(
+      rnorm(20),
+      list(missing_npars),
+      "c",
+      numeric(),
+      "aic",
+      1
+    ),
+    "AIC and BIC are unavailable"
+  )
+  expect_identical(margin_info(selected)$family_name, "missing-npars")
+  expect_identical(
+    margin_info(select_margin(
+      rnorm(20),
+      list(missing_npars),
+      "c",
+      numeric(),
+      "loglik",
+      1
+    ))$family_name,
+    "missing-npars"
+  )
+
+  noisy <- margin_family(
+    function(x, weights, type) {
+      warning("optimizer converged at the boundary")
+      fit_margin(good, x, weights, type)
+    },
+    family_name = "noisy"
+  )
+  expect_warning(
+    select_margin(rnorm(20), list(noisy), "c", numeric(), "aic", 1),
+    "noisy warned.*boundary"
+  )
+
+  invalid_support <- margin_family(
+    function(x, weights, type) {
+      margin_dist(
+        dnorm,
+        pnorm,
+        qnorm,
+        family = "invalid-support",
+        support = c(0, Inf),
+        npars = 1,
+        loglik = -10
+      )
+    },
+    family_name = "invalid-support"
+  )
+  expect_error(
+    select_margin(-1:1, list(invalid_support), "c", numeric(), "aic", 1),
+    "support.*excludes"
   )
 
   expect_error(
@@ -509,10 +599,18 @@ test_that("every family receives weights and decides how to handle them", {
   )
   x <- rnorm(30)
   weights <- seq_along(x)
-  expect_s3_class(
-    select_margin(x, list(unsupported, kde1d_family()), "c", weights, "aic", 1),
-    "kde1d"
+  expect_warning(
+    selected <- select_margin(
+      x,
+      list(unsupported, kde1d_family()),
+      "c",
+      weights,
+      "aic",
+      1
+    ),
+    "unsupported failed.*weights"
   )
+  expect_s3_class(selected, "kde1d")
 })
 
 test_that("univariateML family metadata and weight rejection are explicit", {

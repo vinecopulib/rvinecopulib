@@ -14,7 +14,8 @@
 #'   [kde1d_family()], [univariateML_family()], and [margin_family()].
 #'   * `selcrit` selection criterion, one of `"loglik"`, `"aic"`, or `"bic"`.
 #'   * `cores` number of cores used for marginal fitting. `NULL` inherits the
-#'   top-level `cores` argument.
+#'   top-level `cores` argument. Use one core for stochastic custom fitters when
+#'   results must be invariant to the number of cores.
 #' @param copula_controls a list with arguments to be passed to [vinecop()].
 #' @param weights optional numeric vector of weights for each observation,
 #'   used for both marginal and copula estimation. Every margin family receives
@@ -25,6 +26,7 @@
 #' @param cores the number of cores to use for parallel computations. Unless
 #'   overridden by `margins_controls$cores`, margins are fitted in forked
 #'   processes when `cores > 1` on non-Windows systems and serially on Windows.
+#'   Stochastic custom margin fits may depend on the number of forked processes.
 #' @param var_types optional variable types, one for each variable after factor
 #'   expansion: `"c"` for continuous, `"d"` for integer-valued discrete, or
 #'   `"zi"` for continuous with an atom at zero. Types are inferred from
@@ -58,9 +60,13 @@
 #' Candidates incompatible with a variable's type are removed before fitting.
 #' rvinecopulib fits every remaining candidate and selects the first minimum of
 #' negative log-likelihood, AIC, or BIC according to `selcrit`. Competing
-#' candidates therefore need a finite `margin_info()$loglik` value. An unsupported
-#' candidate may fail while another candidate succeeds. The built-in
-#' univariateML family explicitly rejects observation weights.
+#' candidates therefore need a finite `margin_info()$loglik` value, and AIC or
+#' BIC additionally requires a finite `margin_info()$npars`. A sole candidate
+#' without a parameter count is retained with a warning, but model AIC and BIC
+#' are then unavailable. An unsupported candidate may fail while another
+#' candidate succeeds; such failures and all candidate warnings are reported.
+#' Protocol violations always stop fitting. The built-in univariateML family
+#' explicitly rejects observation weights.
 #'
 #' @return Objects inheriting from `vine_dist` for [vine_dist()], and
 #' `vine` and `vine_dist` for [vine()].
@@ -131,11 +137,7 @@
 #' @export
 vine <- function(
   data,
-  margins_controls = list(
-    family_set = "kde1d",
-    selcrit = "aic",
-    cores = NULL
-  ),
+  margins_controls = list(),
   copula_controls = list(
     family_set = "all",
     structure = NA,
@@ -185,12 +187,28 @@ vine <- function(
   var_types <- legacy_controls$var_types
   # END legacy margins_controls compatibility -----------
 
+  margins_controls <- margins_controls[
+    !vapply(margins_controls, is.null, logical(1))
+  ]
+  margins_controls <- utils::modifyList(
+    list(family_set = "kde1d", selcrit = "aic", cores = NULL),
+    margins_controls
+  )
   var_types <- resolve_margin_types(data, var_types)
   validate_vine_weights(weights, nrow(data))
   marg_cores <- margins_controls$cores
-  marg_cores <- ifelse(is.null(marg_cores), cores, marg_cores)
-  if (!is.number(marg_cores) || !is.finite(marg_cores) || marg_cores <= 0) {
-    stop("'cores' arguments must be positive and finite.", call. = FALSE)
+  if (is.null(marg_cores)) {
+    marg_cores <- cores
+  }
+  if (
+    !is.numeric(marg_cores) ||
+      length(marg_cores) != 1L ||
+      is.na(marg_cores) ||
+      !is.finite(marg_cores) ||
+      marg_cores <= 0 ||
+      marg_cores != floor(marg_cores)
+  ) {
+    stop("'cores' arguments must be positive integers.", call. = FALSE)
   }
 
   assert_that(is.list(copula_controls))
@@ -201,9 +219,6 @@ vine <- function(
 
   ## expand the required arguments and compute default mult if needed
   family_set <- margins_controls$family_set
-  if (is.null(family_set)) {
-    family_set <- "kde1d"
-  }
   family_set <- expand_margin_family_set(
     family_set,
     d,
@@ -221,9 +236,6 @@ vine <- function(
   # END legacy margins_controls compatibility ---------------
 
   selcrit <- margins_controls$selcrit
-  if (is.null(selcrit)) {
-    selcrit <- "aic"
-  }
   if (!is.character(selcrit) || length(selcrit) != 1L || is.na(selcrit)) {
     stop("'margins_controls$selcrit' must be a single string.", call. = FALSE)
   }
@@ -276,7 +288,7 @@ fit_vine_margins <- function(
   if (.Platform$OS.type == "windows") {
     cores <- 1L
   }
-  fits <- parallel::mclapply(
+  results <- parallel::mclapply(
     seq_along(margin_data),
     fit_one_vine_margin,
     margin_data = margin_data,
@@ -284,17 +296,49 @@ fit_vine_margins <- function(
     var_types = var_types,
     weights = weights,
     selcrit = selcrit,
-    mc.cores = cores
+    mc.cores = cores,
+    mc.set.seed = TRUE
   )
+  collect_vine_margin_results(results)
+}
+
+collect_vine_margin_results <- function(results) {
   failed <- which(vapply(
-    fits,
-    function(fit) inherits(fit, c("error", "try-error")),
+    results,
+    function(result) {
+      is.null(result) ||
+        inherits(result, c("error", "try-error")) ||
+        inherits(result$fit, c("error", "try-error"))
+    },
     logical(1)
   ))
   if (length(failed)) {
-    stop(fits[[failed[1L]]])
+    failure <- results[[failed[1L]]]
+    if (is.null(failure)) {
+      stop(
+        sprintf(
+          paste0(
+            "forked margin fitting failed for variable %d; retry with ",
+            "'margins_controls = list(cores = 1)'."
+          ),
+          failed[1L]
+        ),
+        call. = FALSE
+      )
+    }
+    if (inherits(failure, c("error", "try-error"))) {
+      stop(failure)
+    }
+    stop(failure$fit)
   }
-  fits
+  warning_messages <- unique(unlist(
+    lapply(results, `[[`, "warnings"),
+    use.names = FALSE
+  ))
+  if (length(warning_messages)) {
+    warning(paste(warning_messages, collapse = "\n"), call. = FALSE)
+  }
+  lapply(results, `[[`, "fit")
 }
 
 fit_one_vine_margin <- function(
@@ -305,17 +349,25 @@ fit_one_vine_margin <- function(
   weights,
   selcrit
 ) {
-  tryCatch(
-    select_margin(
-      margin_data[[j]],
-      family_set[[j]],
-      var_types[j],
-      weights,
-      selcrit,
-      j
+  warning_messages <- character()
+  fit <- tryCatch(
+    withCallingHandlers(
+      select_margin(
+        margin_data[[j]],
+        family_set[[j]],
+        var_types[j],
+        weights,
+        selcrit,
+        j
+      ),
+      warning = function(condition) {
+        warning_messages <<- c(warning_messages, conditionMessage(condition))
+        invokeRestart("muffleWarning")
+      }
     ),
     error = identity
   )
+  list(fit = fit, warnings = warning_messages)
 }
 
 # BEGIN legacy margins_controls compatibility ----------------------------------

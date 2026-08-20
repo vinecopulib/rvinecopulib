@@ -7,7 +7,7 @@
 \usage{
 vine(
   data,
-  margins_controls = list(family_set = "kde1d", selcrit = "aic", cores = NULL),
+  margins_controls = list(),
   copula_controls = list(family_set = "all", structure = NA, par_method = "mle",
     nonpar_method = "constant", mult = 1, selcrit = "aic", psi0 = 0.9, presel = TRUE,
     allow_rotations = TRUE, trunc_lvl = Inf, tree_crit = "tau", threshold = 0, keep_data
@@ -35,7 +35,8 @@ configured built-in and custom candidates are created with
 \code{\link[=kde1d_family]{kde1d_family()}}, \code{\link[=univariateML_family]{univariateML_family()}}, and \code{\link[=margin_family]{margin_family()}}.
 \item \code{selcrit} selection criterion, one of \code{"loglik"}, \code{"aic"}, or \code{"bic"}.
 \item \code{cores} number of cores used for marginal fitting. \code{NULL} inherits the
-top-level \code{cores} argument.
+top-level \code{cores} argument. Use one core for stochastic custom fitters when
+results must be invariant to the number of cores.
 }}
 
 \item{copula_controls}{a list with arguments to be passed to \code{\link[=vinecop]{vinecop()}}.}
@@ -50,7 +51,8 @@ store the pseudo-observations used for fitting the copula, use the
 
 \item{cores}{the number of cores to use for parallel computations. Unless
 overridden by \code{margins_controls$cores}, margins are fitted in forked
-processes when \code{cores > 1} on non-Windows systems and serially on Windows.}
+processes when \code{cores > 1} on non-Windows systems and serially on Windows.
+Stochastic custom margin fits may depend on the number of forked processes.}
 
 \item{var_types}{optional variable types, one for each variable after factor
 expansion: \code{"c"} for continuous, \code{"d"} for integer-valued discrete, or
@@ -136,9 +138,13 @@ fitted only once.
 Candidates incompatible with a variable's type are removed before fitting.
 rvinecopulib fits every remaining candidate and selects the first minimum of
 negative log-likelihood, AIC, or BIC according to \code{selcrit}. Competing
-candidates therefore need a finite \code{margin_info()$loglik} value. An unsupported
-candidate may fail while another candidate succeeds. The built-in
-univariateML family explicitly rejects observation weights.
+candidates therefore need a finite \code{margin_info()$loglik} value, and AIC or
+BIC additionally requires a finite \code{margin_info()$npars}. A sole candidate
+without a parameter count is retained with a warning, but model AIC and BIC
+are then unavailable. An unsupported candidate may fail while another
+candidate succeeds; such failures and all candidate warnings are reported.
+Protocol violations always stop fitting. The built-in univariateML family
+explicitly rejects observation weights.
 }
 \examples{
 # specify pair-copulas

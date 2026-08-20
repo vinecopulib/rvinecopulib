@@ -196,10 +196,13 @@ test_that("discrete rosenblatt works with vine distributions", {
     x2 = rnorm(50),
     x3 = rbinom(50, 3, 0.5)
   )
-  vd <- vine(
-    x,
-    var_types = c("d", "c", "zi"),
-    copula_controls = list(family_set = "gauss")
+  expect_warning(
+    vd <- vine(
+      x,
+      var_types = c("d", "c", "zi"),
+      copula_controls = list(family_set = "gauss")
+    ),
+    "AIC and BIC are unavailable"
   )
   u <- rvine(50, vd)
   expect_true(mean(u[, 3] == 0) > 0.02)

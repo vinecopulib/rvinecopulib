@@ -28,7 +28,7 @@ margin_dist(
 
 \item{support}{mathematical support as its lower and upper bounds.}
 
-\item{npars}{effective number of fitted parameters.}
+\item{npars}{effective number of parameters.}
 
 \item{loglik}{maximized marginal log-likelihood, or \code{NA} for a fixed margin.}
 }

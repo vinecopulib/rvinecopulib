@@ -43,6 +43,8 @@ for the complete backend changes.
   expose their metadata through `margin_info()`.
 
 * Add `kde1d_family()`, `univariateML_family()`, and `stats_margin()` adapters.
+  Fixed `stats_margin()` objects retain the parameter counts of their
+  distributions.
   Core vine fitting and evaluation use only the two protocols and contain no
   backend-specific dispatch.
 
@@ -57,7 +59,9 @@ for the complete backend changes.
 
 * Fit margins in parallel with forked processes when `cores > 1` on
   non-Windows systems. Margin fitting remains serial on Windows and can be
-  controlled separately with `margins_controls$cores`.
+  controlled separately with `margins_controls$cores`. Stochastic custom
+  fitters can use one margin-fitting core when results must be invariant to the
+  core count.
 
 * Add conditional simulation to `rvinecop()` and `rvine()`. Conditioning values
   can be common or observation-specific, and `conditioning_set` accepts indices
@@ -96,6 +100,10 @@ for the complete backend changes.
   pseudo-observations, integration, and shared Eigen/thread primitives.
 
 ### BUG FIXES
+
+* Validate and report failed marginal candidates consistently, preserve their
+  warnings, reject fitted supports that exclude observations, and detect failed
+  forked workers and malformed margin core counts early.
 
 * Make inverse Rosenblatt transforms thread-safe and custom tree criteria safe
   under multithreaded fitting.
