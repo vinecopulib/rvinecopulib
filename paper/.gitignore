@@ -1,0 +1,12 @@
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+build*.log
+b[123].log
+bib.log
+run.log
+_logo.*
+jsslogo.pdf
