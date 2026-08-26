@@ -7,7 +7,10 @@ if [ ! -f jsslogo.pdf ]; then
   printf '%s\n' '\documentclass{article}' \
     '\usepackage[paperwidth=1pt,paperheight=1pt,margin=0pt]{geometry}' \
     '\pagestyle{empty}\begin{document}\hbox{}\end{document}' > _logo.tex
-  pdflatex -interaction=batchmode _logo.tex >/dev/null 2>&1 && mv _logo.pdf jsslogo.pdf
+  # pdflatex reports a non-zero status for so small a page but still writes the
+  # file, so test for the output rather than the exit code
+  pdflatex -interaction=batchmode _logo.tex >/dev/null 2>&1 || true
+  [ -f _logo.pdf ] && mv _logo.pdf jsslogo.pdf
   rm -f _logo.tex _logo.aux _logo.log
 fi
 
