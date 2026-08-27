@@ -723,7 +723,11 @@ test_that("Joe's Kendall tau is finite at the removable singularity", {
   # and it is smooth through that point: on an equally spaced grid straddling
   # theta = 2 the second differences stay small
   th <- seq(1.99, 2.01, length.out = 21)
-  taus <- vapply(th, function(t) par_to_ktau(bicop_dist("joe", 0, t)), numeric(1))
+  taus <- vapply(
+    th,
+    function(t) par_to_ktau(bicop_dist("joe", 0, t)),
+    numeric(1)
+  )
   expect_true(all(is.finite(taus)))
   expect_true(all(diff(taus) > 0))
   expect_lt(max(abs(diff(taus, differences = 2))), 1e-6)
@@ -733,11 +737,17 @@ test_that("Joe's Kendall tau is finite at the removable singularity", {
   # psi''(2) term would show up here at about 2e-6
   closed <- function(t) 1 + 2 * (digamma(2) - digamma(2 / t + 1)) / (2 - t)
   near <- c(2 - 1e-5, 2 - 5e-6, 2 + 5e-6, 2 + 1e-5)
-  err <- abs(vapply(near, function(t) par_to_ktau(bicop_dist("joe", 0, t)),
-                    numeric(1)) - vapply(near, closed, numeric(1)))
+  err <- abs(
+    vapply(near, function(t) par_to_ktau(bicop_dist("joe", 0, t)), numeric(1)) -
+      vapply(near, closed, numeric(1))
+  )
   expect_lt(max(err), 1e-8)
 
   # ktau_to_par can land exactly on 2, so the round trip must close
   p <- ktau_to_par("joe", 2 - pi^2 / 6)
-  expect_equal(par_to_ktau(bicop_dist("joe", 0, p)), 2 - pi^2 / 6, tolerance = 1e-8)
+  expect_equal(
+    par_to_ktau(bicop_dist("joe", 0, p)),
+    2 - pi^2 / 6,
+    tolerance = 1e-8
+  )
 })

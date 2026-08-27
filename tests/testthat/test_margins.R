@@ -632,18 +632,27 @@ test_that("univariateML family metadata and weight rejection are explicit", {
 roundtrip_margin_info <- function(path) {
   script <- tempfile(fileext = ".R")
   on.exit(unlink(script), add = TRUE)
-  writeLines(c(
-    "suppressMessages(library(rvinecopulib))",
-    sprintf("m <- readRDS(%s)", encodeString(path, quote = '"')),
-    "i <- margin_info(m)",
-    "cat(i$family_name, i$loglik, i$npars, sep = '\\n')"
-  ), script)
+  writeLines(
+    c(
+      "suppressMessages(library(rvinecopulib))",
+      sprintf("m <- readRDS(%s)", encodeString(path, quote = '"')),
+      "i <- margin_info(m)",
+      "cat(i$family_name, i$loglik, i$npars, sep = '\\n')"
+    ),
+    script
+  )
   out <- suppressWarnings(system2(
-    file.path(R.home("bin"), "Rscript"), shQuote(script),
-    stdout = TRUE, stderr = FALSE
+    file.path(R.home("bin"), "Rscript"),
+    shQuote(script),
+    stdout = TRUE,
+    stderr = FALSE
   ))
   out <- out[nzchar(out)]
-  list(family_name = out[1], loglik = as.numeric(out[2]), npars = as.numeric(out[3]))
+  list(
+    family_name = out[1],
+    loglik = as.numeric(out[2]),
+    npars = as.numeric(out[3])
+  )
 }
 
 test_that("univariateML margins survive a serialization round trip", {
