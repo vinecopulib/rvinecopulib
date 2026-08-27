@@ -1133,13 +1133,22 @@ R> fit_zilnorm <- function(x, weights = numeric(), type = "zi") {
 +    ml <- sum(weights[pos] * log(x[pos])) / sum(weights[pos])
 +    sl <- sqrt(sum(weights[pos] * (log(x[pos]) - ml)^2) / sum(weights[pos]))
 +    margin_dist(
-+      d = function(q) ifelse(q > 0, (1 - p0) * dlnorm(q, ml, sl), q == 0) * 
-+        ifelse(q > 0, 1, p0),
-+      p = function(q) ifelse(q > 0, p0 + (1 - p0) * plnorm(q, ml, sl), (q >= 0) * p0),
-+      q = function(p) ifelse(p <= p0, 0, qlnorm((p - p0) / (1 - p0), ml, sl)),
-+      family = "zilnorm", type = "zi", support = c(0, Inf), npars = 3,
++      d = function(q) {
++        ifelse(q > 0, (1 - p0) * dlnorm(q, ml, sl), ifelse(q == 0, p0, 0))
++      },
++      p = function(q) {
++        ifelse(q > 0, p0 + (1 - p0) * plnorm(q, ml, sl), ifelse(q < 0, 0, p0))
++      },
++      q = function(p) {
++        ifelse(p <= p0, 0, qlnorm(pmax((p - p0) / (1 - p0), 0), ml, sl))
++      },
++      family = "zilnorm",
++      type = "zi",
++      support = c(0, Inf),
++      npars = 3,
 +      loglik = sum(weights[!pos]) * log(p0) +
-+        sum(weights[pos] * (log(1 - p0) + dlnorm(x[pos], ml, sl, log = TRUE))))
++        sum(weights[pos] * (log(1 - p0) + dlnorm(x[pos], ml, sl, log = TRUE)))
++    )
 +  }
 R> zilnorm <- margin_family(fit_zilnorm, family_name = "zilnorm", types = "zi")
 \end{CodeInput}
