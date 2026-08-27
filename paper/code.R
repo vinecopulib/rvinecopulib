@@ -474,6 +474,30 @@ c(
 c(value = par_to_ktau(bicop_dist("joe", 0, 2)), limit = 2 - pi^2 / 6)
 
 ## --- Runtime, parametric track ------------------------------------------
+
+## Every ratio in Section 7 is quoted only after checking that the two
+## implementations reached a comparable optimum on the same data: a speed
+## difference between models that differ is not a speed difference.  The fitted
+## models are captured out of the timed expressions themselves via the assign()
+## calls below, so this reports on exactly the fits that were measured rather
+## than on a separate pair fitted for the purpose.
+cap <- new.env()
+agreement <- function(u) {
+  f <- get("f_rv", envir = cap)
+  v <- get("f_vc", envir = cap)
+  ll_rv <- f$loglik
+  ll_vc <- RVineLogLik(u, v, verbose = FALSE, calculate.V = FALSE)$loglik
+  c(
+    d = ncol(u),
+    rv_loglik = ll_rv,
+    vc_loglik = ll_vc,
+    gap = ll_rv - ll_vc,
+    rel_gap = abs(ll_rv - ll_vc) / abs(ll_rv),
+    rv_npc = sum(summary(f)$family != "indep"),
+    vc_npc = sum(v$family != 0)
+  )
+}
+
 RV_FAM <- c(
   "indep",
   "gaussian",
@@ -492,12 +516,16 @@ VC_FAM <- c(0:10, 13, 14, 16:20, 23, 24, 26:30, 33, 34, 36:40)
 runtime_cell <- function(d, n, iterations) {
   u <- u_ret[seq_len(n), seq_len(d), drop = FALSE]
   b <- bench::mark(
-    rv1 = vinecop(
-      u,
-      family_set = RV_FAM,
-      selcrit = "aic",
-      tree_crit = "tau",
-      cores = 1
+    rv1 = assign(
+      "f_rv",
+      vinecop(
+        u,
+        family_set = RV_FAM,
+        selcrit = "aic",
+        tree_crit = "tau",
+        cores = 1
+      ),
+      envir = cap
     ),
     rv4 = vinecop(
       u,
@@ -506,14 +534,18 @@ runtime_cell <- function(d, n, iterations) {
       tree_crit = "tau",
       cores = 4
     ),
-    vc1 = RVineStructureSelect(
-      u,
-      familyset = VC_FAM,
-      selectioncrit = "AIC",
-      treecrit = "tau",
-      indeptest = FALSE,
-      progress = FALSE,
-      cores = 1
+    vc1 = assign(
+      "f_vc",
+      RVineStructureSelect(
+        u,
+        familyset = VC_FAM,
+        selectioncrit = "AIC",
+        treecrit = "tau",
+        indeptest = FALSE,
+        progress = FALSE,
+        cores = 1
+      ),
+      envir = cap
     ),
     vc4 = RVineStructureSelect(
       u,
@@ -528,14 +560,21 @@ runtime_cell <- function(d, n, iterations) {
     check = FALSE,
     filter_gc = FALSE
   )
-  setNames(as.numeric(b$median), as.character(b$expression))
+  list(
+    time = setNames(as.numeric(b$median), as.character(b$expression)),
+    fit = agreement(u)
+  )
 }
 if (!FAST) {
-  rbind(
+  mle <- list(
     runtime_cell(5, 1000, 5),
     runtime_cell(10, 1000, 5),
     runtime_cell(20, 1000, 3)
   )
+  ## median seconds
+  do.call(rbind, lapply(mle, `[[`, "time"))
+  ## the same fits, checked against each other
+  do.call(rbind, lapply(mle, `[[`, "fit"))
 }
 
 ## --- Runtime: tau-inversion fitting, where threading matters most --------
@@ -545,12 +584,16 @@ VC_ITAU <- c(0, 1, 2, 3, 4, 5, 6, 13, 14, 16, 23, 24, 26, 33, 34, 36)
 itau_cell <- function(d, n = 1509, iterations = 3) {
   u <- u_ret[seq_len(n), seq_len(d), drop = FALSE]
   b <- bench::mark(
-    rv1 = vinecop(
-      u,
-      family_set = RV_ITAU,
-      par_method = "itau",
-      selcrit = "aic",
-      cores = 1
+    rv1 = assign(
+      "f_rv",
+      vinecop(
+        u,
+        family_set = RV_ITAU,
+        par_method = "itau",
+        selcrit = "aic",
+        cores = 1
+      ),
+      envir = cap
     ),
     rv4 = vinecop(
       u,
@@ -566,15 +609,19 @@ itau_cell <- function(d, n = 1509, iterations = 3) {
       selcrit = "aic",
       cores = 8
     ),
-    vc1 = RVineStructureSelect(
-      u,
-      familyset = VC_ITAU,
-      method = "itau",
-      selectioncrit = "AIC",
-      treecrit = "tau",
-      indeptest = FALSE,
-      progress = FALSE,
-      cores = 1
+    vc1 = assign(
+      "f_vc",
+      RVineStructureSelect(
+        u,
+        familyset = VC_ITAU,
+        method = "itau",
+        selectioncrit = "AIC",
+        treecrit = "tau",
+        indeptest = FALSE,
+        progress = FALSE,
+        cores = 1
+      ),
+      envir = cap
     ),
     vc4 = RVineStructureSelect(
       u,
@@ -600,10 +647,15 @@ itau_cell <- function(d, n = 1509, iterations = 3) {
     check = FALSE,
     filter_gc = FALSE
   )
-  setNames(as.numeric(b$median), as.character(b$expression))
+  list(
+    time = setNames(as.numeric(b$median), as.character(b$expression)),
+    fit = agreement(u)
+  )
 }
 if (!FAST) {
-  t(sapply(c(5, 10, 20, 50), itau_cell))
+  itau <- lapply(c(5, 10, 20, 50), itau_cell)
+  do.call(rbind, lapply(itau, `[[`, "time"))
+  do.call(rbind, lapply(itau, `[[`, "fit"))
 }
 
 ## --- Runtime: evaluation on a fitted model -------------------------------

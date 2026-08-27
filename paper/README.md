@@ -114,7 +114,7 @@ tests.
 The headline was drafted as "orders of magnitude faster". Measurement supports
 that only for some operations, and the manuscript now separates them.
 
-**Maximum-likelihood fitting** vs VineCopula 2.6.1, matched settings,
+**Maximum-likelihood fitting** vs VineCopula 2.6.2, matched settings,
 log-likelihoods agreeing to 1e-6: 1.5× (d=5), 1.6× (d=10), 1.7× (d=20) on one
 core. Modest, and the paper says so.
 
