@@ -11,7 +11,7 @@
 #'   additional options.
 #' @param par_method the estimation method for parametric models, either `"mle"`
 #'   for maximum likelihood or `"itau"` for inversion of Kendall's tau (only
-#'   available for one-parameter families and `"t"`.
+#'   available for one-parameter families and `"t"`).
 #' @param nonpar_method the estimation method for nonparametric models, either
 #'   `"constant"` for the standard transformation estimator, or
 #'   `"linear"`/`"quadratic"` for the local-likelihood approximations of order
@@ -70,7 +70,7 @@
 #' * `"twopar"` contains the parametric families with two parameters,
 #' (`"t"`, `"bb1"`, `"bb6"`, `"bb7"`, and `"bb8"`),
 #'
-#' * `"threepar"` contains the paramtric families with three parameters,
+#' * `"threepar"` contains the parametric families with three parameters,
 #' (`"tawn"`),
 #'
 #' * `"elliptical"` contains the elliptical families,
