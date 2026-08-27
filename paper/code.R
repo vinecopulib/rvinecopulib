@@ -74,20 +74,19 @@ all.equal(dvinecop(u_expanded, model), dvinecop(u_compact, model))
 
 ## The stepwise gradient is (near) zero at a sequentially fitted model; the
 ## joint gradient generally is not.
-d <- 4
-S <- matrix(0.4, d, d)
+S <- matrix(0.4, 4, 4)
 diag(S) <- 1
-u <- pseudo_obs(matrix(rnorm(800 * d), 800, d) %*% chol(S))
+u <- pseudo_obs(matrix(rnorm(800 * 4), 800, 4) %*% chol(S))
 fit <- vinecop(u, family_set = "parametric", keep_data = TRUE)
 
 max(abs(colSums(scores(u, fit, step_wise = TRUE))))
 max(abs(colSums(scores(u, fit, step_wise = FALSE))))
 
 ## Covariance and Wald intervals.
-## the model-based form needs the joint objective; the sandwich does not
-sqrt(diag(vcov(fit, type = "model", step_wise = FALSE)))
-sqrt(diag(vcov(fit, type = "sandwich")))
-confint(fit)
+## the sandwich is the only form offered; step_wise selects the objective
+sqrt(diag(vcov(fit)))
+sqrt(diag(vcov(fit, step_wise = FALSE)))
+confint(fit, level = 0.95)
 
 ## A user-defined zero-inflated log-normal margin family.
 fit_zilnorm <- function(x, weights = numeric(), type = "zi") {
@@ -374,8 +373,8 @@ fit_ins <- vine(
   margins_controls = list(
     family_set = list(
       cost = zilnorm,
-      veh_value = "all",
-      exposure = "all",
+      veh_value = c("kde1d", "norm", "sstd", "std", "logis", "cauchy"),
+      exposure = c("kde1d", "beta", "norm", "unif"),
       veh_age = "kde1d",
       agecat = "kde1d"
     ),
@@ -384,7 +383,8 @@ fit_ins <- vine(
   copula_controls = list(
     family_set = "parametric",
     selcrit = "bic",
-    conditioning_set = predictors
+    conditioning_set = predictors,
+    keep_data = TRUE
   ),
   keep_data = TRUE,
   cores = 4
@@ -406,7 +406,9 @@ do.call(
 )
 
 summary(fit_ins$copula)
-confint(fit_ins)
+
+## intervals condition on the fitted margins; see ?parameter_uncertainty
+confint(fit_ins$copula)
 
 ## Conditional simulation on the original data scale.
 profile <- data.frame(

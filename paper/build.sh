@@ -21,3 +21,5 @@ pdflatex -interaction=nonstopmode rvinecopulib.tex
 bibtex rvinecopulib
 pdflatex -interaction=nonstopmode rvinecopulib.tex
 pdflatex -interaction=nonstopmode rvinecopulib.tex
+# a fourth pass: the third still reports "Label(s) may have changed"
+pdflatex -interaction=nonstopmode rvinecopulib.tex
