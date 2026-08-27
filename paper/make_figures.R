@@ -61,8 +61,8 @@ fit <- vine(
   margins_controls = list(
     family_set = list(
       cost = zilnorm,
-      veh_value = "all",
-      exposure = "all",
+      veh_value = c("kde1d", "norm", "sstd", "std", "logis", "cauchy"),
+      exposure = c("kde1d", "beta", "norm", "unif"),
       veh_age = "kde1d",
       agecat = "kde1d"
     ),
@@ -71,7 +71,8 @@ fit <- vine(
   copula_controls = list(
     family_set = "parametric",
     selcrit = "bic",
-    conditioning_set = predictors
+    conditioning_set = predictors,
+    keep_data = TRUE
   ),
   keep_data = TRUE,
   cores = 4

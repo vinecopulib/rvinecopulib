@@ -45,15 +45,15 @@
   the resulting index tells every subsequent algorithm --- fitting, density
   evaluation, simulation, the Rosenblatt transform, and the analytic derivative
   cascade --- exactly which conditional distribution functions it must compute
-  and which it may skip.    The package is faster than existing implementations --- by about a factor of
-  two on a single core, by one order of magnitude when threads are used, and by
-  three when evaluating nonparametric models --- and considerably broader: continuous, discrete, mixed and
-  zero-inflated variables are declared once and handled consistently by every
-  operation; nonparametric pair copulas can be placed at any edge of a vine and
-  evaluated by the same code as any other family; complete multivariate
-  distributions may be
-  built from nonparametric, parametric or user-defined margins supplied through
-  two small \proglang{S3} protocols; and conditional simulation,
+  and which it may skip.  The package is faster than existing implementations
+  --- by about a factor of two on a single core, by an order of magnitude once
+  threads are used, and by up to three when evaluating nonparametric models ---
+  and considerably broader: continuous, discrete, mixed and zero-inflated
+  variables are declared once and handled consistently by every operation;
+  nonparametric pair copulas can be placed at any edge of a vine and evaluated
+  by the same code as any other family; complete multivariate distributions may
+  be built from nonparametric, parametric or user-defined margins supplied
+  through two small \proglang{S3} protocols; and conditional simulation,
   conditioning-aware structure selection, automatic truncation, user-supplied
   tree-selection criteria, analytic scores and Hessians, and
   observation-specific parameters are all available from the same object model.
@@ -700,9 +700,9 @@ parameters = 3, 2, var_types = c,c
 The distribution functions follow \proglang{R} naming conventions:
 \code{dbicop()}, \code{pbicop()} and \code{rbicop()} for the density,
 distribution function and random generation, and \code{hbicop()} for the
-h-functions \eqref{eq:hfunc} and their inverses.  Dependence summaries are
-available as \code{par\_to\_ktau()}, \code{ktau\_to\_par()},
-\code{blomqvist\_beta()} and \code{tail\_dep()}.
+h-functions \eqref{eq:hfunc} and their inverses.  The dependence summaries are
+\code{par\_to\_ktau()}, \code{ktau\_to\_par()}, \code{blomqvist\_beta()}
+and \code{tail\_dep()}.
 
 Fitting is done by \code{bicop()}, whose signature is
 
@@ -768,12 +768,13 @@ $\delta = 1$.}
 
 \subsection{Vine structures}\label{sec:structure-usage}
 
-A vine structure is created by \code{rvine\_structure()} from a list of tree
-arrays, by \code{rvine\_matrix()} from an R-vine matrix, or by
-\code{cvine\_structure()} and \code{dvine\_structure()} from a variable order.
-Coercion between the representations is provided by \code{as\_rvine\_structure()}
-and \code{as\_rvine\_matrix()}, and \code{rvine\_structure\_sim()} draws a
-structure at random.
+A vine structure is built from a list of tree arrays by
+\code{rvine\_structure()} and from an R-vine matrix by
+\code{rvine\_matrix()}.  The two special cases are built from a variable
+order by \code{cvine\_structure()} and \code{dvine\_structure()}.  The functions
+\code{as\_rvine\_structure()} and \code{as\_rvine\_matrix()} convert between
+the two representations, and \code{rvine\_structure\_sim()} draws one at
+random.
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -997,13 +998,18 @@ derivatives propagate through the h-function cascade, giving the gradient of
 the joint log-likelihood, which at a sequentially fitted model is generally not
 zero.
 
-From these, \code{vcov()} assembles a covariance estimate:
+From these, \code{vcov()} assembles a covariance estimate, and
+\code{confint()} turns it into Wald intervals:
 
 \begin{CodeChunk}
 \begin{CodeInput}
-R> V <- vcov(fit, type = "sandwich")
+R> S <- matrix(0.4, 4, 4)
+R> diag(S) <- 1
+R> u <- pseudo_obs(matrix(rnorm(800 * 4), 800, 4) %*% chol(S))
+R> fit <- vinecop(u, family_set = "parametric", keep_data = TRUE)
+R> sqrt(diag(vcov(fit)))
+R> sqrt(diag(vcov(fit, step_wise = FALSE)))
 R> confint(fit, level = 0.95)
-R> vcov(fit, type = "model", step_wise = FALSE)
 \end{CodeInput}
 \end{CodeChunk}
 
@@ -1015,10 +1021,10 @@ relevant matrices are
   \qquad
   B = n^{-1} \sum_{i=1}^n s_i s_i^\top .
 \end{equation}
-With \code{type = "sandwich"}, the default, \code{vcov()} returns
-$A^{-1} B A^{-\top} / n$, the misspecification-robust form of \citet{white1982}.
-Rows and columns are named by tree, conditioned pair and conditioning set, so a
-coefficient can be located in the model without counting.
+\code{vcov()} returns $A^{-1} B A^{-\top} / n$, the misspecification-robust
+sandwich of \citet{white1982}.  Rows and columns are named by tree, conditioned
+pair and conditioning set, so a coefficient can be located in the model without
+counting.
 
 The choice of \code{step\_wise} changes what $A$ is, and the distinction matters
 enough to state.  With \code{step\_wise = FALSE}, $\bar{s}$ is the gradient of
@@ -1028,15 +1034,15 @@ $A^{-1} B A^{-1}$.  With \code{step\_wise = TRUE} the pseudo-observations
 entering each pair copula are held fixed.  That is the estimating equation
 sequential estimation actually solves, but it is not the gradient of any
 objective: $A$ is a Jacobian rather than a Hessian, and it is block triangular
-rather than symmetric.  The sandwich formula still applies --- which is why
-\eqref{eq:sandwich} is written with $A^{-\top}$ on the right --- but the
-information equality does not, so \code{type = "model"}, which returns
-$A^{-1}/n$, is available only for \code{step\_wise = FALSE} and is refused
-otherwise.
+rather than symmetric.  The sandwich formula still applies --- which is why \eqref{eq:sandwich} is
+written with $A^{-\top}$ on the right --- but the information equality $A = B$
+does not, so the simpler $A^{-1}/n$ would be wrong here.  That is why the
+sandwich is the only form the package offers.
 
-Both variants treat the copula data as observed, and neither accounts for the
-estimation of the margins.  This is the usual two-stage approximation
-\citep{joe2005, ko2019}, and its cost is measurable.  The replication material
+\code{vcov()} treats the copula data as observed, so it quantifies uncertainty
+in the pair-copula parameters \emph{given} the margins.  This is the usual
+two-stage approximation \citep{joe2005, ko2019}, and its cost is measurable.
+The replication material
 reports a small experiment: a three-dimensional Gaussian D-vine with
 equicorrelation $0.5$, $n = 1000$, 1000 replications, so that a single coverage
 proportion carries a Monte Carlo standard error of $0.007$.  Nominal 95\%
@@ -1047,10 +1053,17 @@ proportions are $0.957$, $0.957$, $0.954$ and $0.940$, $0.906$, $0.941$
 respectively, but with three parameters and this much Monte Carlo error we
 draw no conclusion about which of them suffers most.  What the experiment
 supports is the aggregate statement: ignoring marginal estimation makes the
-intervals too short, by a small but clearly measurable amount.  Users needing
-calibrated intervals should bootstrap; the package supplies the derivative
-ingredients, not a single universal covariance estimator.  The asymptotics of
-the step-wise estimator in growing dimension are studied by \citet{gauss2026}.
+intervals too short, by a small but clearly measurable amount.
+
+That is why \code{vcov()} and \code{confint()} have methods for \code{bicop}
+and \code{vinecop} objects but none for \code{vine} objects.  Correcting the
+two-stage approximation requires the influence function of the marginal
+estimator, and Section~\ref{sec:margin-protocol} makes that estimator a
+user-supplied function: there is nothing the package can differentiate.  A
+method that silently conditioned on the fitted margins would be
+anticonservative by the amount just measured, so we provide none, and document
+the bootstrap instead.  The asymptotics of the step-wise estimator in growing
+dimension are studied by \citet{gauss2026}.
 
 Lower-level derivative access is available where it is needed to build
 something else.  \code{dbicop()} and \code{hbicop()} take a \code{deriv}
@@ -1176,12 +1189,13 @@ conditional expectations algorithm of \citet{breiman1985}.  \citet{czado2013}
 compare several of these; the differences are generally small, which is a
 reason to make the choice open rather than to enlarge the catalogue.
 
-\code{tree\_crit} also accepts a function.  It is called with a two-column
-matrix of pseudo-observations and a vector of weights, and must return a single
-finite number, whose absolute value is used as the edge strength.  Rows with
-missing values or zero weight are removed before the call.  The following selects trees by the coefficient of \citet{chatterjee2021}, which
-detects functional relationships that rank correlations miss.  Two details of
-the contract are worth noticing in it.  The coefficient is deliberately
+A function may also be supplied as \code{tree\_crit}.  It is called with a
+two-column matrix of pseudo-observations and a vector of weights, and must
+return one finite number, whose absolute value is used as the edge strength.  Rows with
+missing values or zero weight are removed before the call.  The example below
+selects trees by the coefficient of \citet{chatterjee2021}, which detects
+functional relationships that rank correlations miss.  Two details of the
+contract are worth noticing in it.  The coefficient is deliberately
 asymmetric --- it measures how far $Y$ is a function of $X$ --- whereas a tree
 edge is undirected, so the callback symmetrizes by taking the larger of the two
 directions.  And because no weighted version is implemented here, the callback
@@ -1448,20 +1462,29 @@ R> predictors <- c("veh_value", "exposure", "veh_age", "agecat")
 
 The claim cost needs a marginal model that no catalogue supplies.  We use the
 zero-inflated log-normal family built in Section~\ref{sec:margin-protocol} and
-let the remaining margins be selected: the two continuous variables from the
-full parametric catalogue and the nonparametric estimator, the two ordered
-factors from the nonparametric estimator alone.
+let the remaining margins be selected from explicit candidate lists: the two
+continuous variables from a handful of parametric families and the
+nonparametric estimator, the two ordered factors from the nonparametric
+estimator alone.  Naming the candidates rather than passing \code{"all"} is
+deliberate here.  Vehicle value is recorded to the nearest hundred dollars and
+one policy in the subsample carries a recorded value of exactly zero, which
+the strictly positive families in the \pkg{univariateML} catalogue --- the
+log-normal, gamma, and Weibull among them --- cannot represent; naming the
+candidates keeps the selection over families that can.
 
 \begin{CodeChunk}
 \begin{CodeInput}
 R> fit <- vine(
 +    dat,
 +    margins_controls = list(
-+      family_set = list(cost = zilnorm, veh_value = "all", exposure = "all",
-+                        veh_age = "kde1d", agecat = "kde1d"),
++      family_set = list(
++        cost = zilnorm,
++        veh_value = c("kde1d", "norm", "sstd", "std", "logis", "cauchy"),
++        exposure = c("kde1d", "beta", "norm", "unif"),
++        veh_age = "kde1d", agecat = "kde1d"),
 +      selcrit = "bic"),
 +    copula_controls = list(family_set = "parametric", selcrit = "bic",
-+                           conditioning_set = predictors),
++                           conditioning_set = predictors, keep_data = TRUE),
 +    keep_data = TRUE, cores = 4)
 \end{CodeInput}
 \end{CodeChunk}
@@ -1575,13 +1598,15 @@ variable has atoms.  \code{vine()} therefore collapses \code{"zi"} to
 \code{"d"} before handing the copula its types, and the zero-inflation is
 carried entirely by the margin.
 
-Wald intervals are available even though the model contains discrete variables,
-where the backend differentiates by finite differences rather than in closed
-form:
+Wald intervals for the pair-copula parameters are available even though the
+model contains discrete variables, where the backend differentiates by finite
+differences rather than in closed form.  They are requested from the copula
+component rather than from the fitted distribution, which is the interface
+making explicit that they condition on the margins:
 
 \begin{CodeChunk}
 \begin{CodeInput}
-R> confint(fit)
+R> confint(fit$copula)
 \end{CodeInput}
 \begin{CodeOutput}
              2.5 % 97.5 %
@@ -1595,6 +1620,13 @@ T2.2,3;4     1.012  1.056
 T3.5,3;2,4   0.128  0.378
 \end{CodeOutput}
 \end{CodeChunk}
+
+These intervals treat the fitted margins as known, so they understate the
+uncertainty by the amount measured in Section~\ref{sec:deriv-usage}.  For this
+model the effect is likely larger than in that experiment, because the claim
+cost's margin is a three-parameter fit rather than a rank transform.  An
+honest interval for the whole distribution requires a bootstrap over both
+stages, which the recipe in \code{?parameter\_uncertainty} performs.
 
 The question such a model is fitted to answer is predictive: what claim
 distribution should we expect from a policy with given characteristics?  This is
@@ -2054,12 +2086,16 @@ a finite-difference approximation rather than of an analytic formula.  For
 nonparametric pair copulas no derivatives are implemented, so \code{scores()},
 \code{hessian()} and \code{vcov()} all refuse a model containing one.
 
-\emph{Uncertainty ignores the margins.}  The covariance estimates of
+\emph{Uncertainty conditions on the margins.}  The covariance estimates of
 Section~\ref{sec:deriv-usage} treat the marginal transformation as known.  This
 is standard practice, but it is an approximation \citep{joe2005, ko2019}, and it
 errs in the direction that matters: the experiment in
 Section~\ref{sec:deriv-usage} shows the resulting intervals are too short, by
-about three percentage points of coverage in that design.
+about three percentage points of coverage in that design.  Because the margin
+protocols make the marginal estimator a user-supplied function, the correction
+is not available to the package, and \code{vcov()} and \code{confint()} are
+therefore offered for a fitted copula but not for a complete vine distribution.
+Quantifying uncertainty in the latter requires resampling both stages.
 
 The algorithms that are new in this release --- conditioning-aware structure
 selection, nonparametric estimation with mixed data, and the derivative cascade

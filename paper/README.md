@@ -283,11 +283,27 @@ needs to know whether a variable has atoms.
 * `vcov()` and `confint()` were **implemented during drafting** (`R/vcov.R`) —
   the manuscript had claimed them before they existed. Wald intervals cover the
   truth; see below.
-* Coverage study: nominal 95% intervals attain 0.930 / 0.957 / 0.953 with known
-  margins and 0.920 / 0.923 / 0.940 with rank-estimated margins (300
-  replications, `n = 1000`, three-dimensional Gaussian D-vine). The shortfall is
-  the two-stage margin effect, not an implementation error; it is reported in
-  §4.7.
+* The sandwich is assembled as `A = -t(hessian())`, not as a symmetrized
+  Hessian. Under the default `step_wise = TRUE`, `A` is a Jacobian and is
+  exactly block triangular; symmetrizing it discards the cross-tree propagation
+  terms. Symmetrizing inflated the standard-error error from 2.4% to 7.0% and
+  pushed coverage from 0.948 to 0.964 over 1200 replications.
+* Methods are provided for `bicop` and `vinecop` objects only. `vine` objects
+  get none: correcting the two-stage approximation needs the influence function
+  of the marginal estimator, which the margin protocol makes a user-supplied
+  function. Only the sandwich form is offered — the information equality that
+  `A^{-1}/n` would need fails at the step-wise estimator.
+* Coverage study: nominal 95% intervals attain an average 0.956 with known
+  margins and 0.929 with rank-estimated margins (1000 replications, `n = 1000`,
+  three-dimensional Gaussian D-vine; paired difference 0.027, standard error
+  0.004). The shortfall is the two-stage margin effect, not an implementation
+  error; it is reported in §4.7.
+* Case study B selects the two continuous margins from explicit candidate
+  lists rather than `family_set = "all"`. One policy in the subsample has
+  `veh_value` exactly zero, and several strictly positive `univariateML`
+  families return a non-finite log-likelihood there without failing outright,
+  which aborts selection — rvinecopulib issue #350. The curated lists select
+  the same families (`sstd`, `beta`) and reproduce the same fit.
 
 
 ### Known blockers inherited from the release
@@ -299,10 +315,14 @@ plan for detail.
    correctness fixes that change every TLL and discrete fit.
 2. Version 1.0.0.1.0 is not on CRAN. JSS requires it.
 3. `VineCopula` on CRAN is 2.6.1; the derivative parity comparison in §7.2
-   needs 2.6.2, which currently exists only on GitHub.
+   needs 2.6.2, which currently exists only on GitHub. This draft was built
+   against 2.6.2 installed from GitHub.
+4. Margin selection aborts when a candidate fits successfully but returns a
+   non-finite log-likelihood (issue #350). Case study B works around it with an
+   explicit candidate list.
 
 ## Software used for this draft
 
-R 4.3.3; rvinecopulib 1.0.0.1.0 (vinecopulib 1.0.0); VineCopula 2.6.1;
+R 4.3.3; rvinecopulib 1.0.0.1.0 (vinecopulib 1.0.0); VineCopula 2.6.2;
 kdecopula 0.9.3; kde1d 1.1.1; wdm 0.2.6; univariateML 1.5.0;
 insuranceData 1.0; bench 1.1.4.
