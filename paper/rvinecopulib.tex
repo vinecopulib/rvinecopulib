@@ -528,7 +528,9 @@ above them:
         exactly the same code as a fixed one, at no cost to the fixed case.
 \end{description}
 
-Thirteen families are implemented; Table~\ref{tab:families} lists them.  Adding
+Thirteen families are implemented; Table~\ref{tab:families} lists them.  All
+are standard \citep{joe2014} except the extreme-value family of
+\citet{tawn1988}.  Adding
 a parametric family requires supplying the family's own mathematics and one
 line in a factory.  For the two largest sub-hierarchies the mathematics needed
 is small: an Archimedean family is determined by its generator, its inverse and
@@ -812,9 +814,11 @@ spanning-tree algorithm, with \code{"mst\_prim"} and \code{"mst\_kruskal"}
 giving the maximum spanning tree and \code{"random\_weighted"} and
 \code{"random\_unweighted"} drawing one at random \citep{vatter2025}.
 
-\emph{How large the model may be}: \code{trunc\_lvl} and \code{threshold} each
-accept a fixed value, or \code{NA} to have it selected by the modified vine
-Bayesian information criterion (mBICV) of \citet{nagler2019}, available as
+\emph{How large the model may be}: \code{trunc\_lvl} truncates the vine in the
+sense of \citet{brechmann2012} and \code{threshold} sets pair copulas with weak
+dependence to independence.  Each accepts a fixed value, or \code{NA} to have it
+selected by the modified vine Bayesian information criterion (mBICV) of
+\citet{nagler2019}, available as
 \code{selcrit = "mbicv"} and as the function \code{mBICV()}, whose prior
 probability of non-independence is controlled by \code{psi0}.  \code{selcrit} chooses the criterion used for families.
 
@@ -1750,8 +1754,8 @@ more than \pkg{rvinecopulib} because it provides two Tawn parameterizations
 where we provide one.  \pkg{pyvinecopulib} binds the same engine as
 \pkg{rvinecopulib}, so its column is identical by construction; it is shown so
 that the \proglang{Python} alternatives can be compared with each other.
-\pkg{CDVine} was archived from CRAN in 2020 and \pkg{MATVines} is distributed
-outside a package repository.  \pkg{VineCopula} additionally provides
+\pkg{CDVine} was archived from CRAN in 2020 and \pkg{MATVines}
+\citep{coblenz2021} is distributed outside a package repository.  \pkg{VineCopula} additionally provides
 goodness-of-fit, Vuong and Clarke tests and an interactive interface, which
 \pkg{rvinecopulib} does not; see Section~\ref{sec:summary}.}
 \label{tab:features}
@@ -2004,11 +2008,15 @@ The mechanism is in Section~\ref{sec:tll-engine} --- a closed-form root of a
 piecewise quadratic against a bisection that re-integrates the interpolation
 grid at every step.
 
-\paragraph{What we do not benchmark.}  Three comparisons are deliberately
+\paragraph{What we do not benchmark.}  Four comparisons are deliberately
 absent.  We do not benchmark discrete or mixed vines, because no alternative
 implements them and a ratio against nothing is not a result.  We do not
 benchmark against \pkg{pyvinecopulib}, because it binds the same engine and any
-difference measures the language binding rather than the algorithm.  And we do
+difference measures the language binding rather than the algorithm.  We do not
+time conditional simulation against \pkg{VineCopulas} \citep{claassen2024},
+the only other implementation that offers it, because it is written in
+\proglang{Python}: a ratio would confound the language, the implementation and
+the algorithm, and it is the third a reader would want isolated.  And we do
 not quote the library's internal benchmarks, which compare
 \pkg{vinecopulib}~\vcldversion\ against its own predecessor rather than against
 any alternative implementation.
