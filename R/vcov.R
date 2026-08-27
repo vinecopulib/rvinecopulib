@@ -28,10 +28,6 @@
 #' \deqn{A = -\partial \bar s(\theta) / \partial \theta^\top, \qquad
 #'       B = n^{-1} \sum_i s_i s_i^\top,}
 #' `vcov()` returns the sandwich \eqn{A^{-1} B A^{-\top} / n} of White (1982).
-#' The simpler \eqn{A^{-1}/n} would need the information equality \eqn{A = B},
-#' which holds only at a maximum-likelihood estimator and so not for the
-#' default step-wise objective below; the sandwich is correct either way, so it
-#' is the only form offered.
 #'
 #' ## Which objective is differentiated
 #'
@@ -46,8 +42,8 @@
 #' pair copula are held fixed. This is the estimating equation that sequential,
 #' tree-by-tree estimation actually solves, but it is not the gradient of any
 #' objective: \eqn{A} is a Jacobian rather than a Hessian, and it is block
-#' triangular rather than symmetric. The sandwich formula still applies --
-#' which is why it is written with \eqn{A^{-\top}} on the right.
+#' triangular rather than symmetric, which is why the sandwich is written with
+#' \eqn{A^{-\top}} on the right.
 #'
 #' ## Restrictions
 #'
