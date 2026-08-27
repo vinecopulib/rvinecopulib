@@ -167,7 +167,7 @@ test_that("discrete rosenblatt works with vine copulas", {
     structure = mat,
     family = "clay"
   )
-  vc_c$var_types = rep("c", 3)
+  vc_c$var_types <- rep("c", 3)
 
   v <- inverse_rosenblatt(rosenblatt(uu, vc), vc_c)
   expect_eql(v, u, tol = 2 * thresh)
