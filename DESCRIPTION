@@ -21,7 +21,7 @@ License: GPL-3 | file LICENSE
 Encoding: UTF-8
 NeedsCompilation: yes
 SystemRequirements: C++17
-Depends: R (>= 4.0.0)
+Depends: R (>= 4.3.0)
 Imports:
     assertthat,
     graphics,
@@ -38,7 +38,7 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
-    univariateML
+    univariateML (>= 1.5.0)
 VignetteBuilder: knitr
 LinkingTo: 
     BH (>= 1.75.0-0),

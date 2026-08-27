@@ -144,9 +144,9 @@ test_that("rvine performs conditional simulation on the data scale", {
     rvine(5, vc_cond, conditioning_set = "a"),
     "requires 'x_cond'"
   )
-  expect_error(rvine(1.5, vc_cond), "not a count")
+  expect_error(rvine(1.5, vc_cond), "finite positive whole number")
   expect_error(rvine(5, vc_cond, qrng = 1), "not a flag")
-  expect_error(rvine(5, vc_cond, cores = 0), "not greater than 0")
+  expect_error(rvine(5, vc_cond, cores = 0), "finite positive whole number")
   expect_error(
     rvine(5, vc_cond, x_cond = list(0.5), conditioning_set = "a"),
     "must be a vector, matrix, or data frame"

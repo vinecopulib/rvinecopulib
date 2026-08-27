@@ -153,12 +153,12 @@ rvine_structure <- function(
 ) {
   # sanity checks and extract dimension/trunc_lvl
   assert_that(
-    is.vector(order) && all(sapply(order, is.count)),
+    is.vector(order) && all(vapply(order, is_count, logical(1))),
     msg = "Order should be a vector of positive integers."
   )
   assert_that(is.vector(struct_array) || is.list(struct_array))
   assert_that(
-    all(rapply(struct_array, function(i) sapply(i, is.count))),
+    all(rapply(struct_array, function(i) vapply(i, is_count, logical(1)))),
     msg = "All elements of struct_array should be positive integers."
   )
   d <- length(order)
@@ -233,11 +233,11 @@ plot.rvine_matrix <- function(x, ...) {
 #' @param trunc_lvl the truncation level
 #' @export
 cvine_structure <- function(order, trunc_lvl = Inf) {
-  if (is.count(order)) {
+  if (is_count(order)) {
     order <- seq_len(order)
   }
   assert_that(
-    is.vector(order) && all(sapply(order, is.count)),
+    is.vector(order) && all(vapply(order, is_count, logical(1))),
     msg = "Order should be a vector of positive integers."
   )
   assert_that(is.scalar(trunc_lvl) & is.number(trunc_lvl))
@@ -263,11 +263,11 @@ cvine_structure <- function(order, trunc_lvl = Inf) {
 #' @rdname rvine_structure
 #' @export
 dvine_structure <- function(order, trunc_lvl = Inf) {
-  if (is.count(order)) {
+  if (is_count(order)) {
     order <- seq_len(order)
   }
   assert_that(
-    is.vector(order) && all(sapply(order, is.count)),
+    is.vector(order) && all(vapply(order, is_count, logical(1))),
     msg = "Order should be a vector of positive integers."
   )
   assert_that(is.scalar(trunc_lvl) & is.number(trunc_lvl))
@@ -320,6 +320,14 @@ validate_rvine_matrix <- function(matrix) {
   assert_that(
     is.rvine_matrix(matrix) ||
       (is.matrix(matrix) && is.numeric(matrix))
+  )
+  assert_that(
+    all(vapply(
+      as.vector(matrix),
+      function(x) x == 0 || is_count(x),
+      logical(1)
+    )),
+    msg = "R-vine matrix entries must be finite non-negative integers."
   )
   rvine_matrix_check_cpp(matrix)
 }
@@ -404,7 +412,8 @@ is.rvine_matrix <- function(matrix) {
 #'
 #' rvine_matrix_sim(10)
 rvine_structure_sim <- function(d, natural_order = FALSE) {
-  assert_that(is.count(d), is.flag(natural_order))
+  d <- as_count(d, "d")
+  assert_that(is.flag(natural_order))
   rvine_structure_sim_cpp(d, natural_order, get_seeds())
 }
 

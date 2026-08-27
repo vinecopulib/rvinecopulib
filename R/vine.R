@@ -163,6 +163,7 @@ vine <- function(
   var_types = NULL
 ) {
   ## basic sanity checks (copula_controls are checked by vinecop)
+  cores <- as_count(cores, "cores")
   data <- expand_factors(data)
 
   d <- ncol(data)
@@ -197,23 +198,16 @@ vine <- function(
   var_types <- resolve_margin_types(data, var_types)
   validate_vine_weights(weights, nrow(data))
   marg_cores <- margins_controls$cores
+  # not ifelse(): it is vectorised over the condition and would silently
+  # truncate a longer `cores` to its first element before as_count() sees it
   if (is.null(marg_cores)) {
     marg_cores <- cores
   }
-  if (
-    !is.numeric(marg_cores) ||
-      length(marg_cores) != 1L ||
-      is.na(marg_cores) ||
-      !is.finite(marg_cores) ||
-      marg_cores <= 0 ||
-      marg_cores != floor(marg_cores)
-  ) {
-    stop("'cores' arguments must be positive integers.", call. = FALSE)
-  }
+  marg_cores <- as_count(marg_cores, "margins_controls$cores")
 
   assert_that(is.list(copula_controls))
   if (is.null(copula_controls$keep_data)) {
-    copula_controls$keep_data <- TRUE
+    copula_controls$keep_data <- FALSE
   }
   copula_controls$cores <- cores
 
@@ -596,7 +590,8 @@ expand_factors <- function(data) {
       if (is.numeric(x) | is.ordered(x)) {
         return(x)
       }
-      x <- model.matrix(~x)[, -1, drop = FALSE]
+      frame <- stats::model.frame(~x, na.action = stats::na.pass)
+      x <- model.matrix(attr(frame, "terms"), frame)[, -1, drop = FALSE]
       x <- as.data.frame(x)
       x <- lapply(x, function(y) ordered(y, levels = 0:1))
     })

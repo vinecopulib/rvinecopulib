@@ -41,6 +41,13 @@ test_that("works with vinecop objects", {
   expect_warning(expect_identical(vc_trunc, truncate_model(vc_trunc, 2)))
 
   expect_warning(get_all_pair_copulas(vc_trunc, 2))
+
+  vc_indep <- truncate_model(vc, 0)
+  expect_eql(vc_indep$npars, 0)
+  expect_eql(vc_indep$loglik, 0)
+  expect_eql(unname(dim(vc_indep)), c(4, 0))
+  expect_length(vc_indep$pair_copulas, 0)
+  expect_length(vc_indep$structure$struct_array, 0)
 })
 
 test_that("works with vine objects", {
@@ -54,4 +61,20 @@ test_that("works with vine objects", {
   expect_eql(vd_trunc$copula$pair_copulas, vd$copula$pair_copulas[1])
   expect_length(vd_trunc$copula$structure$struct_array[[1]], 2)
   expect_warning(expect_identical(vd_trunc, truncate_model(vd_trunc, 2)))
+
+  vd_indep <- truncate_model(vd, 0)
+  expect_eql(vd_indep$npars, vd$npars - vd$copula$npars)
+  expect_eql(
+    vd_indep$loglik,
+    vd$loglik -
+      sum(vapply(
+        vd$copula$pair_copulas,
+        function(tree) {
+          sum(vapply(tree, `[[`, numeric(1), "loglik"))
+        },
+        numeric(1)
+      ))
+  )
+  expect_eql(unname(dim(vd_indep)), c(3, 0))
+  expect_length(vd_indep$copula$pair_copulas, 0)
 })

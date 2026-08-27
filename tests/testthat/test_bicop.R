@@ -104,7 +104,11 @@ test_that("S3 generics work", {
   expect_eql(predict(fit, u, what = "hinv1"), fitted(fit, what = "hinv1"))
   expect_eql(predict(fit, u, what = "hinv2"), fitted(fit, what = "hinv2"))
   u <- as.data.frame(u)
-  expect_equiv(logLik(fit), sum(log(predict(fit, u, what = "pdf"))))
+  expect_s3_class(logLik(fit), "logLik")
+  expect_equal(
+    as.numeric(logLik(fit)),
+    sum(log(predict(fit, u, what = "pdf")))
+  )
   expect_output(print(fit))
   summary_output <- capture.output(summary(fit))
   expect_length(summary_output, 3)

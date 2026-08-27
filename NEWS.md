@@ -9,7 +9,7 @@ for the complete backend changes.
 
 ### BREAKING API CHANGES
 
-* Require R >= 4.0.0, C++17, and Boost headers from BH >= 1.75.0-0.
+* Require R >= 4.3.0, C++17, and Boost headers from BH >= 1.75.0-0.
 
 * R-vine structures now follow the backend convention with the conditioned
   variable on the diagonal. Consequently, the matrix, order, structure array,
@@ -108,11 +108,20 @@ for the complete backend changes.
 * Make inverse Rosenblatt transforms thread-safe and custom tree criteria safe
   under multithreaded fitting.
 
+* Do not retain transformed copula data when partial `copula_controls` omit
+  `keep_data`; retaining data now requires an explicit opt-in.
+
+* Preserve rows with missing unordered-factor values when expanding factors in
+  `vine()`.
+
 * Fix TLL CDF integration, Wilson random spanning trees, starting parameters for
   discrete models, edge-case per-row parameter shapes, and evaluation of models
   whose omitted pair copulas represent implicit independence.
 
 * Preserve and correctly trim variable names for discrete copula data.
+
+* Return standard `logLik` objects from fitted bivariate copula, vine copula,
+  and vine distribution models.
 
 ### BUILD SYSTEM AND DEPENDENCIES
 
@@ -122,6 +131,8 @@ for the complete backend changes.
 
 * Compile the package as C++17 and require BH >= 1.75.0-0. The backend update
   also reduces its Boost surface to Graph, Math, and Random.
+
+* Require univariateML >= 1.5.0 for optional parametric margin support.
 
 * Modernize `src/update_vinecopulib.sh`: it accepts a branch or ref, imports via
   a temporary clone, preserves package-owned wrappers, copies all public

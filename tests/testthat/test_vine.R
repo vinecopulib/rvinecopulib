@@ -38,6 +38,7 @@ test_that("S3 generics work", {
     tolerance = 0.01
   )
   expect_error(predict(fit, u, what = "hfunc1"))
+  expect_s3_class(logLik(fit), "logLik")
   expect_length(attr(logLik(fit), "df"), 1)
   expect_length(predict(fit, u[1, ], what = "pdf"), 1)
 })
@@ -149,6 +150,22 @@ test_that("margins_controls works", {
   # END legacy margins_controls compatibility
 })
 
+test_that("partial copula_controls do not retain data by default", {
+  fit_default <- vine(
+    u[, 1:2],
+    copula_controls = list(family_set = "indep")
+  )
+  expect_false(fit_default$copula_controls$keep_data)
+  expect_null(fit_default$copula$data)
+
+  fit_keep <- vine(
+    u[, 1:2],
+    copula_controls = list(family_set = "indep", keep_data = TRUE)
+  )
+  expect_true(fit_keep$copula_controls$keep_data)
+  expect_equal(dim(fit_keep$copula$data), c(nrow(u), 2))
+})
+
 test_that("weights work", {
   w <- rexp(nrow(u))
   expect_warning(
@@ -249,10 +266,12 @@ test_that("margin fitting can use multiple cores", {
   )
   expect_identical(fit_parallel_override$margins_controls$cores, 2)
   expect_identical(fit_parallel_override$copula_controls$cores, 1)
+  # as_count() replaces the hand-rolled check and additionally bounds the value
+  # by .Machine$integer.max; keep the broader set of invalid inputs
   for (invalid_cores in list(c(2, 3), NA_real_, Inf, 0, -1, 1.5)) {
     expect_error(
       vine(u, margins_controls = list(cores = invalid_cores)),
-      "must be positive integers"
+      "finite positive whole number"
     )
   }
 })
@@ -369,6 +388,26 @@ test_that("variable types can be declared by class or argument", {
     vine(cbind(rnorm(n), runif(n)), var_types = c("c", "d")),
     "integer-valued"
   )
+})
+
+test_that("unordered factor expansion preserves missing rows", {
+  x <- data.frame(
+    category = factor(rep(c("a", "b", "c"), 10)),
+    continuous = rnorm(30)
+  )
+  x$category[c(2, 11)] <- NA
+
+  expanded <- expand_factors(x)
+  factor_columns <- setdiff(names(expanded), "continuous")
+  expect_equal(nrow(expanded), nrow(x))
+  expect_true(all(vapply(expanded[factor_columns], is.ordered, logical(1))))
+  expect_true(all(is.na(expanded[c(2, 11), factor_columns])))
+  expect_equal(expanded$continuous, x$continuous)
+
+  expect_no_error(
+    fit <- vine(x, copula_controls = list(family_set = "indep"))
+  )
+  expect_equal(fit$nobs, nrow(x))
 })
 
 test_that("conflicting variable type declarations are rejected", {

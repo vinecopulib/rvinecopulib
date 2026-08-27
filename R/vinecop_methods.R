@@ -132,10 +132,9 @@ dvinecop <- function(
   keep_all = FALSE,
   parameters = NULL
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     inherits(vinecop, "vinecop_dist"),
-    is.number(cores),
-    cores > 0,
     is.flag(keep_all)
   )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
@@ -170,11 +169,10 @@ scores.vinecop_dist <- function(
   parameters = NULL,
   ...
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     inherits(vinecop, "vinecop_dist"),
-    is.flag(step_wise),
-    is.number(cores),
-    cores > 0
+    is.flag(step_wise)
   )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
   if (is.null(parameters)) {
@@ -200,11 +198,10 @@ hessian.vinecop_dist <- function(
   parameters = NULL,
   ...
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     inherits(vinecop, "vinecop_dist"),
-    is.flag(step_wise),
-    is.number(cores),
-    cores > 0
+    is.flag(step_wise)
   )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
   if (is.null(parameters)) {
@@ -216,14 +213,11 @@ hessian.vinecop_dist <- function(
 
 #' @rdname vinecop_methods
 #' @param n_mc number of samples used for quasi Monte Carlo integration.
-#' @importFrom assertthat is.count
 #' @export
 pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
-  assert_that(
-    inherits(vinecop, "vinecop_dist"),
-    is.number(n_mc),
-    is.count(cores)
-  )
+  n_mc <- as_count(n_mc, "n_mc")
+  cores <- as_count(cores, "cores")
+  assert_that(inherits(vinecop, "vinecop_dist"))
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
   vinecop_cdf_cpp(as.matrix(u), vinecop, n_mc, cores, get_seeds())
 }
@@ -242,15 +236,13 @@ rvinecop <- function(
   u_cond = NULL,
   conditioning_set = NULL
 ) {
+  n <- as_count(n, "n")
+  cores <- as_count(cores, "cores")
   assert_that(
-    is.count(n),
     inherits(vinecop, "vinecop_dist"),
-    is.flag(qrng),
-    is.number(cores),
-    cores > 0
+    is.flag(qrng)
   )
 
-  n <- as.integer(n)
   if (is.null(u_cond)) {
     if (!is.null(conditioning_set) && length(conditioning_set) > 0) {
       stop("'conditioning_set' requires 'u_cond'.", call. = FALSE)
@@ -420,11 +412,10 @@ predict.vinecop <- function(
   cores = 1,
   ...
 ) {
+  n_mc <- as_count(n_mc, "n_mc")
+  cores <- as_count(cores, "cores")
   assert_that(
-    in_set(what, c("pdf", "cdf")),
-    is.number(n_mc),
-    is.number(cores),
-    cores > 0
+    in_set(what, c("pdf", "cdf"))
   )
   newdata <- if_vec_to_matrix(newdata, dim(object)[1] == 1)
   switch(
@@ -445,12 +436,9 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
   if (is.null(object$data)) {
     stop("data have not been stored, use keep_data = TRUE when fitting.")
   }
-  assert_that(
-    in_set(what, c("pdf", "cdf")),
-    is.number(n_mc),
-    is.number(cores),
-    cores > 0
-  )
+  n_mc <- as_count(n_mc, "n_mc")
+  cores <- as_count(cores, "cores")
+  assert_that(in_set(what, c("pdf", "cdf")))
   switch(
     what,
     "pdf" = vinecop_pdf_cpp(
@@ -465,7 +453,7 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
 
 #' @export
 logLik.vinecop <- function(object, ...) {
-  structure(object$loglik, "df" = object$npars)
+  structure(object$loglik, df = object$npars, class = "logLik")
 }
 
 #' Modified vine copula Bayesian information criterion (mBICv)
@@ -475,7 +463,7 @@ logLik.vinecop <- function(object, ...) {
 #' The modified vine copula Bayesian information criterion (mBICv) is defined as
 #'
 #' \deqn{BIC = -2 loglik +  \nu log(n) - 2 \sum_{t=1}^{d - 1} (q_t log(\psi_0^t)
-#' - (d - t - q_t) log(1 - \psi_0^t)) }
+#' + (d - t - q_t) log(1 - \psi_0^t)) }
 #'
 #' where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
 #' (effective) number of parameters of the model, \eqn{t} is the tree level
@@ -500,7 +488,10 @@ logLik.vinecop <- function(object, ...) {
 #' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 #' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
-  assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
+  assert_that(inherits(object, "vinecop_dist"))
+  if (!is.number(psi0) || !is.finite(psi0) || psi0 <= 0 || psi0 >= 1) {
+    stop("`psi0` must be a number strictly between 0 and 1.", call. = FALSE)
+  }
   ll <- ifelse(
     is.null(newdata),
     object$loglik,
@@ -512,15 +503,12 @@ mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
 compute_mBICV_penalty <- function(object, psi0) {
   d <- dim(object)[1]
   smr <- summary(object)
-  q_m <- tapply(smr$family, smr$tree, function(x) sum(x == "indep"))
-  q_m <- c(q_m, rep(0, d - 1 - length(q_m)))
+  q_t <- tapply(smr$family, smr$tree, function(x) sum(x != "indep"))
+  q_t <- c(q_t, rep(0, d - 1 - length(q_t)))
   m_seq <- seq_len(d - 1)
-  pen <- object$npars * log(object$nobs)
-  pen -
-    2 *
-      sum(
-        q_m * log(psi0^m_seq) + (d - seq_len(d - 1) - q_m) * log(1 - psi0^m_seq)
-      )
+  n_edges <- d - m_seq
+  log_prior <- q_t * log(psi0^m_seq) + (n_edges - q_t) * log(1 - psi0^m_seq)
+  object$npars * log(object$nobs) - 2 * sum(log_prior)
 }
 
 #' @export

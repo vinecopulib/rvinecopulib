@@ -96,10 +96,9 @@ rosenblatt <- function(
   randomize_discrete = TRUE,
   conditioning_set = NULL
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist")),
-    is.number(cores),
-    cores > 0,
     is.flag(randomize_discrete)
   )
 
@@ -151,11 +150,10 @@ inverse_rosenblatt <- function(
   cores = 1,
   conditioning_set = NULL
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     all((u > 0) & (u < 1)),
-    inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist")),
-    is.number(cores),
-    cores > 0
+    inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist"))
   )
 
   conditioning_set <- process_conditioning_set(

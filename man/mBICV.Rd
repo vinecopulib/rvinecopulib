@@ -20,7 +20,7 @@ Calculates the modified vine copula Bayesian information criterion.
 The modified vine copula Bayesian information criterion (mBICv) is defined as
 
 \deqn{BIC = -2 loglik +  \nu log(n) - 2 \sum_{t=1}^{d - 1} (q_t log(\psi_0^t)
-- (d - t - q_t) log(1 - \psi_0^t)) }
++ (d - t - q_t) log(1 - \psi_0^t)) }
 
 where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
 (effective) number of parameters of the model, \eqn{t} is the tree level

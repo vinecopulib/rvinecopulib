@@ -136,6 +136,7 @@ bicop <- function(
   keep_data = FALSE,
   cores = 1
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     is.character(family_set),
     is.string(par_method),
@@ -150,8 +151,6 @@ bicop <- function(
     is.flag(presel),
     is.flag(allow_rotations),
     is.flag(keep_data),
-    is.number(cores),
-    cores > 0,
     correct_var_types(var_types)
   )
 
