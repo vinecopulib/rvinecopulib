@@ -64,10 +64,9 @@ Here, the density, distribution function and random generation
 for the vine distributions are standard.
 
 The functions are based on \code{\link[=dvinecop]{dvinecop()}}, \code{\link[=pvinecop]{pvinecop()}} and \code{\link[=rvinecop]{rvinecop()}} for
-\link{vinecop} objects, and either \code{\link[kde1d:dkde1d]{kde1d::dkde1d()}}, \code{\link[kde1d:pkde1d]{kde1d::pkde1d()}} and
-\code{\link[kde1d:qkde1d]{kde1d::qkde1d()}} for estimated vines (i.e., output of \code{\link[=vine]{vine()}}), or the
-standard \emph{d/p/q-xxx} from \link[stats:Distributions]{stats::Distributions} for custom vines
-(i.e., output of \code{\link[=vine_dist]{vine_dist()}}).
+\link{vinecop} objects. Margins are evaluated through \code{\link[=dmargin]{dmargin()}}, \code{\link[=pmargin]{pmargin()}},
+and \code{\link[=qmargin]{qmargin()}}. Methods are provided for margins fitted by \code{\link[=vine]{vine()}} and for
+the fixed \link[stats:Distributions]{stats::Distributions} specifications accepted by \code{\link[=vine_dist]{vine_dist()}}.
 }
 \examples{
 # specify pair-copulas
@@ -79,7 +78,7 @@ pcs <- list(
 
 # set up vine copula model
 mat <- rvine_matrix_sim(3)
-vc <- vine_dist(list(list(distr = "norm")), pcs, mat)
+vc <- vine_dist(list(stats_margin("norm")), pcs, mat)
 
 # simulate from the model
 x <- rvine(200, vc)

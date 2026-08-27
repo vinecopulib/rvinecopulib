@@ -11,7 +11,9 @@
 #'
 #' @noRd
 if_vec_to_matrix <- function(u, to_col = FALSE) {
-  if (is.null(u)) return(NULL)
+  if (is.null(u)) {
+    return(NULL)
+  }
   assert_that(is.numeric(u) | is.data.frame(u))
   if (NCOL(u) == 1) {
     if (to_col) {
@@ -324,75 +326,6 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
 
 # Get the depth of a list
 depth <- function(this) ifelse(is.list(this), 1L + max(sapply(this, depth)), 0L)
-
-supported_distributions <- c(
-  "beta",
-  "cauchy",
-  "chisq",
-  "exp",
-  "f",
-  "gamma",
-  "logis",
-  "lnorm",
-  "norm",
-  "t",
-  "unif",
-  "weibull"
-)
-
-#' @importFrom stats pbeta qbeta qbeta dcauchy pcauchy qcauchy dchisq pchisq
-#' @importFrom stats qchisq dexp pexp qexp df pf qf dgamma pgamma qgamma
-#' @importFrom stats dlnorm plnorm qlnorm dt pt qt dunif punif qunif
-#' @importFrom stats dweibull pweibull qweibull
-check_distr <- function(distr) {
-  ## if provided with a kde1d object, then there is nothing to do
-  if (inherits(distr, "kde1d")) {
-    return(TRUE)
-  }
-
-  ## basic sanity checks
-  if (!is.list(distr)) {
-    return("a distribution should be a kde1d object or a list")
-  }
-  if (!any(is.element(names(distr), "distr"))) {
-    return(
-      "a distribution should be a kde1d object or a list with a 'distr' element"
-    )
-  }
-  nn <- distr[["distr"]]
-  if (!is.element(nn, supported_distributions)) {
-    return("the provided name does not belong to supported distributions")
-  }
-
-  ## check that the provided parameters are consistent with the distribution
-  qfun <- get(paste0("q", nn))
-  par <- distr[names(distr) != "distr"]
-  par$p <- 0.5
-  e <- tryCatch(do.call(qfun, par), error = function(e) e)
-  if (any(class(e) == "error")) {
-    return(e$message)
-  }
-
-  return(TRUE)
-}
-
-get_npars_distr <- function(distr) {
-  switch(
-    distr$distr,
-    beta = 2,
-    cauchy = 2,
-    chisq = ifelse("ncp" %in% names(distr), 2, 1),
-    exp = 1,
-    f = 3,
-    gamma = 2,
-    lnorm = 2,
-    norm = 2,
-    logis = 2,
-    t = ifelse("ncp" %in% names(distr), 2, 1),
-    unif = 2,
-    weibull = ifelse("scale" %in% names(distr), 2, 1)
-  )
-}
 
 #' @noRd
 #' @importFrom assertthat assert_that on_failure<-

@@ -133,7 +133,3 @@ vinecop_fit_cpp <- function(data, vinecop_r, par_method, nonpar_method, mult, we
     .Call(`_rvinecopulib_vinecop_fit_cpp`, data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads, tree_algorithm, seeds)
 }
 
-fit_margins_cpp <- function(data, xmin, xmax, type, mult, bw, deg, weights, num_threads) {
-    .Call(`_rvinecopulib_fit_margins_cpp`, data, xmin, xmax, type, mult, bw, deg, weights, num_threads)
-}
-

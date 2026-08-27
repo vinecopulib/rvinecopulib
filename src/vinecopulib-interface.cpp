@@ -1,5 +1,4 @@
 #include "vinecopulib-wrappers.hpp"
-#include "kde1d-wrappers.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -586,41 +585,4 @@ Rcpp::List vinecop_fit_cpp(const Eigen::MatrixXd &data,
   vinecop_cpp.fit(data, fit_controls);
 
   return vinecop_wrap(vinecop_cpp, true);
-}
-
-// [[Rcpp::export()]]
-std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
-                                        const Eigen::VectorXd& xmin,
-                                        const Eigen::VectorXd& xmax,
-                                        const std::vector<std::string>& type,
-                                        const Eigen::VectorXd& mult,
-                                        const Eigen::VectorXd& bw,
-                                        const Eigen::VectorXi& deg,
-                                        const Eigen::VectorXd& weights,
-                                        size_t num_threads)
-{
-  size_t d = data.cols();
-  std::vector<kde1d::Kde1d> fits_cpp(d);
-  num_threads = (num_threads > 1) ? num_threads : 0;
-  RcppThread::parallelFor(0,
-                          d,
-                          [&](const size_t& k) {
-                            fits_cpp[k] = kde1d::Kde1d(
-                              xmin(k),
-                              xmax(k),
-                              type.at(k),
-                              mult(k),
-                              bw(k),
-                              deg(k)
-                            );
-                            fits_cpp[k].fit(data.col(k), weights);
-                          },
-                          num_threads);
-
-  // we can't do the following in parallel because it calls R API
-  std::vector<Rcpp::List> fits_r(d);
-  for (size_t k = 0; k < d; ++k) {
-    fits_r[k] = kde1d::kde1d_wrap(fits_cpp[k]);
-  }
-  return fits_r;
 }

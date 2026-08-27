@@ -24,7 +24,9 @@ pairs_copula_data <- function(data, main = "", ...) {
   on.exit(par(old_par))
 
   labels <- colnames(data)
-  if (is.null(labels)) labels <- paste0("var", seq_len(ncol(data)))
+  if (is.null(labels)) {
+    labels <- paste0("var", seq_len(ncol(data)))
+  }
   args <- list(
     x = data,
     labels = labels,

@@ -25,10 +25,9 @@
 #' for the vine distributions are standard.
 #'
 #' The functions are based on [dvinecop()], [pvinecop()] and [rvinecop()] for
-#' [vinecop] objects, and either [kde1d::dkde1d()], [kde1d::pkde1d()] and
-#' [kde1d::qkde1d()] for estimated vines (i.e., output of [vine()]), or the
-#' standard *d/p/q-xxx* from [stats::Distributions] for custom vines
-#' (i.e., output of [vine_dist()]).
+#' [vinecop] objects. Margins are evaluated through [dmargin()], [pmargin()],
+#' and [qmargin()]. Methods are provided for margins fitted by [vine()] and for
+#' the fixed [stats::Distributions] specifications accepted by [vine_dist()].
 #' @return
 #' `dvine()` gives the density, `pvine()` gives the distribution function,
 #' and `rvine()` generates unconditional or conditional random deviates.
@@ -48,7 +47,7 @@
 #'
 #' # set up vine copula model
 #' mat <- rvine_matrix_sim(3)
-#' vc <- vine_dist(list(list(distr = "norm")), pcs, mat)
+#' vc <- vine_dist(list(stats_margin("norm")), pcs, mat)
 #'
 #' # simulate from the model
 #' x <- rvine(200, vc)
@@ -202,6 +201,23 @@ rvine <- function(
 
   # use quantile transformation for marginals
   X <- dpq_marg(U, vine, "q")
+  if (!is.null(vine$var_levels)) {
+    for (k in which(lengths(vine$var_levels) > 0L)) {
+      values <- if (is.data.frame(X)) X[[k]] else X[, k]
+      if (!is.ordered(values)) {
+        restored <- ordered(
+          vine$var_levels[[k]][as.integer(values) + 1L],
+          levels = vine$var_levels[[k]]
+        )
+        if (is.data.frame(X)) {
+          X[[k]] <- restored
+        } else {
+          X <- as.data.frame(X)
+          X[[k]] <- restored
+        }
+      }
+    }
+  }
   if (!is.null(x_cond)) {
     for (i in seq_along(conditioned_variables)) {
       if (is.data.frame(X)) {
@@ -237,7 +253,11 @@ get_vine_dist_margin_summary <- function(vd) {
   }
   df <- data.frame(
     margin = seq_along(margins),
-    distr = sapply(margins, function(x) x$distr)
+    distr = vapply(
+      margins,
+      function(margin) margin_info(margin)$family_name,
+      character(1)
+    )
   )
   class(df) <- c("summary_df", class(df))
   df
@@ -320,11 +340,17 @@ summary.vine <- function(object, ...) {
 }
 
 get_vine_margin_summary <- function(object) {
-  capture.output(info <- sapply(object$margins, summary))
-  info <- as.data.frame(t(info))
-  info <- cbind(
-    data.frame(margin = seq_len(nrow(info)), name = object$names),
-    info
+  infos <- lapply(object$margins, margin_info)
+  support <- t(vapply(infos, `[[`, numeric(2), "support"))
+  info <- data.frame(
+    margin = seq_along(object$margins),
+    name = object$names,
+    family = vapply(infos, `[[`, character(1), "family_name"),
+    type = vapply(infos, `[[`, character(1), "type"),
+    xmin = support[, 1L],
+    xmax = support[, 2L],
+    npars = vapply(infos, `[[`, numeric(1), "npars"),
+    loglik = vapply(infos, `[[`, numeric(1), "loglik")
   )
   class(info) <- c("summary_df", "data.frame")
   info
@@ -340,45 +366,20 @@ dpq_marg <- function(x, vine, what = "p") {
   do.call(cbind, res)
 }
 
-get_x_sub <- function(x, margin) {
-  if (inherits(margin, "kde1d")) {
-    if (margin$type == "discrete") {
-      if (is.ordered(margin$x)) {
-        xnum <- as.numeric(x)
-        lvls <- levels(margin$x)
-        x <- ordered(lvls[ifelse(xnum > 1, xnum - 1, NA)], lvls)
-      } else {
-        x <- x - 1
-      }
-    } else if (margin$type == "zero-inflated") {
-      x[x == 0] <- -.Machine$double.xmin
-    }
-  }
-  x
-}
-
 eval_one_dpq <- function(x, margin, what = "p") {
-  if (inherits(margin, "kde1d")) {
-    dpq <- switch(
-      what,
-      p = pkde1d(x, margin),
-      d = dkde1d(x, margin),
-      q = qkde1d(x, margin),
-      p_sub = pkde1d(get_x_sub(x, margin), margin)
-    )
-  } else {
-    par <- margin[names(margin) != "distr"]
-    par[[length(par) + 1]] <- if (what == "p_sub") get_x_sub(x, margin) else x
-    names(par)[[length(par)]] <- switch(
-      what,
-      p = "q",
-      p_sub = "q",
-      d = "x",
-      q = "p"
-    )
-    dpq <- do.call(get(paste0(what, margin$distr)), par)
+  if (is.ordered(x) && what != "q") {
+    x <- as.numeric(x) - 1L
   }
-  if (is.factor(dpq)) dpq <- as.data.frame(dpq)
+  dpq <- switch(
+    what,
+    p = pmargin(x, margin),
+    d = dmargin(x, margin),
+    q = qmargin(x, margin),
+    p_sub = pmargin_sub(x, margin)
+  )
+  if (is.factor(dpq)) {
+    dpq <- as.data.frame(dpq)
+  }
   if (what == "p_sub") {
     dpq[is.nan(dpq) & !is.nan(x)] <- 0
   }

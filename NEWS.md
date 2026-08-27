@@ -16,6 +16,12 @@ for the complete backend changes.
   and edge orientation representing a model can differ from earlier releases;
   densities and log-likelihoods are unchanged.
 
+* Marginal fitting now uses explicit margin-family and fitted-margin S3
+  protocols. KDE options (`xmin`, `xmax`, `mult`, `bw`, and `deg`) are configured
+  with `kde1d_family()` instead of being entries in `margins_controls`; variable
+  types are declared with the top-level `var_types` argument. Custom
+  `margin_family()` fitters now receive `x`, `weights`, and `type` on every call.
+
 ### BEHAVIOR CHANGES
 
 * TLL fits change slightly because the backend no longer clamps interpolation
@@ -30,6 +36,32 @@ for the complete backend changes.
   transforms, and conditional simulation.
 
 ### NEW FEATURES
+
+* Add fitted-margin generics for distribution evaluation and model information,
+  together with the `margin_dist()` constructor. Add the complementary
+  `fit_margin()` family protocol. Both fitted margins and family specifications
+  expose their metadata through `margin_info()`.
+
+* Add `kde1d_family()`, `univariateML_family()`, and `stats_margin()` adapters.
+  Fixed `stats_margin()` objects retain the parameter counts of their
+  distributions.
+  Core vine fitting and evaluation use only the two protocols and contain no
+  backend-specific dispatch.
+
+* Add `zero_inflated()` and a top-level `var_types` argument to `vine()`;
+  continuous, integer-valued discrete, and zero-inflated left-limit CDFs are
+  handled centrally by the margin protocol.
+
+* Allow `vine()` to select marginal families through
+  `margins_controls$family_set`. Parametric families from `univariateML` and
+  user-defined `margin_family()` candidates are supported alongside the
+  existing `kde1d` margins.
+
+* Fit margins in parallel with forked processes when `cores > 1` on
+  non-Windows systems. Margin fitting remains serial on Windows and can be
+  controlled separately with `margins_controls$cores`. Stochastic custom
+  fitters can use one margin-fitting core when results must be invariant to the
+  core count.
 
 * Add conditional simulation to `rvinecop()` and `rvine()`. Conditioning values
   can be common or observation-specific, and `conditioning_set` accepts indices
@@ -69,8 +101,9 @@ for the complete backend changes.
 
 ### BUG FIXES
 
-* Document the `type` marginal control and include its continuous default in
-  `vine()`'s displayed arguments ([#309](https://github.com/vinecopulib/rvinecopulib/issues/309)).
+* Validate and report failed marginal candidates consistently, preserve their
+  warnings, reject fitted supports that exclude observations, and detect failed
+  forked workers and malformed margin core counts early.
 
 * Make inverse Rosenblatt transforms thread-safe and custom tree criteria safe
   under multithreaded fitting.

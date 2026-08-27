@@ -35,14 +35,17 @@ Suggests:
     igraph,
     ggplot2,
     ggraph,
-    testthat
+    knitr,
+    rmarkdown,
+    testthat,
+    univariateML
+VignetteBuilder: knitr
 LinkingTo: 
     BH (>= 1.75.0-0),
     Rcpp,
     RcppEigen,
     RcppThread (>= 2.1.2),
-    wdm (>= 0.2.6),
-    kde1d (>= 1.1.0)
+    wdm (>= 0.2.6)
 BugReports: https://github.com/vinecopulib/rvinecopulib/issues
 URL: https://vinecopulib.github.io/rvinecopulib/
 Roxygen: list(markdown = TRUE)

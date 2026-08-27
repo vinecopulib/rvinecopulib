@@ -27,6 +27,7 @@ test_that("returns proper 'vine' object", {
       "var_levels"
     )
   )
+  expect_identical(fit$margins_controls$cores, 1)
 })
 
 test_that("S3 generics work", {
@@ -85,10 +86,24 @@ test_that("conditioning-aware selection is passed to the copula fit", {
 })
 
 test_that("margins_controls works", {
-  default_controls <- eval(formals(vine)$margins_controls)
-  expect_identical(default_controls$type, "c")
+  expect_identical(eval(formals(vine)$margins_controls), list())
+  fit_defaults <- vine(
+    u[, 1:2],
+    margins_controls = list(cores = 1),
+    copula_controls = list(family_set = "indep")
+  )
+  expect_identical(fit_defaults$margins_controls$selcrit, "aic")
+  expect_identical(fit_defaults$margins_controls$cores, 1)
+  expect_true(all(vapply(
+    fit_defaults$margins,
+    function(margin) margin_info(margin)$family_name == "kde1d",
+    logical(1)
+  )))
 
-  fit_mult <- vine(u, margins_controls = list(mult = 2))
+  fit_mult <- vine(
+    u,
+    margins_controls = list(family_set = kde1d_family(mult = 2))
+  )
   expect_eql(
     sapply(fit_mult$margins, "[[", "mult"),
     rep(2, ncol(u))
@@ -96,22 +111,150 @@ test_that("margins_controls works", {
 
   fit_xmin <- vine(
     abs(u),
-    margins_controls = list(xmin = 0, deg = 1, mult = 1:5)
+    margins_controls = list(
+      family_set = kde1d_family(xmin = 0, deg = 1)
+    )
   )
   expect_eql(sapply(fit_xmin$margins, "[[", "xmin"), rep(0, 5))
   expect_eql(sapply(fit_xmin$margins, "[[", "deg"), rep(1, 5))
+
+  # BEGIN legacy margins_controls compatibility
+  legacy_margin_controls_state$warning_issued <- FALSE
+  expect_warning(
+    fit_legacy <- vine(u, margins_controls = list(mult = 2)),
+    "deprecated"
+  )
+  expect_eql(sapply(fit_legacy$margins, "[[", "mult"), rep(2, ncol(u)))
+  expect_no_warning(
+    fit_legacy_xmin <- vine(abs(u), margins_controls = list(xmin = 0))
+  )
+  expect_eql(
+    sapply(fit_legacy_xmin$margins, "[[", "mult"),
+    rep(log1p(ncol(u)), ncol(u))
+  )
+
+  fit_legacy_type <- vine(
+    cbind(rnorm(30), rpois(30, 1)),
+    margins_controls = list(type = c("c", "d")),
+    copula_controls = list(family_set = "indep")
+  )
+  expect_equal(
+    vapply(
+      fit_legacy_type$margins,
+      function(margin) margin_info(margin)$type,
+      character(1)
+    ),
+    c("c", "d")
+  )
+  # END legacy margins_controls compatibility
 })
 
 test_that("weights work", {
   w <- rexp(nrow(u))
-  fit_weights <- vine(
-    u,
-    copula_controls = list(family_set = "nonpar"),
-    weights = w,
-    keep_data = TRUE
+  expect_warning(
+    fit_weights <- vine(
+      u,
+      copula_controls = list(family_set = "nonpar"),
+      weights = w,
+      keep_data = TRUE
+    ),
+    "AIC and BIC are unavailable"
   )
   expect_eql(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
+})
+
+test_that("margin fitting can use multiple cores", {
+  margin_data <- prep_for_margins(as.data.frame(u))
+  family_set <- expand_margin_family_set("kde1d", ncol(u), colnames(u))
+  serial <- fit_vine_margins(
+    margin_data,
+    family_set,
+    rep("c", ncol(u)),
+    numeric(),
+    "aic",
+    1
+  )
+  multicore <- fit_vine_margins(
+    margin_data,
+    family_set,
+    rep("c", ncol(u)),
+    numeric(),
+    "aic",
+    2
+  )
+  expect_equal(multicore, serial)
+
+  failing <- margin_family(
+    function(x, weights, type) stop("margin fit failed", call. = FALSE),
+    family_name = "failing"
+  )
+  expect_error(
+    fit_vine_margins(
+      margin_data[1:2],
+      list(list(failing), family_set[[2]]),
+      c("c", "c"),
+      numeric(),
+      "aic",
+      2
+    ),
+    "margin fit failed"
+  )
+  expect_error(
+    collect_vine_margin_results(list(NULL)),
+    "variable 1.*cores = 1"
+  )
+
+  noisy <- margin_family(
+    function(x, weights, type) {
+      warning("margin fit warning")
+      margin_dist(
+        dnorm,
+        pnorm,
+        qnorm,
+        family = "noisy",
+        npars = 1,
+        loglik = -10
+      )
+    },
+    family_name = "noisy"
+  )
+  expect_warning(
+    fits <- fit_vine_margins(
+      margin_data[1:2],
+      rep(list(list(noisy)), 2),
+      c("c", "c"),
+      numeric(),
+      "aic",
+      2
+    ),
+    "margin fit warning"
+  )
+  expect_length(fits, 2)
+
+  fit_override <- vine(
+    u,
+    margins_controls = list(cores = 1),
+    copula_controls = list(family_set = "indep"),
+    cores = 2
+  )
+  expect_identical(fit_override$margins_controls$cores, 1)
+  expect_identical(fit_override$copula_controls$cores, 2)
+
+  fit_parallel_override <- vine(
+    u[, 1:2],
+    margins_controls = list(cores = 2),
+    copula_controls = list(family_set = "indep"),
+    cores = 1
+  )
+  expect_identical(fit_parallel_override$margins_controls$cores, 2)
+  expect_identical(fit_parallel_override$copula_controls$cores, 1)
+  for (invalid_cores in list(c(2, 3), NA_real_, Inf, 0, -1, 1.5)) {
+    expect_error(
+      vine(u, margins_controls = list(cores = invalid_cores)),
+      "must be positive integers"
+    )
+  }
 })
 
 test_that("custom tree criteria are available through vine", {
@@ -152,10 +295,13 @@ test_that("discrete variables work", {
   expect_no_error(
     fit <- vine(
       x,
-      margin = list(
-        type = c("d", "c", "c"),
-        xmin = c(1, NaN, NaN),
-        xmax = c(4, NaN, NaN)
+      var_types = c("d", "c", "c"),
+      margins_controls = list(
+        family_set = list(
+          kde1d_family(xmin = 1, xmax = 4),
+          kde1d_family(),
+          kde1d_family()
+        )
       )
     )
   )
@@ -172,9 +318,246 @@ test_that("discrete variables work", {
   expect_equiv(p, pvine(x2, fit2))
   expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
 
-  expect_no_error(fit <- vine(x, margin = list(type = c("d", "c", "zi"))))
+  expect_warning(
+    fit <- vine(x, var_types = c("d", "c", "zi")),
+    "AIC and BIC are unavailable"
+  )
   expect_equal(fit$copula$var_types, c("d", "c", "d"))
   expect_no_error(dvine(x, fit))
   expect_no_error(pvine(x, fit))
   expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
+})
+
+test_that("variable types can be declared by class or argument", {
+  n <- 50
+  x <- data.frame(
+    continuous = rnorm(n),
+    zero = zero_inflated(c(rep(0, 10), rexp(n - 10)))
+  )
+  expect_s3_class(x$zero, "zero_inflated")
+  expect_s3_class(x[1:5, , drop = FALSE]$zero, "zero_inflated")
+
+  expect_warning(
+    fit <- vine(x, copula_controls = list(family_set = "indep")),
+    "AIC and BIC are unavailable"
+  )
+  expect_equal(
+    vapply(
+      fit$margins,
+      function(margin) margin_info(margin)$type,
+      character(1)
+    ),
+    c("c", "zi")
+  )
+  expect_equal(fit$copula$var_types, c("c", "d"))
+
+  y <- cbind(rnorm(n), rpois(n, 2))
+  fit <- vine(
+    y,
+    var_types = c("c", "d"),
+    copula_controls = list(family_set = "indep")
+  )
+  expect_equal(
+    vapply(
+      fit$margins,
+      function(margin) margin_info(margin)$type,
+      character(1)
+    ),
+    c("c", "d")
+  )
+  expect_error(
+    vine(cbind(rnorm(n), runif(n)), var_types = c("c", "d")),
+    "integer-valued"
+  )
+})
+
+test_that("conflicting variable type declarations are rejected", {
+  x <- data.frame(a = ordered(rep(1:3, 10)), b = rnorm(30))
+  expect_error(vine(x, var_types = c("c", "c")), "disagree")
+
+  z <- data.frame(a = zero_inflated(rexp(30)), b = rnorm(30))
+  expect_error(vine(z, var_types = c("d", "c")), "disagree")
+
+  # BEGIN legacy margins_controls compatibility
+  suppressWarnings(
+    expect_error(
+      vine(
+        cbind(rnorm(30), rpois(30, 1)),
+        var_types = c("c", "d"),
+        margins_controls = list(type = c("c", "c"))
+      ),
+      "disagree"
+    )
+  )
+  # END legacy margins_controls compatibility
+  expect_error(
+    vine(matrix(rnorm(90), ncol = 3), var_types = c("c", "d")),
+    "length one or 3"
+  )
+})
+
+test_that("rvinecopulib selects among custom margin families", {
+  make_location_family <- function(offset, family) {
+    margin_family(
+      fit = function(x, weights, type) {
+        location <- mean(x) + offset
+        margin_dist(
+          d = function(y) dnorm(y, location, 1),
+          p = function(y) pnorm(y, location, 1),
+          q = function(p) qnorm(p, location, 1),
+          family = family,
+          type = type,
+          npars = 1,
+          loglik = sum(dnorm(x, location, 1, log = TRUE))
+        )
+      },
+      family_name = family
+    )
+  }
+  good <- make_location_family(0, "good")
+  bad <- make_location_family(10, "bad")
+  x <- cbind(rnorm(40), rnorm(40, 2))
+
+  fit <- vine(
+    x,
+    margins_controls = list(
+      family_set = list(list(good, bad), list(good, bad)),
+      selcrit = "bic"
+    ),
+    copula_controls = list(family_set = "indep")
+  )
+
+  expect_equal(
+    vapply(
+      fit$margins,
+      function(margin) margin_info(margin)$family_name,
+      character(1)
+    ),
+    c("good", "good")
+  )
+  expect_true(is.finite(as.numeric(logLik(fit))))
+  expect_equal(length(fit$margins_controls$family_set), 2)
+})
+
+test_that("custom families can fit zero-inflated margins", {
+  zi_exponential <- margin_family(
+    fit = function(x, weights, type) {
+      atom <- mean(x == 0)
+      rate <- 1 / mean(x[x > 0])
+      margin_dist(
+        d = function(y) {
+          ifelse(y == 0, atom, (1 - atom) * dexp(y, rate))
+        },
+        p = function(y) {
+          ifelse(y < 0, 0, atom + (1 - atom) * pexp(y, rate))
+        },
+        q = function(p) {
+          ifelse(p <= atom, 0, qexp((p - atom) / (1 - atom), rate))
+        },
+        family = "zi_exponential",
+        type = type,
+        npars = 2,
+        loglik = sum(ifelse(
+          x == 0,
+          log(atom),
+          log(1 - atom) + dexp(x, rate, log = TRUE)
+        ))
+      )
+    },
+    family_name = "zi_exponential",
+    types = "zi"
+  )
+  x <- data.frame(
+    zero = zero_inflated(c(rep(0, 20), rexp(60))),
+    continuous = rnorm(80)
+  )
+  fit <- vine(
+    x,
+    margins_controls = list(
+      family_set = list(zi_exponential, "kde1d")
+    ),
+    copula_controls = list(family_set = "indep")
+  )
+
+  expect_equal(margin_info(fit$margins[[1]])$type, "zi")
+  expect_equal(pmargin_sub(rep(0, 3), fit$margins[[1]]), rep(0, 3))
+  expect_no_error(dvine(x, fit))
+})
+
+test_that("univariateML families implement the margin protocol", {
+  skip_if_not_installed("univariateML")
+  set.seed(12)
+  x <- cbind(continuous = rnorm(80), count = rpois(80, 3))
+  fit <- vine(
+    x,
+    margins_controls = list(
+      family_set = list(c("norm", "cauchy"), c("pois", "geom")),
+      selcrit = "aic"
+    ),
+    var_types = c("c", "d"),
+    copula_controls = list(family_set = "indep")
+  )
+
+  expect_true(all(vapply(fit$margins, inherits, logical(1), "univariateML")))
+  expect_equal(
+    dmargin(x[, 1], fit$margins[[1]]),
+    univariateML::dml(x[, 1], fit$margins[[1]])
+  )
+  expect_equal(
+    pmargin(x[, 2], fit$margins[[2]]),
+    univariateML::pml(x[, 2], fit$margins[[2]])
+  )
+  expect_equal(
+    pmargin_sub(x[, 2], fit$margins[[2]]),
+    univariateML::pml(x[, 2] - 1, fit$margins[[2]])
+  )
+  expect_no_error(rvine(5, fit))
+
+  set.seed(1)
+  ordered_data <- data.frame(
+    category = ordered(
+      rbinom(200, 4, 0.4),
+      levels = 0:4,
+      labels = c("very low", "low", "middle", "high", "very high")
+    ),
+    continuous = rnorm(200)
+  )
+  ordered_fit <- vine(
+    ordered_data,
+    margins_controls = list(family_set = list("binom", "norm")),
+    copula_controls = list(family_set = "indep")
+  )
+  expect_no_error(dvine(ordered_data, ordered_fit))
+  simulated <- rvine(5, ordered_fit)
+  expect_true(is.ordered(simulated$category))
+  expect_equal(levels(simulated$category), levels(ordered_data$category))
+})
+
+test_that("margin candidate controls are validated", {
+  skip_if_not_installed("univariateML")
+  x <- cbind(rnorm(30), rpois(30, 2))
+
+  expect_error(
+    vine(
+      x,
+      margins_controls = list(family_set = list("norm", "norm")),
+      var_types = c("c", "d")
+    ),
+    "no candidate margin"
+  )
+  expect_error(
+    vine(
+      x[, 1, drop = FALSE],
+      margins_controls = list(family_set = "norm", selcrit = "invalid")
+    ),
+    "must be 'loglik', 'aic', or 'bic'"
+  )
+  expect_error(
+    vine(
+      x[, 1, drop = FALSE],
+      margins_controls = list(family_set = "norm"),
+      weights = rep(1, nrow(x))
+    ),
+    "univariateML.*do not support observation weights"
+  )
 })
