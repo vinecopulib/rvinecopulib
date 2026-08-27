@@ -52,6 +52,7 @@ reference:
   - rosenblatt
   - truncate_model
   - mBICV
+  - parameter_uncertainty
 - title: Bivariate copula models
   contents:
   - bicop

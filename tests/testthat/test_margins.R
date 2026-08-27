@@ -627,3 +627,46 @@ test_that("univariateML family metadata and weight rejection are explicit", {
     "do not support observation weights"
   )
 })
+
+# Reads a saved margin in a subprocess where univariateML is not attached.
+roundtrip_margin_info <- function(path) {
+  script <- tempfile(fileext = ".R")
+  on.exit(unlink(script), add = TRUE)
+  writeLines(
+    c(
+      "suppressMessages(library(rvinecopulib))",
+      sprintf("m <- readRDS(%s)", encodeString(path, quote = '"')),
+      "i <- margin_info(m)",
+      "cat(i$family_name, i$loglik, i$npars, sep = '\\n')"
+    ),
+    script
+  )
+  out <- suppressWarnings(system2(
+    file.path(R.home("bin"), "Rscript"),
+    shQuote(script),
+    stdout = TRUE,
+    stderr = FALSE
+  ))
+  out <- out[nzchar(out)]
+  list(
+    family_name = out[1],
+    loglik = as.numeric(out[2]),
+    npars = as.numeric(out[3])
+  )
+}
+
+test_that("univariateML margins survive a serialization round trip", {
+  skip_if_not_installed("univariateML")
+  x <- rnorm(200)
+  m <- fit_margin(univariateML_family("norm"), x)
+  f <- tempfile(fileext = ".rds")
+  on.exit(unlink(f), add = TRUE)
+  saveRDS(m, f)
+
+  # margin_info() must not depend on univariateML being attached: its logLik()
+  # method lives in that namespace, which a fresh session will not have loaded.
+  info <- roundtrip_margin_info(f)
+  expect_equal(info$family_name, "norm")
+  expect_true(is.finite(info$loglik))
+  expect_equal(info$npars, 2)
+})

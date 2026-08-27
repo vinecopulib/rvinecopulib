@@ -302,6 +302,9 @@ qmargin.univariateML <- function(p, margin) {
 
 #' @export
 margin_info.univariateML <- function(object) {
+  # the logLik() method for this class lives in univariateML's namespace, which
+  # is not loaded when a saved margin is read back in a fresh session
+  check_univariateML()
   type <- attr(object, "rvine_margin_type", exact = TRUE)
   if (is.null(type)) {
     continuous <- attr(object, "continuous", exact = TRUE)

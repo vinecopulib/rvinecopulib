@@ -722,6 +722,18 @@ inline double
 JoeBicop::parameters_to_tau(const Eigen::MatrixXd& parameters)
 {
   double par = parameters(0);
+  // The closed form 1 + 2 [psi(2) - psi(2/par + 1)] / (2 - par) has a removable
+  // singularity at par = 2, where the bracket and the denominator vanish
+  // together: the quotient evaluates to NaN there and loses most of its
+  // significant digits nearby. The limit is 1 - psi'(2) = 2 - pi^2 / 6.
+  constexpr double eps = 1e-5;
+  if (std::fabs(par - 2.0) < eps) {
+    // tau(2 + d) = 1 - psi'(2) + d [psi'(2) / 2 + psi''(2) / 4] + O(d^2)
+    constexpr double tri2 = 0.6449340668482264;  // psi'(2) = pi^2 / 6 - 1
+    constexpr double tet2 = -0.4041138063191886; // psi''(2)
+    const double d = par - 2.0;
+    return 1.0 - tri2 + d * (tri2 / 2.0 + tet2 / 4.0);
+  }
   double tau = 2 / par + 1;
   tau = boost::math::digamma(2.0) - boost::math::digamma(tau);
   return 1 + 2 * tau / (2 - par);
