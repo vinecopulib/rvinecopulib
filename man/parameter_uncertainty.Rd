@@ -4,55 +4,25 @@
 \alias{parameter_uncertainty}
 \alias{vcov.bicop_dist}
 \alias{vcov.vinecop_dist}
-\alias{vcov.vine_dist}
 \alias{confint.bicop_dist}
 \alias{confint.vinecop_dist}
-\alias{confint.vine_dist}
 \title{Parameter uncertainty}
 \usage{
-\method{vcov}{vinecop_dist}(
-  object,
-  newdata = NULL,
-  type = c("sandwich", "model"),
-  step_wise = TRUE,
-  cores = 1,
-  ...
-)
+\method{vcov}{vinecop_dist}(object, newdata = NULL, step_wise = TRUE, cores = 1, ...)
 
-\method{vcov}{bicop_dist}(
-  object,
-  newdata = NULL,
-  type = c("sandwich", "model"),
-  step_wise = TRUE,
-  cores = 1,
-  ...
-)
+\method{vcov}{bicop_dist}(object, newdata = NULL, step_wise = TRUE, cores = 1, ...)
 
 \method{confint}{vinecop_dist}(object, parm, level = 0.95, ...)
 
 \method{confint}{bicop_dist}(object, parm, level = 0.95, ...)
-
-\method{vcov}{vine_dist}(
-  object,
-  newdata = NULL,
-  type = c("sandwich", "model"),
-  step_wise = TRUE,
-  cores = 1,
-  ...
-)
-
-\method{confint}{vine_dist}(object, parm, level = 0.95, ...)
 }
 \arguments{
-\item{object}{an object of class \code{"bicop"}, \code{"vinecop"} or \code{"vine"}; or of
-class \code{"bicop_dist"}, \code{"vinecop_dist"} or \code{"vine_dist"} together with
-\code{newdata}.}
+\item{object}{an object of class \code{"bicop"} or \code{"vinecop"}, or of class
+\code{"bicop_dist"} or \code{"vinecop_dist"} together with \code{newdata}.}
 
-\item{newdata}{data to evaluate the derivatives at. Copula data for the
-copula classes, original-scale data for \code{"vine_dist"}. Defaults to the data
-stored in \code{object}, which requires \code{keep_data = TRUE} at fitting time.}
-
-\item{type}{\code{"sandwich"} (the default) or \code{"model"}; see \emph{Details}.}
+\item{newdata}{copula data to evaluate the derivatives at. Defaults to the
+data stored in \code{object}, which requires \code{keep_data = TRUE} at fitting
+time.}
 
 \item{step_wise}{if \code{TRUE} (default), derivatives of the step-wise
 estimating equations; if \code{FALSE}, of the joint log-likelihood. See
@@ -84,9 +54,11 @@ The estimator solves \eqn{\bar s(\hat\theta) = 0} with
 Writing
 \deqn{A = -\partial \bar s(\theta) / \partial \theta^\top, \qquad
       B = n^{-1} \sum_i s_i s_i^\top,}
-\code{type = "sandwich"} returns \eqn{A^{-1} B A^{-\top} / n}, the
-misspecification-robust form of White (1982), and \code{type = "model"} returns
-\eqn{A^{-1} / n}.
+\code{vcov()} returns the sandwich \eqn{A^{-1} B A^{-\top} / n} of White (1982).
+The simpler \eqn{A^{-1}/n} would need the information equality \eqn{A = B},
+which holds only at a maximum-likelihood estimator and so not for the
+default step-wise objective below; the sandwich is correct either way, so it
+is the only form offered.
 \subsection{Which objective is differentiated}{
 
 \code{step_wise} selects the estimating equation, and it changes the nature of
@@ -101,8 +73,7 @@ pair copula are held fixed. This is the estimating equation that sequential,
 tree-by-tree estimation actually solves, but it is not the gradient of any
 objective: \eqn{A} is a Jacobian rather than a Hessian, and it is block
 triangular rather than symmetric. The sandwich formula still applies --
-which is why it is written with \eqn{A^{-\top}} on the right -- but the
-information equality does not, so \code{type = "model"} is refused.
+which is why it is written with \eqn{A^{-\top}} on the right.
 }
 
 \subsection{Restrictions}{
@@ -112,11 +83,32 @@ containing one is refused. For models with discrete variables the backend
 differentiates by central finite differences rather than in closed form; the
 result is correct but carries the accuracy of a finite-difference
 approximation.
+}
 
-Neither variant accounts for estimation of the margins: both treat the
-copula data as observed. For vine distributions fitted with \code{\link[=vine]{vine()}} this is
-the usual two-stage approximation, and it makes the intervals somewhat too
-short.
+\subsection{Why there is no method for vine distributions}{
+
+These functions treat the copula data as observed, so they quantify
+uncertainty in the pair-copula parameters \emph{given} the margins. A model
+fitted by \code{\link[=vine]{vine()}} estimates its margins too, and the second stage inherits
+the first stage's sampling variability: intervals that ignore it are too
+short. In a small experiment (three-dimensional Gaussian D-vine,
+equicorrelation 0.5, \code{n = 1000}, 1000 replications) nominal 95\% intervals
+attained 0.956 when the true margins were used and 0.929 when they were
+estimated by ranks.
+
+Correcting for it needs the influence function of the marginal estimator,
+and \code{\link[=fit_margin]{fit_margin()}} is a user-supplied black box, so there is nothing to
+differentiate. We therefore provide no method for \code{"vine"} objects rather
+than a silently anticonservative one. To quantify uncertainty for a complete
+vine distribution, resample:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{boot <- replicate(B, \{
+  idx <- sample(nrow(x), replace = TRUE)
+  fit <- vine(x[idx, ], margins_controls = mc, copula_controls = cc)
+  unlist(get_all_parameters(fit$copula))
+\})
+apply(boot, 1, quantile, c(0.025, 0.975))
+}\if{html}{\out{</div>}}
 }
 }
 \examples{
@@ -132,14 +124,8 @@ fit <- vinecop(u, family_set = "parametric", keep_data = TRUE)
 vcov(fit)
 confint(fit, level = 0.9)
 
-# the model-based form requires the joint objective
-vcov(fit, type = "model", step_wise = FALSE)
-
-# vine distribution on the data scale -----------------------
-x <- data.frame(a = rnorm(500), b = rnorm(500))
-fit <- vine(x, copula_controls = list(family_set = "parametric"),
-            keep_data = TRUE)
-confint(fit)
+# derivatives of the joint log-likelihood instead of the step-wise ones
+sqrt(diag(vcov(fit, step_wise = FALSE)))
 
 }
 \references{

@@ -16,8 +16,8 @@ gaussian_vine_fit <- function(n = 600, d = 3, rho = 0.5) {
 
 test_that("vcov is symmetric, positive definite and correctly named", {
   fit <- gaussian_vine_fit()
-  for (type in c("sandwich", "model")) {
-    V <- vcov(fit, type = type, step_wise = (type == "sandwich"))
+  for (step_wise in c(TRUE, FALSE)) {
+    V <- vcov(fit, step_wise = step_wise)
     expect_equal(dim(V), c(3L, 3L))
     expect_equal(V, t(V))
     expect_true(all(eigen(V, only.values = TRUE)$values > 0))
@@ -75,23 +75,23 @@ test_that("vcov works for bivariate copulas", {
   expect_equal(nrow(confint(bf)), 1L)
 })
 
-test_that("vcov works for vine distributions, including mixed data", {
-  n <- 800
-  dat <- data.frame(
-    a = rnorm(n),
-    b = ordered(rpois(n, 2)),
-    c = rnorm(n)
-  )
+test_that("there is no method for vine distributions", {
+  # intervals that ignore marginal estimation are anticonservative, and
+  # fit_margin() is a user-supplied black box, so no method is provided
+  n <- 400
+  dat <- data.frame(a = rnorm(n), b = rnorm(n))
   fit <- vine(
     dat,
     margins_controls = list(family_set = "kde1d"),
     copula_controls = list(family_set = "parametric"),
     keep_data = TRUE
   )
-  V <- vcov(fit)
-  expect_true(nrow(V) >= 1L)
-  expect_equal(V, t(V))
-  expect_equal(nrow(confint(fit)), nrow(V))
+  expect_null(getS3method("vcov", "vine_dist", optional = TRUE))
+  expect_null(getS3method("confint", "vine_dist", optional = TRUE))
+
+  # the copula component can still be examined directly, with the caveat that
+  # it conditions on the fitted margins
+  expect_true(is.matrix(vcov(fit$copula, newdata = pseudo_obs(dat))))
 })
 
 test_that("vcov refuses nonparametric models and reports missing data", {
@@ -122,11 +122,6 @@ test_that("A is a Jacobian under step_wise and a Hessian otherwise", {
   expect_equal(Hj, t(Hj), tolerance = 1e-8)
 })
 
-test_that("type = 'model' is refused for the step-wise estimating equation", {
-  fit <- gaussian_vine_fit()
-  expect_error(vcov(fit, type = "model"), "information equality")
-  expect_silent(vcov(fit, type = "model", step_wise = FALSE))
-})
 
 test_that("sandwich standard errors track the sampling distribution", {
   # a short Monte Carlo check that the bread is oriented correctly: an

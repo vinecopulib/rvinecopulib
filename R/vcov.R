@@ -4,15 +4,13 @@
 #' pair-copula parameters.
 #'
 #' @name parameter_uncertainty
-#' @aliases vcov.bicop_dist vcov.vinecop_dist vcov.vine_dist confint.bicop_dist
-#'   confint.vinecop_dist confint.vine_dist
-#' @param object an object of class `"bicop"`, `"vinecop"` or `"vine"`; or of
-#'   class `"bicop_dist"`, `"vinecop_dist"` or `"vine_dist"` together with
-#'   `newdata`.
-#' @param newdata data to evaluate the derivatives at. Copula data for the
-#'   copula classes, original-scale data for `"vine_dist"`. Defaults to the data
-#'   stored in `object`, which requires `keep_data = TRUE` at fitting time.
-#' @param type `"sandwich"` (the default) or `"model"`; see *Details*.
+#' @aliases vcov.bicop_dist vcov.vinecop_dist confint.bicop_dist
+#'   confint.vinecop_dist
+#' @param object an object of class `"bicop"` or `"vinecop"`, or of class
+#'   `"bicop_dist"` or `"vinecop_dist"` together with `newdata`.
+#' @param newdata copula data to evaluate the derivatives at. Defaults to the
+#'   data stored in `object`, which requires `keep_data = TRUE` at fitting
+#'   time.
 #' @param step_wise if `TRUE` (default), derivatives of the step-wise
 #'   estimating equations; if `FALSE`, of the joint log-likelihood. See
 #'   [scores()].
@@ -29,9 +27,11 @@
 #' Writing
 #' \deqn{A = -\partial \bar s(\theta) / \partial \theta^\top, \qquad
 #'       B = n^{-1} \sum_i s_i s_i^\top,}
-#' `type = "sandwich"` returns \eqn{A^{-1} B A^{-\top} / n}, the
-#' misspecification-robust form of White (1982), and `type = "model"` returns
-#' \eqn{A^{-1} / n}.
+#' `vcov()` returns the sandwich \eqn{A^{-1} B A^{-\top} / n} of White (1982).
+#' The simpler \eqn{A^{-1}/n} would need the information equality \eqn{A = B},
+#' which holds only at a maximum-likelihood estimator and so not for the
+#' default step-wise objective below; the sandwich is correct either way, so it
+#' is the only form offered.
 #'
 #' ## Which objective is differentiated
 #'
@@ -47,8 +47,7 @@
 #' tree-by-tree estimation actually solves, but it is not the gradient of any
 #' objective: \eqn{A} is a Jacobian rather than a Hessian, and it is block
 #' triangular rather than symmetric. The sandwich formula still applies --
-#' which is why it is written with \eqn{A^{-\top}} on the right -- but the
-#' information equality does not, so `type = "model"` is refused.
+#' which is why it is written with \eqn{A^{-\top}} on the right.
 #'
 #' ## Restrictions
 #'
@@ -58,10 +57,31 @@
 #' result is correct but carries the accuracy of a finite-difference
 #' approximation.
 #'
-#' Neither variant accounts for estimation of the margins: both treat the
-#' copula data as observed. For vine distributions fitted with [vine()] this is
-#' the usual two-stage approximation, and it makes the intervals somewhat too
-#' short.
+#' ## Why there is no method for vine distributions
+#'
+#' These functions treat the copula data as observed, so they quantify
+#' uncertainty in the pair-copula parameters *given* the margins. A model
+#' fitted by [vine()] estimates its margins too, and the second stage inherits
+#' the first stage's sampling variability: intervals that ignore it are too
+#' short. In a small experiment (three-dimensional Gaussian D-vine,
+#' equicorrelation 0.5, `n = 1000`, 1000 replications) nominal 95% intervals
+#' attained 0.956 when the true margins were used and 0.929 when they were
+#' estimated by ranks.
+#'
+#' Correcting for it needs the influence function of the marginal estimator,
+#' and [fit_margin()] is a user-supplied black box, so there is nothing to
+#' differentiate. We therefore provide no method for `"vine"` objects rather
+#' than a silently anticonservative one. To quantify uncertainty for a complete
+#' vine distribution, resample:
+#'
+#' ```
+#' boot <- replicate(B, {
+#'   idx <- sample(nrow(x), replace = TRUE)
+#'   fit <- vine(x[idx, ], margins_controls = mc, copula_controls = cc)
+#'   unlist(get_all_parameters(fit$copula))
+#' })
+#' apply(boot, 1, quantile, c(0.025, 0.975))
+#' ```
 #'
 #' @return `vcov()` returns a covariance matrix with one row and column per
 #' estimated pair-copula parameter, ordered by tree, then edge, then parameter
@@ -91,14 +111,8 @@
 #' vcov(fit)
 #' confint(fit, level = 0.9)
 #'
-#' # the model-based form requires the joint objective
-#' vcov(fit, type = "model", step_wise = FALSE)
-#'
-#' # vine distribution on the data scale -----------------------
-#' x <- data.frame(a = rnorm(500), b = rnorm(500))
-#' fit <- vine(x, copula_controls = list(family_set = "parametric"),
-#'             keep_data = TRUE)
-#' confint(fit)
+#' # derivatives of the joint log-likelihood instead of the step-wise ones
+#' sqrt(diag(vcov(fit, step_wise = FALSE)))
 #'
 #' @importFrom stats vcov confint qnorm
 NULL
@@ -176,17 +190,7 @@ vcov_data <- function(object, newdata) {
 }
 
 #' @noRd
-vcov_assemble <- function(u, object, type, step_wise, cores, is_bicop) {
-  type <- match.arg(type, c("sandwich", "model"))
-  if (type == "model" && !is_bicop && isTRUE(step_wise)) {
-    stop(
-      "type = \"model\" relies on the information equality, which holds for a ",
-      "maximum-likelihood estimator but not for the step-wise one. Use ",
-      "type = \"sandwich\", or step_wise = FALSE to differentiate the joint ",
-      "log-likelihood.",
-      call. = FALSE
-    )
-  }
+vcov_assemble <- function(u, object, step_wise, cores, is_bicop) {
   s <- if (is_bicop) {
     scores(u, object, cores = cores)
   } else {
@@ -218,12 +222,8 @@ vcov_assemble <- function(u, object, type, step_wise, cores, is_bicop) {
     )
   })
 
-  V <- if (type == "model") {
-    Ainv / n
-  } else {
-    B <- crossprod(s) / n
-    Ainv %*% B %*% t(Ainv) / n
-  }
+  B <- crossprod(s) / n
+  V <- Ainv %*% B %*% t(Ainv) / n
   ## the sandwich is symmetric in exact arithmetic
   V <- (V + t(V)) / 2
 
@@ -243,14 +243,13 @@ vcov_assemble <- function(u, object, type, step_wise, cores, is_bicop) {
 vcov.vinecop_dist <- function(
   object,
   newdata = NULL,
-  type = c("sandwich", "model"),
   step_wise = TRUE,
   cores = 1,
   ...
 ) {
   vcov_check_supported(object)
   u <- vcov_data(object, newdata)
-  vcov_assemble(u, object, type, step_wise, cores, is_bicop = FALSE)
+  vcov_assemble(u, object, step_wise, cores, is_bicop = FALSE)
 }
 
 #' @rdname parameter_uncertainty
@@ -258,14 +257,13 @@ vcov.vinecop_dist <- function(
 vcov.bicop_dist <- function(
   object,
   newdata = NULL,
-  type = c("sandwich", "model"),
   step_wise = TRUE,
   cores = 1,
   ...
 ) {
   vcov_check_supported(object)
   u <- vcov_data(object, newdata)
-  vcov_assemble(u, object, type, step_wise, cores, is_bicop = TRUE)
+  vcov_assemble(u, object, step_wise, cores, is_bicop = TRUE)
 }
 
 #' @rdname parameter_uncertainty
@@ -320,54 +318,4 @@ get_all_parameters_flat <- function(object) {
     }
   }
   out
-}
-
-#' @rdname parameter_uncertainty
-#' @export
-vcov.vine_dist <- function(
-  object,
-  newdata = NULL,
-  type = c("sandwich", "model"),
-  step_wise = TRUE,
-  cores = 1,
-  ...
-) {
-  vcov_check_supported(object$copula)
-  u <- vine_copula_data(object, newdata)
-  vcov_assemble(u, object$copula, type, step_wise, cores, is_bicop = FALSE)
-}
-
-#' @rdname parameter_uncertainty
-#' @export
-confint.vine_dist <- function(object, parm, level = 0.95, ...) {
-  assert_that(is.number(level), level > 0, level < 1)
-  V <- vcov(object, ...)
-  est <- get_all_parameters_flat(object$copula)
-  se <- sqrt(diag(V))
-  names(est) <- rownames(V)
-  a <- (1 - level) / 2
-  ci <- cbind(est - qnorm(1 - a) * se, est + qnorm(1 - a) * se)
-  colnames(ci) <- paste(format(100 * c(a, 1 - a), trim = TRUE, digits = 3), "%")
-  rownames(ci) <- names(est)
-  if (!missing(parm)) {
-    ci <- ci[parm, , drop = FALSE]
-  }
-  ci
-}
-
-#' Copula-scale data for a fitted vine distribution.
-#'
-#' A `vine` stores data on the original scale, so the marginal transformation
-#' has to be reapplied before the copula derivatives can be evaluated.
-#' @noRd
-vine_copula_data <- function(object, newdata) {
-  dat <- if (!is.null(newdata)) newdata else object$data
-  if (is.null(dat)) {
-    stop(
-      "no data available: either fit with `keep_data = TRUE` or supply ",
-      "`newdata`.",
-      call. = FALSE
-    )
-  }
-  compute_pseudo_obs(expand_factors(as.data.frame(dat)), object)
 }
