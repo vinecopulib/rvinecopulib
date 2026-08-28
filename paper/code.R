@@ -482,6 +482,40 @@ c(value = par_to_ktau(bicop_dist("joe", 0, 2)), limit = 2 - pi^2 / 6)
 ## calls below, so this reports on exactly the fits that were measured rather
 ## than on a separate pair fitted for the purpose.
 cap <- new.env()
+
+## RVineStructureSelect() leaks its socket cluster on every call with
+## cores > 1: each call leaves `cores` worker processes running.  Left alone
+## they accumulate across repetitions and across cells, so a later measurement
+## competes with the debris of every earlier one -- and only the multi-core
+## cells are affected, which is exactly where the comparison lives.  Reaping
+## between repetitions keeps every timing starting from the same machine state.
+## The reaping itself is outside the measured region.
+reap_cluster <- function() {
+  cl <- tryCatch(parallel::getDefaultCluster(), error = function(e) NULL)
+  if (!is.null(cl)) {
+    try(parallel::stopCluster(cl), silent = TRUE)
+    try(parallel::setDefaultCluster(NULL), silent = TRUE)
+  }
+  invisible(NULL)
+}
+
+## We report the fastest of the repetitions rather than the median.  Anything
+## else running on the machine can only ever make a repetition slower, so the
+## minimum is the best available estimate of the uncontended cost, and it also
+## discards the first-call warm-up.  Medians of three repetitions moved by up
+## to 37% between two runs of this script; minima are stable to a few percent.
+##
+## `f` is a function, not an expression: a promise would be forced once and
+## every later repetition would measure nothing.
+time_best <- function(f, reps) {
+  t <- numeric(reps)
+  for (i in seq_len(reps)) {
+    t[i] <- system.time(f())[["elapsed"]]
+    reap_cluster()
+  }
+  min(t)
+}
+
 agreement <- function(u) {
   f <- get("f_rv", envir = cap)
   v <- get("f_vc", envir = cap)
@@ -515,61 +549,53 @@ VC_FAM <- c(0:10, 13, 14, 16:20, 23, 24, 26:30, 33, 34, 36:40)
 
 runtime_cell <- function(d, n, iterations) {
   u <- u_ret[seq_len(n), seq_len(d), drop = FALSE]
-  b <- bench::mark(
-    rv1 = assign(
-      "f_rv",
-      vinecop(
+  rv <- function(cores) {
+    function() {
+      f <- vinecop(
         u,
         family_set = RV_FAM,
         selcrit = "aic",
         tree_crit = "tau",
-        cores = 1
-      ),
-      envir = cap
-    ),
-    rv4 = vinecop(
-      u,
-      family_set = RV_FAM,
-      selcrit = "aic",
-      tree_crit = "tau",
-      cores = 4
-    ),
-    vc1 = assign(
-      "f_vc",
-      RVineStructureSelect(
+        cores = cores
+      )
+      if (cores == 1) {
+        assign("f_rv", f, envir = cap)
+      }
+      invisible(f)
+    }
+  }
+  vc <- function(cores) {
+    function() {
+      f <- RVineStructureSelect(
         u,
         familyset = VC_FAM,
         selectioncrit = "AIC",
         treecrit = "tau",
         indeptest = FALSE,
         progress = FALSE,
-        cores = 1
-      ),
-      envir = cap
-    ),
-    vc4 = RVineStructureSelect(
-      u,
-      familyset = VC_FAM,
-      selectioncrit = "AIC",
-      treecrit = "tau",
-      indeptest = FALSE,
-      progress = FALSE,
-      cores = 4
-    ),
-    iterations = iterations,
-    check = FALSE,
-    filter_gc = FALSE
-  )
+        cores = cores
+      )
+      if (cores == 1) {
+        assign("f_vc", f, envir = cap)
+      }
+      invisible(f)
+    }
+  }
   list(
-    time = setNames(as.numeric(b$median), as.character(b$expression)),
+    time = c(
+      rv1 = time_best(rv(1), iterations),
+      rv4 = time_best(rv(4), iterations),
+      vc1 = time_best(vc(1), iterations),
+      vc4 = time_best(vc(4), iterations)
+    ),
     fit = agreement(u)
   )
 }
 if (!FAST) {
   mle <- list(
-    runtime_cell(5, 1000, 5),
+    runtime_cell(5, 1000, 7),
     runtime_cell(10, 1000, 5),
-    runtime_cell(20, 1000, 3)
+    runtime_cell(20, 1000, 5)
   )
   ## median seconds
   print(do.call(rbind, lapply(mle, `[[`, "time")))
@@ -581,37 +607,26 @@ if (!FAST) {
 RV_ITAU <- c("indep", "gaussian", "t", "clayton", "gumbel", "frank", "joe")
 VC_ITAU <- c(0, 1, 2, 3, 4, 5, 6, 13, 14, 16, 23, 24, 26, 33, 34, 36)
 
-itau_cell <- function(d, n = 1509, iterations = 3) {
+itau_cell <- function(d, n = 1509, iterations = 5) {
   u <- u_ret[seq_len(n), seq_len(d), drop = FALSE]
-  b <- bench::mark(
-    rv1 = assign(
-      "f_rv",
-      vinecop(
+  rv <- function(cores) {
+    function() {
+      f <- vinecop(
         u,
         family_set = RV_ITAU,
         par_method = "itau",
         selcrit = "aic",
-        cores = 1
-      ),
-      envir = cap
-    ),
-    rv4 = vinecop(
-      u,
-      family_set = RV_ITAU,
-      par_method = "itau",
-      selcrit = "aic",
-      cores = 4
-    ),
-    rv8 = vinecop(
-      u,
-      family_set = RV_ITAU,
-      par_method = "itau",
-      selcrit = "aic",
-      cores = 8
-    ),
-    vc1 = assign(
-      "f_vc",
-      RVineStructureSelect(
+        cores = cores
+      )
+      if (cores == 1) {
+        assign("f_rv", f, envir = cap)
+      }
+      invisible(f)
+    }
+  }
+  vc <- function(cores) {
+    function() {
+      f <- RVineStructureSelect(
         u,
         familyset = VC_ITAU,
         method = "itau",
@@ -619,36 +634,23 @@ itau_cell <- function(d, n = 1509, iterations = 3) {
         treecrit = "tau",
         indeptest = FALSE,
         progress = FALSE,
-        cores = 1
-      ),
-      envir = cap
-    ),
-    vc4 = RVineStructureSelect(
-      u,
-      familyset = VC_ITAU,
-      method = "itau",
-      selectioncrit = "AIC",
-      treecrit = "tau",
-      indeptest = FALSE,
-      progress = FALSE,
-      cores = 4
-    ),
-    vc8 = RVineStructureSelect(
-      u,
-      familyset = VC_ITAU,
-      method = "itau",
-      selectioncrit = "AIC",
-      treecrit = "tau",
-      indeptest = FALSE,
-      progress = FALSE,
-      cores = 8
-    ),
-    iterations = iterations,
-    check = FALSE,
-    filter_gc = FALSE
-  )
+        cores = cores
+      )
+      if (cores == 1) {
+        assign("f_vc", f, envir = cap)
+      }
+      invisible(f)
+    }
+  }
   list(
-    time = setNames(as.numeric(b$median), as.character(b$expression)),
+    time = c(
+      rv1 = time_best(rv(1), iterations),
+      rv4 = time_best(rv(4), iterations),
+      rv8 = time_best(rv(8), iterations),
+      vc1 = time_best(vc(1), iterations),
+      vc4 = time_best(vc(4), iterations),
+      vc8 = time_best(vc(8), iterations)
+    ),
     fit = agreement(u)
   )
 }
@@ -678,6 +680,9 @@ eval_cell <- function(d, n = 1509) {
     progress = FALSE,
     cores = 8
   )
+  ## the two fits above are setup, not measurement; drop the leaked workers
+  ## before timing anything
+  reap_cluster()
   b <- bench::mark(
     rv_pdf1 = dvinecop(u, f, cores = 1),
     rv_pdf8 = dvinecop(u, f, cores = 8),
@@ -698,7 +703,7 @@ eval_cell <- function(d, n = 1509) {
     check = FALSE,
     filter_gc = FALSE
   )
-  setNames(as.numeric(b$median), as.character(b$expression))
+  setNames(as.numeric(b$min), as.character(b$expression))
 }
 if (!FAST) {
   t(sapply(c(5, 10, 20, 50), eval_cell))
@@ -722,7 +727,7 @@ bench::mark(
   iterations = 5,
   check = FALSE,
   filter_gc = FALSE
-)[, c("expression", "median")]
+)[, c("expression", "min")]
 
 ## Accuracy against a known truth, so the timings above cannot be explained by
 ## one implementation doing less work than the other.
