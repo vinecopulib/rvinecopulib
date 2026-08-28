@@ -572,9 +572,9 @@ if (!FAST) {
     runtime_cell(20, 1000, 3)
   )
   ## median seconds
-  do.call(rbind, lapply(mle, `[[`, "time"))
+  print(do.call(rbind, lapply(mle, `[[`, "time")))
   ## the same fits, checked against each other
-  do.call(rbind, lapply(mle, `[[`, "fit"))
+  print(do.call(rbind, lapply(mle, `[[`, "fit")))
 }
 
 ## --- Runtime: tau-inversion fitting, where threading matters most --------
@@ -654,8 +654,8 @@ itau_cell <- function(d, n = 1509, iterations = 3) {
 }
 if (!FAST) {
   itau <- lapply(c(5, 10, 20, 50), itau_cell)
-  do.call(rbind, lapply(itau, `[[`, "time"))
-  do.call(rbind, lapply(itau, `[[`, "fit"))
+  print(do.call(rbind, lapply(itau, `[[`, "time")))
+  print(do.call(rbind, lapply(itau, `[[`, "fit")))
 }
 
 ## --- Runtime: evaluation on a fitted model -------------------------------
