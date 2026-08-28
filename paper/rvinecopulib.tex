@@ -1684,8 +1684,18 @@ All measurements were made on an idle AMD Ryzen Threadripper 2990WX with 32
 cores and 125\,GB of memory, running Ubuntu 22.04 with the reference BLAS,
 under \proglang{R}~4.6.1 \citep{R},
 \pkg{rvinecopulib}~\pkgversion, \pkg{VineCopula}~2.6.2
-\citep{VineCopula}, and \pkg{kdecopula}~0.9.3 \citep{nagler2018jss}.  Timings are medians over
-repeated evaluations measured with \pkg{bench} \citep{bench}.
+\citep{VineCopula}, and \pkg{kdecopula}~0.9.3 \citep{nagler2018jss}.  The
+\pkg{VineCopula} build includes two parallelization fixes we contributed while
+preparing this comparison, described at the end of
+Section~\ref{sec:runtime}; without them its multicore timings measure the
+defects rather than the algorithm.
+
+Every timing is the fastest of several repetitions rather than the median.
+Anything else running on the machine can only make a repetition slower, so the
+minimum is the best available estimate of the uncontended cost, and it also
+discards the first-call warm-up.  This matters more than it may appear: medians
+of three repetitions moved by up to $37\%$ between two runs of the replication
+script on the same machine, while minima are stable to a few percent.
 
 \subsection{Functionality}\label{sec:functionality}
 
@@ -1896,15 +1906,45 @@ $2\times$; on four it is between $6.6\times$ and $8.5\times$; and on eight at $d
 it is $23\times$, the difference between a five-second fit and a two-minute
 one.
 
-Two effects compound there and it is worth separating them.  Ours is that the
-threaded implementation keeps scaling: $28.3$ seconds on one core, $7.9$ on
-four, $5.3$ on eight.  The other is that \pkg{VineCopula} scales
-\emph{backwards} --- $52.4$ seconds on one core, $67.2$ on four, $123.7$ on
-eight.  It distributes work with socket clusters, which must serialize the data
-to each worker; at $d = 50$ that costs more than the pair-copula fits being
-distributed.  A reader should therefore not read the $23\times$ as an
-algorithmic claim.  The single-core column is the algorithmic comparison, and
-there the advantage is a factor of two.
+\paragraph{A defect we had to fix before we could measure.}  The first version
+of this table showed \pkg{VineCopula} getting \emph{slower} as cores were
+added --- at $d = 50$, $52$ seconds on one core against $124$ on eight.  That
+is a strange enough result to be worth chasing rather than reporting, and it
+turned out to have three causes, none of them a property of distributing work
+over processes.
+
+The largest is a captured promise.  The tree criterion is built by a helper
+that takes the candidate family set as an argument, and the closure it returns
+carries that helper's frame as its environment.  Only the AIC and BIC criteria
+read the family set, so under the default $\tau$ the argument is never forced,
+and the unevaluated promise keeps a reference to the frame of the caller ---
+which holds the data.  The criterion is passed to every worker on every
+dispatch, and \pkg{parallel} serializes it once per worker: a function that
+computes a rank correlation was carrying $7.4$\,MB, six times the size of the
+data it was sent alongside.  Forcing the argument reduces it to $6$\,kB.  The
+second is that the parallel mapper was bound to the name \code{lapply},
+shadowing the base function for the remainder of the enclosing function, so two
+subsequent list extractions --- reading one field out of each of $19{,}600$
+records --- were dispatched to the worker pool as well; between them they
+accounted for $57\%$ of the runtime.  The third is that the routine computing
+edge weights received the entire previous tree when it reads seven fields of
+it, more than half of the object being fitted pair copulas it never looks at.
+
+With all three repaired the $d = 50$ fit on eight cores falls from $80$ to $12$
+seconds, and a $20$-dimensional maximum-likelihood fit scales $4.3\times$ on
+eight cores where it had managed $2.9\times$.  Fitted models are unchanged: we
+verified that the structure matrix, the families and both parameter matrices
+are identical to those of the released version, for both estimation methods and
+at more than one core count.  The fixes are contributed upstream
+\citep{VineCopulaPR105}, and Table~\ref{tab:runtime} reports the repaired
+version, because a timing against the unrepaired one would measure the defect
+rather than the design.
+
+We report this at length for two reasons.  A reader who reproduces our table
+against a \pkg{VineCopula} release predating the fix will see very different
+numbers and deserves to know why.  And the episode is a caution about
+benchmarking generally: the original measurement was reproducible, internally
+consistent, and wrong about the thing it appeared to establish.
 
 \begin{table}[t!]
 \centering
