@@ -10,3 +10,4 @@ bib.log
 run.log
 _logo.*
 jsslogo.pdf
+.build-remote.sh
