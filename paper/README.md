@@ -323,6 +323,17 @@ plan for detail.
 
 ## Software used for this draft
 
-R 4.3.3; rvinecopulib 1.0.0.1.0 (vinecopulib 1.0.0); VineCopula 2.6.2;
-kdecopula 0.9.3; kde1d 1.1.1; wdm 0.2.6; univariateML 1.5.0;
-insuranceData 1.0; bench 1.1.4.
+rvinecopulib 1.0.0.1.0 (vinecopulib 1.0.0); VineCopula 2.6.2; kdecopula 0.9.3;
+kde1d 1.1.1; wdm 0.2.6; univariateML 1.5.0; insuranceData 1.0; bench 1.1.4.
+
+The reported timings were measured on an idle AMD Ryzen Threadripper 2990WX
+(32 cores, 125 GB, Ubuntu 22.04, reference BLAS, R 4.6.1). They were *not*
+measured on a laptop: an earlier attempt on an Intel Core Ultra 9 285H moved
+single-core cells by up to 2x between runs, which is what a mixed P/E-core
+design does to a single-threaded benchmark, and a contended run inflated the
+nonparametric h-function cell from 200 ms to 429 ms. Run the benchmarks on a
+quiet machine with uniform cores or do not quote the ratios.
+
+The non-timing output is identical on both machines (checked line by line
+against R 4.3.3 on Ubuntu 24.04) apart from optimizer noise in the seventh
+significant digit, which the manuscript never prints.

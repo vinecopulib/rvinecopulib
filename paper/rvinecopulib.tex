@@ -146,9 +146,10 @@ the sample size, this is where the package's speed comes from.
 Section~\ref{sec:bench} reports the measurements, and the gain depends on what
 one is doing.  Where both implementations spend their time in compiled code
 running the same optimizer --- maximum-likelihood fitting on a single core ---
-the advantage is about $1.6\times$.  It is roughly $2\times$ for the operations
-built on the h-function cascade: evaluating a density, computing a Rosenblatt
-transform, simulating from a fitted model.  And it widens by an order of
+the advantage is about $1.6\times$.  For the operations built on the
+h-function cascade it is $1.9\times$ to $2.5\times$ when the traversal runs
+forwards --- evaluating a density, a log-likelihood, a Rosenblatt transform ---
+and $1.3\times$ to $1.5\times$ when it runs backwards, as in simulation.  And it widens by an order of
 magnitude once threads are used, because the engine parallelizes inside the
 fitting loop and across observation batches: a fifty-dimensional
 $\tau$-inversion fit takes five seconds on eight cores against two minutes.
@@ -1679,9 +1680,9 @@ computes the same numbers where a comparison is possible, and only then report
 how long it takes.  The order is deliberate: a speed claim from an unvalidated
 implementation is worth nothing.
 
-All measurements were made on an Intel Core Ultra 9 285H with 16 cores and
-62\,GB of memory, running Ubuntu 24.04 with the reference BLAS, under
-\proglang{R}~4.3.3 \citep{R},
+All measurements were made on an idle AMD Ryzen Threadripper 2990WX with 32
+cores and 125\,GB of memory, running Ubuntu 22.04 with the reference BLAS,
+under \proglang{R}~4.6.1 \citep{R},
 \pkg{rvinecopulib}~\pkgversion, \pkg{VineCopula}~2.6.2
 \citep{VineCopula}, and \pkg{kdecopula}~0.9.3 \citep{nagler2018jss}.  Timings are medians over
 repeated evaluations measured with \pkg{bench} \citep{bench}.
@@ -1823,12 +1824,15 @@ implementation does not.
 
 \emph{Vine log-likelihoods.}  For each cell of the runtime grid below we
 verified that the two packages, given the same data and the same matched
-settings, select structures with the same log-likelihood.  Under maximum
-likelihood the largest relative discrepancy was $1.1 \times 10^{-6}$.  Under
-$\tau$-inversion, where near-ties between families are broken differently, the
-two do not reach the same optimum: the gap is $0.5$ at $d = 5$ and grows to
-$169$ at $d = 50$, or $0.05\%$ to $0.6\%$ of the log-likelihood, always in our
-favour.  Section~\ref{sec:runtime} returns to what that means for the
+settings, select structures with the same log-likelihood.  The check is part of
+the replication script and reports on the very fits that were timed, not on a
+separate pair fitted for the purpose.  Under maximum likelihood the largest
+relative discrepancy was $1.1 \times 10^{-6}$, and the two selected the same
+number of non-independent pair copulas in every cell --- 9 of 10 at $d = 5$, 40
+of 45 at $d = 10$, and 154 of 190 at $d = 20$.  Under $\tau$-inversion, where
+near-ties between families are broken differently, the two do not reach the same
+optimum: the gap is $0.5$ at $d = 5$ and grows to $169$ at $d = 50$, or $0.05\%$
+to $0.6\%$ of the log-likelihood, always in our favour.  Section~\ref{sec:runtime} returns to what that means for the
 comparison.  One restriction must be stated: the two
 do not share a convention for the orientation of rotated families, so a vine
 containing 90- or 270-degree rotations cannot be constructed identically in
@@ -1865,9 +1869,11 @@ the log-likelihoods agree to a relative $10^{-6}$ or better.  Under
 $\tau$-inversion they do not agree exactly, because near-ties between families
 are broken differently: the relative gap is at most $5.7 \times 10^{-3}$, but
 in absolute terms it reaches 33 at $d = 20$ and 169 at $d = 50$, always in our
-favour.  We report the ratios anyway, because the gap is
-between $0.05\%$ and $0.6\%$ of the log-likelihood and does not change the
-number of trees or the number of non-independent pair copulas.  But the
+favour.  We report the ratios anyway, because the gap is between $0.05\%$ and $0.6\%$
+of the log-likelihood and the two models are of the same size to within a pair
+copula or two: the counts of non-independent pair copulas agree exactly at
+$d = 5$ and $d = 10$, and differ by one of 190 at $d = 20$ and by seven of 1225
+at $d = 50$.  But the
 direction should be stated: we are fitting a marginally better model in
 marginally less time, so the $\tau$-inversion rows slightly flatter us, and a
 reader should treat them as comparing two implementations of the same procedure
@@ -1936,14 +1942,20 @@ h-function cascade, which is exactly what the structure index of
 Section~\ref{sec:decomposition} was built for.  Table~\ref{tab:evaluation}
 reports them.
 
-The single-core advantage is around $2\times$ throughout.  The eight-core
-advantage is larger, between $3\times$ and $15\times$, but it is not a simple
-function of dimension: it rises from $d = 5$ to $d = 20$ for the transforms and
-then falls back at $d = 50$, where the per-batch work grows enough that memory
-bandwidth rather than arithmetic starts to bind.  Simulation and the inverse
-Rosenblatt transform are the same computation run backwards through the vine,
-and they behave alike throughout, which is what one would expect of two
-operations served by the same traversal.
+The single-core column separates the operations into two groups.  Evaluating
+the density, the log-likelihood or the Rosenblatt transform is $1.7\times$ to
+$2.5\times$ faster; simulation and the inverse Rosenblatt transform, which are
+the same computation run backwards through the vine, are a more modest
+$1.3\times$ to $1.5\times$.  The gap between the two groups is the h-function
+masks doing their work: a forward traversal can skip the conditional
+distribution functions no later tree consumes, whereas an inverse traversal
+needs its arguments in the other order and has less to skip.
+
+On eight cores the advantage is between $4\times$ and $8.8\times$ and grows with
+dimension, since the per-observation batches that the threads divide grow with
+it.  That the two backward operations track each other to within $0.2\times$ in
+every cell is what one would expect of two operations served by the same
+traversal, and is a useful check that the numbers are measuring what we think.
 
 \begin{table}[t!]
 \centering
@@ -1955,11 +1967,11 @@ operations served by the same traversal.
 \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
 Operation & 1 & 8 & 1 & 8 & 1 & 8 & 1 & 8 \\
 \midrule
-Density              & 2.6 & 6.6 & 2.0 &  8.6 & 2.4 &  6.1 & 2.0 &  6.1 \\
-Log-likelihood       & 2.2 & 4.5 & 2.1 &  9.1 & 2.5 & 14.0 & 2.3 & 14.5 \\
-Rosenblatt           & 2.2 & 3.4 & 1.9 &  5.6 & 1.9 &  9.8 & 1.3 &  6.2 \\
-Inverse Rosenblatt   & 1.6 & 6.7 & 1.7 &  8.8 & 1.7 & 11.0 & 2.3 &  8.0 \\
-Simulation           & 1.6 & 6.3 & 1.8 &  9.3 & 1.2 & 11.2 & 1.2 &  5.7 \\
+Density              & 2.4 & 6.4 & 1.9 & 5.1 & 2.1 & 7.7 & 1.9 & 8.2 \\
+Log-likelihood       & 2.5 & 6.2 & 2.0 & 5.5 & 2.0 & 7.4 & 2.0 & 8.8 \\
+Rosenblatt           & 2.1 & 5.1 & 1.9 & 5.2 & 1.9 & 6.0 & 1.7 & 6.8 \\
+Inverse Rosenblatt   & 1.5 & 4.3 & 1.4 & 4.6 & 1.4 & 6.4 & 1.4 & 7.0 \\
+Simulation           & 1.4 & 4.0 & 1.4 & 4.5 & 1.4 & 6.5 & 1.3 & 6.9 \\
 \bottomrule
 \end{tabular}
 \caption{Evaluation on a fitted model, $n = 1509$: speed-up of
@@ -1998,9 +2010,9 @@ rest.
 With that said, the evaluation timings are worth reporting, because they are
 not subject to the first qualification: they operate on an already fitted model
 and measure only the cost of interrogating it.  On $10^4$ points from a fit
-with $n = 1000$, \pkg{rvinecopulib} evaluates the density in 0.3\,ms against
-10.1\,ms, an h-function in 1.1\,ms against 370\,ms, and an inverse h-function
-in 1.2\,ms against 6.6\,s.  The last is a factor of roughly 5000 and is the one
+with $n = 1000$, \pkg{rvinecopulib} evaluates the density in 0.26\,ms against
+12.3\,ms, an h-function in 1.1\,ms against 487\,ms, and an inverse h-function
+in 1.4\,ms against 7.8\,s.  The last is a factor of roughly 5600 and is the one
 that decides whether a nonparametric vine is usable, because inverse
 h-functions are what simulation and the inverse Rosenblatt transform are built
 from: a $d = 10$ nonparametric vine needs 45 of them per simulated observation.
