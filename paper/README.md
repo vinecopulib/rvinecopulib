@@ -114,6 +114,23 @@ tests.
 The headline was drafted as "orders of magnitude faster". Measurement supports
 that only for some operations, and the manuscript now separates them.
 
+All comparator timings are against VineCopula 2.6.2 **plus** tnagler/VineCopula
+#104 and #105, both contributed from this work. Without #105 the comparison is
+meaningless: `RVineStructureSelect()` got slower as cores were added (at d=50,
+52s on one core against 124s on eight), because the tree-criterion closure
+captured an unforced promise holding the caller's frame and was serialized to
+every worker on every dispatch at 7.4 MB, because rebinding `lapply` to the
+parallel mapper shadowed `base::lapply` so two list extractions went to the
+worker pool as well, and because the edge-weight routine received the whole
+previous tree when it reads seven fields. With those fixed, VineCopula scales
+2.5x on eight cores at d=50 instead of backwards, and our advantage there is
+4.2x rather than the 21x we would have reported against the broken version.
+
+Timings are **minima** over repetitions, not medians. Contention can only add
+time, so the minimum estimates the uncontended cost and also discards warm-up.
+Medians of three moved by up to 37% between runs on the same machine; minima
+are stable to a few percent.
+
 **Maximum-likelihood fitting** vs VineCopula 2.6.2, matched settings,
 log-likelihoods agreeing to 1e-6: 1.5× (d=5), 1.6× (d=10), 1.7× (d=20) on one
 core. Modest, and the paper says so.
