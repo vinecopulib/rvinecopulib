@@ -149,9 +149,10 @@ for the complete backend changes.
 
 * Require univariateML >= 1.5.0 for optional parametric margin support.
 
-* Modernize `src/update_vinecopulib.sh`: it accepts a branch or ref, imports via
-  a temporary clone, preserves package-owned wrappers, copies all public
-  headers, and reports the exact imported commit.
+* Modernize `src/update_vinecopulib.sh`: it accepts a branch, tag, or exact
+  commit, imports through a temporary checkout, preserves package-owned
+  wrappers, copies all public headers, and records the imported commit in the
+  vendored tree.
 
 # rvinecopulib 0.7.3.1.0
 
