@@ -7,3 +7,7 @@ Fixes "deprecated-literal-operator" warning on clang20 (r-devel-linux-x86_64-fed
 * macOS 14.7.2 (release)
 * ubuntu 22.04 (release, oldrel, devel)
 
+## Reverse dependencies
+
+I ran reverse dependency checks locally on all 11 reverse dependencies. All
+checks passed.

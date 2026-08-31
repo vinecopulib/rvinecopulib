@@ -10,17 +10,17 @@ jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    name: ${{ matrix.config.name }}
 
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: 'release'}
-          - {os: windows-latest, r: 'release'}
-          - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest,   r: 'release'}
-          - {os: ubuntu-latest,   r: 'oldrel-1'}
+          - {name: 'macOS (release)', os: macos-latest, r: 'release'}
+          - {name: 'Windows (release)', os: windows-latest, r: 'release'}
+          - {name: 'Ubuntu (devel)', os: ubuntu-latest, r: 'devel', http-user-agent: 'release'}
+          - {name: 'Ubuntu (release)', os: ubuntu-latest, r: 'release'}
+          - {name: 'Ubuntu (oldrel-1)', os: ubuntu-latest, r: 'oldrel-1'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
