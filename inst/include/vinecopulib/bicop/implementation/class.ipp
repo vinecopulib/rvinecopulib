@@ -184,9 +184,11 @@ Bicop::to_file(const std::string& filename) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of copula densities evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::pdf(const Eigen::MatrixXd& u) const
@@ -207,9 +209,11 @@ Bicop::pdf(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of copula probabilities evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::cdf(const Eigen::MatrixXd& u) const
@@ -246,9 +250,11 @@ Bicop::cdf(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of the first h-function evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::hfunc1(const Eigen::MatrixXd& u) const
@@ -274,9 +280,11 @@ Bicop::hfunc1(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of the second h-function evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::hfunc2(const Eigen::MatrixXd& u) const
@@ -303,9 +311,11 @@ Bicop::hfunc2(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of the inverse of the first h-function evaluated
 //! at \c u.
 inline Eigen::VectorXd
@@ -333,9 +343,11 @@ Bicop::hinv1(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of the inverse of the second h-function evaluated
 //! at \c u.
 inline Eigen::VectorXd
@@ -475,9 +487,11 @@ BicopView::swap_arguments(const Eigen::MatrixXd& u)
 //!
 //! Common arguments:
 //!
-//! - `u`: an \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations (see the single-argument overloads for the layout with
-//!   discrete variables).
+//! - `u`: an \f$ n \times 2 \f$ matrix for a continuous model. For a model
+//!   with `k` discrete variables, use an \f$ n \times 4 \f$ matrix containing
+//!   the values and their left-limits; left-limit columns for continuous
+//!   variables may be omitted to obtain the compact
+//!   \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! - `parameters`: an \f$ n \times p \f$ matrix, where `p` is the number of
 //!   family parameters (`get_parameters().size()`) and row `i` holds the
 //!   parameter set used for row `i` of `u`. Parameters are given in the
@@ -1564,9 +1578,11 @@ Bicop::simulate(const Eigen::MatrixXd& parameters,
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return The log-likelihood evaluated at \c u.
 inline double
 Bicop::loglik(const Eigen::MatrixXd& u) const
@@ -1588,9 +1604,11 @@ Bicop::loglik(const Eigen::MatrixXd& u) const
 //! The AIC is a consistent model selection criterion even
 //! for nonparametric models.
 //!
-//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return The AIC evaluated at \c u.
 inline double
 Bicop::aic(const Eigen::MatrixXd& u) const
@@ -1607,9 +1625,11 @@ Bicop::aic(const Eigen::MatrixXd& u) const
 //! The BIC is a consistent model selection criterion
 //! for parametric models.
 //!
-//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return The BIC evaluated at \c u.
 inline double
 Bicop::bic(const Eigen::MatrixXd& u) const
@@ -1634,9 +1654,11 @@ Bicop::bic(const Eigen::MatrixXd& u) const
 //! non-independence copula and \f$ I \f$ is an indicator for the family being
 //! non-independence.
 //!
-//! @param u An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @param psi0 Prior probability of a non-independence copula.
 //! @return The mBIC evaluated at \c u.
 // clang-format on
@@ -1914,15 +1936,22 @@ Bicop::check_data_dim(const Eigen::MatrixXd& u) const
   unsigned short n_cols_exp = static_cast<unsigned short>(2 + n_disc);
   if ((n_cols != n_cols_exp) & (n_cols != 4)) {
     std::stringstream msg;
-    msg << "data has wrong number of columns; "
-        << "expected: 4 or " << n_cols_exp << ", actual: " << n_cols
-        << " (model contains ";
+    msg << "data has wrong number of columns; expected: ";
     if (n_disc == 0) {
-      msg << "no discrete variables)." << std::endl;
-    } else if (n_disc == 1) {
-      msg << "1 discrete variable)." << std::endl;
+      msg << "2 (n x 2 continuous layout)";
+    } else if (n_cols_exp == 4) {
+      msg << "4 (n x 4 expanded or n x (2 + k) compact layout)";
     } else {
-      msg << get_n_discrete() << " discrete variables)." << std::endl;
+      msg << "4 (n x 4 expanded layout) or " << n_cols_exp
+          << " (n x (2 + k) compact layout)";
+    }
+    msg << ", actual: " << n_cols << " (model contains ";
+    if (n_disc == 0) {
+      msg << "no discrete variables).";
+    } else if (n_disc == 1) {
+      msg << "1 discrete variable).";
+    } else {
+      msg << n_disc << " discrete variables).";
     }
     throw std::runtime_error(msg.str());
   }
@@ -2074,9 +2103,11 @@ Bicop::as_continuous() const
 //!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
-//! @param data An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param data An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @param controls The controls (see `FitControlsBicop`).
 inline void
 Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
@@ -2123,9 +2154,11 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 //!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
-//! @param data An \f$ n \times 4 \f$ or \f$ n \times (2 + k) \f$ matrix of
-//!   observations contained in \f$(0, 1) \f$, where \f$ k \f$ is the number
-//!   of discrete variables.
+//! @param data An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @param controls The controls (see `FitControlsBicop`).
 inline void
 Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)

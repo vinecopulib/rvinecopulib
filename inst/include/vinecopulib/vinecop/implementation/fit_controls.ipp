@@ -44,9 +44,9 @@ inline FitControlsVinecop::FitControlsVinecop()
 //!     the local-likelihood nonparametric family (TLLs).
 //! @param trunc_lvl Truncation level for truncated vines.
 //! @param tree_criterion The criterion for selecting the spanning
-//!     tree (`"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`, `"joe"`, or `"custom"`)
-//!     during the tree-wise structure selection. `"custom"` uses the callable
-//!     set through `set_tree_criterion_function()`.
+//!     tree (`"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`, `"cxi"`, `"joe"`, or
+//!     `"custom"`) during the tree-wise structure selection. `"custom"` uses
+//!     the callable set through `set_tree_criterion_function()`.
 //! @param threshold For thresholded vines (0 = no threshold).
 //! @param selection_criterion The selection criterion (`"loglik"`, `"aic"`,
 //!     `"bic"`, `"mbic"`, or `"mbicv"`) for the pair copula families.
@@ -131,9 +131,9 @@ inline FitControlsVinecop::FitControlsVinecop(
 //! @param controls See `FitControlsBicop()`.
 //! @param trunc_lvl Truncation level for truncated vines.
 //! @param tree_criterion The criterion for selecting the spanning
-//!     tree (`"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`, `"joe"`, or `"custom"`)
-//!     during the tree-wise structure selection. `"custom"` uses the callable
-//!     set through `set_tree_criterion_function()`.
+//!     tree (`"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`, `"cxi"`, `"joe"`, or
+//!     `"custom"`) during the tree-wise structure selection. `"custom"` uses
+//!     the callable set through `set_tree_criterion_function()`.
 //! @param threshold For thresholded vines (`0` = no threshold).
 //! @param show_trace Whether to show a trace of the building progress.
 //! @param select_trunc_lvl Whether the truncation shall be selected
@@ -226,10 +226,10 @@ FitControlsVinecop::check_tree_criterion(std::string tree_criterion)
 {
   if (!tools_stl::is_member(
         std::move(tree_criterion),
-        { "tau", "rho", "joe", "hoeffd", "mcor", "custom" })) {
+        { "tau", "rho", "joe", "hoeffd", "mcor", "cxi", "custom" })) {
     throw std::runtime_error("tree_criterion must be one of "
-                             "'tau', 'rho', 'hoeffd', 'mcor', 'joe', or "
-                             "'custom'");
+                             "'tau', 'rho', 'hoeffd', 'mcor', 'cxi', 'joe', "
+                             "or 'custom'");
   }
 }
 
@@ -504,7 +504,7 @@ FitControlsVinecop::str() const
                                                                   : "no")
                << std::endl;
   controls_str << "Select threshold: "
-               << static_cast<std::string>(get_select_trunc_lvl() ? "yes"
+               << static_cast<std::string>(get_select_threshold() ? "yes"
                                                                   : "no")
                << std::endl;
   controls_str << "Select families: "

@@ -301,6 +301,7 @@ RVineStructure::get_needed_hfunc2() const
 inline size_t
 RVineStructure::struct_array(size_t tree, size_t edge, bool natural_order) const
 {
+  check_slot(tree, edge);
   if (natural_order) {
     return struct_array_(tree, edge);
   }
@@ -314,6 +315,7 @@ RVineStructure::struct_array(size_t tree, size_t edge, bool natural_order) const
 inline size_t
 RVineStructure::min_array(size_t tree, size_t edge) const
 {
+  check_slot(tree, edge);
   return min_array_(tree, edge);
 }
 
@@ -323,6 +325,7 @@ RVineStructure::min_array(size_t tree, size_t edge) const
 inline bool
 RVineStructure::needed_hfunc1(size_t tree, size_t edge) const
 {
+  check_slot(tree, edge);
   return needed_hfunc1_(tree, edge);
 }
 
@@ -330,6 +333,7 @@ RVineStructure::needed_hfunc1(size_t tree, size_t edge) const
 inline bool
 RVineStructure::needed_hfunc2(size_t tree, size_t edge) const
 {
+  check_slot(tree, edge);
   return needed_hfunc2_(tree, edge);
 }
 
@@ -679,6 +683,23 @@ RVineStructure::check_upper_tri() const
         throw std::runtime_error("not a valid R-vine array: " + problem);
       }
     }
+  }
+}
+
+//! @brief Throws if `(tree, edge)` is outside the stored trapezoid.
+//! @details `TriangularArray::operator()` asserts its bounds, and `assert` is
+//! compiled out of a release build -- so the per-entry accessors read out of
+//! bounds rather than complaining. A truncated structure stores only
+//! `trunc_lvl` rows, and these accessors are public, so the read is reachable
+//! from a few lines of user code in any binding.
+inline void
+RVineStructure::check_slot(size_t tree, size_t edge) const
+{
+  if (tree >= trunc_lvl_ || edge + tree + 1 >= d_) {
+    throw std::runtime_error(
+      "tree = " + std::to_string(tree) + ", edge = " + std::to_string(edge) +
+      " is outside a structure with dimension " + std::to_string(d_) +
+      " and truncation level " + std::to_string(trunc_lvl_) + ".");
   }
 }
 

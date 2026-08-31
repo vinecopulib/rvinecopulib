@@ -24,11 +24,11 @@ public:
 
   InterpolationGrid(const Eigen::VectorXd& grid_points,
                     const Eigen::MatrixXd& values,
-                    int norm_times = 3);
+                    int norm_maxiter = 25);
 
   Eigen::MatrixXd get_values() const;
 
-  void set_values(const Eigen::MatrixXd& values, int norm_times = 3);
+  void set_values(const Eigen::MatrixXd& values, int norm_maxiter = 25);
 
   void flip();
 
@@ -48,14 +48,18 @@ public:
 private:
   // normalizes the grid margins; internal only (callers must refresh the
   // cached integrals afterwards, as the ctor and set_values do)
-  void normalize_margins(int times);
+  void normalize_margins(int max_iter);
+  void update_weights();
   Eigen::Matrix<ptrdiff_t, 1, 2> get_indices(double x0, double x1);
   ptrdiff_t binary_search(double x);
   ptrdiff_t find_cell(double x) const;
   void update_cell_lookup();
   void update_cached_integrals();
   double cond_cdf(double u_cond, double u, size_t cond_var) const;
-  double cond_quantile(double u_cond, double p, size_t cond_var) const;
+  double cond_quantile(double u_cond,
+                       double p,
+                       size_t cond_var,
+                       Eigen::VectorXd& knots) const;
   double bilinear_interpolation(double z11,
                                 double z12,
                                 double z21,
@@ -75,6 +79,10 @@ private:
   // bucket acceleration table for cell searches; built once (the grid is
   // immutable after construction)
   std::vector<ptrdiff_t> cell_lookup_;
+  // trapezoid weights of `grid_points_`, so that `weights_.dot(v)` integrates
+  // the piecewise linear function through (grid_points_, v) over [0, 1];
+  // built once alongside `cell_lookup_`
+  Eigen::VectorXd weights_;
   // cumulative row integrals R(k, j) = int_0^{grid_j} values_(k, .);
   // refreshed eagerly whenever values_ changes (lazy caching would race
   // when a shared grid is evaluated from multiple threads)

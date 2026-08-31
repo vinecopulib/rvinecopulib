@@ -254,6 +254,7 @@ TllBicop::fit(const Eigen::MatrixXd& data,
   if (var_types_[0] == "d" || var_types_[1] == "d") {
     psobs =
       tools_stats::find_latent_sample(data, std::pow(B(0, 0) * B(1, 1), 0.25));
+    z_data = tools_stats::qnorm(psobs);
   }
 
   // compute the density estimator (first column estimate, second influence)

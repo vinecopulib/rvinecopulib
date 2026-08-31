@@ -100,7 +100,8 @@ protected:
 
   virtual void flip() = 0;
 
-  // following are virtual so they can be overriden by KernelBicop
+  // state-based dispatchers: they read var_types_ and route discrete
+  // arguments through the difference quotients below
   virtual Eigen::VectorXd pdf(const Eigen::MatrixXd& u);
 
   virtual Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u);
