@@ -1,4 +1,4 @@
-# rvinecopulib 1.0.0.1.0 (unreleased)
+# rvinecopulib 1.0.0.1.0
 
 The first stable release. It bundles vinecopulib 1.0.0 and collects a large
 backend and frontend update: analytic derivatives, conditional simulation,

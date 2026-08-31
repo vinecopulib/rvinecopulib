@@ -7,12 +7,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>High Performance Algorithms for Vine Copula Modeling • rvinecopulib</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="High Performance Algorithms for Vine Copula Modeling">
-<meta name="description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 0.7.2). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
-<meta property="og:description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 0.7.2). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
+<meta name="description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 1.0.0). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
+<meta property="og:description" content="Provides an interface to vinecopulib, a C++ library for vine copula modeling. The rvinecopulib package implements the core features of the popular VineCopula package, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are a sleeker and more modern API, improved performances, especially in high dimensions, nonparametric and multi-parameter families, and the ability to model discrete variables. The rvinecopulib package includes vinecopulib as header-only C++ library (currently version 1.0.0). Thus users do not need to install vinecopulib itself in order to use rvinecopulib. Since their initial releases, vinecopulib is licensed under the MIT License, and rvinecopulib is licensed under the GNU GPL version 3.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">rvinecopulib</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.3.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,20 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/getting-started.html">Getting started</a></li>
+    <li><a class="dropdown-item" href="articles/bivariate-copulas.html">Bivariate copula models</a></li>
+    <li><a class="dropdown-item" href="articles/vine-copula-models.html">Vine copula models and structures</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Margins and data types</h6></li>
+    <li><a class="dropdown-item" href="articles/marginal-models.html">Marginal models</a></li>
+    <li><a class="dropdown-item" href="articles/discrete-data.html">Discrete, mixed, and zero-inflated data</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Advanced workflows</h6></li>
+    <li><a class="dropdown-item" href="articles/conditional-simulation.html">Conditional simulation and Rosenblatt transforms</a></li>
+    <li><a class="dropdown-item" href="articles/likelihood-inference.html">Scores, Hessians, and varying parameters</a></li>
+  </ul>
+</li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -50,241 +64,108 @@
 <div class="page-header"><h1 id="rvinecopulib">rvinecopulib<a class="anchor" aria-label="anchor" href="#rvinecopulib"></a>
 </h1></div>
 <p><a href="https://github.com/vinecopulib/rvinecopulib/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/vinecopulib/rvinecopulib/actions/workflows/R-CMD-check.yaml/badge.svg?branch=main" alt="R-CMD-check"></a> <a href="https://app.codecov.io/github/vinecopulib/rvinecopulib?branch=main" class="external-link"><img src="https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/main.svg" alt="Coverage Status"></a> <a href="https://cran.r-project.org/package=rvinecopulib" class="external-link"><img src="https://www.r-pkg.org/badges/version/rvinecopulib" alt="CRAN version"></a> <a href="https://cran.r-project.org/package=rvinecopulib" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/rvinecopulib" alt="CRAN downloads"></a></p>
-<p>Vine copulas are a flexible class of dependence models consisting of bivariate building blocks (see e.g., Aas et al., 2009). You can find a comprehensive list of publications and other materials on <a href="https://www.math.cit.tum.de/math/forschung/gruppen/statistics/vine-copula-models/" class="external-link">vine-copula.org</a>.</p>
-<p>This package is the <a href="https://cran.r-project.org/" class="external-link">R</a> API to the C++ library <a href="https://github.com/vinecopulib/vinecopulib" class="external-link">vinecopulib</a>, a header-only C++ library for vine copula models based on <a href="https://www.boost.org/" class="external-link">Boost</a> and <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page" class="external-link">Eigen</a>.</p>
-<p>It provides high-performance implementations of the core features of the popular <a href="https://github.com/tnagler/VineCopula" class="external-link">VineCopula R library</a>, in particular inference algorithms for both vine copula and bivariate copula models. Advantages over VineCopula are<br>
-* a sleaker and more modern API, * shorter runtimes, especially in high dimensions, * nonparametric and multi-parameter families, * ability to model discrete variables.</p>
-<p>As VineCopula, the package is primarily made for the statistical analysis of <strong>vine copula models</strong>. The package includes tools for parameter estimation, model selection, simulation, and visualization. Tools for estimation, selection and exploratory data analysis of <strong>bivariate copula</strong> models are also provided. Please see the <a href="https://vinecopulib.github.io/rvinecopulib/">API documentation</a> for a detailed description of all functions.</p>
+<p>rvinecopulib provides high-performance tools for bivariate and vine copula models. It covers model construction, estimation and selection, simulation, prediction, visualization, discrete and mixed data, and full multivariate distributions with fitted margins. The package is the R interface to the <a href="https://github.com/vinecopulib/vinecopulib" class="external-link">vinecopulib</a> C++ library.</p>
 <div class="section level2">
-<h2 id="table-of-contents">Table of contents<a class="anchor" aria-label="anchor" href="#table-of-contents"></a>
+<h2 id="main-capabilities">Main capabilities<a class="anchor" aria-label="anchor" href="#main-capabilities"></a>
 </h2>
 <ul>
-<li>
-<a href="#rvinecopulib">rvinecopulib</a>
-<ul>
-<li><a href="#table-of-contents">Table of contents</a></li>
-<li><a href="#how-to-install">How to install</a></li>
-<li>
-<a href="#package-overview">Package overview</a>
-<ul>
-<li><a href="#bivariate-copula-modeling-bicopdist-and-bicop">Bivariate copula modeling: bicop_dist and bicop</a></li>
-<li><a href="#vine-copula-modeling-vinecopdist-and-vinecop">Vine copula modeling: vinecop_dist and vinecop</a></li>
-<li><a href="#bivariate-copula-families">Bivariate copula families</a></li>
+<li>fit, select, evaluate, and simulate <a href="https://vinecopulib.github.io/rvinecopulib/articles/bivariate-copulas.html">bivariate copula models</a>, including parametric, nonparametric, rotated, and extreme-value families;</li>
+<li>fit and select high-dimensional <a href="https://vinecopulib.github.io/rvinecopulib/articles/vine-copula-models.html">vine copula models and structures</a>, with automatic family, structure, truncation, and threshold selection;</li>
+<li>combine vine copulas with nonparametric, parametric, or custom <a href="https://vinecopulib.github.io/rvinecopulib/articles/marginal-models.html">marginal models</a> to form complete multivariate distributions;</li>
+<li>handle continuous, integer-valued discrete, mixed, and <a href="https://vinecopulib.github.io/rvinecopulib/articles/discrete-data.html">zero-inflated data</a>, with optional observation weights;</li>
+<li>perform <a href="https://vinecopulib.github.io/rvinecopulib/articles/conditional-simulation.html">conditional simulation and Rosenblatt transforms</a>;</li>
+<li>compute likelihood <a href="https://vinecopulib.github.io/rvinecopulib/articles/likelihood-inference.html">scores and Hessians</a> and evaluate models with observation-specific parameters;</li>
+<li>use parallel fitting, custom marginal families, and custom tree-selection criteria in extensible modeling workflows.</li>
 </ul>
-</li>
-<li><a href="#references">References</a></li>
-</ul>
-</li>
-</ul>
-<hr>
 </div>
 <div class="section level2">
-<h2 id="how-to-install">How to install<a class="anchor" aria-label="anchor" href="#how-to-install"></a>
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install:</p>
-<ul>
-<li>
-<p>the stable release on CRAN:</p>
+<p>Install the stable release from CRAN:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"rvinecopulib"</span><span class="op">)</span></span></code></pre></div>
-</li>
-<li>
-<p>the latest development version:</p>
+<p>Install the development version from GitHub:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"vinecopulib/rvinecopulib"</span><span class="op">)</span></span></code></pre></div>
-</li>
-</ul>
-<hr>
 </div>
 <div class="section level2">
-<h2 id="package-overview">Package overview<a class="anchor" aria-label="anchor" href="#package-overview"></a>
+<h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
 </h2>
-<p>Below, we list most functions and features you should know about. As usual in copula models, data are assumed to be serially independent and lie in the unit hypercube.</p>
-<div class="section level3">
-<h3 id="bivariate-copula-modeling-bicop_dist-and-bicop">Bivariate copula modeling: bicop_dist and bicop<a class="anchor" aria-label="anchor" href="#bivariate-copula-modeling-bicop_dist-and-bicop"></a>
-</h3>
-<ul>
-<li>
-<p><code>bicop_dist</code>: Creates a bivariate copula by specifying the family, rotation and parameters. Returns an object of class <code>bicop_dist</code>. The class has the following methods:</p>
-<ul>
-<li><p><code>print</code>: a brief overview of the bivariate copula.</p></li>
-<li><p><code>plot</code>, <code>contour</code>: surface/perspective and contour plots of the copula density. Possibly coupled with standard normal margins (default for <code>contour</code>).</p></li>
-</ul>
-</li>
-<li><p><code>dbicop</code>, <code>pbicop</code>, <code>rbicop</code>, <code>hbicop</code>: Density, distribution function, random generation and H-functions (with their inverses) for bivariate copula distributions. Additionally to the evaluation points, you can provide either <code>family</code>, <code>rotation</code> and <code>parameter</code>, or an object of class <code>bicop_dist</code>.</p></li>
-<li>
-<p><code>bicop</code>: Estimates parameters of a bivariate copula. Estimation can be done by maximum likelihood (<code>par_method = "mle"</code>) or inversion of the empirical Kendall’s tau (<code>par_method = "itau"</code>, only available for one-parameter families) for parametric families, and using local-likelihood approximations of order zero/one/two for nonparametric models (<code>nonpar_method="constant"</code>/<code>nonpar_method="linear"</code>/<code>nonpar_method="quadratic"</code>). If <code>family_set</code> is a vector of families, then the family is selected using <code>selcrit="loglik"</code>, <code>selcrit="aic"</code> or <code>selcrit="bic"</code>. The function returns an object of classes <code>bicop</code> and <code>bicop_dist</code>. The class <code>bicop</code> has the following following methods:</p>
-<ul>
-<li><p><code>print</code>: a more comprehensive overview of the bivariate copula model with fit statistics.</p></li>
-<li><p><code>predict</code>, <code>fitted</code>: predictions and fitted values for a bivariate copula model.</p></li>
-<li><p><code>nobs</code>, <code>logLik</code>, <code>AIC</code>, <code>BIC</code>: usual fit statistics.</p></li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="vine-copula-modeling-vinecop_dist-and-vinecop">Vine copula modeling: vinecop_dist and vinecop<a class="anchor" aria-label="anchor" href="#vine-copula-modeling-vinecop_dist-and-vinecop"></a>
-</h3>
-<ul>
-<li>
-<p><code>vinecop_dist</code>: Creates a vine copula by specifying a nested list of <code>bicop_dist</code> objects and a quadratic structure matrix. Returns an object of class <code>vinecop_dist</code>. The class has the following methods:</p>
-<ul>
-<li><p><code>print</code>, <code>summary</code>: a brief and more comprehensive overview of the vine copula.</p></li>
-<li><p><code>plot</code>: plots of the vine structure.</p></li>
-</ul>
-</li>
-<li><p><code>dvinecop</code>, <code>pvinecop</code>, <code>rvinecop</code>: Density, distribution function, random generation for vine copula distributions.</p></li>
-<li>
-<p><code>vinecop</code>: automated fitting for vine copula models. The function inherits the parameters of <code>bicop</code>. Optionally, a quadratic <code>matrix</code> can be used as input to pre-specify the vine structure. <code>tree_crit</code> describes the criterion for tree selection, one of <code>"tau"</code>, <code>"rho"</code>, <code>"hoeffd"</code> for Kendall’s tau, Spearman’s rho, and Hoeffding’s D, respectively. Additionally, <code>threshold</code> allows to threshold the <code>tree_crit</code> and <code>trunc_lvl</code> to truncate the vine copula, with <code>threshold_sel</code> and <code>trunc_lvl_sel</code> to automatically select both parameters. The function returns an object of classes <code>vinecop</code> and <code>vinecop_dist</code>. The class has the <code>vinecop</code> has the following following methods:</p>
-<ul>
-<li><p><code>print</code>, <code>summary</code>: a brief and more comprehensive overview of the vine copula with additional fit statistics information.</p></li>
-<li><p><code>predict</code>, <code>fitted</code>: predictions and fitted values for a vine copula model.</p></li>
-<li><p><code>nobs</code>, <code>logLik</code>, <code>AIC</code>, <code>BIC</code>: usual fit statistics.</p></li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="bivariate-copula-families">Bivariate copula families<a class="anchor" aria-label="anchor" href="#bivariate-copula-families"></a>
-</h3>
-<p>In this package several bivariate copula families are included for bivariate and multivariate analysis using vine copulas. It provides functionality of elliptical (Gaussian and Student-t) as well as Archimedean (Clayton, Gumbel, Frank, Joe, BB1, BB6, BB7 and BB8) copulas to cover a large range of dependence patterns. For Archimedean copula families, rotated versions are included to cover negative dependence as well. Additionally, nonparametric families are also supported.</p>
+<p>rvinecopulib exposes the same modeling framework at three levels:</p>
 <table class="table">
 <thead><tr class="header">
-<th>type</th>
-<th>name</th>
-<th>name in R</th>
+<th>Starting point</th>
+<th>Main function</th>
+<th>Model</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>-</td>
-<td>Independence</td>
-<td>“indep”</td>
+<td>Two uniform variables</td>
+<td><code><a href="reference/bicop.html">bicop()</a></code></td>
+<td>One bivariate copula</td>
 </tr>
 <tr class="even">
-<td>Elliptical</td>
-<td>Gaussian</td>
-<td>“gaussian”</td>
+<td>Uniform pseudo-observations</td>
+<td><code><a href="reference/vinecop.html">vinecop()</a></code></td>
+<td>Dependence only</td>
 </tr>
 <tr class="odd">
-<td>”</td>
-<td>Student t</td>
-<td>“t”</td>
-</tr>
-<tr class="even">
-<td>Archimedean</td>
-<td>Clayton</td>
-<td>“clayton”</td>
-</tr>
-<tr class="odd">
-<td>”</td>
-<td>Gumbel</td>
-<td>“gumbel”</td>
-</tr>
-<tr class="even">
-<td>”</td>
-<td>Frank</td>
-<td>“frank”</td>
-</tr>
-<tr class="odd">
-<td>”</td>
-<td>Joe</td>
-<td>“joe”</td>
-</tr>
-<tr class="even">
-<td>”</td>
-<td>Clayton-Gumbel (BB1)</td>
-<td>“bb1”</td>
-</tr>
-<tr class="odd">
-<td>”</td>
-<td>Joe-Gumbel (BB6)</td>
-<td>“bb6”</td>
-</tr>
-<tr class="even">
-<td>”</td>
-<td>Joe-Clayton (BB7)</td>
-<td>“bb7”</td>
-</tr>
-<tr class="odd">
-<td>”</td>
-<td>Joe-Frank (BB8)</td>
-<td>“bb8”</td>
-</tr>
-<tr class="even">
-<td>Nonparametric</td>
-<td>Transformation kernel</td>
-<td>“tll”</td>
+<td>Observations on their original scale</td>
+<td><code><a href="reference/vine.html">vine()</a></code></td>
+<td>Margins and dependence</td>
 </tr>
 </tbody>
 </table>
-<p>Note that several convenience vectors of families are included: * <code>"all"</code> contains all the families * <code>"parametric"</code> contains the parametric families (all except <code>"tll"</code>) * <code>"nonparametric"</code> contains the nonparametric families (<code>"indep"</code> and <code>"tll"</code>) * <code>"one_par"</code> contains the parametric families with a single parameter (<code>"gaussian"</code>, <code>"clayton"</code>, <code>"gumbel"</code>, <code>"frank"</code>, and <code>"joe"</code>) * <code>"two_par"</code> contains the parametric families with two parameters (<code>"t"</code>, <code>"bb1"</code>, <code>"bb6"</code>, <code>"bb7"</code>, and <code>"bb8"</code>) * <code>"elliptical"</code> contains the elliptical families * <code>"archimedean"</code> contains the archimedean families * <code>"BB"</code> contains the BB families * <code>"itau"</code> families for which estimation by Kendall’s tau inversion is available (<code>"indep"</code>,<code>"gaussian"</code>, <code>"t"</code>,<code>"clayton"</code>, <code>"gumbel"</code>, <code>"frank"</code>, <code>"joe"</code>)</p>
-<p>The following table shows the parameter ranges of bivariate copula families with one or two parameters:</p>
-<table class="table">
-<thead><tr class="header">
-<th align="left">Copula family</th>
-<th align="left"><code>par[1]</code></th>
-<th align="left"><code>par[2]</code></th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Gaussian</td>
-<td align="left"><code>(-1, 1)</code></td>
-<td align="left">-</td>
-</tr>
-<tr class="even">
-<td align="left">Student t</td>
-<td align="left"><code>(-1, 1)</code></td>
-<td align="left"><code>(2,Inf)</code></td>
-</tr>
-<tr class="odd">
-<td align="left">Clayton</td>
-<td align="left"><code>(0, Inf)</code></td>
-<td align="left">-</td>
-</tr>
-<tr class="even">
-<td align="left">Gumbel</td>
-<td align="left"><code>[1, Inf)</code></td>
-<td align="left">-</td>
-</tr>
-<tr class="odd">
-<td align="left">Frank</td>
-<td align="left"><code>R \ {0}</code></td>
-<td align="left">-</td>
-</tr>
-<tr class="even">
-<td align="left">Joe</td>
-<td align="left"><code>(1, Inf)</code></td>
-<td align="left">-</td>
-</tr>
-<tr class="odd">
-<td align="left">Clayton-Gumbel (BB1)</td>
-<td align="left"><code>(0, Inf)</code></td>
-<td align="left"><code>[1, Inf)</code></td>
-</tr>
-<tr class="even">
-<td align="left">Joe-Gumbel (BB6)</td>
-<td align="left"><code>[1 ,Inf)</code></td>
-<td align="left"><code>[1, Inf)</code></td>
-</tr>
-<tr class="odd">
-<td align="left">Joe-Clayton (BB7)</td>
-<td align="left"><code>[1, Inf)</code></td>
-<td align="left"><code>(0, Inf)</code></td>
-</tr>
-<tr class="even">
-<td align="left">Joe-Frank (BB8)</td>
-<td align="left"><code>[1, Inf)</code></td>
-<td align="left"><code>(0, 1]</code></td>
-</tr>
-</tbody>
-</table>
-<hr>
+<div class="section level3">
+<h3 id="a-bivariate-copula">A bivariate copula<a class="anchor" aria-label="anchor" href="#a-bivariate-copula"></a>
+</h3>
+<p><code><a href="reference/bicop.html">bicop()</a></code> fits and selects a copula model for two uniform variables. Fixed models can be created with <code><a href="reference/bicop_dist.html">bicop_dist()</a></code>.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">u</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bicop_methods.html">rbicop</a></span><span class="op">(</span><span class="fl">200</span>, family <span class="op">=</span> <span class="st">"clayton"</span>, rotation <span class="op">=</span> <span class="fl">90</span>, parameters <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">bivariate_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bicop.html">bicop</a></span><span class="op">(</span><span class="va">u</span>, family_set <span class="op">=</span> <span class="st">"par"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">bivariate_fit</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/bicop_methods.html">dbicop</a></span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, <span class="va">bivariate_fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/bicop_dependence.html">tail_dep</a></span><span class="op">(</span><span class="va">bivariate_fit</span><span class="op">)</span></span></code></pre></div>
+<p>See the <a href="https://vinecopulib.github.io/rvinecopulib/articles/bivariate-copulas.html">bivariate-copula article</a> for implemented families, rotations, h-functions, dependence measures, and selection controls.</p>
 </div>
+<div class="section level3">
+<h3 id="a-vine-copula-on-the-copula-scale">A vine copula on the copula scale<a class="anchor" aria-label="anchor" href="#a-vine-copula-on-the-copula-scale"></a>
+</h3>
+<p><code><a href="reference/pseudo_obs.html">pseudo_obs()</a></code> converts continuous observations to approximately uniform scores. <code><a href="reference/vinecop.html">vinecop()</a></code> then selects the vine structure, pair-copula families, and parameters.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">u</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pseudo_obs.html">pseudo_obs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">USArrests</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">copula_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/vinecop.html">vinecop</a></span><span class="op">(</span><span class="va">u</span>, family_set <span class="op">=</span> <span class="st">"onepar"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">copula_fit</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">simulated_u</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/vinecop_methods.html">rvinecop</a></span><span class="op">(</span><span class="fl">100</span>, <span class="va">copula_fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/vinecop_methods.html">dvinecop</a></span><span class="op">(</span><span class="va">simulated_u</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, <span class="va">copula_fit</span><span class="op">)</span></span></code></pre></div>
+<p>See the <a href="https://vinecopulib.github.io/rvinecopulib/articles/vine-copula-models.html">vine-copula article</a> for structure construction, selection, truncation, and model inspection.</p>
 </div>
-<div class="section level2">
-<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h2>
-<p>Aas, K., C. Czado, A. Frigessi, and H. Bakken (2009). Pair-copula constructions of multiple dependence. Insurance: Mathematics and Economics 44 (2), 182-198.</p>
+<div class="section level3">
+<h3 id="a-full-distribution-on-the-original-scale">A full distribution on the original scale<a class="anchor" aria-label="anchor" href="#a-full-distribution-on-the-original-scale"></a>
+</h3>
+<p><code><a href="reference/vine.html">vine()</a></code> fits one marginal distribution per variable and a vine copula to their probability integral transforms. The default margins are nonparametric; parametric and custom marginal families are also supported.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">150</span></span>
+<span><span class="va">latent</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  amount <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">latent</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">0.5</span> <span class="op">*</span> <span class="va">latent</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, sd <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="va">n</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">0.2</span> <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> <span class="va">latent</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/vine.html">vine</a></span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  var_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"c"</span>, <span class="st">"c"</span>, <span class="st">"d"</span><span class="op">)</span>,</span>
+<span>  copula_controls <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>family_set <span class="op">=</span> <span class="st">"onepar"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/vine_methods.html">rvine</a></span><span class="op">(</span><span class="fl">5</span>, <span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p>See the <a href="https://vinecopulib.github.io/rvinecopulib/articles/marginal-models.html">marginal-modeling article</a> for parametric selection, custom families, ordered variables, zero inflation, and observation weights. The <a href="https://vinecopulib.github.io/rvinecopulib/articles/getting-started.html">getting-started article</a> develops the complete workflow.</p>
+<p>The constructors <code><a href="reference/bicop_dist.html">bicop_dist()</a></code>, <code><a href="reference/vinecop_dist.html">vinecop_dist()</a></code>, and <code><a href="reference/vine.html">vine_dist()</a></code> create models from components specified directly.</p>
+<p>The <a href="https://vinecopulib.github.io/rvinecopulib/reference/">complete API reference</a> and all articles are available on the <a href="https://vinecopulib.github.io/rvinecopulib/">package website</a>. Questions and bug reports are welcome in the <a href="https://github.com/vinecopulib/rvinecopulib/issues" class="external-link">GitHub issue tracker</a>.</p>
+</div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -332,7 +213,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
