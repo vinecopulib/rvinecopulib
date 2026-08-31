@@ -65,6 +65,24 @@ test_that("rosenblatt supports explicit conditioning sets", {
   )
   expect_identical(vc_cond$structure, structure_before)
 
+  vc_truncated <- truncate_model(vc_cond, 1)
+  truncated_structure_before <- vc_truncated$structure
+  u_truncated <- rvinecop(20, vc_truncated)
+  z_truncated <- rosenblatt(
+    u_truncated,
+    vc_truncated,
+    conditioning_set = c(4, 3)
+  )
+  expect_equal(
+    inverse_rosenblatt(
+      z_truncated,
+      vc_truncated,
+      conditioning_set = c(4, 3)
+    ),
+    u_truncated
+  )
+  expect_identical(vc_truncated$structure, truncated_structure_before)
+
   u_bicop <- rbicop(20, pc)
   expect_equal(
     inverse_rosenblatt(

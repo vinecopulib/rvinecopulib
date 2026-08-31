@@ -84,6 +84,20 @@ test_that("conditioning-aware selection is passed to the copula fit", {
     sort(tail(fit_conditioned$copula$structure$order, 2)),
     c(2L, 4L)
   )
+
+  fit_truncated <- vine(
+    u_named,
+    copula_controls = list(
+      family_set = "indep",
+      conditioning_set = c("V2", "V4"),
+      trunc_lvl = 1
+    )
+  )
+  expect_length(fit_truncated$copula$pair_copulas, 1L)
+  expect_equal(
+    sort(tail(fit_truncated$copula$structure$order, 2)),
+    c(2L, 4L)
+  )
 })
 
 test_that("margins_controls works", {

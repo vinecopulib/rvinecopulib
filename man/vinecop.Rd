@@ -121,9 +121,9 @@ uniformly (unweighted).}
 
 \item{conditioning_set}{variable indices or names to place at the end of the
 vine order. The resulting model can be sampled conditionally with
-\code{\link[=rvinecop]{rvinecop()}} by supplying \code{u_cond}. Conditioning-aware selection requires
-a full, non-truncated vine and an MST tree algorithm (\code{"mst_prim"} or
-\code{"mst_kruskal"}).}
+\code{\link[=rvinecop]{rvinecop()}} by supplying \code{u_cond}. Conditioning-aware selection supports
+fixed or automatically selected truncation levels and requires an MST tree
+algorithm (\code{"mst_prim"} or \code{"mst_kruskal"}).}
 }
 \value{
 Objects inheriting from \code{vinecop} and \code{vinecop_dist} for \code{\link[=vinecop]{vinecop()}}. In

@@ -214,10 +214,32 @@ test_that("conditioning-aware selection is exposed through the R controls", {
     vinecop(u_cond, conditioning_set = 1:4),
     "at most d - 1 variables"
   )
-  expect_error(
-    vinecop(u_cond, conditioning_set = 2, trunc_lvl = 1),
-    "requires a non-truncated vine"
+  fit_truncated <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = 2,
+    trunc_lvl = 1
   )
+  expect_length(fit_truncated$pair_copulas, 1L)
+  expect_equal(tail(fit_truncated$structure$order, 1), 2L)
+
+  fit_independence <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = 2,
+    trunc_lvl = 0
+  )
+  expect_length(fit_independence$pair_copulas, 0L)
+  expect_equal(tail(fit_independence$structure$order, 1), 2L)
+
+  fit_auto_truncated <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = 2,
+    trunc_lvl = NA
+  )
+  expect_lte(length(fit_auto_truncated$pair_copulas), ncol(u_cond) - 1L)
+  expect_equal(tail(fit_auto_truncated$structure$order, 1), 2L)
   expect_error(
     vinecop(
       u_cond,

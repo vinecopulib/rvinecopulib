@@ -54,9 +54,9 @@
 #'   uniformly (unweighted).
 #' @param conditioning_set variable indices or names to place at the end of the
 #'   vine order. The resulting model can be sampled conditionally with
-#'   [rvinecop()] by supplying `u_cond`. Conditioning-aware selection requires
-#'   a full, non-truncated vine and an MST tree algorithm (`"mst_prim"` or
-#'   `"mst_kruskal"`).
+#'   [rvinecop()] by supplying `u_cond`. Conditioning-aware selection supports
+#'   fixed or automatically selected truncation levels and requires an MST tree
+#'   algorithm (`"mst_prim"` or `"mst_kruskal"`).
 #'
 #' @details
 #'
@@ -237,12 +237,6 @@ vinecop <- function(
     if (!is.null(vinecop_object)) {
       stop(
         "'conditioning_set' cannot be used when refitting a 'vinecop_object'.",
-        call. = FALSE
-      )
-    }
-    if (is.na(trunc_lvl) || (is.finite(trunc_lvl) && trunc_lvl < d - 1)) {
-      stop(
-        "conditioning-aware selection requires a non-truncated vine.",
         call. = FALSE
       )
     }
