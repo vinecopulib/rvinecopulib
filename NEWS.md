@@ -96,6 +96,9 @@ for the complete backend changes.
   is serialized on the calling thread, while pair-copula fitting may still use
   multiple cores.
 
+* Add symmetrized Chatterjee's xi as a tree-selection criterion through
+  `tree_crit = "cxi"`.
+
 * Add `tail_dep()` and `blomqvist_beta()` for bivariate copula models and include
   these dependence summaries in printed model output.
 

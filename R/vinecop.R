@@ -19,10 +19,11 @@
 #'   truncation, `NA` indicates that the truncation level should be selected
 #'   automatically by [mBICV()].
 #' @param tree_crit the criterion for tree selection, one of `"tau"`, `"rho"`,
-#'   `"hoeffd"`, `"mcor"`, or `"joe"` for Kendall's \eqn{\tau}, Spearman's
-#'   \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation, or logarithm of
-#'   the partial correlation, respectively. Alternatively, a function with
-#'   arguments `data` and `weights` may be supplied. `data` is a two-column
+#'   `"hoeffd"`, `"mcor"`, `"cxi"`, or `"joe"` for Kendall's \eqn{\tau},
+#'   Spearman's \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation,
+#'   symmetrized Chatterjee's \eqn{\xi}, or logarithm of the partial
+#'   correlation, respectively. Alternatively, a function with arguments
+#'   `data` and `weights` may be supplied. `data` is a two-column
 #'   matrix of pair-copula pseudo-observations. `weights` contains the
 #'   corresponding observation weights, standardized by the backend to sum to
 #'   the original number of observations, or `numeric(0)` when no weights were
@@ -88,7 +89,8 @@
 #' 52-69.
 #' The dependence measure used to select trees (default: Kendall's tau) is
 #' corrected for ties and can be changed using the `tree_crit`
-#' argument, which can be set to `"tau"`, `"rho"` or `"hoeffd"`.
+#' argument, which can be set to `"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`,
+#' `"cxi"`, or `"joe"`, or to a custom function.
 #' Both Prim's (default: `"mst_prim"`) and Kruskal's (`"mst_kruskal"`)
 #' algorithms are available through `tree_algorithm` to set the
 #' maximum spanning tree selection algorithm.

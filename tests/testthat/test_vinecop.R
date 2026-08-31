@@ -311,6 +311,28 @@ test_that("custom tree criteria are passed through", {
   expect_equal(seen_weights, obs_weights / mean(obs_weights))
 })
 
+test_that("Chatterjee's xi can be used for tree selection", {
+  set.seed(18)
+  u_cxi <- matrix(runif(400), ncol = 4)
+
+  fit_cxi <- vinecop(
+    u_cxi,
+    family_set = "indep",
+    tree_crit = "cxi"
+  )
+  fit_cxi_weighted <- vinecop(
+    u_cxi,
+    family_set = "indep",
+    weights = seq_len(nrow(u_cxi)),
+    tree_crit = "cxi"
+  )
+
+  expect_s3_class(fit_cxi, "vinecop")
+  expect_s3_class(fit_cxi_weighted, "vinecop")
+  expect_identical(fit_cxi$controls$tree_crit, "cxi")
+  expect_identical(fit_cxi_weighted$controls$tree_crit, "cxi")
+})
+
 test_that("custom tree criteria receive filtered data and weights", {
   set.seed(16)
   u_custom <- matrix(runif(60), ncol = 2)
