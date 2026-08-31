@@ -4,7 +4,7 @@ The first stable release. It bundles vinecopulib 1.0.0 and collects a large
 backend and frontend update: analytic derivatives, conditional simulation,
 conditioning-aware transforms and structure selection, observation-specific
 parameters, faster evaluation and fitting, and a modernized C++17 build. See
-the [vinecopulib 1.0.0 NEWS](https://github.com/vinecopulib/vinecopulib/blob/main/NEWS.md)
+the [vinecopulib 1.0.0 NEWS](https://github.com/vinecopulib/vinecopulib/blob/009a06da1f54dc7690420b5d4c167ba30f32dbca/NEWS.md)
 for the complete backend changes.
 
 ### BREAKING API CHANGES
