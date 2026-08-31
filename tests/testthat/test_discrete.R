@@ -74,6 +74,65 @@ test_that("bicop works", {
   expect_identical(cop$var_types, c("d", "c"))
 })
 
+test_that("discrete TLL fitting uses interval left limits", {
+  set.seed(42)
+  z1 <- rnorm(120)
+  z2 <- 0.7 * z1 + sqrt(1 - 0.7^2) * rnorm(120)
+  x1 <- qpois(pnorm(z1), 2)
+  x2 <- qpois(pnorm(z2), 3)
+  u <- cbind(
+    ppois(x1, 2),
+    ppois(x2, 3),
+    ppois(x1 - 1, 2),
+    ppois(x2 - 1, 3)
+  )
+  u_narrow <- u
+  u_narrow[, 3:4] <- 0.5 * (u_narrow[, 1:2] + u_narrow[, 3:4])
+
+  fit <- bicop(u, family_set = "tll", var_types = c("d", "d"))
+  fit_narrow <- bicop(
+    u_narrow,
+    family_set = "tll",
+    var_types = c("d", "d")
+  )
+
+  expect_gt(max(abs(fit$parameters - fit_narrow$parameters)), 1e-3)
+})
+
+test_that("discrete density collapses narrow intervals at their midpoint", {
+  cop_dd <- bicop_dist(
+    "gaussian",
+    parameters = 0.7,
+    var_types = c("d", "d")
+  )
+  cop_cd <- bicop_dist(
+    "gaussian",
+    parameters = 0.7,
+    var_types = c("c", "d")
+  )
+  cop_dc <- bicop_dist(
+    "gaussian",
+    parameters = 0.7,
+    var_types = c("d", "c")
+  )
+
+  narrow_first <- matrix(c(0.400001, 0.7, 0.4, 0.2), nrow = 1)
+  expected_first <- matrix(c(0.4000005, 0.7, 0.2), nrow = 1)
+  expect_equal(
+    dbicop(narrow_first, cop_dd),
+    dbicop(expected_first, cop_cd),
+    tolerance = 1e-12
+  )
+
+  narrow_second <- matrix(c(0.8, 0.300001, 0.1, 0.3), nrow = 1)
+  expected_second <- matrix(c(0.8, 0.3000005, 0.1), nrow = 1)
+  expect_equal(
+    dbicop(narrow_second, cop_dd),
+    dbicop(expected_second, cop_dc),
+    tolerance = 1e-12
+  )
+})
+
 # -----------------------------------------------------------------
 
 set.seed(0)

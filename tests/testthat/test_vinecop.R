@@ -168,6 +168,20 @@ test_that("MST algorithms behave as expected", {
   expect_equal(length(unique_structures), 10)
 })
 
+test_that("weighted random trees handle zero edge strengths", {
+  set.seed(42)
+  u_small <- matrix(runif(40), 10, 4)
+
+  expect_silent(
+    fit_small <- vinecop(
+      u_small,
+      family_set = "indep",
+      tree_algorithm = "random_weighted"
+    )
+  )
+  expect_equal(unname(dim(fit_small)), c(4, 3))
+})
+
 test_that("conditioning-aware selection is exposed through the R controls", {
   u_cond <- matrix(runif(400), 100, 4)
   colnames(u_cond) <- letters[1:4]
@@ -476,4 +490,17 @@ test_that("fitting only parameters works", {
 
   expect_warning(vinecop(u, structure = dvine_structure(3), vinecop = vc))
   expect_warning(vinecop(u, family_set = "gauss", vinecop = vc))
+})
+
+test_that("zero-truncated independence models can be refit", {
+  set.seed(42)
+  u_indep <- matrix(runif(90), 30, 3)
+  fit_indep <- vinecop(u_indep, family_set = "indep", trunc_lvl = 0)
+
+  refit_indep <- vinecop(u_indep[1:12, ], vinecop_object = fit_indep)
+
+  expect_length(refit_indep$pair_copulas, 0L)
+  expect_equal(unname(dim(refit_indep)), c(3, 0))
+  expect_equal(refit_indep$loglik, 0)
+  expect_identical(refit_indep$nobs, 12L)
 })

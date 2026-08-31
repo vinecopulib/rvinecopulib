@@ -61,6 +61,23 @@ test_that("returns proper 'bicop' object", {
   )
 })
 
+test_that("TLL fitting is equivariant to swapping arguments", {
+  set.seed(42)
+  x <- matrix(rnorm(400), 200, 2)
+  x[, 2] <- 0.8 * x[, 1] + sqrt(1 - 0.8^2) * x[, 2]
+  u <- pseudo_obs(x)
+
+  fit_12 <- bicop(u, family_set = "tll")
+  fit_21 <- bicop(u[, 2:1], family_set = "tll")
+
+  expect_equal(
+    dbicop(u, fit_12),
+    dbicop(u[, 2:1], fit_21),
+    tolerance = 1e-10
+  )
+  expect_equal(fit_12$loglik, fit_21$loglik, tolerance = 1e-10)
+})
+
 test_that("family sets (w/ partial matching)", {
   bicop(u, family = "arch")
   bicop(u, family = "nonp")
