@@ -1,15 +1,17 @@
 # rvinecopulib 1.0.0.1.0
 
-The first stable release. It bundles vinecopulib 1.0.0 and collects a large
-backend and frontend update: analytic derivatives, conditional simulation,
-conditioning-aware transforms and structure selection, observation-specific
-parameters, faster evaluation and fitting, and a modernized C++17 build. See
-the [vinecopulib 1.0.0 NEWS](https://github.com/vinecopulib/vinecopulib/blob/009a06da1f54dc7690420b5d4c167ba30f32dbca/NEWS.md)
-for the complete backend changes.
+The first stable release, based on vinecopulib 1.0.0. Highlights include a new
+marginal-modeling interface, conditional simulation and transforms, analytic
+derivatives, observation-specific parameters, and faster evaluation and
+fitting. See the
+[vinecopulib 1.0.0 NEWS](https://github.com/vinecopulib/vinecopulib/blob/009a06da1f54dc7690420b5d4c167ba30f32dbca/NEWS.md)
+for the backend changes.
 
-### BREAKING API CHANGES
+### BREAKING CHANGES
 
-* Require R >= 4.3.0, C++17, and Boost headers from BH >= 1.75.0-0.
+* Require R >= 4.3.0, C++17, Boost headers from BH >= 1.75.0-0, and
+  wdm >= 0.3.0. Optional parametric margin fitting requires
+  univariateML >= 1.5.0.
 
 * R-vine structures now follow the backend convention with the conditioned
   variable on the diagonal. Consequently, the matrix, order, structure array,
@@ -17,118 +19,66 @@ for the complete backend changes.
   densities and log-likelihoods are unchanged.
 
 * Marginal fitting now uses explicit margin-family and fitted-margin S3
-  protocols. KDE options (`xmin`, `xmax`, `mult`, `bw`, and `deg`) are configured
-  with `kde1d_family()` instead of being entries in `margins_controls`; variable
-  types are declared with the top-level `var_types` argument. Custom
-  `margin_family()` fitters now receive `x`, `weights`, and `type` on every call.
+  protocols. Configure KDE options with `kde1d_family()` and variable types with
+  the top-level `var_types` argument. Custom `margin_family()` fitters now
+  receive `x`, `weights`, and `type` on every call.
 
 ### BEHAVIOR CHANGES
 
-* TLL fits can change because the backend no longer clamps interpolation grid
-  endpoints at the boundary of the unit square, uses recovered latent samples
-  for discrete inputs, and normalizes interpolation grids symmetrically.
+* TLL fits, particularly for discrete data, can change after fixes to CDF
+  integration, inversion, and boundary handling.
 
-* Conditioning-aware selection, Rosenblatt transforms, and conditional
-  simulation now support fixed, automatically selected, and zero truncation
-  levels. Conditioning-aware selection continues to require an MST tree
-  algorithm.
-
-* Kendall's tau for the BB6, BB7, BB8, and Tawn families incorporates several
-  numerical fixes. Maximum-likelihood estimates can also shift in the low
-  digits after the backend optimizer changed from BOBYQA to Brent/BFGS.
+* Kendall's tau for the BB6, BB7, BB8, and Tawn families incorporates numerical
+  fixes. Maximum-likelihood estimates can also shift slightly because of
+  optimizer improvements.
 
 * Compact `d + k` and expanded `2d` layouts for discrete variables are handled
-  consistently across bivariate and vine-copula evaluation, Rosenblatt
-  transforms, and conditional simulation.
+  consistently across evaluation, Rosenblatt transforms, and conditional
+  simulation.
 
 ### NEW FEATURES
 
-* Add fitted-margin generics for distribution evaluation and model information,
-  together with the `margin_dist()` constructor. Add the complementary
-  `fit_margin()` family protocol. Both fitted margins and family specifications
-  expose their metadata through `margin_info()`.
+* Add extensible protocols for fitted margins and margin families, including
+  `margin_dist()` and `margin_family()`, distribution and quantile generics, and
+  model metadata through `margin_info()`.
 
 * Add `kde1d_family()`, `univariateML_family()`, and `stats_margin()` adapters.
-  Fixed `stats_margin()` objects retain the parameter counts of their
-  distributions.
-  Core vine fitting and evaluation use only the two protocols and contain no
-  backend-specific dispatch.
+  `vine()` can select among these and user-defined candidates through
+  `margins_controls$family_set` while reporting and skipping failed candidates.
 
-* Add `zero_inflated()` and a top-level `var_types` argument to `vine()`;
-  continuous, integer-valued discrete, and zero-inflated left-limit CDFs are
-  handled centrally by the margin protocol.
+* Add `zero_inflated()` and `var_types` to distinguish continuous, discrete,
+  and zero-inflated variables in `vine()`.
 
-* Allow `vine()` to select marginal families through
-  `margins_controls$family_set`. Parametric families from `univariateML` and
-  user-defined `margin_family()` candidates are supported alongside the
-  existing `kde1d` margins.
+* Fit margins in parallel on non-Windows systems, controlled separately through
+  `margins_controls$cores`.
 
-* Fit margins in parallel with forked processes when `cores > 1` on
-  non-Windows systems. Margin fitting remains serial on Windows and can be
-  controlled separately with `margins_controls$cores`. Stochastic custom
-  fitters can use one margin-fitting core when results must be invariant to the
-  core count.
+* Add conditioning-aware structure selection, conditional simulation, and
+  Rosenblatt transforms through `conditioning_set`. Conditioning values can be
+  common or observation-specific, and fixed, automatically selected, and zero
+  truncation levels are supported.
 
-* Add conditional simulation to `rvinecop()` and `rvine()`. Conditioning values
-  can be common or observation-specific, and `conditioning_set` accepts indices
-  or names. `vinecop()` and `vine()` also accept `conditioning_set` for
-  conditioning-aware structure selection. Simulation remains synchronized with
-  R's `set.seed()` for pseudo- and quasi-random generation.
+* Add `scores()` and `hessian()` for bivariate and vine copulas, and first- and
+  second-order derivatives to `dbicop()` and `hbicop()` through `deriv`.
 
-* Add `conditioning_set` to `rosenblatt()` and `inverse_rosenblatt()`. The model
-  is transiently evaluated in a compatible order and is not modified.
+* Add sandwich covariance estimates and Wald confidence intervals for fitted
+  bivariate and vine copulas through `vcov()` and `confint()`.
 
-* Add `scores()` and `hessian()` for bivariate copulas and extend both functions
-  for vine copulas. They support observation-specific parameter matrices for
-  continuous parametric models.
+* Support observation-specific parameters in bivariate copula functions and
+  `dvinecop()`. The latter can also return per-edge densities and h-functions
+  through `keep_all`.
 
-* Add first- and second-order density, log-density, and h-function derivatives
-  to `dbicop()` and `hbicop()` through the `deriv` argument.
-
-* Add `keep_all` to `dvinecop()` to return per-edge densities and h-functions,
-  and allow observation-specific parameters in `dvinecop()`.
-
-* Support observation-specific parameters passed directly to `dbicop()`,
-  `pbicop()`, `hbicop()`, and `rbicop()`. Parameter rows are not recycled;
-  `bicop_dist()` objects continue to store one fixed parameter set.
-
-* Allow an R function as `tree_crit` in `vinecop()` and `vine()`. The callback
-  is serialized on the calling thread, while pair-copula fitting may still use
-  multiple cores.
-
-* Add symmetrized Chatterjee's xi as a tree-selection criterion through
-  `tree_crit = "cxi"`.
+* Allow custom R functions and symmetrized Chatterjee's xi (`"cxi"`) as
+  tree-selection criteria in `vinecop()` and `vine()`.
 
 * Add `tail_dep()` and `blomqvist_beta()` for bivariate copula models and include
   these dependence summaries in printed model output.
 
 ### PERFORMANCE
 
-* Incorporate broad backend speedups for bivariate and vine evaluation,
-  analytic derivative cascades, TLL fitting/interpolation, structure selection,
-  pseudo-observations, integration, and shared Eigen/thread primitives.
+* Speed up bivariate and vine evaluation, fitting, structure selection,
+  pseudo-observations, integration, derivatives, and TLL interpolation.
 
 ### BUG FIXES
-
-* Validate and report failed marginal candidates consistently, preserve their
-  warnings, reject fitted supports that exclude observations, and detect failed
-  forked workers and malformed margin core counts early.
-
-* Reject margin candidates with non-finite fitted log-likelihoods without
-  aborting selection when another valid candidate is available (#350).
-
-* Make inverse Rosenblatt transforms thread-safe and custom tree criteria safe
-  under multithreaded fitting.
-
-* Do not retain transformed copula data when partial `copula_controls` omit
-  `keep_data`; retaining data now requires an explicit opt-in.
-
-* Preserve rows with missing unordered-factor values when expanding factors in
-  `vine()`.
-
-* Fix TLL CDF integration and inversion, use the recovered latent sample when
-  fitting discrete TLL models, and evaluate narrow discrete intervals at their
-  midpoint.
 
 * Ensure weighted Wilson random spanning trees terminate when all candidate
   edge strengths are zero.
@@ -136,32 +86,17 @@ for the complete backend changes.
 * Correctly evaluate and refit zero-truncated models and models whose omitted
   pair copulas represent implicit independence.
 
-* Fix starting parameters for discrete models and edge-case per-row parameter
-  shapes.
+* Correct the mBICV sparsity prior and require its prior probability `psi0` to
+  lie strictly between zero and one.
 
-* Preserve and correctly trim variable names for discrete copula data.
+* Preserve rows with missing unordered-factor values and variable names for
+  discrete copula data.
+
+* Do not retain transformed copula data unless `keep_data = TRUE` is explicitly
+  requested.
 
 * Return standard `logLik` objects from fitted bivariate copula, vine copula,
   and vine distribution models.
-
-### BUILD SYSTEM AND DEPENDENCIES
-
-* Vendor the complete vinecopulib 1.0.0 header tree, while keeping the package
-  wrapper header as the R-specific integration point so downstream packages can
-  include all public backend headers.
-
-* Compile the package as C++17 and require BH >= 1.75.0-0. The backend update
-  also reduces its Boost surface to Graph, Math, and Random.
-
-* Require univariateML >= 1.5.0 for optional parametric margin support.
-
-* Build and deploy the pkgdown website with GitHub Actions; generated website
-  files are no longer stored in the source branch.
-
-* Modernize `src/update_vinecopulib.sh`: it accepts a branch, tag, or exact
-  commit, imports through a temporary checkout, preserves package-owned
-  wrappers, copies all public headers, and records the imported commit in the
-  vendored tree.
 
 # rvinecopulib 0.7.3.1.0
 
