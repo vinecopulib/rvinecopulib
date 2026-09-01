@@ -152,6 +152,9 @@ for the complete backend changes.
 
 * Require univariateML >= 1.5.0 for optional parametric margin support.
 
+* Build and deploy the pkgdown website with GitHub Actions; generated website
+  files are no longer stored in the source branch.
+
 * Modernize `src/update_vinecopulib.sh`: it accepts a branch, tag, or exact
   commit, imports through a temporary checkout, preserves package-owned
   wrappers, copies all public headers, and records the imported commit in the
