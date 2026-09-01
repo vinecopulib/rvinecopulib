@@ -4,8 +4,10 @@
 #' pair-copula parameters.
 #'
 #' @name parameter_uncertainty
-#' @aliases vcov.bicop_dist vcov.vinecop_dist confint.bicop_dist
-#'   confint.vinecop_dist
+#' @aliases vcov.bicop_dist
+#' @aliases vcov.vinecop_dist
+#' @aliases confint.bicop_dist
+#' @aliases confint.vinecop_dist
 #' @param object an object of class `"bicop"` or `"vinecop"`, or of class
 #'   `"bicop_dist"` or `"vinecop_dist"` together with `newdata`.
 #' @param newdata copula data to evaluate the derivatives at. Defaults to the

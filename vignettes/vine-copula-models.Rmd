@@ -149,6 +149,7 @@ The edge weight used to build each tree is selected by `tree_crit`:
 - `"rho"` for absolute Spearman's rho;
 - `"hoeffd"` for Hoeffding's D;
 - `"mcor"` for maximum correlation;
+- `"cxi"` for symmetrized Chatterjee's xi;
 - `"joe"` for a Gaussian-copula mutual-information criterion;
 - a custom function of `data` and `weights`.
 

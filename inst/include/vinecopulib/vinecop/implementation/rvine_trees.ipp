@@ -11,30 +11,17 @@ namespace vinecopulib {
 //! @param struct_array The structure array, labelled consistently with `order`.
 inline RVineTrees::RVineTrees(const std::vector<size_t>& order,
                               const TriangularArray<size_t>& struct_array)
+  : RVineTrees(order, struct_array, {})
 {
-  if (order.size() != struct_array.get_dim()) {
-    throw std::runtime_error(
-      "Order and structure array dimensions do not match.");
-  }
-  d_ = order.size();
-  trunc_lvl_ = struct_array.get_trunc_lvl();
-  trees_.resize(trunc_lvl_);
-  for (size_t t = 0; t < trunc_lvl_; ++t) {
-    for (size_t e = 0; e < d_ - 1 - t; ++e) {
-      std::vector<size_t> conditioning;
-      conditioning.reserve(t);
-      for (size_t k = 0; k < t; ++k)
-        conditioning.push_back(struct_array(k, e));
-      trees_[t].push_back(Edge(order[e], struct_array(t, e), conditioning));
-    }
-  }
 }
 
 //! @brief Builds the tree list, attaching pair-copulas to each edge.
 //! @param order The variable order (diagonal of the R-vine matrix).
 //! @param struct_array The structure array, labelled consistently with `order`.
 //! @param pair_copulas The pair-copulas, indexed `[tree][edge]`; each is stored
-//!   with its first argument aligned to the diagonal variable `order[edge]`.
+//!   with its first argument aligned to the diagonal variable `order[edge]`. If
+//!   empty, every edge is independence; otherwise it must cover every tree of
+//!   `struct_array`.
 inline RVineTrees::RVineTrees(
   const std::vector<size_t>& order,
   const TriangularArray<size_t>& struct_array,
@@ -46,15 +33,30 @@ inline RVineTrees::RVineTrees(
   }
   d_ = order.size();
   trunc_lvl_ = struct_array.get_trunc_lvl();
+  const bool with_copulas = !pair_copulas.empty();
+  if (with_copulas && (pair_copulas.size() < trunc_lvl_)) {
+    throw std::runtime_error(
+      "pair_copulas covers " + std::to_string(pair_copulas.size()) +
+      " trees, the structure array " + std::to_string(trunc_lvl_) +
+      "; pass an empty store to mean independence throughout.");
+  }
   trees_.resize(trunc_lvl_);
   for (size_t t = 0; t < trunc_lvl_; ++t) {
+    if (with_copulas && (pair_copulas[t].size() != d_ - 1 - t)) {
+      throw std::runtime_error("pair_copulas[" + std::to_string(t) + "] has " +
+                               std::to_string(pair_copulas[t].size()) +
+                               " entries, expected " +
+                               std::to_string(d_ - 1 - t) + ".");
+    }
     for (size_t e = 0; e < d_ - 1 - t; ++e) {
       std::vector<size_t> conditioning;
       conditioning.reserve(t);
       for (size_t k = 0; k < t; ++k)
         conditioning.push_back(struct_array(k, e));
       trees_[t].push_back(
-        Edge(order[e], struct_array(t, e), conditioning, pair_copulas[t][e]));
+        with_copulas
+          ? Edge(order[e], struct_array(t, e), conditioning, pair_copulas[t][e])
+          : Edge(order[e], struct_array(t, e), conditioning));
     }
   }
 }

@@ -80,10 +80,11 @@ truncation, \code{NA} indicates that the truncation level should be selected
 automatically by \code{\link[=mBICV]{mBICV()}}.}
 
 \item{tree_crit}{the criterion for tree selection, one of \code{"tau"}, \code{"rho"},
-\code{"hoeffd"}, \code{"mcor"}, or \code{"joe"} for Kendall's \eqn{\tau}, Spearman's
-\eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation, or logarithm of
-the partial correlation, respectively. Alternatively, a function with
-arguments \code{data} and \code{weights} may be supplied. \code{data} is a two-column
+\code{"hoeffd"}, \code{"mcor"}, \code{"cxi"}, or \code{"joe"} for Kendall's \eqn{\tau},
+Spearman's \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation,
+symmetrized Chatterjee's \eqn{\xi}, or logarithm of the partial
+correlation, respectively. Alternatively, a function with arguments
+\code{data} and \code{weights} may be supplied. \code{data} is a two-column
 matrix of pair-copula pseudo-observations. \code{weights} contains the
 corresponding observation weights, standardized by the backend to sum to
 the original number of observations, or \code{numeric(0)} when no weights were
@@ -121,9 +122,9 @@ uniformly (unweighted).}
 
 \item{conditioning_set}{variable indices or names to place at the end of the
 vine order. The resulting model can be sampled conditionally with
-\code{\link[=rvinecop]{rvinecop()}} by supplying \code{u_cond}. Conditioning-aware selection requires
-a full, non-truncated vine and an MST tree algorithm (\code{"mst_prim"} or
-\code{"mst_kruskal"}).}
+\code{\link[=rvinecop]{rvinecop()}} by supplying \code{u_cond}. Conditioning-aware selection supports
+fixed or automatically selected truncation levels and requires an MST tree
+algorithm (\code{"mst_prim"} or \code{"mst_kruskal"}).}
 }
 \value{
 Objects inheriting from \code{vinecop} and \code{vinecop_dist} for \code{\link[=vinecop]{vinecop()}}. In
@@ -175,7 +176,8 @@ financial returns.} Computational Statistics & Data Analysis, 59 (1),
 52-69.
 The dependence measure used to select trees (default: Kendall's tau) is
 corrected for ties and can be changed using the \code{tree_crit}
-argument, which can be set to \code{"tau"}, \code{"rho"} or \code{"hoeffd"}.
+argument, which can be set to \code{"tau"}, \code{"rho"}, \code{"hoeffd"}, \code{"mcor"},
+\code{"cxi"}, or \code{"joe"}, or to a custom function.
 Both Prim's (default: \code{"mst_prim"}) and Kruskal's (\code{"mst_kruskal"})
 algorithms are available through \code{tree_algorithm} to set the
 maximum spanning tree selection algorithm.

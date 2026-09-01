@@ -42,9 +42,9 @@ fit <- vinecop(
 get_structure(fit)
 ```
 
-Conditioning-aware selection requires a full, non-truncated vine and an MST
-tree algorithm (`"mst_prim"` or `"mst_kruskal"`). Random tree algorithms do
-not guarantee the required order.
+Conditioning-aware selection supports fixed and automatically selected
+truncation levels. It requires an MST tree algorithm (`"mst_prim"` or
+`"mst_kruskal"`); random tree algorithms do not guarantee the required order.
 
 ## Simulate conditionally on the copula scale
 

@@ -168,6 +168,20 @@ test_that("MST algorithms behave as expected", {
   expect_equal(length(unique_structures), 10)
 })
 
+test_that("weighted random trees handle zero edge strengths", {
+  set.seed(42)
+  u_small <- matrix(runif(40), 10, 4)
+
+  expect_silent(
+    fit_small <- vinecop(
+      u_small,
+      family_set = "indep",
+      tree_algorithm = "random_weighted"
+    )
+  )
+  expect_equal(unname(dim(fit_small)), c(4, 3))
+})
+
 test_that("conditioning-aware selection is exposed through the R controls", {
   u_cond <- matrix(runif(400), 100, 4)
   colnames(u_cond) <- letters[1:4]
@@ -214,10 +228,32 @@ test_that("conditioning-aware selection is exposed through the R controls", {
     vinecop(u_cond, conditioning_set = 1:4),
     "at most d - 1 variables"
   )
-  expect_error(
-    vinecop(u_cond, conditioning_set = 2, trunc_lvl = 1),
-    "requires a non-truncated vine"
+  fit_truncated <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = 2,
+    trunc_lvl = 1
   )
+  expect_length(fit_truncated$pair_copulas, 1L)
+  expect_equal(tail(fit_truncated$structure$order, 1), 2L)
+
+  fit_independence <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = 2,
+    trunc_lvl = 0
+  )
+  expect_length(fit_independence$pair_copulas, 0L)
+  expect_equal(tail(fit_independence$structure$order, 1), 2L)
+
+  fit_auto_truncated <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = 2,
+    trunc_lvl = NA
+  )
+  expect_lte(length(fit_auto_truncated$pair_copulas), ncol(u_cond) - 1L)
+  expect_equal(tail(fit_auto_truncated$structure$order, 1), 2L)
   expect_error(
     vinecop(
       u_cond,
@@ -273,6 +309,28 @@ test_that("custom tree criteria are passed through", {
     }
   )
   expect_equal(seen_weights, obs_weights / mean(obs_weights))
+})
+
+test_that("Chatterjee's xi can be used for tree selection", {
+  set.seed(18)
+  u_cxi <- matrix(runif(400), ncol = 4)
+
+  fit_cxi <- vinecop(
+    u_cxi,
+    family_set = "indep",
+    tree_crit = "cxi"
+  )
+  fit_cxi_weighted <- vinecop(
+    u_cxi,
+    family_set = "indep",
+    weights = seq_len(nrow(u_cxi)),
+    tree_crit = "cxi"
+  )
+
+  expect_s3_class(fit_cxi, "vinecop")
+  expect_s3_class(fit_cxi_weighted, "vinecop")
+  expect_identical(fit_cxi$controls$tree_crit, "cxi")
+  expect_identical(fit_cxi_weighted$controls$tree_crit, "cxi")
 })
 
 test_that("custom tree criteria receive filtered data and weights", {
@@ -454,4 +512,17 @@ test_that("fitting only parameters works", {
 
   expect_warning(vinecop(u, structure = dvine_structure(3), vinecop = vc))
   expect_warning(vinecop(u, family_set = "gauss", vinecop = vc))
+})
+
+test_that("zero-truncated independence models can be refit", {
+  set.seed(42)
+  u_indep <- matrix(runif(90), 30, 3)
+  fit_indep <- vinecop(u_indep, family_set = "indep", trunc_lvl = 0)
+
+  refit_indep <- vinecop(u_indep[1:12, ], vinecop_object = fit_indep)
+
+  expect_length(refit_indep$pair_copulas, 0L)
+  expect_equal(unname(dim(refit_indep)), c(3, 0))
+  expect_equal(refit_indep$loglik, 0)
+  expect_identical(refit_indep$nobs, 12L)
 })

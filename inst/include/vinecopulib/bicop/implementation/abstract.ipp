@@ -329,14 +329,17 @@ AbstractBicop::pdf_d_d(const Eigen::MatrixXd& u,
     if (udiff.row(i).maxCoeff() < 5e-5) {
       pdf(i) = pdf_raw((umax.row(i) + umin.row(i)) / 2, par_i)(0);
     } else if (udiff(i, 0) < 5e-5) {
-      umax(i, 0) = (umax(i, 0) + umin(i, 0)) / 2;
-      umin(i, 0) = (umax(i, 0) + umin(i, 0)) / 2;
+      // both h-functions must be evaluated at the same collapsed argument
+      const double mid = (umax(i, 0) + umin(i, 0)) / 2;
+      umax(i, 0) = mid;
+      umin(i, 0) = mid;
       pdf(i) = (hfunc1_raw(umax.row(i), par_i)(0) -
                 hfunc1_raw(umin.row(i), par_i)(0)) /
                udiff(i, 1);
     } else if (udiff(i, 1) < 5e-5) {
-      umax(i, 1) = (umax(i, 1) + umin(i, 1)) / 2;
-      umin(i, 1) = (umax(i, 1) + umin(i, 1)) / 2;
+      const double mid = (umax(i, 1) + umin(i, 1)) / 2;
+      umax(i, 1) = mid;
+      umin(i, 1) = mid;
       pdf(i) = (hfunc2_raw(umax.row(i), par_i)(0) -
                 hfunc2_raw(umin.row(i), par_i)(0)) /
                udiff(i, 0);

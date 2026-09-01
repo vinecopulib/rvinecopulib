@@ -130,6 +130,17 @@ test_that("conditional simulation handles R-side ordering and recycling", {
   )
   expect_equal(u_reoriented[, 1], rep(0.35, 5))
 
+  vc_truncated <- truncate_model(vc_cond, 1)
+  truncated_structure_before <- vc_truncated$structure
+  u_truncated <- rvinecop(
+    5,
+    vc_truncated,
+    u_cond = 0.45,
+    conditioning_set = "a"
+  )
+  expect_equal(u_truncated[, 1], rep(0.45, 5))
+  expect_identical(vc_truncated$structure, truncated_structure_before)
+
   expect_error(
     rvinecop(5, vc_cond, u_cond = matrix(0.5, 2, 2)),
     "must have one or 'n' rows"

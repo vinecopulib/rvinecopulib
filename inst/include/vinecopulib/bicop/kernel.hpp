@@ -52,13 +52,6 @@ protected:
   Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u,
                             const Eigen::MatrixXd& parameters) override;
 
-  // state-based dispatchers (overridden for grid-specific jitter handling)
-  Eigen::VectorXd pdf(const Eigen::MatrixXd& u) override;
-
-  Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u) override;
-
-  Eigen::VectorXd hfunc2(const Eigen::MatrixXd& u) override;
-
   double get_npars() const override;
 
   void set_npars(const double& npars) override;

@@ -84,6 +84,20 @@ test_that("conditioning-aware selection is passed to the copula fit", {
     sort(tail(fit_conditioned$copula$structure$order, 2)),
     c(2L, 4L)
   )
+
+  fit_truncated <- vine(
+    u_named,
+    copula_controls = list(
+      family_set = "indep",
+      conditioning_set = c("V2", "V4"),
+      trunc_lvl = 1
+    )
+  )
+  expect_length(fit_truncated$copula$pair_copulas, 1L)
+  expect_equal(
+    sort(tail(fit_truncated$copula$structure$order, 2)),
+    c(2L, 4L)
+  )
 })
 
 test_that("margins_controls works", {
@@ -168,14 +182,11 @@ test_that("partial copula_controls do not retain data by default", {
 
 test_that("weights work", {
   w <- rexp(nrow(u))
-  expect_warning(
-    fit_weights <- vine(
-      u,
-      copula_controls = list(family_set = "nonpar"),
-      weights = w,
-      keep_data = TRUE
-    ),
-    "AIC and BIC are unavailable"
+  fit_weights <- vine(
+    u,
+    copula_controls = list(family_set = "nonpar"),
+    weights = w,
+    keep_data = TRUE
   )
   expect_eql(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
@@ -337,10 +348,7 @@ test_that("discrete variables work", {
   expect_equiv(p, pvine(x2, fit2))
   expect_equal(colnames(rvine(20, fit)), c("x1", "x2", "x3"))
 
-  expect_warning(
-    fit <- vine(x, var_types = c("d", "c", "zi")),
-    "AIC and BIC are unavailable"
-  )
+  fit <- vine(x, var_types = c("d", "c", "zi"))
   expect_equal(fit$copula$var_types, c("d", "c", "d"))
   expect_no_error(dvine(x, fit))
   expect_no_error(pvine(x, fit))
@@ -356,10 +364,7 @@ test_that("variable types can be declared by class or argument", {
   expect_s3_class(x$zero, "zero_inflated")
   expect_s3_class(x[1:5, , drop = FALSE]$zero, "zero_inflated")
 
-  expect_warning(
-    fit <- vine(x, copula_controls = list(family_set = "indep")),
-    "AIC and BIC are unavailable"
-  )
+  fit <- vine(x, copula_controls = list(family_set = "indep"))
   expect_equal(
     vapply(
       fit$margins,

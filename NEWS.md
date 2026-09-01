@@ -1,10 +1,10 @@
-# rvinecopulib 1.0.0.1.0 (unreleased)
+# rvinecopulib 1.0.0.1.0
 
 The first stable release. It bundles vinecopulib 1.0.0 and collects a large
 backend and frontend update: analytic derivatives, conditional simulation,
 conditioning-aware transforms and structure selection, observation-specific
 parameters, faster evaluation and fitting, and a modernized C++17 build. See
-the [vinecopulib 1.0.0 NEWS](https://github.com/vinecopulib/vinecopulib/blob/cond-simulate/NEWS.md)
+the [vinecopulib 1.0.0 NEWS](https://github.com/vinecopulib/vinecopulib/blob/009a06da1f54dc7690420b5d4c167ba30f32dbca/NEWS.md)
 for the complete backend changes.
 
 ### BREAKING API CHANGES
@@ -24,8 +24,14 @@ for the complete backend changes.
 
 ### BEHAVIOR CHANGES
 
-* TLL fits change slightly because the backend no longer clamps interpolation
-  grid endpoints at the boundary of the unit square.
+* TLL fits can change because the backend no longer clamps interpolation grid
+  endpoints at the boundary of the unit square, uses recovered latent samples
+  for discrete inputs, and normalizes interpolation grids symmetrically.
+
+* Conditioning-aware selection, Rosenblatt transforms, and conditional
+  simulation now support fixed, automatically selected, and zero truncation
+  levels. Conditioning-aware selection continues to require an MST tree
+  algorithm.
 
 * Kendall's tau for the BB6, BB7, BB8, and Tawn families incorporates several
   numerical fixes. Maximum-likelihood estimates can also shift in the low
@@ -90,6 +96,9 @@ for the complete backend changes.
   is serialized on the calling thread, while pair-copula fitting may still use
   multiple cores.
 
+* Add symmetrized Chatterjee's xi as a tree-selection criterion through
+  `tree_crit = "cxi"`.
+
 * Add `tail_dep()` and `blomqvist_beta()` for bivariate copula models and include
   these dependence summaries in printed model output.
 
@@ -114,9 +123,18 @@ for the complete backend changes.
 * Preserve rows with missing unordered-factor values when expanding factors in
   `vine()`.
 
-* Fix TLL CDF integration, Wilson random spanning trees, starting parameters for
-  discrete models, edge-case per-row parameter shapes, and evaluation of models
-  whose omitted pair copulas represent implicit independence.
+* Fix TLL CDF integration and inversion, use the recovered latent sample when
+  fitting discrete TLL models, and evaluate narrow discrete intervals at their
+  midpoint.
+
+* Ensure weighted Wilson random spanning trees terminate when all candidate
+  edge strengths are zero.
+
+* Correctly evaluate and refit zero-truncated models and models whose omitted
+  pair copulas represent implicit independence.
+
+* Fix starting parameters for discrete models and edge-case per-row parameter
+  shapes.
 
 * Preserve and correctly trim variable names for discrete copula data.
 
@@ -134,9 +152,10 @@ for the complete backend changes.
 
 * Require univariateML >= 1.5.0 for optional parametric margin support.
 
-* Modernize `src/update_vinecopulib.sh`: it accepts a branch or ref, imports via
-  a temporary clone, preserves package-owned wrappers, copies all public
-  headers, and reports the exact imported commit.
+* Modernize `src/update_vinecopulib.sh`: it accepts a branch, tag, or exact
+  commit, imports through a temporary checkout, preserves package-owned
+  wrappers, copies all public headers, and records the imported commit in the
+  vendored tree.
 
 # rvinecopulib 0.7.3.1.0
 

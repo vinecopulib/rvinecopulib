@@ -61,7 +61,8 @@ public:
   size_t get_trunc_lvl() const;
 
   //! @return the edge-weighting criterion used to grow the structure
-  //! (one of `"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`, `"joe"`, `"custom"`).
+  //! (one of `"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`, `"cxi"`, `"joe"`,
+  //! `"custom"`).
   std::string get_tree_criterion() const;
 
   //! @return the custom edge-weight function used when `tree_criterion` is

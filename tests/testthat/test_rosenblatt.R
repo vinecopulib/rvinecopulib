@@ -65,6 +65,24 @@ test_that("rosenblatt supports explicit conditioning sets", {
   )
   expect_identical(vc_cond$structure, structure_before)
 
+  vc_truncated <- truncate_model(vc_cond, 1)
+  truncated_structure_before <- vc_truncated$structure
+  u_truncated <- rvinecop(20, vc_truncated)
+  z_truncated <- rosenblatt(
+    u_truncated,
+    vc_truncated,
+    conditioning_set = c(4, 3)
+  )
+  expect_equal(
+    inverse_rosenblatt(
+      z_truncated,
+      vc_truncated,
+      conditioning_set = c(4, 3)
+    ),
+    u_truncated
+  )
+  expect_identical(vc_truncated$structure, truncated_structure_before)
+
   u_bicop <- rbicop(20, pc)
   expect_equal(
     inverse_rosenblatt(
@@ -202,13 +220,10 @@ test_that("discrete rosenblatt works with vine distributions", {
     x2 = rnorm(50),
     x3 = rbinom(50, 3, 0.5)
   )
-  expect_warning(
-    vd <- vine(
-      x,
-      var_types = c("d", "c", "zi"),
-      copula_controls = list(family_set = "gauss")
-    ),
-    "AIC and BIC are unavailable"
+  vd <- vine(
+    x,
+    var_types = c("d", "c", "zi"),
+    copula_controls = list(family_set = "gauss")
   )
   u <- rvine(50, vd)
   expect_true(mean(u[, 3] == 0) > 0.02)
