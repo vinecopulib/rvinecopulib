@@ -1029,9 +1029,13 @@ select_margin <- function(
   problems <- character()
   fits <- lapply(candidates, function(candidate) {
     family_name <- margin_info(candidate)$family_name
-    fit <- tryCatch(
+    tryCatch(
       withCallingHandlers(
-        fit_margin(candidate, x, weights = weights, type = type),
+        {
+          fit <- fit_margin(candidate, x, weights = weights, type = type)
+          validate_margin_candidate(fit, x, family_name, type)
+          fit
+        },
         warning = function(condition) {
           problems <<- c(
             problems,
@@ -1056,11 +1060,6 @@ select_margin <- function(
         NULL
       }
     )
-    if (is.null(fit)) {
-      return(NULL)
-    }
-    validate_margin_candidate(fit, x, family_name, type)
-    fit
   })
   fitted <- !vapply(fits, is.null, logical(1))
   fits <- fits[fitted]

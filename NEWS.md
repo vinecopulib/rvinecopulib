@@ -114,6 +114,9 @@ for the complete backend changes.
   warnings, reject fitted supports that exclude observations, and detect failed
   forked workers and malformed margin core counts early.
 
+* Reject margin candidates with non-finite fitted log-likelihoods without
+  aborting selection when another valid candidate is available (#350).
+
 * Make inverse Rosenblatt transforms thread-safe and custom tree criteria safe
   under multithreaded fitting.
 
