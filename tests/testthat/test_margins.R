@@ -473,8 +473,8 @@ test_that("selection handles incompatibility, candidate failures, and bad fits",
     select_margin(rnorm(20), list(malformed), "c", numeric(), "aic", 1),
     "fitted-margin protocol"
   )
-  expect_error(
-    select_margin(
+  expect_warning(
+    selected <- select_margin(
       rnorm(20),
       list(malformed, good),
       "c",
@@ -482,8 +482,9 @@ test_that("selection handles incompatibility, candidate failures, and bad fits",
       "aic",
       1
     ),
-    "fitted-margin protocol"
+    "malformed failed.*fitted-margin protocol"
   )
+  expect_identical(margin_info(selected)$family_name, "good")
 
   missing_loglik <- scored_margin_family("missing-loglik", NA_real_, 1)
   expect_error(
@@ -557,6 +558,30 @@ test_that("selection handles incompatibility, candidate failures, and bad fits",
     select_margin(rnorm(20), list(good), "d", numeric(), "aic", 1),
     "no candidate margin"
   )
+})
+
+test_that("selection rejects non-finite fitted log-likelihoods", {
+  skip_if_not_installed("univariateML")
+  x <- c(0, seq(0.1, 2, length.out = 30))
+  rayleigh <- univariateML_family("rayleigh")
+  good <- scored_margin_family("good", -100, 1)
+
+  expect_error(
+    select_margin(x, list(rayleigh), "c", numeric(), "aic", 1),
+    "could not fit.*rayleigh failed.*loglik.*finite or NA"
+  )
+  expect_warning(
+    selected <- select_margin(
+      x,
+      list(rayleigh, good),
+      "c",
+      numeric(),
+      "aic",
+      1
+    ),
+    "rayleigh failed.*loglik.*finite or NA"
+  )
+  expect_identical(margin_info(selected)$family_name, "good")
 })
 
 test_that("every family receives weights and decides how to handle them", {
