@@ -75,6 +75,15 @@ test_that("vcov works for bivariate copulas", {
   expect_equal(nrow(confint(bf)), 1L)
 })
 
+test_that("parameter labels and parameter-free models handle edge cases", {
+  bb1 <- bicop_dist("bb1", parameters = c(2, 1))
+  expect_equal(par_labels(bb1), c("bb1.par1", "bb1.par2"))
+
+  u <- matrix(runif(200), ncol = 2)
+  independent <- vinecop(u, family_set = "indep", keep_data = TRUE)
+  expect_equal(vcov(independent), matrix(numeric(), 0, 0))
+})
+
 test_that("there is no method for vine distributions", {
   # intervals that ignore marginal estimation are anticonservative, and
   # fit_margin() is a user-supplied black box, so no method is provided

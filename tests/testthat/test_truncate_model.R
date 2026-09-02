@@ -4,6 +4,10 @@ expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
 
 context("Truncation generic")
 
+test_that("columns can be truncated to zero length", {
+  expect_identical(truncate_column(1:3, 0), integer())
+})
+
 mat <- matrix(c(3, 2, 1, 3, 2, 0, 3, 0, 0), 3, 3)
 
 test_that("works with rvine_structure", {

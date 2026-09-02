@@ -34,6 +34,10 @@ test_that("margin_dist validates and implements the fitted-margin protocol", {
   expect_error(margin_dist(dnorm, pnorm, 1), "must be functions")
   expect_error(margin_dist(dnorm, pnorm, qnorm, family = ""), "family")
   expect_error(margin_dist(dnorm, pnorm, qnorm, type = "mixed"), "type")
+  expect_error(
+    margin_dist(dnorm, pnorm, qnorm, type = c("c", "d")),
+    "length one"
+  )
   expect_error(margin_dist(dnorm, pnorm, qnorm, support = c(1, 0)), "support")
   expect_error(margin_dist(dnorm, pnorm, qnorm, npars = -1), "npars")
   expect_error(margin_dist(dnorm, pnorm, qnorm, loglik = Inf), "loglik")
@@ -325,6 +329,7 @@ test_that("zero_inflated is a data-frame-safe type declaration", {
 
 test_that("kde1d family configuration owns all method-specific controls", {
   expect_error(kde1d_family(xmin = NA), "xmin")
+  expect_error(kde1d_family(xmax = NA), "xmax")
   expect_error(kde1d_family(xmin = 1, xmax = 0), "smaller")
   expect_error(kde1d_family(mult = 0), "mult")
   expect_error(kde1d_family(bw = 0), "bw")
@@ -375,6 +380,8 @@ test_that("family sets normalize aliases, nesting, and variable names", {
   expect_error(expand_margin_family_set(1, 1), "candidates")
   expect_error(expand_margin_family_set(NA_character_, 1), "cannot contain NA")
   expect_error(expand_margin_family_set(character(), 1), "non-empty")
+  expect_error(normalize_margin_candidates(list()), "non-empty")
+  expect_error(as_margin_family(1), "names or family objects")
   expect_error(
     expand_margin_family_set(
       list(first = "kde1d", other = "kde1d"),
@@ -398,6 +405,7 @@ test_that("parametric aliases use the optional univariateML adapter", {
   )
 
   skip_if_not_installed("univariateML")
+  expect_error(univariateML_family("not-a-family"), "unknown")
   parametric <- expand_margin_family_set("par", 1)[[1]]
   all_families <- expand_margin_family_set("all", 1)[[1]]
   expect_setequal(
@@ -409,6 +417,15 @@ test_that("parametric aliases use the optional univariateML adapter", {
     univariateML::univariateML_models
   )
   expect_identical(margin_info(all_families[[1]])$family_name, "kde1d")
+
+  # Objects fitted directly by univariateML do not carry rvinecopulib's cached
+  # metadata, so the adapter must recover it from the original attributes.
+  raw_continuous <- univariateML::mlnorm(seq(-2, 2, length.out = 30))
+  raw_discrete <- univariateML::mlpois(rep(0:4, 6))
+  expect_identical(margin_info(raw_continuous)$type, "c")
+  expect_identical(margin_info(raw_discrete)$type, "d")
+  expect_equal(margin_info(raw_continuous)$support, c(-Inf, Inf))
+  expect_identical(margin_info(raw_continuous)$family_name, "Normal")
 })
 
 test_that("selection uses only generic fitted-margin metadata", {
@@ -511,6 +528,22 @@ test_that("selection handles incompatibility, candidate failures, and bad fits",
     "AIC and BIC are unavailable"
   )
   expect_identical(margin_info(selected)$family_name, "missing-npars")
+  another_missing_npars <- scored_margin_family(
+    "another-missing-npars",
+    -11,
+    NA_real_
+  )
+  expect_error(
+    select_margin(
+      rnorm(20),
+      list(missing_npars, another_missing_npars),
+      "c",
+      numeric(),
+      "aic",
+      1
+    ),
+    "no candidate has a finite parameter count"
+  )
   expect_identical(
     margin_info(select_margin(
       rnorm(20),
