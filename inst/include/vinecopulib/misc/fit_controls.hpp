@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -7,74 +7,104 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include <vector>
+#include <functional>
+#include <optional>
 #include <string>
-#include <vinecopulib/misc/tools_optional.hpp>
+#include <vector>
+#include <vinecopulib/bicop/family.hpp>
 
 namespace vinecopulib {
 
+//! @brief A custom edge-weight function for vine structure selection.
+//!
+//! Maps a two-column matrix of pair-copula data and a vector of weights to a
+//! scalar dependence value. Used when `tree_criterion` is set to `"custom"`.
+//! It is always called on the thread that starts the fit, so it need not be
+//! thread safe.
+using TreeCriterionFunction =
+  std::function<double(const Eigen::MatrixXd&, const Eigen::VectorXd&)>;
 
 //! Configuration options for initializing a FitControlsVinecop object.
 //!
-//! This struct provides a flexible way to initialize a `FitControlsVinecop` object.
-//! Each field is optional, and default values are applied if the field is not set.
-struct FitControlsConfig {
-    //! The set of bicop families to consider. Defaults to all families.
-    optional::optional<std::vector<BicopFamily>> family_set;
+//! This struct provides a flexible way to initialize a `FitControlsVinecop`
+//! object. Each field is optional, and default values are applied if the field
+//! is not set.
+struct FitControlsConfig
+{
+  //! The set of bicop families to consider. Defaults to all families.
+  std::optional<std::vector<BicopFamily>> family_set;
 
-    //! Method for parametric estimation (e.g., "mle"). Default: "mle".
-    optional::optional<std::string> parametric_method;
+  //! Method for parametric estimation (e.g., "mle"). Default: "mle".
+  std::optional<std::string> parametric_method;
 
-    //! Method for nonparametric estimation (e.g., "constant"). Default: "constant".
-    optional::optional<std::string> nonparametric_method;
+  //! Method for nonparametric estimation (e.g., "constant"). Default:
+  //! "constant".
+  std::optional<std::string> nonparametric_method;
 
-    //! Method for nonparametric estimation (e.g., "constant"). Default: "constant".
-    optional::optional<double> nonparametric_mult;
+  //! Method for nonparametric estimation (e.g., "constant"). Default:
+  //! "constant".
+  std::optional<double> nonparametric_mult;
 
-    //! Criterion for model selection (e.g., "aic"). Default: "aic".
-    optional::optional<std::string> selection_criterion;
+  //! Grid size for nonparametric estimation. Default: 30.
+  std::optional<size_t> nonparametric_grid_size;
 
-    //! Observation weights. Default: an empty Eigen::VectorXd.
-    optional::optional<Eigen::VectorXd> weights;
+  //! Criterion for model selection (e.g., "aic"). Default: "aic".
+  std::optional<std::string> selection_criterion;
 
-    //! Threshold for the psi0 parameter. Default: 0.9.
-    optional::optional<double> psi0;
+  //! Observation weights. Default: an empty Eigen::VectorXd.
+  std::optional<Eigen::VectorXd> weights;
 
-    //! Whether to preselect families based on preliminary criteria. Default: true.
-    optional::optional<bool> preselect_families;
+  //! Threshold for the psi0 parameter. Default: 0.9.
+  std::optional<double> psi0;
 
-    //! Whether to allow rotations for the families. Default: true.
-    optional::optional<bool> allow_rotations;
+  //! Whether to preselect families based on preliminary criteria. Default:
+  //! true.
+  std::optional<bool> preselect_families;
 
-    //! Number of threads to use during fitting. Default: 1.
-    optional::optional<size_t> num_threads;
+  //! Whether to allow rotations for the families. Default: true.
+  std::optional<bool> allow_rotations;
 
-    //! Truncation level for truncated vines. Default: no truncation.
-    optional::optional<size_t> trunc_lvl;
+  //! Number of threads to use during fitting. Default: 1.
+  std::optional<size_t> num_threads;
 
-    //! The criterion for selecting the maximum spanning tree. Default: "tau".
-    optional::optional<std::string> tree_criterion;
+  //! Truncation level for truncated vines. Default: no truncation.
+  std::optional<size_t> trunc_lvl;
 
-    //! Threshold for thresholded vines. Default: 0.
-    optional::optional<double> threshold;
+  //! The criterion for selecting the maximum spanning tree. Default: "tau".
+  std::optional<std::string> tree_criterion;
 
-    //! Whether to select the truncation level automatically. Default: false.
-    optional::optional<bool> select_threshold;
+  //! A custom edge-weight function for the spanning tree. Required when
+  //! `tree_criterion` is set to `"custom"`, and rejected otherwise. It is
+  //! always called on the thread that starts the fit, so it need not be
+  //! thread safe.
+  std::optional<TreeCriterionFunction> tree_criterion_function;
 
-    //! Whether to select the threshold automatically. Default: false.
-    optional::optional<bool> select_trunc_lvl;
+  //! Threshold for thresholded vines. Default: 0.
+  std::optional<double> threshold;
 
-    //! Whether to select the families automatically. Default: true.
-    optional::optional<bool> select_families;
+  //! Whether to select the truncation level automatically. Default: false.
+  std::optional<bool> select_threshold;
 
-    //! Whether to show a trace of the building progress. Default: false.
-    optional::optional<bool> show_trace;
+  //! Whether to select the threshold automatically. Default: false.
+  std::optional<bool> select_trunc_lvl;
 
-    //! The algorithm for building the maximum spanning tree. Default: "mst_prim".
-    optional::optional<std::string> tree_algorithm;
+  //! Whether to select the families automatically. Default: true.
+  std::optional<bool> select_families;
 
-    //! A vector of random seeds for the random number generator
-    optional::optional<std::vector<int>> seeds;
+  //! Whether to show a trace of the building progress. Default: false.
+  std::optional<bool> show_trace;
+
+  //! The algorithm for building the maximum spanning tree. Default: "mst_prim".
+  std::optional<std::string> tree_algorithm;
+
+  //! A vector of random seeds for the random number generator
+  std::optional<std::vector<int>> seeds;
+
+  //! Conditioning set for conditioning-aware structure selection: 1-based
+  //! variable indices to place at the tail of the vine order (so they can be
+  //! conditioned on with `Vinecop::simulate_conditional()`). Default: empty
+  //! (unconditional selection).
+  std::optional<std::vector<size_t>> conditioning_set;
 };
 
 }

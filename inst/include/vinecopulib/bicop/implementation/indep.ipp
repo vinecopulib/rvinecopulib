@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -15,41 +15,41 @@ inline IndepBicop::IndepBicop()
 }
 
 inline Eigen::VectorXd
-IndepBicop::pdf_raw(const Eigen::MatrixXd& u)
+IndepBicop::pdf_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
   auto f = [](double, double) { return 1.0; };
   return tools_eigen::binaryExpr_or_nan(u, f);
 }
 
 inline Eigen::VectorXd
-IndepBicop::cdf(const Eigen::MatrixXd& u)
+IndepBicop::cdf(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
   return u.rowwise().prod();
 }
 
 inline Eigen::VectorXd
-IndepBicop::hfunc1_raw(const Eigen::MatrixXd& u)
+IndepBicop::hfunc1_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
   auto f = [](double, double u2) { return u2; };
   return tools_eigen::binaryExpr_or_nan(u, f);
 }
 
 inline Eigen::VectorXd
-IndepBicop::hfunc2_raw(const Eigen::MatrixXd& u)
+IndepBicop::hfunc2_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
   auto f = [](double u1, double) { return u1; };
   return tools_eigen::binaryExpr_or_nan(u, f);
 }
 
 inline Eigen::VectorXd
-IndepBicop::hinv1_raw(const Eigen::MatrixXd& u)
+IndepBicop::hinv1_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
   auto f = [](double, double u2) { return u2; };
   return tools_eigen::binaryExpr_or_nan(u, f);
 }
 
 inline Eigen::VectorXd
-IndepBicop::hinv2_raw(const Eigen::MatrixXd& u)
+IndepBicop::hinv2_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {
   auto f = [](double u1, double) { return u1; };
   return tools_eigen::binaryExpr_or_nan(u, f);
@@ -65,6 +65,12 @@ inline double
 IndepBicop::parameters_to_tau(const Eigen::MatrixXd&)
 {
   return 0.0;
+}
+
+inline Eigen::MatrixXd
+IndepBicop::parameters_to_taildep(const Eigen::MatrixXd&)
+{
+  return Eigen::MatrixXd::Zero(2, 2);
 }
 
 inline Eigen::VectorXd

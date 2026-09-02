@@ -14,7 +14,7 @@ dvine(x, vine, cores = 1)
 
 pvine(x, vine, n_mc = 10^4, cores = 1)
 
-rvine(n, vine, qrng = FALSE, cores = 1)
+rvine(n, vine, qrng = FALSE, cores = 1, x_cond = NULL, conditioning_set = NULL)
 }
 \arguments{
 \item{x}{evaluation points, either a length d vector or a d-column matrix,
@@ -32,10 +32,21 @@ done in parallel on \code{cores} batches .}
 \item{qrng}{if \code{TRUE}, generates quasi-random numbers using the multivariate
 Generalized Halton sequence up to dimension 300 and the Generalized Sobol
 sequence in higher dimensions (default \code{qrng = FALSE}).}
+
+\item{x_cond}{optional conditioning values for \code{rvine()} on the original
+data scale. A vector or one-row object is repeated \code{n} times;
+alternatively, supply an \code{n}-row matrix or data frame for
+observation-specific conditioning values. If \code{NULL}, \code{rvine()} performs
+unconditional simulation.}
+
+\item{conditioning_set}{variable indices or names corresponding to the
+columns of \code{x_cond}. When \code{NULL}, the columns correspond to the last
+variables of the current copula order. Discrete left limits are computed
+internally from the fitted margins.}
 }
 \value{
 \code{dvine()} gives the density, \code{pvine()} gives the distribution function,
-and \code{rvine()} generates random deviates.
+and \code{rvine()} generates unconditional or conditional random deviates.
 
 The length of the result is determined by \code{n} for \code{rvine()}, and
 the number of rows in \code{u} for the other functions.
@@ -53,10 +64,9 @@ Here, the density, distribution function and random generation
 for the vine distributions are standard.
 
 The functions are based on \code{\link[=dvinecop]{dvinecop()}}, \code{\link[=pvinecop]{pvinecop()}} and \code{\link[=rvinecop]{rvinecop()}} for
-\link{vinecop} objects, and either \code{\link[kde1d:dkde1d]{kde1d::dkde1d()}}, \code{\link[kde1d:dkde1d]{kde1d::pkde1d()}} and
-\code{\link[kde1d:dkde1d]{kde1d::qkde1d()}} for estimated vines (i.e., output of \code{\link[=vine]{vine()}}), or the
-standard \emph{d/p/q-xxx} from \link[stats:Distributions]{stats::Distributions} for custom vines
-(i.e., output of \code{\link[=vine_dist]{vine_dist()}}).
+\link{vinecop} objects. Margins are evaluated through \code{\link[=dmargin]{dmargin()}}, \code{\link[=pmargin]{pmargin()}},
+and \code{\link[=qmargin]{qmargin()}}. Methods are provided for margins fitted by \code{\link[=vine]{vine()}} and for
+the fixed \link[stats:Distributions]{stats::Distributions} specifications accepted by \code{\link[=vine_dist]{vine_dist()}}.
 }
 \examples{
 # specify pair-copulas
@@ -68,7 +78,7 @@ pcs <- list(
 
 # set up vine copula model
 mat <- rvine_matrix_sim(3)
-vc <- vine_dist(list(list(distr = "norm")), pcs, mat)
+vc <- vine_dist(list(stats_margin("norm")), pcs, mat)
 
 # simulate from the model
 x <- rvine(200, vc)

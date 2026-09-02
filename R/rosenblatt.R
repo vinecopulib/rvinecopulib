@@ -1,9 +1,8 @@
-#' (Inverse) Rosenblatt transform
+#' Rosenblatt and inverse Rosenblatt transforms
 #'
-#' The Rosenblatt transform takes data generated from a model and turns it into
-#' independent uniform variates, The inverse Rosenblatt transform computes
-#' conditional quantiles and can be used simulate from a stochastic model,
-#' see *Details*.
+#' The Rosenblatt transform maps observations from a model to independent
+#' uniform variates. The inverse transform evaluates conditional quantiles and
+#' maps independent uniforms to draws from the model; see *Details*.
 #'
 #' @name rosenblatt
 #' @aliases rosenblatt inverse_rosenblatt
@@ -17,53 +16,48 @@
 #'    of `u`).
 #' @param randomize_discrete Whether to randomize the transform for discrete
 #'   variables; see Details.
+#' @param conditioning_set optional variable indices or names that define the
+#'   conditioning variables. The transform uses an admissible sampling order
+#'   whose tail contains exactly this set. The model is not modified. If `NULL`,
+#'   the current model order is used. An error is thrown if the requested set
+#'   cannot form an admissible tail.
 #'
 #' @details
-#' The Rosenblatt transform (Rosenblatt, 1952) \eqn{U = T(V)} of a random vector
-#' \eqn{V = (V_1,\ldots,V_d) ~ F} is defined as
+#' Let \eqn{(s_1, \ldots, s_d)} be the sampling order of a random vector
+#' \eqn{V = (V_1, \ldots, V_d)} with distribution \eqn{F}. For continuous
+#' variables, the Rosenblatt transform \eqn{Z = T(V)} is defined by
 #' \deqn{
-#'   U_1= F(V_1), U_{2} = F(V_{2}|V_1), \ldots, U_d =F(V_d|V_1,\ldots,V_{d-1}),
+#'   Z_{s_1} = F_{s_1}(V_{s_1}), \qquad
+#'   Z_{s_j} = F_{s_j \mid s_1, \ldots, s_{j-1}}
+#'   (V_{s_j} \mid V_{s_1}, \ldots, V_{s_{j-1}}),
+#'   \quad j = 2, \ldots, d.
 #' }
-#' where \eqn{F(v_k|v_1,\ldots,v_{k-1})} is the conditional distribution of
-#' \eqn{V_k} given \eqn{V_1 \ldots, V_{k-1}, k = 2,\ldots,d}. The vector
-#' \eqn{U  = (U_1, \dots, U_d)} then contains independent standard uniform
-#' variables. The inverse operation
-#' \deqn{
-#'   V_1 = F^{-1}(U_1), V_{2} = F^{-1}(U_2|U_1), \ldots,
-#'   V_d =F^{-1}(U_d|U_1,\ldots,U_{d-1}),
-#' }
-#' can be used to simulate from a distribution. For any copula \eqn{F}, if
-#' \eqn{U} is a vector of independent random variables, \eqn{V = T^{-1}(U)} has
-#' distribution \eqn{F}.
+#' If the model is correct, the components of \eqn{Z} are independent standard
+#' uniforms. The result is stored in the original variable columns; the
+#' sampling order determines only the sequence of conditional distributions.
 #'
-#' The formulas above assume a vine copula model with order \eqn{d, \dots, 1}.
-#' More generally, `rosenblatt()` returns the variables
+#' The inverse transform applies the corresponding conditional quantiles:
 #' \deqn{
-#'   U_{M[d + 1- j, j]}= F(V_{M[d - j + 1, j]} | V_{M[d - j, j]}, \dots, V_{M[1, j]}),
+#'   V_{s_1} = F_{s_1}^{-1}(Z_{s_1}), \qquad
+#'   V_{s_j} = F_{s_j \mid s_1, \ldots, s_{j-1}}^{-1}
+#'   (Z_{s_j} \mid V_{s_1}, \ldots, V_{s_{j-1}}),
+#'   \quad j = 2, \ldots, d.
 #' }
-#' where \eqn{M} is the structure matrix. Similarly, `inverse_rosenblatt()`
-#' returns
-#' \deqn{
-#'   V_{M[d + 1- j, j]}= F^{-1}(U_{M[d - j + 1, j]} | U_{M[d - j, j]}, \dots, U_{M[1, j]}).
-#' }
+#' Thus \eqn{T^{-1}(Z)} has distribution \eqn{F} when \eqn{Z} contains
+#' independent standard uniforms.
 #'
-#' If some variables have atoms, Brockwell (10.1016/j.spl.2007.02.008) proposed
-#' a simple randomization scheme to ensure that output is still independent
-#' uniform if the model is correct. The transformation reads
-#' \deqn{ U_{M[d - j,
-#' j]}= W_{d - j} F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0,
-#' 0]}) + (1 - W_{d - j}) F^-(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots,
-#' V_{M[0, 0]}),
-#' }
-#' where \eqn{F^-}
-#' is the left limit of the conditional cdf
-#' and \eqn{W_1, \dots, W_d} are are independent standard uniform random
-#' variables. This is used by default. If you are interested in the conditional
-#' probabilities
+#' If a variable has atoms, its conditional cdf jumps at the observation. Let
+#' \eqn{G_j} denote the conditional cdf of \eqn{V_{s_j}} given the preceding
+#' variables in the sampling order. Following Brockwell
+#' (10.1016/j.spl.2007.02.008), `rosenblatt()` returns
 #' \deqn{
-#'  F(V_{M[d - j, j]} | V_{M[d - j - 1, j - 1]}, \dots, V_{M[0, 0]}),
+#'   Z_{s_j} = W_j G_j(V_{s_j}) + (1 - W_j) G_j(V_{s_j}^{-}),
 #' }
-#' set `randomize_discrete = FALSE`.
+#' where \eqn{G_j(V_{s_j}^{-})} is the left limit and the \eqn{W_j} are
+#' independent standard uniforms. This randomization is used by default and
+#' yields uniform components under the fitted model. Set
+#' `randomize_discrete = FALSE` to return the upper endpoint
+#' \eqn{G_j(V_{s_j})} instead.
 #'
 #' @examples
 #' # simulate data with some dependence
@@ -85,10 +79,23 @@
 #' vc <- fit$copula
 #' rosenblatt(pseudo_obs(x), vc)
 #' @export
-rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
+rosenblatt <- function(
+  x,
+  model,
+  cores = 1,
+  randomize_discrete = TRUE,
+  conditioning_set = NULL
+) {
+  cores <- as_count(cores, "cores")
   assert_that(
     inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist")),
-    is.number(cores)
+    is.flag(randomize_discrete)
+  )
+
+  conditioning_set <- process_conditioning_set(
+    conditioning_set,
+    model$names,
+    if (inherits(model, "bicop_dist")) 2L else dim(model)[1]
   )
 
   if (inherits(model, "bicop_dist")) {
@@ -112,7 +119,14 @@ rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
   assert_that(all((x >= 0) & (x <= 1)))
   x <- pmin(pmax(x, 1e-10), 1 - 1e-10)
   x <- if_vec_to_matrix(x, dim(model)[1] == 1)
-  x <- vinecop_rosenblatt_cpp(x, model, cores, randomize_discrete, get_seeds())
+  x <- vinecop_rosenblatt_cpp(
+    x,
+    model,
+    conditioning_set,
+    cores,
+    randomize_discrete,
+    get_seeds()
+  )
   colnames(x) <- model$names
 
   x
@@ -120,11 +134,22 @@ rosenblatt <- function(x, model, cores = 1, randomize_discrete = TRUE) {
 
 #' @rdname rosenblatt
 #' @export
-inverse_rosenblatt <- function(u, model, cores = 1) {
+inverse_rosenblatt <- function(
+  u,
+  model,
+  cores = 1,
+  conditioning_set = NULL
+) {
+  cores <- as_count(cores, "cores")
   assert_that(
     all((u > 0) & (u < 1)),
-    inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist")),
-    is.number(cores)
+    inherits(model, c("bicop_dist", "vinecop_dist", "vine_dist"))
+  )
+
+  conditioning_set <- process_conditioning_set(
+    conditioning_set,
+    model$names,
+    if (inherits(model, "bicop_dist")) 2L else dim(model)[1]
   )
 
   to_col <- if (inherits(model, "bicop_dist")) FALSE else (dim(model)[1] == 1)
@@ -139,9 +164,14 @@ inverse_rosenblatt <- function(u, model, cores = 1) {
   }
 
   if (inherits(model, "vinecop_dist")) {
-    u <- vinecop_inverse_rosenblatt_cpp(u, model, cores)
+    u <- vinecop_inverse_rosenblatt_cpp(u, model, conditioning_set, cores)
   } else {
-    u <- vinecop_inverse_rosenblatt_cpp(u, model$copula, cores)
+    u <- vinecop_inverse_rosenblatt_cpp(
+      u,
+      model$copula,
+      conditioning_set,
+      cores
+    )
     u <- dpq_marg(u, model, "q")
   }
   colnames(u) <- model$names

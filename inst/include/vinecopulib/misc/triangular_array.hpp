@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -8,7 +8,9 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <type_traits>
 #include <vector>
+#include <vinecopulib/misc/nlohmann_json.hpp>
 
 namespace vinecopulib {
 
@@ -47,6 +49,23 @@ public:
   TriangularArray(size_t d, size_t trunc_lvl);
   explicit TriangularArray(const std::vector<std::vector<T>>& rows);
 
+  //! @brief Constructs a triangular array from a `nlohmann::json` object.
+  //!
+  //! The `"data"` field must contain the rows of the array (as written by
+  //! `to_json()`); the dimension and truncation level are derived from the
+  //! rows. Templated so that brace-enclosed initializer lists keep selecting
+  //! the nested-vector constructor.
+  //!
+  //! @param input The `nlohmann::json` object to convert from.
+  template<typename Json,
+           typename std::enable_if<std::is_same<typename std::decay<Json>::type,
+                                                nlohmann::json>::value,
+                                   int>::type = 0>
+  explicit TriangularArray(const Json& input)
+    : TriangularArray(input["data"].template get<std::vector<std::vector<T>>>())
+  {
+  }
+
   T& operator()(size_t row, size_t column);
   T operator()(size_t row, size_t column) const;
   bool operator==(const TriangularArray<T>& rhs) const;
@@ -55,6 +74,9 @@ public:
 
   size_t get_trunc_lvl() const;
   size_t get_dim() const;
+
+  nlohmann::json to_json() const;
+  std::vector<std::vector<T>> to_list() const;
 
   std::string str() const;
 
@@ -71,7 +93,8 @@ private:
 template<typename T>
 TriangularArray<T>::TriangularArray(size_t d)
   : TriangularArray(d, d - 1)
-{}
+{
+}
 
 //! @brief Construct a truncated triangular array.
 //!
@@ -208,13 +231,48 @@ TriangularArray<T>::get_trunc_lvl() const
   return trunc_lvl_;
 }
 
-//! @brief Gets the dimension of the underlying vine (the matrix has `d-1` columns and.
-//! `min(trunv_lvl, d-1)` rows).
+//! @brief Gets the dimension of the underlying vine (the matrix has `d-1`
+//! columns and. `min(trunv_lvl, d-1)` rows).
 template<typename T>
 size_t
 TriangularArray<T>::get_dim() const
 {
   return d_;
+}
+
+//! @brief Converts the triangular array to a `nlohmann::json` object.
+//!
+//! The result contains the fields `"d"` (dimension), `"t"` (truncation
+//! level), and `"data"` (the rows of the array); it can be converted back
+//! with the JSON constructor.
+//!
+//! @return The `nlohmann::json` object containing the array.
+template<typename T>
+nlohmann::json
+TriangularArray<T>::to_json() const
+{
+  nlohmann::json output;
+  output["d"] = d_;
+  output["t"] = trunc_lvl_;
+  output["data"] = this->to_list();
+  return output;
+}
+
+//! @brief Converts the triangular array to a nested vector of rows.
+//!
+//! Row `i` holds the `d - 1 - i` entries of tree `i`; the result can be
+//! converted back with the nested-vector constructor.
+//!
+//! @return The rows of the array.
+template<typename T>
+std::vector<std::vector<T>>
+TriangularArray<T>::to_list() const
+{
+  std::vector<std::vector<T>> rows(std::min(d_ - 1, trunc_lvl_));
+  for (size_t i = 0; i < rows.size(); i++) {
+    rows[i].assign(arr_[i].begin(), arr_[i].begin() + (d_ - 1 - i));
+  }
+  return rows;
 }
 
 //! represent triangular array as a string.

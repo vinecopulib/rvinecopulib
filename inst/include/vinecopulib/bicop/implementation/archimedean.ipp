@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -23,42 +23,68 @@ namespace vinecopulib {
 //}
 
 inline Eigen::VectorXd
-ArchimedeanBicop::cdf(const Eigen::MatrixXd& u)
+ArchimedeanBicop::cdf(const Eigen::MatrixXd& u,
+                      const Eigen::MatrixXd& parameters)
 {
-  auto f = [this](const double& u1, const double& u2) {
-    return generator_inv(generator(u1) + generator(u2));
+  auto f = [this](const double& u1,
+                  const double& u2,
+                  const Eigen::Ref<const Eigen::VectorXd>& par) {
+    return generator_inv(generator(u1, par) + generator(u2, par), par);
   };
-  return tools_eigen::binaryExpr_or_nan(u, f);
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
 }
 
 inline Eigen::VectorXd
-ArchimedeanBicop::hfunc1_raw(const Eigen::MatrixXd& u)
+ArchimedeanBicop::hfunc1_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters)
 {
-  auto f = [this](const double& u1, const double& u2) {
-    double temp = generator_inv(generator(u1) + generator(u2));
-    temp = generator_derivative(u1) / generator_derivative(temp);
+  auto f = [this](const double& u1,
+                  const double& u2,
+                  const Eigen::Ref<const Eigen::VectorXd>& par) {
+    double temp = generator_inv(generator(u1, par) + generator(u2, par), par);
+    temp = generator_derivative(u1, par) / generator_derivative(temp, par);
     return std::isnan(temp) ? u2 : std::min(temp, 1.0);
   };
-  return tools_eigen::binaryExpr_or_nan(u, f);
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
 }
 
 inline Eigen::VectorXd
-ArchimedeanBicop::hfunc2_raw(const Eigen::MatrixXd& u)
+ArchimedeanBicop::hfunc2_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters)
 {
-  return hfunc1_raw(tools_eigen::swap_cols(u));
+  return hfunc1_raw(tools_eigen::swap_cols(u), parameters);
 }
 
 inline Eigen::VectorXd
-ArchimedeanBicop::hinv1_raw(const Eigen::MatrixXd& u)
+ArchimedeanBicop::hfunc2_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv)
 {
-  Eigen::VectorXd hinv = hinv1_num(u);
-  return hinv;
+  return hfunc1_deriv_raw(
+    tools_eigen::swap_cols(u), parameters, tools_deriv::swap_args(deriv));
 }
 
 inline Eigen::VectorXd
-ArchimedeanBicop::hinv2_raw(const Eigen::MatrixXd& u)
+ArchimedeanBicop::hfunc2_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv)
 {
-  return hinv1_raw(tools_eigen::swap_cols(u));
+  return hfunc1_deriv2_raw(
+    tools_eigen::swap_cols(u), parameters, tools_deriv::swap_args(deriv));
+}
+
+inline Eigen::VectorXd
+ArchimedeanBicop::hinv1_raw(const Eigen::MatrixXd& u,
+                            const Eigen::MatrixXd& parameters)
+{
+  return hinv1_num_raw(u, parameters);
+}
+
+inline Eigen::VectorXd
+ArchimedeanBicop::hinv2_raw(const Eigen::MatrixXd& u,
+                            const Eigen::MatrixXd& parameters)
+{
+  return hinv1_raw(tools_eigen::swap_cols(u), parameters);
 }
 
 inline Eigen::VectorXd

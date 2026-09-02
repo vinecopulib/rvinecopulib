@@ -19,9 +19,19 @@
 #'   truncation, `NA` indicates that the truncation level should be selected
 #'   automatically by [mBICV()].
 #' @param tree_crit the criterion for tree selection, one of `"tau"`, `"rho"`,
-#'   `"hoeffd"`, `"mcor"`, or `"joe"` for Kendall's \eqn{\tau}, Spearman's
-#'   \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation, or logarithm of
-#'   the partial correlation, respectively.
+#'   `"hoeffd"`, `"mcor"`, `"cxi"`, or `"joe"` for Kendall's \eqn{\tau},
+#'   Spearman's \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation,
+#'   symmetrized Chatterjee's \eqn{\xi}, or logarithm of the partial
+#'   correlation, respectively. Alternatively, a function with arguments
+#'   `data` and `weights` may be supplied. `data` is a two-column
+#'   matrix of pair-copula pseudo-observations. `weights` contains the
+#'   corresponding observation weights, standardized by the backend to sum to
+#'   the original number of observations, or `numeric(0)` when no weights were
+#'   supplied. Rows containing missing values or zero weights are removed
+#'   before the function is called. The function must return one finite numeric
+#'   value; its absolute value is used as the edge strength. Custom functions
+#'   always run serially on the calling thread; pair-copula fitting may still use
+#'   `cores` threads.
 #' @param threshold for thresholded vine copulas; `NA` indicates that the
 #'   threshold should be selected automatically by [mBICV()].
 #' @param vinecop_object a `vinecop` object to be updated; if provided, only the
@@ -38,11 +48,16 @@
 #'   `"random_unweighted"`) during the tree-wise structure selection.
 #'   `"mst_prim"` and `"mst_kruskal"` use Prim's and Kruskal's algorithms
 #'   respectively to select the maximum spanning tree, maximizing
-#'   the sum of the edge weights (i.e., `tree_criterion`).
+#'   the sum of the edge weights (i.e., `tree_crit`).
 #'   `"random_weighted"` and `"random_unweighted"` use Wilson's
 #'   algorithm to generate a random spanning tree, either with probability
 #'   proportional to the product of the edge weights (weighted) or
 #'   uniformly (unweighted).
+#' @param conditioning_set variable indices or names to place at the end of the
+#'   vine order. The resulting model can be sampled conditionally with
+#'   [rvinecop()] by supplying `u_cond`. Conditioning-aware selection supports
+#'   fixed or automatically selected truncation levels and requires an MST tree
+#'   algorithm (`"mst_prim"` or `"mst_kruskal"`).
 #'
 #' @details
 #'
@@ -73,13 +88,14 @@
 #' financial returns.* Computational Statistics & Data Analysis, 59 (1),
 #' 52-69.
 #' The dependence measure used to select trees (default: Kendall's tau) is
-#' corrected for ties and can be changed using the `tree_criterion`
-#' argument, which can be set to `"tau"`, `"rho"` or `"hoeffd"`.
-#' Both Prim's (default: `"mst_prim"`) and Kruskal's ()`"mst_kruskal"`)
+#' corrected for ties and can be changed using the `tree_crit`
+#' argument, which can be set to `"tau"`, `"rho"`, `"hoeffd"`, `"mcor"`,
+#' `"cxi"`, or `"joe"`, or to a custom function.
+#' Both Prim's (default: `"mst_prim"`) and Kruskal's (`"mst_kruskal"`)
 #' algorithms are available through `tree_algorithm` to set the
 #' maximum spanning tree selection algorithm.
 #' An alternative to the maximum spanning tree selection is to use random
-#' spanning trees, which can be selected using `controls.tree_algorithm` and
+#' spanning trees, which can be selected using `tree_algorithm` and
 #' come in two flavors, both using Wilson's algorithm loop erased random walks:
 #'
 #'   - "random_weighted"` generates a random spanning tree with probability
@@ -130,19 +146,24 @@
 #' plot(fit)
 #' contour(fit)
 #'
-#' ## select by log-likelihood criterion from one-paramter families
+#' ## select by BIC from one-parameter families
 #' fit <- vinecop(u, family_set = "onepar", selcrit = "bic")
 #' summary(fit)
 #'
 #' ## 1-truncated, Gaussian D-vine
-#' fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss", trunc_lvl = 1)
+#' fit <- vinecop(
+#'   u,
+#'   structure = dvine_structure(1:5),
+#'   family_set = "gauss",
+#'   trunc_lvl = 1
+#' )
 #' plot(fit)
 #' contour(fit)
 #'
 #' ## Partial structure selection with only first tree specified
 #' structure <- rvine_structure(order = 1:5, list(rep(5, 4)))
 #' structure
-#' fit <- vinecop(u, structure = structure, family = "gauss")
+#' fit <- vinecop(u, structure = structure, family_set = "gauss")
 #' plot(fit)
 #'
 #' ## Model for discrete data
@@ -176,8 +197,10 @@ vinecop <- function(
   vinecop_object = NULL,
   show_trace = FALSE,
   cores = 1,
-  tree_algorithm = "mst_prim"
+  tree_algorithm = "mst_prim",
+  conditioning_set = NULL
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     is.character(family_set),
     inherits(structure, "matrix") ||
@@ -195,14 +218,53 @@ vinecop <- function(
     is.flag(presel),
     is.flag(allow_rotations),
     is.scalar(trunc_lvl),
-    is.string(tree_crit),
+    is.string(tree_crit) || is.function(tree_crit),
     is.scalar(threshold),
     is.flag(keep_data),
-    is.number(cores),
-    cores > 0,
     correct_var_types(var_types),
     is.string(tree_algorithm)
   )
+
+  d <- length(var_types)
+  var_names <- colnames(data)
+  if (!is.null(var_names)) {
+    var_names <- var_names[seq_len(d)]
+  }
+  conditioning_set <- process_conditioning_set(
+    conditioning_set,
+    var_names,
+    d
+  )
+  if (length(conditioning_set) > 0) {
+    if (!is.null(vinecop_object)) {
+      stop(
+        "'conditioning_set' cannot be used when refitting a 'vinecop_object'.",
+        call. = FALSE
+      )
+    }
+    if (!tree_algorithm %in% c("mst_prim", "mst_kruskal")) {
+      stop(
+        "conditioning-aware selection requires 'tree_algorithm' to be ",
+        "'mst_prim' or 'mst_kruskal'.",
+        call. = FALSE
+      )
+    }
+  }
+
+  tree_crit_control <- tree_crit
+  tree_crit_function <- NULL
+  if (is.function(tree_crit)) {
+    if (!is.null(vinecop_object)) {
+      stop(
+        "custom 'tree_crit' functions cannot be used when refitting a model.",
+        call. = FALSE
+      )
+    }
+    tree_crit_function <- tree_crit
+    tree_crit <- "custom"
+  } else if (identical(tree_crit, "custom")) {
+    stop("'tree_crit = \"custom\"' requires a function.", call. = FALSE)
+  }
 
   seeds <- get_seeds()
   if (!is.null(vinecop_object)) {
@@ -256,6 +318,7 @@ vinecop <- function(
         .Machine$integer.max
       ),
       tree_criterion = tree_crit,
+      tree_criterion_function = tree_crit_function,
       threshold = threshold,
       select_truncation_level = is.na(trunc_lvl),
       select_threshold = is.na(threshold),
@@ -265,7 +328,8 @@ vinecop <- function(
       num_threads = cores,
       var_types = var_types,
       tree_algorithm = tree_algorithm,
-      seeds = seeds
+      seeds = seeds,
+      conditioning_set = conditioning_set
     )
   }
 
@@ -276,7 +340,7 @@ vinecop <- function(
   )
 
   ## add information about the fit
-  vinecop$names <- colnames(data)
+  vinecop$names <- colnames(data)[1:vinecop$structure$d]
   if (keep_data) {
     vinecop$data <- data
   }
@@ -290,9 +354,10 @@ vinecop <- function(
     presel = presel,
     allow_rotations = allow_rotations,
     trunc_lvl = trunc_lvl,
-    tree_crit = tree_crit,
+    tree_crit = tree_crit_control,
     threshold = threshold,
-    tree_algorithm = tree_algorithm
+    tree_algorithm = tree_algorithm,
+    conditioning_set = conditioning_set
   )
   vinecop$nobs <- NROW(data)
   vinecop

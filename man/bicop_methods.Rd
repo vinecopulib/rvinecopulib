@@ -10,13 +10,28 @@
 \alias{pbicop_dist}
 \alias{rbicop_dist}
 \alias{hbicop_dist}
+\alias{scores.bicop_dist}
+\alias{hessian.bicop_dist}
 \title{Bivariate copula distributions}
 \usage{
-dbicop(u, family, rotation, parameters, var_types = c("c", "c"))
+dbicop(
+  u,
+  family,
+  rotation,
+  parameters,
+  var_types = c("c", "c"),
+  log = FALSE,
+  deriv = NULL,
+  cores = 1
+)
 
 pbicop(u, family, rotation, parameters, var_types = c("c", "c"))
 
 rbicop(n, family, rotation, parameters, qrng = FALSE)
+
+\method{scores}{bicop_dist}(u, vinecop, cores = 1, parameters = NULL, ...)
+
+\method{hessian}{bicop_dist}(u, vinecop, cores = 1, parameters = NULL, ...)
 
 hbicop(
   u,
@@ -25,7 +40,9 @@ hbicop(
   rotation,
   parameters,
   inverse = FALSE,
-  var_types = c("c", "c")
+  var_types = c("c", "c"),
+  deriv = NULL,
+  cores = 1
 )
 }
 \arguments{
@@ -37,11 +54,26 @@ hbicop(
 
 \item{rotation}{the rotation of the copula, one of \code{0}, \code{90}, \code{180}, \code{270}.}
 
-\item{parameters}{a vector or matrix of copula parameters.}
+\item{parameters}{a vector or matrix of copula parameters. For \code{scores()}
+and \code{hessian()}, optional observation-specific parameters override those
+stored in \code{vinecop}: a vector is accepted for one-parameter families;
+otherwise, use a matrix with one row per observation and one column per
+parameter. Parameters are not recycled.}
 
 \item{var_types}{variable types, a length 2 vector; e.g., \code{c("c", "c")} for
 both continuous (default), or \code{c("c", "d")} for first variable continuous
 and second discrete.}
+
+\item{log}{whether to return the log-density or a derivative of the
+log-density.}
+
+\item{deriv}{\code{NULL} for ordinary evaluation, or a character vector of length
+one or two specifying a first- or second-order partial derivative. Each
+component is one of \code{"u1"}, \code{"u2"}, or \code{"par<k>"}; \code{"par"} is an alias
+for \code{"par1"}.}
+
+\item{cores}{number of cores used when evaluating observation-specific
+parameters.}
 
 \item{n}{number of observations. If `length(n) > 1``, the length is taken to
 be the number required.}
@@ -49,21 +81,31 @@ be the number required.}
 \item{qrng}{if \code{TRUE}, generates quasi-random numbers using the bivariate
 Generalized Halton sequence (default \code{qrng = FALSE}).}
 
+\item{vinecop}{a \code{bicop_dist} object for \code{scores()} and \code{hessian()}.}
+
+\item{...}{unused.}
+
 \item{cond_var}{either \code{1} or \code{2}; \code{cond_var = 1} conditions on the first
 variable, \code{cond_var = 2} on the second.}
 
 \item{inverse}{whether to compute the h-function or its inverse.}
 }
 \value{
-\code{dbicop()} gives the density, \code{pbicop()} gives the distribution function,
+\code{dbicop()} gives the density or log-density, and \code{pbicop()} gives the
+distribution function.
 \code{rbicop()} generates random deviates, and \code{hbicop()} gives the h-functions
-(and their inverses).
+(and their inverses). If \code{deriv} is set, \code{dbicop()} and \code{hbicop()} return
+the selected observation-wise derivative. \code{scores()} gives the
+observation-wise score matrix and \code{hessian()} gives the average Hessian
+matrix for a \code{bicop_dist} object.
 
 The length of the result is determined by \code{n} for \code{rbicop()}, and
 the number of rows in \code{u} for the other functions.
 
 The numerical arguments other than \code{n} are recycled to the length of the
 result.
+For vectorized simulation, \code{parameters} must have one row per generated
+observation and one column per family parameter.
 }
 \description{
 Density, distribution function, random generation and h-functions (with their
@@ -82,6 +124,21 @@ from a copula. If \eqn{C(u, v) = P(U \le u, V \le v)} is a copula, then
 In other words, the H-function number refers to the conditioning variable.
 When inverting H-functions, the inverse is then taken with respect to the
 other variable, that is \code{v} when \code{cond_var = 1} and \code{u} when \code{cond_var = 2}.
+\subsection{Derivatives}{
+
+Setting \code{deriv} evaluates a selected first- or second-order derivative of
+the density, log-density, or h-function. For example, \code{deriv = "u1"}
+differentiates with respect to the first argument and
+\code{deriv = c("u1", "par2")} evaluates the corresponding mixed second
+derivative. Derivative order is immaterial. Parameter derivatives use the
+natural parameters of the (possibly rotated) copula.
+
+Derivatives are available only for continuous parametric copulas. The
+backend uses analytic formulas where available and finite-difference
+fallbacks where needed. Derivatives of inverse h-functions are not
+available.
+}
+
 \subsection{Discrete variables}{
 
 When at least one variable is discrete, more than two columns are required
@@ -117,6 +174,11 @@ joe_cop <- bicop_dist("joe", 0, 3)
 hbicop(c(0.1, 0.2), 1, "bb8", 0, c(2, 0.5))
 # h_2^{-1}(0.1, 0.2)
 hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
+
+## derivatives
+dbicop(c(0.2, 0.4), joe_cop, deriv = "u1")
+dbicop(c(0.2, 0.4), joe_cop, log = TRUE, deriv = "par1")
+hbicop(c(0.2, 0.4), 1, joe_cop, deriv = c("u1", "par1"))
 
 ## mixed discrete and continuous data
 x <- cbind(rpois(10, 1), rnorm(10, 1))

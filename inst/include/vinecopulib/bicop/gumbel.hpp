@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -25,26 +25,60 @@ public:
 
 private:
   // generator, its inverse and derivatives for the archimedean copula
-  double generator(const double& u);
+  double generator(
+    const double& u,
+    const Eigen::Ref<const Eigen::VectorXd>& parameters) override;
 
-  double generator_inv(const double& u);
+  double generator_inv(
+    const double& u,
+    const Eigen::Ref<const Eigen::VectorXd>& parameters) override;
 
-  double generator_derivative(const double& u);
-
-  double generator_derivative2(const double& u);
+  double generator_derivative(
+    const double& u,
+    const Eigen::Ref<const Eigen::VectorXd>& parameters) override;
 
   // pdf
-  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u,
+                          const Eigen::MatrixXd& parameters) override;
 
   // inverse hfunction
-  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u);
+  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u,
+                            const Eigen::MatrixXd& parameters) override;
+
+  // analytic derivatives
+  Eigen::VectorXd pdf_deriv_raw(const Eigen::MatrixXd& u,
+                                const Eigen::MatrixXd& parameters,
+                                const std::string& deriv) override;
+
+  Eigen::VectorXd pdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                 const Eigen::MatrixXd& parameters,
+                                 const std::string& deriv) override;
+
+  Eigen::VectorXd hfunc1_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv) override;
+
+  Eigen::VectorXd hfunc1_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv) override;
+
+  Eigen::VectorXd logpdf_deriv_raw(const Eigen::MatrixXd& u,
+                                   const Eigen::MatrixXd& parameters,
+                                   const std::string& deriv) override;
+
+  Eigen::VectorXd logpdf_deriv2_raw(const Eigen::MatrixXd& u,
+                                    const Eigen::MatrixXd& parameters,
+                                    const std::string& deriv) override;
 
   // link between Kendall's tau and the par_bicop parameter
-  Eigen::MatrixXd tau_to_parameters(const double& tau);
+  Eigen::MatrixXd tau_to_parameters(const double& tau) override;
 
-  double parameters_to_tau(const Eigen::MatrixXd& parameters);
+  double parameters_to_tau(const Eigen::MatrixXd& parameters) override;
 
-  Eigen::VectorXd get_start_parameters(const double tau);
+  Eigen::MatrixXd parameters_to_taildep(
+    const Eigen::MatrixXd& parameters) override;
+
+  Eigen::VectorXd get_start_parameters(const double tau) override;
 };
 }
 

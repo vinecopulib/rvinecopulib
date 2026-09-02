@@ -13,36 +13,56 @@ bicop_select_cpp <- function(data, family_set, par_method, nonpar_method, mult, 
     .Call(`_rvinecopulib_bicop_select_cpp`, data, family_set, par_method, nonpar_method, mult, selcrit, weights, psi0, presel, num_threads, allow_rotations, var_types)
 }
 
-bicop_pdf_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_pdf_cpp`, u, bicop_r)
+bicop_pdf_cpp <- function(u, bicop_r, cores = 1L) {
+    .Call(`_rvinecopulib_bicop_pdf_cpp`, u, bicop_r, cores)
 }
 
 bicop_cdf_cpp <- function(u, bicop_r) {
     .Call(`_rvinecopulib_bicop_cdf_cpp`, u, bicop_r)
 }
 
-bicop_hfunc1_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_hfunc1_cpp`, u, bicop_r)
+bicop_hfunc1_cpp <- function(u, bicop_r, cores = 1L) {
+    .Call(`_rvinecopulib_bicop_hfunc1_cpp`, u, bicop_r, cores)
 }
 
-bicop_hfunc2_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_hfunc2_cpp`, u, bicop_r)
+bicop_hfunc2_cpp <- function(u, bicop_r, cores = 1L) {
+    .Call(`_rvinecopulib_bicop_hfunc2_cpp`, u, bicop_r, cores)
 }
 
-bicop_hinv1_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_hinv1_cpp`, u, bicop_r)
+bicop_hinv1_cpp <- function(u, bicop_r, cores = 1L) {
+    .Call(`_rvinecopulib_bicop_hinv1_cpp`, u, bicop_r, cores)
 }
 
-bicop_hinv2_cpp <- function(u, bicop_r) {
-    .Call(`_rvinecopulib_bicop_hinv2_cpp`, u, bicop_r)
+bicop_hinv2_cpp <- function(u, bicop_r, cores = 1L) {
+    .Call(`_rvinecopulib_bicop_hinv2_cpp`, u, bicop_r, cores)
+}
+
+bicop_deriv_cpp <- function(u, bicop_r, what, deriv, order, cores) {
+    .Call(`_rvinecopulib_bicop_deriv_cpp`, u, bicop_r, what, deriv, order, cores)
 }
 
 bicop_sim_cpp <- function(bicop_r, n, qrng, seeds) {
     .Call(`_rvinecopulib_bicop_sim_cpp`, bicop_r, n, qrng, seeds)
 }
 
+bicop_scores_cpp <- function(u, bicop_r, parameters, cores) {
+    .Call(`_rvinecopulib_bicop_scores_cpp`, u, bicop_r, parameters, cores)
+}
+
+bicop_hessian_cpp <- function(u, bicop_r, parameters, cores) {
+    .Call(`_rvinecopulib_bicop_hessian_cpp`, u, bicop_r, parameters, cores)
+}
+
 bicop_par_to_tau_cpp <- function(bicop_r) {
     .Call(`_rvinecopulib_bicop_par_to_tau_cpp`, bicop_r)
+}
+
+bicop_tail_dep_cpp <- function(bicop_r) {
+    .Call(`_rvinecopulib_bicop_tail_dep_cpp`, bicop_r)
+}
+
+bicop_beta_cpp <- function(bicop_r) {
+    .Call(`_rvinecopulib_bicop_beta_cpp`, bicop_r)
 }
 
 bicop_tau_to_par_cpp <- function(bicop_r, tau) {
@@ -69,35 +89,47 @@ vinecop_check_cpp <- function(vinecop_r) {
     invisible(.Call(`_rvinecopulib_vinecop_check_cpp`, vinecop_r))
 }
 
-vinecop_inverse_rosenblatt_cpp <- function(U, vinecop_r, cores) {
-    .Call(`_rvinecopulib_vinecop_inverse_rosenblatt_cpp`, U, vinecop_r, cores)
+vinecop_inverse_rosenblatt_cpp <- function(U, vinecop_r, conditioning_set, cores) {
+    .Call(`_rvinecopulib_vinecop_inverse_rosenblatt_cpp`, U, vinecop_r, conditioning_set, cores)
 }
 
-vinecop_rosenblatt_cpp <- function(U, vinecop_r, cores, randomize_discrete, seeds) {
-    .Call(`_rvinecopulib_vinecop_rosenblatt_cpp`, U, vinecop_r, cores, randomize_discrete, seeds)
+vinecop_rosenblatt_cpp <- function(U, vinecop_r, conditioning_set, cores, randomize_discrete, seeds) {
+    .Call(`_rvinecopulib_vinecop_rosenblatt_cpp`, U, vinecop_r, conditioning_set, cores, randomize_discrete, seeds)
 }
 
 vinecop_sim_cpp <- function(vinecop_r, n, qrng, cores, seeds) {
     .Call(`_rvinecopulib_vinecop_sim_cpp`, vinecop_r, n, qrng, cores, seeds)
 }
 
-vinecop_pdf_cpp <- function(u, vinecop_r, cores) {
-    .Call(`_rvinecopulib_vinecop_pdf_cpp`, u, vinecop_r, cores)
+vinecop_sim_conditional_cpp <- function(vinecop_r, u_cond, conditioning_set, qrng, cores, seeds) {
+    .Call(`_rvinecopulib_vinecop_sim_conditional_cpp`, vinecop_r, u_cond, conditioning_set, qrng, cores, seeds)
+}
+
+vinecop_pdf_cpp <- function(u, vinecop_r, parameters, cores) {
+    .Call(`_rvinecopulib_vinecop_pdf_cpp`, u, vinecop_r, parameters, cores)
+}
+
+vinecop_pdf_full_cpp <- function(u, vinecop_r, parameters, cores) {
+    .Call(`_rvinecopulib_vinecop_pdf_full_cpp`, u, vinecop_r, parameters, cores)
 }
 
 vinecop_cdf_cpp <- function(u, vinecop_r, N, cores, seeds) {
     .Call(`_rvinecopulib_vinecop_cdf_cpp`, u, vinecop_r, N, cores, seeds)
 }
 
-vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds) {
-    .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds)
+vinecop_scores_cpp <- function(u, vinecop_r, parameters, step_wise, cores) {
+    .Call(`_rvinecopulib_vinecop_scores_cpp`, u, vinecop_r, parameters, step_wise, cores)
+}
+
+vinecop_hessian_cpp <- function(u, vinecop_r, parameters, step_wise, cores) {
+    .Call(`_rvinecopulib_vinecop_hessian_cpp`, u, vinecop_r, parameters, step_wise, cores)
+}
+
+vinecop_select_cpp <- function(data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds, conditioning_set, tree_criterion_function) {
+    .Call(`_rvinecopulib_vinecop_select_cpp`, data, structure, family_set, par_method, nonpar_method, mult, truncation_level, tree_criterion, threshold, selection_criterion, weights, psi0, select_truncation_level, select_threshold, preselect_families, select_families, allow_rotations, show_trace, num_threads, var_types, tree_algorithm, seeds, conditioning_set, tree_criterion_function)
 }
 
 vinecop_fit_cpp <- function(data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads, tree_algorithm, seeds) {
     .Call(`_rvinecopulib_vinecop_fit_cpp`, data, vinecop_r, par_method, nonpar_method, mult, weights, show_trace, num_threads, tree_algorithm, seeds)
-}
-
-fit_margins_cpp <- function(data, xmin, xmax, type, mult, bw, deg, weights, num_threads) {
-    .Call(`_rvinecopulib_fit_margins_cpp`, data, xmin, xmax, type, mult, bw, deg, weights, num_threads)
 }
 

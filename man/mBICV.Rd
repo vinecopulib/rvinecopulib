@@ -20,7 +20,7 @@ Calculates the modified vine copula Bayesian information criterion.
 The modified vine copula Bayesian information criterion (mBICv) is defined as
 
 \deqn{BIC = -2 loglik +  \nu log(n) - 2 \sum_{t=1}^{d - 1} (q_t log(\psi_0^t)
-- (d - t - q_t) log(1 - \psi_0^t)) }
++ (d - t - q_t) log(1 - \psi_0^t)) }
 
 where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
 (effective) number of parameters of the model, \eqn{t} is the tree level
@@ -31,7 +31,7 @@ copula models.
 }
 \examples{
 u <- sapply(1:5, function(i) runif(50))
-fit <- vinecop(u, family = "par", keep_data = TRUE)
+fit <- vinecop(u, family_set = "par", keep_data = TRUE)
 mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 }
@@ -39,5 +39,5 @@ mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 Nagler, T., Bumann, C., Czado, C. (2019). Model selection for
 sparse high-dimensional vine copulas with application to portfolio risk.
 \emph{Journal of Multivariate Analysis, in press}
-(\url{http://arxiv.org/pdf/1801.09739})
+(\url{https://arxiv.org/pdf/1801.09739})
 }

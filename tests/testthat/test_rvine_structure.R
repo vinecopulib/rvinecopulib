@@ -73,6 +73,12 @@ test_that("d = 1 works", {
 
   mat <- as_rvine_matrix(struct)
   expect_eql(unname(dim(mat)), c(1, 0))
+  expect_true(is.matrix(mat))
+  expect_identical(unclass(mat)[1, 1], 1)
+
+  roundtrip <- as_rvine_structure(mat)
+  expect_identical(roundtrip, struct)
+  expect_length(roundtrip$struct_array, 0)
 
   expect_output(print(struct))
   expect_error(plot(struct))

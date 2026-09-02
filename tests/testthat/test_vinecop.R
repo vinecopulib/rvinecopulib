@@ -78,6 +78,7 @@ test_that("S3 generics work", {
   expect_error(predict(fit, u, what = "hfunc1"))
   fit$data <- NULL
   expect_error(fitted(fit))
+  expect_s3_class(logLik(fit), "logLik")
   expect_length(attr(logLik(fit), "df"), 1)
 })
 
@@ -167,6 +168,268 @@ test_that("MST algorithms behave as expected", {
   expect_equal(length(unique_structures), 10)
 })
 
+test_that("weighted random trees handle zero edge strengths", {
+  set.seed(42)
+  u_small <- matrix(runif(40), 10, 4)
+
+  expect_silent(
+    fit_small <- vinecop(
+      u_small,
+      family_set = "indep",
+      tree_algorithm = "random_weighted"
+    )
+  )
+  expect_equal(unname(dim(fit_small)), c(4, 3))
+})
+
+test_that("conditioning-aware selection is exposed through the R controls", {
+  u_cond <- matrix(runif(400), 100, 4)
+  colnames(u_cond) <- letters[1:4]
+  fit_cond <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = c("b", "d")
+  )
+
+  expect_identical(fit_cond$controls$conditioning_set, c(2L, 4L))
+  expect_equal(sort(tail(fit_cond$structure$order, 2)), c(2L, 4L))
+
+  expect_error(
+    vinecop(u_cond, conditioning_set = c("b", "b")),
+    "must not contain duplicates"
+  )
+  expect_error(
+    vinecop(u_cond, conditioning_set = "unknown"),
+    "unknown variable names"
+  )
+  u_duplicated_names <- u_cond
+  colnames(u_duplicated_names)[2] <- colnames(u_duplicated_names)[1]
+  expect_error(
+    vinecop(u_duplicated_names, conditioning_set = "a"),
+    "requires unique variable names"
+  )
+  expect_error(
+    vinecop(unname(u_cond), conditioning_set = "b"),
+    "requires named variables"
+  )
+  for (invalid_set in list(TRUE, NA_real_, Inf, 1.5)) {
+    expect_error(
+      vinecop(u_cond, conditioning_set = invalid_set),
+      "must contain variable indices or names"
+    )
+  }
+  for (invalid_set in list(0, 5)) {
+    expect_error(
+      vinecop(u_cond, conditioning_set = invalid_set),
+      "indices must be between 1 and d"
+    )
+  }
+  expect_error(
+    vinecop(u_cond, conditioning_set = 1:4),
+    "at most d - 1 variables"
+  )
+  fit_truncated <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = 2,
+    trunc_lvl = 1
+  )
+  expect_length(fit_truncated$pair_copulas, 1L)
+  expect_equal(tail(fit_truncated$structure$order, 1), 2L)
+
+  fit_independence <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = 2,
+    trunc_lvl = 0
+  )
+  expect_length(fit_independence$pair_copulas, 0L)
+  expect_equal(tail(fit_independence$structure$order, 1), 2L)
+
+  fit_auto_truncated <- vinecop(
+    u_cond,
+    family_set = "indep",
+    conditioning_set = 2,
+    trunc_lvl = NA
+  )
+  expect_lte(length(fit_auto_truncated$pair_copulas), ncol(u_cond) - 1L)
+  expect_equal(tail(fit_auto_truncated$structure$order, 1), 2L)
+  expect_error(
+    vinecop(
+      u_cond,
+      conditioning_set = 2,
+      tree_algorithm = "random_weighted"
+    ),
+    "requires 'tree_algorithm'"
+  )
+  expect_error(
+    vinecop(u_cond, conditioning_set = 2, vinecop_object = fit_cond),
+    "cannot be used when refitting"
+  )
+})
+
+test_that("custom tree criteria are passed through", {
+  set.seed(15)
+  u_custom <- matrix(runif(400), ncol = 4)
+  n_calls <- 0L
+  seen_weights <- NULL
+  custom_tau <- function(data, weights) {
+    n_calls <<- n_calls + 1L
+    seen_weights <<- weights
+    -abs(cor(data[, 1], data[, 2], method = "kendall"))
+  }
+
+  fit_custom <- vinecop(
+    u_custom,
+    family_set = "indep",
+    tree_crit = custom_tau
+  )
+  fit_tau <- vinecop(
+    u_custom,
+    family_set = "indep",
+    tree_crit = "tau"
+  )
+
+  expect_gt(n_calls, 0L)
+  expect_length(seen_weights, 0L)
+  expect_equal(
+    as_rvine_matrix(fit_custom$structure),
+    as_rvine_matrix(fit_tau$structure)
+  )
+  expect_identical(fit_custom$controls$tree_crit, custom_tau)
+
+  obs_weights <- seq_len(nrow(u_custom))
+  vinecop(
+    u_custom,
+    family_set = "indep",
+    weights = obs_weights,
+    tree_crit = function(data, weights) {
+      seen_weights <<- weights
+      0.5
+    }
+  )
+  expect_equal(seen_weights, obs_weights / mean(obs_weights))
+})
+
+test_that("Chatterjee's xi can be used for tree selection", {
+  set.seed(18)
+  u_cxi <- matrix(runif(400), ncol = 4)
+
+  fit_cxi <- vinecop(
+    u_cxi,
+    family_set = "indep",
+    tree_crit = "cxi"
+  )
+  fit_cxi_weighted <- vinecop(
+    u_cxi,
+    family_set = "indep",
+    weights = seq_len(nrow(u_cxi)),
+    tree_crit = "cxi"
+  )
+
+  expect_s3_class(fit_cxi, "vinecop")
+  expect_s3_class(fit_cxi_weighted, "vinecop")
+  expect_identical(fit_cxi$controls$tree_crit, "cxi")
+  expect_identical(fit_cxi_weighted$controls$tree_crit, "cxi")
+})
+
+test_that("custom tree criteria receive filtered data and weights", {
+  set.seed(16)
+  u_custom <- matrix(runif(60), ncol = 2)
+  u_custom[1, 1] <- NA_real_
+  obs_weights <- seq_len(nrow(u_custom))
+  obs_weights[2] <- 0
+  seen_data <- NULL
+  seen_weights <- NULL
+
+  vinecop(
+    u_custom,
+    family_set = "indep",
+    weights = obs_weights,
+    tree_crit = function(data, weights) {
+      seen_data <<- data
+      seen_weights <<- weights
+      0.5
+    }
+  )
+
+  standardized_weights <- obs_weights / sum(obs_weights) * length(obs_weights)
+  expect_equal(dim(seen_data), c(28L, 2L))
+  expect_false(anyNA(seen_data))
+  expect_setequal(seen_weights, standardized_weights[-c(1, 2)])
+})
+
+test_that("custom tree criterion safeguards are enforced", {
+  u_custom <- matrix(runif(90), ncol = 3)
+  valid_criterion <- function(data, weights) 0.5
+
+  expect_error(
+    vinecop(u_custom, tree_crit = "custom"),
+    "requires a function"
+  )
+  fit_custom <- vinecop(u_custom, family_set = "indep")
+  expect_error(
+    vinecop(
+      u_custom,
+      vinecop_object = fit_custom,
+      tree_crit = valid_criterion
+    ),
+    "cannot be used when refitting"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = function(data, weights) c(0.1, 0.2)),
+    "return one numeric value"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = function(data, weights) "bad"),
+    "return one numeric value"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = function(data, weights) NA_real_),
+    "return a finite numeric value"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = function(data, weights) Inf),
+    "return a finite numeric value"
+  )
+  expect_error(
+    vinecop(u_custom, tree_crit = function(data, weights) stop("boom")),
+    "boom"
+  )
+})
+
+test_that("custom tree criteria support multicore pair-copula fitting", {
+  set.seed(17)
+  u_custom <- matrix(runif(400), ncol = 4)
+  n_calls <- 0L
+  criterion <- function(data, weights) {
+    n_calls <<- n_calls + 1L
+    abs(cor(data[, 1], data[, 2], method = "kendall"))
+  }
+
+  fit_parallel <- vinecop(
+    u_custom,
+    family_set = "indep",
+    tree_crit = criterion,
+    cores = 2
+  )
+  parallel_calls <- n_calls
+  expect_gt(parallel_calls, 0L)
+
+  n_calls <- 0L
+  fit_serial <- vinecop(
+    u_custom,
+    family_set = "indep",
+    tree_crit = criterion,
+    cores = 1
+  )
+  expect_identical(n_calls, parallel_calls)
+  expect_equal(
+    as_rvine_matrix(fit_parallel$structure),
+    as_rvine_matrix(fit_serial$structure)
+  )
+})
+
 test_that("d = 1 works", {
   vc <- vinecop(runif(20), structure = rvine_structure(1))
   vc2 <- vinecop(runif(20))
@@ -174,7 +437,62 @@ test_that("d = 1 works", {
 
   expect_eql(AIC(vc), 0)
   expect_eql(mBICV(vc), 0)
+  for (psi0 in c(-1, 0, 1, 2, Inf, NA_real_)) {
+    expect_error(mBICV(vc, psi0), "strictly between 0 and 1")
+  }
   expect_eql(dim(summary(vc))[1], 0)
+})
+
+test_that("mBICV uses the non-independence prior", {
+  indep <- bicop_dist()
+  dependent <- bicop_dist("gaussian", parameters = 0.3)
+  structure <- dvine_structure(1:4)
+  psi0 <- 0.9
+
+  cases <- list(
+    all_independent = list(
+      pair_copulas = list(
+        rep(list(indep), 3),
+        rep(list(indep), 2),
+        list(indep)
+      ),
+      non_independent = c(0, 0, 0)
+    ),
+    all_dependent = list(
+      pair_copulas = list(
+        rep(list(dependent), 3),
+        rep(list(dependent), 2),
+        list(dependent)
+      ),
+      non_independent = c(3, 2, 1)
+    ),
+    mixed = list(
+      pair_copulas = list(
+        list(dependent, indep, dependent),
+        list(indep, dependent),
+        list(indep)
+      ),
+      non_independent = c(2, 1, 0)
+    ),
+    truncated = list(
+      pair_copulas = list(list(dependent, indep, dependent)),
+      non_independent = c(2, 0, 0)
+    )
+  )
+
+  for (case in cases) {
+    vc <- vinecop_dist(case$pair_copulas, structure)
+    vc$loglik <- 0
+    vc$nobs <- 100
+    tree <- seq_len(dim(vc)[1] - 1)
+    n_edges <- dim(vc)[1] - tree
+    prior <- psi0^tree
+    q_t <- case$non_independent
+    log_prior <- q_t * log(prior) + (n_edges - q_t) * log(1 - prior)
+    expected <- vc$npars * log(vc$nobs) - 2 * sum(log_prior)
+
+    expect_eql(mBICV(vc, psi0), expected)
+  }
 })
 
 test_that("fitting only parameters works", {
@@ -194,4 +512,17 @@ test_that("fitting only parameters works", {
 
   expect_warning(vinecop(u, structure = dvine_structure(3), vinecop = vc))
   expect_warning(vinecop(u, family_set = "gauss", vinecop = vc))
+})
+
+test_that("zero-truncated independence models can be refit", {
+  set.seed(42)
+  u_indep <- matrix(runif(90), 30, 3)
+  fit_indep <- vinecop(u_indep, family_set = "indep", trunc_lvl = 0)
+
+  refit_indep <- vinecop(u_indep[1:12, ], vinecop_object = fit_indep)
+
+  expect_length(refit_indep$pair_copulas, 0L)
+  expect_equal(unname(dim(refit_indep)), c(3, 0))
+  expect_equal(refit_indep$loglik, 0)
+  expect_identical(refit_indep$nobs, 12L)
 })

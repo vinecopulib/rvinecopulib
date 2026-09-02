@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -69,7 +69,8 @@ private:
 //! constructs a thread pool with as many workers as there are cores.
 inline ThreadPool::ThreadPool()
   : ThreadPool(std::thread::hardware_concurrency())
-{}
+{
+}
 
 //! constructs a thread pool with `nThreads` threads.
 //! @param nWorkers Number of worker threads to create; if `nThreads = 0`, all
@@ -101,7 +102,7 @@ template<class F, class... Args>
 void
 ThreadPool::push(F&& f, Args&&... args)
 {
-  if (workers_.size() == 0) {
+  if (workers_.empty()) {
     f(args...); // if there are no workers, do the job in the main thread
     return;
   } else {
@@ -109,7 +110,9 @@ ThreadPool::push(F&& f, Args&&... args)
     std::lock_guard<std::mutex> lk(m_tasks_);
     if (stopped_)
       throw std::runtime_error("cannot push to joined thread pool");
-    jobs_.emplace([f, args...] { f(args...); });
+    // bind moves/copies the decayed arguments instead of capturing them by
+    // value a second time
+    jobs_.emplace(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
   }
   // signal a waiting worker that there's a new job
   cv_tasks_.notify_one();
@@ -247,7 +250,7 @@ ThreadPool::announce_stop()
 inline void
 ThreadPool::join_workers()
 {
-  if (workers_.size() > 0) {
+  if (!workers_.empty()) {
     for (auto& worker : workers_) {
       if (worker.joinable())
         worker.join();

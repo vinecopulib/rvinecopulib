@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -32,23 +32,25 @@ public:
   KernelBicop();
 
 protected:
-  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u) override;
+  // evaluation leaves; kernel estimators store an interpolation grid rather
+  // than a per-row parameter vector, so they ignore `parameters`
+  Eigen::VectorXd pdf_raw(const Eigen::MatrixXd& u,
+                          const Eigen::MatrixXd& parameters) override;
 
-  Eigen::VectorXd pdf(const Eigen::MatrixXd& u) override;
+  Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
+                      const Eigen::MatrixXd& parameters) override;
 
-  Eigen::VectorXd cdf(const Eigen::MatrixXd& u) override;
+  Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters) override;
 
-  Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u) override;
+  Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters) override;
 
-  Eigen::VectorXd hfunc2_raw(const Eigen::MatrixXd& u) override;
+  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u,
+                            const Eigen::MatrixXd& parameters) override;
 
-  Eigen::VectorXd hfunc1(const Eigen::MatrixXd& u) override;
-
-  Eigen::VectorXd hfunc2(const Eigen::MatrixXd& u) override;
-
-  Eigen::VectorXd hinv1_raw(const Eigen::MatrixXd& u) override;
-
-  Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u) override;
+  Eigen::VectorXd hinv2_raw(const Eigen::MatrixXd& u,
+                            const Eigen::MatrixXd& parameters) override;
 
   double get_npars() const override;
 

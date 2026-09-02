@@ -1,7 +1,32 @@
 #include "vinecopulib-wrappers.hpp"
-#include "kde1d-wrappers.hpp"
+
+#include <algorithm>
+#include <cmath>
 
 using namespace vinecopulib;
+
+inline Eigen::MatrixXd get_bicop_parameters(const Rcpp::List& bicop_r)
+{
+  return bicop_r["parameters"];
+}
+
+inline bool has_vectorized_bicop_parameters(const Bicop& bicop_cpp,
+                                            const Eigen::MatrixXd& parameters)
+{
+  if (!tools_stl::is_member(bicop_cpp.get_family(), bicop_families::parametric) ||
+      (parameters.size() == 0)) {
+    return false;
+  }
+
+  const Eigen::Index p = bicop_cpp.get_parameters().rows();
+  if (parameters.cols() == 1) {
+    // n x 1 is vectorized only for one-parameter families.
+    return (p == 1) && (parameters.rows() > 1);
+  }
+
+  return (parameters.cols() == p) && (parameters.rows() > 1);
+}
+
 
 // tools exports -------------------------------------------
 
@@ -58,44 +83,132 @@ Rcpp::List bicop_select_cpp(const Eigen::MatrixXd& data,
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_pdf_cpp(const Eigen::MatrixXd& u,
-                              const Rcpp::List& bicop_r)
+                              const Rcpp::List& bicop_r,
+                              const size_t cores = 1)
 {
-  return bicop_wrap(bicop_r).pdf(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.pdf(u, parameters, cores);
+  }
+  return bicop_cpp.pdf(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_cdf_cpp(const Eigen::MatrixXd& u,
                               const Rcpp::List& bicop_r)
 {
-  return bicop_wrap(bicop_r).cdf(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.cdf(u, parameters);
+  }
+  return bicop_cpp.cdf(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hfunc1_cpp(const Eigen::MatrixXd& u,
-                                 const Rcpp::List& bicop_r)
+                                 const Rcpp::List& bicop_r,
+                                 const size_t cores = 1)
 {
-  return bicop_wrap(bicop_r).hfunc1(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.hfunc1(u, parameters, cores);
+  }
+  return bicop_cpp.hfunc1(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hfunc2_cpp(const Eigen::MatrixXd& u,
-                                 const Rcpp::List& bicop_r)
+                                 const Rcpp::List& bicop_r,
+                                 const size_t cores = 1)
 {
-  return bicop_wrap(bicop_r).hfunc2(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.hfunc2(u, parameters, cores);
+  }
+  return bicop_cpp.hfunc2(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hinv1_cpp(const Eigen::MatrixXd& u,
-                                const Rcpp::List& bicop_r)
+                                const Rcpp::List& bicop_r,
+                                const size_t cores = 1)
 {
-  return bicop_wrap(bicop_r).hinv1(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.hinv1(u, parameters, cores);
+  }
+  return bicop_cpp.hinv1(u);
 }
 
 // [[Rcpp::export()]]
 Eigen::VectorXd bicop_hinv2_cpp(const Eigen::MatrixXd& u,
-                                const Rcpp::List& bicop_r)
+                                const Rcpp::List& bicop_r,
+                                const size_t cores = 1)
 {
-  return bicop_wrap(bicop_r).hinv2(u);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    return bicop_cpp.hinv2(u, parameters, cores);
+  }
+  return bicop_cpp.hinv2(u);
+}
+
+// [[Rcpp::export()]]
+Eigen::VectorXd bicop_deriv_cpp(const Eigen::MatrixXd& u,
+                                const Rcpp::List& bicop_r,
+                                const std::string& what,
+                                const std::string& deriv,
+                                const size_t order,
+                                const size_t cores)
+{
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  const bool vectorized =
+    has_vectorized_bicop_parameters(bicop_cpp, parameters);
+
+  if ((order != 1) && (order != 2)) {
+    throw std::runtime_error("derivative order must be one or two");
+  }
+
+  if (what == "pdf") {
+    if (vectorized) {
+      return order == 1 ? bicop_cpp.pdf_deriv(u, deriv, parameters, cores)
+                        : bicop_cpp.pdf_deriv2(u, deriv, parameters, cores);
+    }
+    return order == 1 ? bicop_cpp.pdf_deriv(u, deriv)
+                      : bicop_cpp.pdf_deriv2(u, deriv);
+  }
+  if (what == "logpdf") {
+    if (vectorized) {
+      return order == 1 ? bicop_cpp.logpdf_deriv(u, deriv, parameters, cores)
+                        : bicop_cpp.logpdf_deriv2(u, deriv, parameters, cores);
+    }
+    return order == 1 ? bicop_cpp.logpdf_deriv(u, deriv)
+                      : bicop_cpp.logpdf_deriv2(u, deriv);
+  }
+  if (what == "hfunc1") {
+    if (vectorized) {
+      return order == 1 ? bicop_cpp.hfunc1_deriv(u, deriv, parameters, cores)
+                        : bicop_cpp.hfunc1_deriv2(u, deriv, parameters, cores);
+    }
+    return order == 1 ? bicop_cpp.hfunc1_deriv(u, deriv)
+                      : bicop_cpp.hfunc1_deriv2(u, deriv);
+  }
+  if (what == "hfunc2") {
+    if (vectorized) {
+      return order == 1 ? bicop_cpp.hfunc2_deriv(u, deriv, parameters, cores)
+                        : bicop_cpp.hfunc2_deriv2(u, deriv, parameters, cores);
+    }
+    return order == 1 ? bicop_cpp.hfunc2_deriv(u, deriv)
+                      : bicop_cpp.hfunc2_deriv2(u, deriv);
+  }
+
+  throw std::runtime_error("unknown derivative target: " + what);
 }
 
 // [[Rcpp::export()]]
@@ -104,7 +217,43 @@ Eigen::MatrixXd bicop_sim_cpp(const Rcpp::List& bicop_r,
                               const bool qrng,
                               std::vector<int> seeds)
 {
-  return bicop_wrap(bicop_r).simulate(n, qrng, seeds);
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  Eigen::MatrixXd parameters = get_bicop_parameters(bicop_r);
+  if (has_vectorized_bicop_parameters(bicop_cpp, parameters)) {
+    if (parameters.rows() != static_cast<Eigen::Index>(n)) {
+      throw std::runtime_error(
+        "vectorized parameters must have one row per row of u "
+        "(one per simulated observation)");
+    }
+    return bicop_cpp.simulate(parameters, qrng, seeds);
+  }
+  return bicop_cpp.simulate(n, qrng, seeds);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd bicop_scores_cpp(const Eigen::MatrixXd& u,
+                                 const Rcpp::List& bicop_r,
+                                 const Eigen::MatrixXd& parameters,
+                                 const size_t cores)
+{
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  if (parameters.size() > 0) {
+    return bicop_cpp.scores(u, parameters, cores);
+  }
+  return bicop_cpp.scores(u);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd bicop_hessian_cpp(const Eigen::MatrixXd& u,
+                                  const Rcpp::List& bicop_r,
+                                  const Eigen::MatrixXd& parameters,
+                                  const size_t cores)
+{
+  Bicop bicop_cpp = bicop_wrap(bicop_r);
+  if (parameters.size() > 0) {
+    return bicop_cpp.hessian(u, parameters, cores);
+  }
+  return bicop_cpp.hessian(u);
 }
 
 // [[Rcpp::export()]]
@@ -112,6 +261,18 @@ double bicop_par_to_tau_cpp(const Rcpp::List& bicop_r)
 {
   Bicop bicop_cpp = bicop_wrap(bicop_r);
   return bicop_cpp.parameters_to_tau(bicop_cpp.get_parameters());
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd bicop_tail_dep_cpp(const Rcpp::List& bicop_r)
+{
+  return bicop_wrap(bicop_r).get_taildep();
+}
+
+// [[Rcpp::export()]]
+double bicop_beta_cpp(const Rcpp::List& bicop_r)
+{
+  return bicop_wrap(bicop_r).get_beta();
 }
 
 // [[Rcpp::export()]]
@@ -167,19 +328,32 @@ void vinecop_check_cpp(Rcpp::List vinecop_r)
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_inverse_rosenblatt_cpp(const Eigen::MatrixXd& U,
                                                const Rcpp::List& vinecop_r,
+                                               const std::vector<size_t>&
+                                                 conditioning_set,
                                                size_t cores)
 {
-  return vinecop_wrap(vinecop_r).inverse_rosenblatt(U, cores);
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (conditioning_set.empty()) {
+    return vinecop_cpp.inverse_rosenblatt(U, cores);
+  }
+  return vinecop_cpp.inverse_rosenblatt(U, conditioning_set, cores);
 }
 
 // [[Rcpp::export()]]
 Eigen::MatrixXd vinecop_rosenblatt_cpp(const Eigen::MatrixXd& U,
                                        const Rcpp::List& vinecop_r,
+                                       const std::vector<size_t>&
+                                         conditioning_set,
                                        size_t cores,
                                        bool randomize_discrete,
                                        std::vector<int> seeds)
 {
-  return vinecop_wrap(vinecop_r).rosenblatt(U, cores, randomize_discrete, seeds);
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (conditioning_set.empty()) {
+    return vinecop_cpp.rosenblatt(U, cores, randomize_discrete, seeds);
+  }
+  return vinecop_cpp.rosenblatt(
+    U, conditioning_set, cores, randomize_discrete, seeds);
 }
 
 // [[Rcpp::export()]]
@@ -193,11 +367,76 @@ Eigen::MatrixXd vinecop_sim_cpp(const Rcpp::List& vinecop_r,
 }
 
 // [[Rcpp::export()]]
+Eigen::MatrixXd vinecop_sim_conditional_cpp(
+  const Rcpp::List& vinecop_r,
+  const Eigen::MatrixXd& u_cond,
+  const std::vector<size_t>& conditioning_set,
+  const bool qrng,
+  const size_t cores,
+  const std::vector<int>& seeds)
+{
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (conditioning_set.empty()) {
+    return vinecop_cpp.simulate_conditional(u_cond, qrng, cores, seeds);
+  }
+  return vinecop_cpp.simulate_conditional(
+    u_cond, conditioning_set, qrng, cores, seeds);
+}
+
+// [[Rcpp::export()]]
 Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u,
                                 const Rcpp::List& vinecop_r,
+                                const Eigen::MatrixXd& parameters,
                                 size_t cores)
 {
-  return vinecop_wrap(vinecop_r).pdf(u, cores);
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (parameters.size() > 0) {
+    return vinecop_cpp.pdf(u, parameters, cores);
+  }
+  return vinecop_cpp.pdf(u, cores);
+}
+
+inline Rcpp::NumericVector eigen_vector_wrap(const Eigen::VectorXd& x)
+{
+  Rcpp::NumericVector result(x.size());
+  std::copy(x.data(), x.data() + x.size(), result.begin());
+  return result;
+}
+
+inline Rcpp::List vector_triangular_array_wrap(
+    const TriangularArray<Eigen::VectorXd>& x)
+{
+  size_t trunc_lvl = x.get_trunc_lvl();
+  size_t d = x.get_dim();
+  Rcpp::List result(trunc_lvl);
+  for (size_t t = 0; t < trunc_lvl; ++t) {
+    Rcpp::List row(d - t - 1);
+    for (size_t e = 0; e < d - t - 1; ++e) {
+      row[e] = eigen_vector_wrap(x(t, e));
+    }
+    result[t] = row;
+  }
+  return result;
+}
+
+// [[Rcpp::export()]]
+Rcpp::List vinecop_pdf_full_cpp(const Eigen::MatrixXd& u,
+                                const Rcpp::List& vinecop_r,
+                                const Eigen::MatrixXd& parameters,
+                                size_t cores)
+{
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  auto result = parameters.size() > 0
+                  ? vinecop_cpp.pdf_full(u, parameters, cores, true)
+                  : vinecop_cpp.pdf_full(u, cores, true);
+  return Rcpp::List::create(
+    Rcpp::Named("pdf") = eigen_vector_wrap(result.pdf),
+    Rcpp::Named("pdf_edges") = vector_triangular_array_wrap(result.pdf_edges),
+    Rcpp::Named("hfunc1") = vector_triangular_array_wrap(result.hfunc1),
+    Rcpp::Named("hfunc2") = vector_triangular_array_wrap(result.hfunc2),
+    Rcpp::Named("hfunc1_sub") = vector_triangular_array_wrap(result.hfunc1_sub),
+    Rcpp::Named("hfunc2_sub") = vector_triangular_array_wrap(result.hfunc2_sub)
+  );
 }
 
 // [[Rcpp::export()]]
@@ -208,6 +447,34 @@ Eigen::VectorXd vinecop_cdf_cpp(const Eigen::MatrixXd& u,
                                 std::vector<int> seeds)
 {
   return vinecop_wrap(vinecop_r).cdf(u, N, cores, seeds);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd vinecop_scores_cpp(const Eigen::MatrixXd& u,
+                                   const Rcpp::List& vinecop_r,
+                                   const Eigen::MatrixXd& parameters,
+                                   bool step_wise,
+                                   size_t cores)
+{
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (parameters.size() > 0) {
+    return vinecop_cpp.scores(u, parameters, step_wise, cores);
+  }
+  return vinecop_cpp.scores(u, step_wise, cores);
+}
+
+// [[Rcpp::export()]]
+Eigen::MatrixXd vinecop_hessian_cpp(const Eigen::MatrixXd& u,
+                                    const Rcpp::List& vinecop_r,
+                                    const Eigen::MatrixXd& parameters,
+                                    bool step_wise,
+                                    size_t cores)
+{
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (parameters.size() > 0) {
+    return vinecop_cpp.hessian(u, parameters, step_wise, cores);
+  }
+  return vinecop_cpp.hessian(u, step_wise, cores);
 }
 
 // [[Rcpp::export()]]
@@ -232,7 +499,9 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd &data,
                               size_t num_threads,
                               std::vector<std::string> var_types,
                               std::string tree_algorithm,
-                              std::vector<int> seeds)
+                              std::vector<int> seeds,
+                              std::vector<size_t> conditioning_set,
+                              SEXP tree_criterion_function)
 {
   std::vector<BicopFamily> fam_set(family_set.size());
   for (unsigned int fam = 0; fam < fam_set.size(); ++fam) {
@@ -252,6 +521,28 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd &data,
   fit_controls.set_num_threads(num_threads);
   fit_controls.set_trunc_lvl(truncation_level);
   fit_controls.set_tree_criterion(tree_criterion);
+  if (!Rf_isNull(tree_criterion_function)) {
+    Rcpp::Function criterion(tree_criterion_function);
+    fit_controls.set_tree_criterion_function(
+      [criterion](const Eigen::MatrixXd& criterion_data,
+                  const Eigen::VectorXd& criterion_weights) {
+        Rcpp::RObject result = criterion(
+          Rcpp::wrap(criterion_data),
+          Rcpp::wrap(criterion_weights)
+        );
+        if (!Rf_isNumeric(result) || Rf_xlength(result) != 1) {
+          Rcpp::stop("custom 'tree_crit' must return one numeric value.");
+        }
+        const double value = Rcpp::as<double>(result);
+        if (!std::isfinite(value)) {
+          Rcpp::stop(
+            "custom 'tree_crit' must return a finite numeric value."
+          );
+        }
+        return value;
+      }
+    );
+  }
   fit_controls.set_threshold(threshold);
   fit_controls.set_select_threshold(select_threshold);
   fit_controls.set_select_trunc_lvl(select_truncation_level);
@@ -259,6 +550,7 @@ Rcpp::List vinecop_select_cpp(const Eigen::MatrixXd &data,
   fit_controls.set_show_trace(show_trace);
   fit_controls.set_tree_algorithm(tree_algorithm);
   fit_controls.set_seeds(seeds);
+  fit_controls.set_conditioning_set(conditioning_set);
 
   Vinecop vinecop_cpp(rvine_structure_wrap(structure, false));
   vinecop_cpp.set_var_types(var_types);
@@ -294,44 +586,3 @@ Rcpp::List vinecop_fit_cpp(const Eigen::MatrixXd &data,
 
   return vinecop_wrap(vinecop_cpp, true);
 }
-
-// [[Rcpp::export()]]
-std::vector<Rcpp::List> fit_margins_cpp(const Eigen::MatrixXd& data,
-                                        const Eigen::VectorXd& xmin,
-                                        const Eigen::VectorXd& xmax,
-                                        const std::vector<std::string>& type,
-                                        const Eigen::VectorXd& mult,
-                                        const Eigen::VectorXd& bw,
-                                        const Eigen::VectorXi& deg,
-                                        const Eigen::VectorXd& weights,
-                                        size_t num_threads)
-{
-  size_t d = data.cols();
-  std::vector<kde1d::Kde1d> fits_cpp(d);
-  num_threads = (num_threads > 1) ? num_threads : 0;
-  RcppThread::parallelFor(0,
-                          d,
-                          [&](const size_t& k) {
-                            fits_cpp[k] = kde1d::Kde1d(
-                              xmin(k),
-                              xmax(k),
-                              type.at(k),
-                              mult(k),
-                              bw(k),
-                              deg(k)
-                            );
-                            fits_cpp[k].fit(data.col(k), weights);
-                          },
-                          num_threads);
-
-  // we can't do the following in parallel because it calls R API
-  std::vector<Rcpp::List> fits_r(d);
-  for (size_t k = 0; k < d; ++k) {
-    fits_r[k] = kde1d::kde1d_wrap(fits_cpp[k]);
-  }
-  return fits_r;
-}
-
-
-
-

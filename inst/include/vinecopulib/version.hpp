@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -15,8 +15,11 @@
 //  VINECOPULIB_VERSION % 100 is the patch level
 //  VINECOPULIB_VERSION / 100 % 1000 is the minor version
 //  VINECOPULIB_VERSION / 100000 is the major version
+//
+//  Must be a plain decimal literal: a leading zero makes it octal and breaks
+//  the arithmetic above. Enforced by scripts/check_version.py.
 
-#define VINECOPULIB_VERSION 000703
+#define VINECOPULIB_VERSION 100000
 
 //
 //  VINECOPULIB_LIB_VERSION must be defined to be the same as
@@ -24,4 +27,4 @@
 //  major version number, y is the minor version number, and z is the patch
 //  level if not 0.
 
-#define VINECOPULIB_LIB_VERSION "0_7_3"
+#define VINECOPULIB_LIB_VERSION "1_0"

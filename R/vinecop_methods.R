@@ -4,13 +4,35 @@
 #' distribution.
 #'
 #' @name vinecop_distributions
-#' @aliases dvinecop pvinecop rvinecop dvinecop_dist pvinecop_dist rvinecop_dist
+#' @aliases dvinecop pvinecop rvinecop scores hessian dvinecop_dist pvinecop_dist rvinecop_dist
 #' @param u matrix of evaluation points; must contain at least d columns, where
 #'   d is the number of variables in the vine. More columns are required for
 #'   discrete models, see *Details*.
 #' @param vinecop an object of class `"vinecop_dist"`.
 #' @param cores number of cores to use; if larger than one, computations are
 #'   done in parallel on `cores` batches .
+#' @param ... unused.
+#' @param keep_all if `TRUE`, `dvinecop()` returns additional intermediate
+#'   quantities computed during density evaluation.
+#' @param u_cond optional conditioning values for `rvinecop()`. A vector or
+#'   one-row matrix is repeated `n` times; alternatively, supply an `n`-row
+#'   matrix for observation-specific conditioning values. The first block holds
+#'   the copula-scale values \eqn{F(x)}. The expanded layout appends one
+#'   left-limit column \eqn{F(x^-)} per conditioning variable in the same order;
+#'   columns for continuous variables equal their value columns. In the compact
+#'   layout, the redundant columns for continuous variables are omitted. If
+#'   `NULL`, `rvinecop()` performs unconditional simulation.
+#' @param conditioning_set variable indices or names corresponding to the first
+#'   block of `u_cond`. When `NULL`, the columns of `u_cond` correspond to the
+#'   last variables of the current vine order. When supplied, the model is
+#'   transiently reoriented and is not modified.
+#' @param parameters optional observation-specific parameters for `dvinecop()`,
+#'   `scores()`, and `hessian()`. For a model with one parameter, this may be a
+#'   vector with one entry per observation. Otherwise, it must be a matrix with
+#'   one row per observation and one column per model parameter. For vine
+#'   copulas, columns follow the `(tree, edge, parameter)` order of `scores()`.
+#'   Parameters are not recycled. Only continuous parametric models are
+#'   supported.
 #' @details See [vinecop()] for the estimation and construction of vine copula
 #' models.
 #'
@@ -30,7 +52,14 @@
 #'
 #' @return
 #' `dvinecop()` gives the density, `pvinecop()` gives the distribution function,
-#' and `rvinecop()` generates random deviates.
+#' `rvinecop()` generates unconditional or conditional random deviates,
+#' `scores()` gives the observation-wise score matrix, and `hessian()` gives the
+#' average Hessian matrix.
+#'
+#' If `keep_all = TRUE`, `dvinecop()` returns a list with entries `pdf`,
+#' `pdf_edges`, `hfunc1`, `hfunc2`, `hfunc1_sub`, and `hfunc2_sub`. The `_sub`
+#' entries contain h-functions evaluated at left-sided limits when the model
+#' contains discrete variables; they are empty for fully continuous models.
 #'
 #' The length of the result is determined by `n` for `rvinecop()`, and
 #' the number of rows in `u` for the other functions.
@@ -46,7 +75,7 @@
 #' u <- pseudo_obs(x)
 #'
 #' ## fit a model
-#' vc <- vinecop(u, family = "clayton")
+#' vc <- vinecop(u, family_set = "clayton")
 #'
 #' # simulate from the model
 #' u <- rvinecop(100, vc)
@@ -55,6 +84,14 @@
 #' # evaluate the density and cdf
 #' dvinecop(u[1, ], vc)
 #' pvinecop(u[1, ], vc)
+#'
+#' # evaluate derivatives of the log-likelihood
+#' scores(u, vc)
+#' hessian(u, vc)
+#'
+#' # derivatives can also be computed for the full likelihood
+#' scores(u, vc, step_wise = FALSE)
+#' hessian(u, vc, step_wise = FALSE)
 #'
 #' ## Discrete models
 #' vc$var_types <- rep("d", 5)  # convert model to discrete
@@ -68,24 +105,119 @@
 #'
 #' # simulated data always has uniform margins
 #' pairs(rvinecop(200, vc))
+#'
+#' ## Conditional simulation
+#' vc_cond <- vinecop(
+#'   u,
+#'   family_set = "gaussian",
+#'   conditioning_set = c(2, 4)
+#' )
+#' u_cond <- c(0.25, 0.75)
+#' uc <- rvinecop(
+#'   100,
+#'   vc_cond,
+#'   u_cond = u_cond,
+#'   conditioning_set = c(2, 4)
+#' )
+#' stopifnot(
+#'   isTRUE(all.equal(uc[, 2], rep(0.25, 100))),
+#'   isTRUE(all.equal(uc[, 4], rep(0.75, 100)))
+#' )
 #' @rdname vinecop_methods
 #' @export
-dvinecop <- function(u, vinecop, cores = 1) {
-  assert_that(inherits(vinecop, "vinecop_dist"))
+dvinecop <- function(
+  u,
+  vinecop,
+  cores = 1,
+  keep_all = FALSE,
+  parameters = NULL
+) {
+  cores <- as_count(cores, "cores")
+  assert_that(
+    inherits(vinecop, "vinecop_dist"),
+    is.flag(keep_all)
+  )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
-  vinecop_pdf_cpp(u, vinecop, cores)
+  if (is.null(parameters)) {
+    parameters <- matrix(numeric(), 0, 0)
+  }
+  assert_that(is.numeric(parameters))
+  parameters <- as.matrix(parameters)
+  if (keep_all) {
+    vinecop_pdf_full_cpp(u, vinecop, parameters, cores)
+  } else {
+    vinecop_pdf_cpp(u, vinecop, parameters, cores)
+  }
+}
+
+#' @rdname vinecop_methods
+#' @param step_wise if `FALSE`, the score/Hessian is computed for the full
+#'   likelihood; if `TRUE`, gradients are computed per pair-copula as in
+#'   step-wise estimation.
+#' @export
+scores <- function(u, vinecop, ...) {
+  UseMethod("scores", vinecop)
+}
+
+#' @rdname vinecop_methods
+#' @export
+scores.vinecop_dist <- function(
+  u,
+  vinecop,
+  step_wise = TRUE,
+  cores = 1,
+  parameters = NULL,
+  ...
+) {
+  cores <- as_count(cores, "cores")
+  assert_that(
+    inherits(vinecop, "vinecop_dist"),
+    is.flag(step_wise)
+  )
+  u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
+  if (is.null(parameters)) {
+    parameters <- matrix(numeric(), 0, 0)
+  }
+  assert_that(is.numeric(parameters))
+  vinecop_scores_cpp(u, vinecop, as.matrix(parameters), step_wise, cores)
+}
+
+#' @rdname vinecop_methods
+#' @export
+hessian <- function(u, vinecop, ...) {
+  UseMethod("hessian", vinecop)
+}
+
+#' @rdname vinecop_methods
+#' @export
+hessian.vinecop_dist <- function(
+  u,
+  vinecop,
+  step_wise = TRUE,
+  cores = 1,
+  parameters = NULL,
+  ...
+) {
+  cores <- as_count(cores, "cores")
+  assert_that(
+    inherits(vinecop, "vinecop_dist"),
+    is.flag(step_wise)
+  )
+  u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
+  if (is.null(parameters)) {
+    parameters <- matrix(numeric(), 0, 0)
+  }
+  assert_that(is.numeric(parameters))
+  vinecop_hessian_cpp(u, vinecop, as.matrix(parameters), step_wise, cores)
 }
 
 #' @rdname vinecop_methods
 #' @param n_mc number of samples used for quasi Monte Carlo integration.
-#' @importFrom assertthat is.count
 #' @export
 pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
-  assert_that(
-    inherits(vinecop, "vinecop_dist"),
-    is.number(n_mc),
-    is.count(cores)
-  )
+  n_mc <- as_count(n_mc, "n_mc")
+  cores <- as_count(cores, "cores")
+  assert_that(inherits(vinecop, "vinecop_dist"))
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
   vinecop_cdf_cpp(as.matrix(u), vinecop, n_mc, cores, get_seeds())
 }
@@ -96,15 +228,81 @@ pvinecop <- function(u, vinecop, n_mc = 10^4, cores = 1) {
 #' Generalized Halton sequence up to dimension 300 and the Generalized Sobol
 #' sequence in higher dimensions (default `qrng = FALSE`).
 #' @export
-rvinecop <- function(n, vinecop, qrng = FALSE, cores = 1) {
+rvinecop <- function(
+  n,
+  vinecop,
+  qrng = FALSE,
+  cores = 1,
+  u_cond = NULL,
+  conditioning_set = NULL
+) {
+  n <- as_count(n, "n")
+  cores <- as_count(cores, "cores")
   assert_that(
-    is.number(n),
     inherits(vinecop, "vinecop_dist"),
-    is.flag(qrng),
-    is.number(cores)
+    is.flag(qrng)
   )
 
-  U <- vinecop_sim_cpp(vinecop, n, qrng, cores, get_seeds())
+  if (is.null(u_cond)) {
+    if (!is.null(conditioning_set) && length(conditioning_set) > 0) {
+      stop("'conditioning_set' requires 'u_cond'.", call. = FALSE)
+    }
+    U <- vinecop_sim_cpp(vinecop, n, qrng, cores, get_seeds())
+  } else {
+    u_cond <- process_conditioning_values(
+      u_cond,
+      n,
+      "u_cond",
+      numeric_only = TRUE
+    )
+    u_cond <- as.matrix(u_cond)
+    storage.mode(u_cond) <- "double"
+
+    conditioning_set <- process_conditioning_set(
+      conditioning_set,
+      vinecop$names,
+      dim(vinecop)[1]
+    )
+    if (length(conditioning_set) > 0) {
+      n_discrete <- sum(vinecop$var_types[conditioning_set] == "d")
+      compact_cols <- length(conditioning_set) + n_discrete
+      expanded_cols <- 2L * length(conditioning_set)
+      if (!(ncol(u_cond) %in% c(compact_cols, expanded_cols))) {
+        stop(
+          "'u_cond' must have one value column per conditioning variable and ",
+          "one additional left-limit column per discrete conditioning variable ",
+          "(compact layout), or two columns per conditioning variable ",
+          "(expanded layout).",
+          call. = FALSE
+        )
+      }
+      if (ncol(u_cond) == expanded_cols) {
+        continuous <- which(vinecop$var_types[conditioning_set] == "c")
+        left_limits <- u_cond[,
+          length(conditioning_set) + continuous,
+          drop = FALSE
+        ]
+        values <- u_cond[, continuous, drop = FALSE]
+        if (!isTRUE(all.equal(left_limits, values))) {
+          stop(
+            "expanded-layout left-limit columns for continuous conditioning ",
+            "variables must equal their value columns.",
+            call. = FALSE
+          )
+        }
+      }
+    }
+
+    U <- vinecop_sim_conditional_cpp(
+      vinecop,
+      u_cond,
+      conditioning_set,
+      qrng,
+      cores,
+      get_seeds()
+    )
+  }
+
   if (!is.null(vinecop$names)) {
     colnames(U) <- vinecop$names
   }
@@ -155,8 +353,9 @@ summary.vinecop_dist <- function(
       mdf$family[k] <- pc$family
       mdf$rotation[k] <- pc$rotation
       mdf$parameters[k] <- list(pc$parameters)
-      if (pc$family %in% setdiff(family_set_nonparametric, "indep"))
+      if (pc$family %in% setdiff(family_set_nonparametric, "indep")) {
         mdf$parameters[k] <- list("[30x30 grid]")
+      }
       mdf$df[k] <- pc$npars
       mdf$tau[k] <- par_to_ktau(pc)
       k <- k + 1
@@ -203,7 +402,7 @@ summary.vinecop_dist <- function(
 #' @rdname predict_vinecop
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, family = "par", keep_data = TRUE)
+#' fit <- vinecop(u, family_set = "par", keep_data = TRUE)
 #' all.equal(predict(fit, u), fitted(fit), check.environment = FALSE)
 predict.vinecop <- function(
   object,
@@ -213,16 +412,20 @@ predict.vinecop <- function(
   cores = 1,
   ...
 ) {
+  n_mc <- as_count(n_mc, "n_mc")
+  cores <- as_count(cores, "cores")
   assert_that(
-    in_set(what, c("pdf", "cdf")),
-    is.number(n_mc),
-    is.number(cores),
-    cores > 0
+    in_set(what, c("pdf", "cdf"))
   )
   newdata <- if_vec_to_matrix(newdata, dim(object)[1] == 1)
   switch(
     what,
-    "pdf" = vinecop_pdf_cpp(newdata, object, cores),
+    "pdf" = vinecop_pdf_cpp(
+      newdata,
+      object,
+      matrix(numeric(), 0, 0),
+      cores
+    ),
     "cdf" = vinecop_cdf_cpp(newdata, object, n_mc, cores, get_seeds())
   )
 }
@@ -233,22 +436,24 @@ fitted.vinecop <- function(object, what = "pdf", n_mc = 10^4, cores = 1, ...) {
   if (is.null(object$data)) {
     stop("data have not been stored, use keep_data = TRUE when fitting.")
   }
-  assert_that(
-    in_set(what, c("pdf", "cdf")),
-    is.number(n_mc),
-    is.number(cores),
-    cores > 0
-  )
+  n_mc <- as_count(n_mc, "n_mc")
+  cores <- as_count(cores, "cores")
+  assert_that(in_set(what, c("pdf", "cdf")))
   switch(
     what,
-    "pdf" = vinecop_pdf_cpp(object$data, object, cores),
+    "pdf" = vinecop_pdf_cpp(
+      object$data,
+      object,
+      matrix(numeric(), 0, 0),
+      cores
+    ),
     "cdf" = vinecop_cdf_cpp(object$data, object, n_mc, cores, get_seeds())
   )
 }
 
 #' @export
 logLik.vinecop <- function(object, ...) {
-  structure(object$loglik, "df" = object$npars)
+  structure(object$loglik, df = object$npars, class = "logLik")
 }
 
 #' Modified vine copula Bayesian information criterion (mBICv)
@@ -258,7 +463,7 @@ logLik.vinecop <- function(object, ...) {
 #' The modified vine copula Bayesian information criterion (mBICv) is defined as
 #'
 #' \deqn{BIC = -2 loglik +  \nu log(n) - 2 \sum_{t=1}^{d - 1} (q_t log(\psi_0^t)
-#' - (d - t - q_t) log(1 - \psi_0^t)) }
+#' + (d - t - q_t) log(1 - \psi_0^t)) }
 #'
 #' where \eqn{\mathrm{loglik}} is the log-likelihood and \eqn{\nu} is the
 #' (effective) number of parameters of the model, \eqn{t} is the tree level
@@ -274,16 +479,19 @@ logLik.vinecop <- function(object, ...) {
 #' @references Nagler, T., Bumann, C., Czado, C. (2019). Model selection for
 #'   sparse high-dimensional vine copulas with application to portfolio risk.
 #'   *Journal of Multivariate Analysis, in press*
-#'   (\url{http://arxiv.org/pdf/1801.09739})
+#'   (\url{https://arxiv.org/pdf/1801.09739})
 #'
 #' @export mBICV
 #' @examples
 #' u <- sapply(1:5, function(i) runif(50))
-#' fit <- vinecop(u, family = "par", keep_data = TRUE)
+#' fit <- vinecop(u, family_set = "par", keep_data = TRUE)
 #' mBICV(fit, 0.9) # with a 0.9 prior probability of a non-independence copula
 #' mBICV(fit, 0.1) # with a 0.1 prior probability of a non-independence copula
 mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
-  assert_that(inherits(object, "vinecop_dist"), is.number(psi0))
+  assert_that(inherits(object, "vinecop_dist"))
+  if (!is.number(psi0) || !is.finite(psi0) || psi0 <= 0 || psi0 >= 1) {
+    stop("`psi0` must be a number strictly between 0 and 1.", call. = FALSE)
+  }
   ll <- ifelse(
     is.null(newdata),
     object$loglik,
@@ -295,15 +503,12 @@ mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
 compute_mBICV_penalty <- function(object, psi0) {
   d <- dim(object)[1]
   smr <- summary(object)
-  q_m <- tapply(smr$family, smr$tree, function(x) sum(x == "indep"))
-  q_m <- c(q_m, rep(0, d - 1 - length(q_m)))
+  q_t <- tapply(smr$family, smr$tree, function(x) sum(x != "indep"))
+  q_t <- c(q_t, rep(0, d - 1 - length(q_t)))
   m_seq <- seq_len(d - 1)
-  pen <- object$npars * log(object$nobs)
-  pen -
-    2 *
-      sum(
-        q_m * log(psi0^m_seq) + (d - seq_len(d - 1) - q_m) * log(1 - psi0^m_seq)
-      )
+  n_edges <- d - m_seq
+  log_prior <- q_t * log(psi0^m_seq) + (n_edges - q_t) * log(1 - psi0^m_seq)
+  object$npars * log(object$nobs) - 2 * sum(log_prior)
 }
 
 #' @export

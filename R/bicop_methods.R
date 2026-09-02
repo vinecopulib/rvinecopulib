@@ -4,18 +4,31 @@
 #' inverses) for the bivariate copula distribution.
 #'
 #' @name bicop_distributions
-#' @aliases dbicop pbicop rbicop hbicop dbicop_dist pbicop_dist rbicop_dist
-#'   hbicop_dist
+#' @aliases dbicop pbicop rbicop hbicop dbicop_dist pbicop_dist rbicop_dist hbicop_dist
 #'
 #' @param u evaluation points, a matrix with at least two columns, see
 #'   *Details*.
 #' @param family the copula family, a string containing the family name (see
 #'   \code{\link{bicop}} for all possible families).
 #' @param rotation the rotation of the copula, one of `0`, `90`, `180`, `270`.
-#' @param parameters a vector or matrix of copula parameters.
+#' @param parameters a vector or matrix of copula parameters. For `scores()`
+#'   and `hessian()`, optional observation-specific parameters override those
+#'   stored in `vinecop`: a vector is accepted for one-parameter families;
+#'   otherwise, use a matrix with one row per observation and one column per
+#'   parameter. Parameters are not recycled.
 #' @param var_types variable types, a length 2 vector; e.g., `c("c", "c")` for
 #'   both continuous (default), or `c("c", "d")` for first variable continuous
 #'   and second discrete.
+#' @param log whether to return the log-density or a derivative of the
+#'   log-density.
+#' @param deriv `NULL` for ordinary evaluation, or a character vector of length
+#'   one or two specifying a first- or second-order partial derivative. Each
+#'   component is one of `"u1"`, `"u2"`, or `"par<k>"`; `"par"` is an alias
+#'   for `"par1"`.
+#' @param cores number of cores used when evaluating observation-specific
+#'   parameters.
+#' @param vinecop a `bicop_dist` object for `scores()` and `hessian()`.
+#' @param ... unused.
 #'
 #' @note The functions can optionally be used with a [bicop_dist] object in place
 #' of the `family` argument, e.g.,
@@ -36,6 +49,20 @@
 #' When inverting H-functions, the inverse is then taken with respect to the
 #' other variable, that is `v` when `cond_var = 1` and `u` when `cond_var = 2`.
 #'
+#' ## Derivatives
+#'
+#' Setting `deriv` evaluates a selected first- or second-order derivative of
+#' the density, log-density, or h-function. For example, `deriv = "u1"`
+#' differentiates with respect to the first argument and
+#' `deriv = c("u1", "par2")` evaluates the corresponding mixed second
+#' derivative. Derivative order is immaterial. Parameter derivatives use the
+#' natural parameters of the (possibly rotated) copula.
+#'
+#' Derivatives are available only for continuous parametric copulas. The
+#' backend uses analytic formulas where available and finite-difference
+#' fallbacks where needed. Derivatives of inverse h-functions are not
+#' available.
+#'
 #' ## Discrete variables
 #' When at least one variable is discrete, more than two columns are required
 #' for `u`: the first \eqn{n \times 2} block contains realizations of
@@ -47,15 +74,21 @@
 #' second block.
 #'
 #' @return
-#' `dbicop()` gives the density, `pbicop()` gives the distribution function,
+#' `dbicop()` gives the density or log-density, and `pbicop()` gives the
+#' distribution function.
 #' `rbicop()` generates random deviates, and `hbicop()` gives the h-functions
-#' (and their inverses).
+#' (and their inverses). If `deriv` is set, `dbicop()` and `hbicop()` return
+#' the selected observation-wise derivative. `scores()` gives the
+#' observation-wise score matrix and `hessian()` gives the average Hessian
+#' matrix for a `bicop_dist` object.
 #'
 #' The length of the result is determined by `n` for `rbicop()`, and
 #' the number of rows in `u` for the other functions.
 #'
 #' The numerical arguments other than `n` are recycled to the length of the
 #' result.
+#' For vectorized simulation, `parameters` must have one row per generated
+#' observation and one column per family parameter.
 #'
 #' @seealso [bicop_dist()], [bicop()]
 #
@@ -77,6 +110,11 @@
 #' # h_2^{-1}(0.1, 0.2)
 #' hbicop(c(0.1, 0.2), 2, joe_cop, inverse = TRUE)
 #'
+#' ## derivatives
+#' dbicop(c(0.2, 0.4), joe_cop, deriv = "u1")
+#' dbicop(c(0.2, 0.4), joe_cop, log = TRUE, deriv = "par1")
+#' hbicop(c(0.2, 0.4), 1, joe_cop, deriv = c("u1", "par1"))
+#'
 #' ## mixed discrete and continuous data
 #' x <- cbind(rpois(10, 1), rnorm(10, 1))
 #' u <- cbind(ppois(x[, 1], 1), pnorm(x[, 2]), ppois(x[, 1] - 1, 1))
@@ -84,15 +122,43 @@
 #'
 #' @rdname bicop_methods
 #' @export
-dbicop <- function(u, family, rotation, parameters, var_types = c("c", "c")) {
+dbicop <- function(
+  u,
+  family,
+  rotation,
+  parameters,
+  var_types = c("c", "c"),
+  log = FALSE,
+  deriv = NULL,
+  cores = 1
+) {
+  assert_that(is.flag(log))
+  cores <- as_count(cores, "cores")
+  deriv <- normalize_bicop_deriv(deriv)
+  u <- if_vec_to_matrix(u)
   bicop <- args2bicop(family, rotation, parameters, var_types)
-  bicop_pdf_cpp(if_vec_to_matrix(u), bicop)
+
+  if (is.null(deriv)) {
+    density <- bicop_pdf_cpp(u, bicop, cores)
+    return(if (log) base::log(density) else density)
+  }
+
+  what <- if (log) "logpdf" else "pdf"
+  bicop_deriv_cpp(
+    u,
+    bicop,
+    what,
+    paste0(deriv, collapse = ""),
+    length(deriv),
+    cores
+  )
 }
 #' @rdname bicop_methods
 #' @export
 pbicop <- function(u, family, rotation, parameters, var_types = c("c", "c")) {
+  u <- if_vec_to_matrix(u)
   bicop <- args2bicop(family, rotation, parameters, var_types)
-  bicop_cdf_cpp(if_vec_to_matrix(u), bicop)
+  bicop_cdf_cpp(u, bicop)
 }
 
 #' @param n number of observations. If `length(n) > 1``, the length is taken to
@@ -108,6 +174,7 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
   if (inherits(family, "bicop_dist") & !missing(rotation)) {
     qrng <- rotation
   }
+  n <- as_count(n, "n")
   assert_that(is.flag(qrng))
 
   bicop <- args2bicop(family, rotation, parameters)
@@ -117,6 +184,42 @@ rbicop <- function(n, family, rotation, parameters, qrng = FALSE) {
   }
 
   U
+}
+
+#' @rdname bicop_methods
+#' @export
+scores.bicop_dist <- function(
+  u,
+  vinecop,
+  cores = 1,
+  parameters = NULL,
+  ...
+) {
+  cores <- as_count(cores, "cores")
+  u <- if_vec_to_matrix(u)
+  if (is.null(parameters)) {
+    parameters <- matrix(numeric(), 0, 0)
+  }
+  assert_that(is.numeric(parameters))
+  bicop_scores_cpp(u, vinecop, as.matrix(parameters), cores)
+}
+
+#' @rdname bicop_methods
+#' @export
+hessian.bicop_dist <- function(
+  u,
+  vinecop,
+  cores = 1,
+  parameters = NULL,
+  ...
+) {
+  cores <- as_count(cores, "cores")
+  u <- if_vec_to_matrix(u)
+  if (is.null(parameters)) {
+    parameters <- matrix(numeric(), 0, 0)
+  }
+  assert_that(is.numeric(parameters))
+  bicop_hessian_cpp(u, vinecop, as.matrix(parameters), cores)
 }
 
 
@@ -132,23 +235,45 @@ hbicop <- function(
   rotation,
   parameters,
   inverse = FALSE,
-  var_types = c("c", "c")
+  var_types = c("c", "c"),
+  deriv = NULL,
+  cores = 1
 ) {
-  assert_that(in_set(cond_var, 1:2), is.flag(inverse))
+  cores <- as_count(cores, "cores")
+  assert_that(
+    in_set(cond_var, 1:2),
+    is.flag(inverse)
+  )
+  deriv <- normalize_bicop_deriv(deriv)
+  if (inverse && !is.null(deriv)) {
+    stop("derivatives of inverse h-functions are not available.", call. = FALSE)
+  }
   bicop <- args2bicop(family, rotation, parameters, var_types)
   u <- if_vec_to_matrix(u)
 
+  if (!is.null(deriv)) {
+    what <- if (cond_var == 1) "hfunc1" else "hfunc2"
+    return(bicop_deriv_cpp(
+      u,
+      bicop,
+      what,
+      paste0(deriv, collapse = ""),
+      length(deriv),
+      cores
+    ))
+  }
+
   if (!inverse) {
     if (cond_var == 1) {
-      return(bicop_hfunc1_cpp(u, bicop))
+      return(bicop_hfunc1_cpp(u, bicop, cores))
     } else {
-      return(bicop_hfunc2_cpp(u, bicop))
+      return(bicop_hfunc2_cpp(u, bicop, cores))
     }
   } else {
     if (cond_var == 1) {
-      return(bicop_hinv1_cpp(u, bicop))
+      return(bicop_hinv1_cpp(u, bicop, cores))
     } else {
-      return(bicop_hinv2_cpp(u, bicop))
+      return(bicop_hinv2_cpp(u, bicop, cores))
     }
   }
 }
@@ -221,7 +346,7 @@ ktau_to_par <- function(family, tau) {
 #' @examples
 #' # Simulate and fit a bivariate copula model
 #' u <- rbicop(500, "gauss", 0, 0.5)
-#' fit <- bicop(u, family = "par", keep_data = TRUE)
+#' fit <- bicop(u, family_set = "par", keep_data = TRUE)
 #'
 #' # Predictions
 #' all.equal(predict(fit, u, "hfunc1"), fitted(fit, "hfunc1"),
@@ -265,7 +390,7 @@ fitted.bicop <- function(object, what = "pdf", ...) {
 #' @importFrom stats logLik
 #' @export
 logLik.bicop <- function(object, ...) {
-  structure(object$loglik, "df" = object$npars)
+  structure(object$loglik, df = object$npars, class = "logLik")
 }
 
 #' @export
@@ -297,6 +422,8 @@ print.bicop_dist <- function(x, ...) {
 #' @export
 summary.bicop_dist <- function(object, ...) {
   print.bicop_dist(object, ...)
+  print_bicop_dep_measures(object)
+  invisible(object)
 }
 
 #' @export
@@ -327,15 +454,23 @@ print.bicop <- function(x, ...) {
 #' @export
 summary.bicop <- function(object, ...) {
   print.bicop(object, ...)
-  cat("nobs =", object$nobs, "  ")
-
+  print_bicop_dep_measures(object)
   info <- bicop_fit_info(object)
-  cat("logLik =", round(info$logLik, 2), "  ")
-  cat("npars =", round(info$npars, 2), "  ")
-  cat("AIC =", round(info$AIC, 2), "  ")
-  cat("BIC =", round(info$BIC, 2), "  ")
+  cat(
+    "Fit: n = ",
+    object$nobs,
+    "; logLik = ",
+    format_bicop_number(info$logLik),
+    "; df = ",
+    format_bicop_number(info$npars),
+    "; AIC = ",
+    format_bicop_number(info$AIC),
+    "; BIC = ",
+    format_bicop_number(info$BIC),
+    "\n",
+    sep = ""
+  )
   attr(object, "info") <- info
-  cat("\n")
 
   invisible(object)
 }
@@ -344,6 +479,43 @@ summary.bicop <- function(object, ...) {
 #' @export
 coef.bicop_dist <- function(object, ...) {
   object$parameters
+}
+
+
+#' Dependence measures of a bivariate copula
+#'
+#' Computes the four corner tail-dependence coefficients or Blomqvist's beta
+#' for a bivariate copula distribution.
+#'
+#' @param object a [bicop_dist] or fitted [bicop] object.
+#'
+#' @return `tail_dep()` returns a 2 by 2 matrix whose rows refer to the lower
+#'   and upper tail of the first variable and whose columns refer to the lower
+#'   and upper tail of the second variable. `blomqvist_beta()` returns a
+#'   numeric scalar.
+#'
+#' @examples
+#' cop <- bicop_dist("clayton", 0, 2)
+#' tail_dep(cop)
+#' blomqvist_beta(cop)
+#'
+#' @name bicop_dependence
+#' @export
+tail_dep <- function(object) {
+  assert_that(inherits(object, "bicop_dist"))
+  out <- bicop_tail_dep_cpp(object)
+  dimnames(out) <- list(
+    variable1 = c("lower", "upper"),
+    variable2 = c("lower", "upper")
+  )
+  out
+}
+
+#' @rdname bicop_dependence
+#' @export
+blomqvist_beta <- function(object) {
+  assert_that(inherits(object, "bicop_dist"))
+  bicop_beta_cpp(object)
 }
 
 bicop_fit_info <- function(bc) {
@@ -355,4 +527,54 @@ bicop_fit_info <- function(bc) {
     AIC = -2 * ll[1] + 2 * attr(ll, "df"),
     BIC = -2 * ll[1] + log(bc$nobs) * attr(ll, "df")
   )
+}
+
+bicop_dep_measures <- function(bc) {
+  td <- tail_dep(bc)
+  td <- c(
+    LL = td["lower", "lower"],
+    LU = td["lower", "upper"],
+    UL = td["upper", "lower"],
+    UU = td["upper", "upper"]
+  )
+  list(
+    kendalls_tau = par_to_ktau(bc),
+    blomqvist_beta = blomqvist_beta(bc),
+    tail_dep = td
+  )
+}
+
+print_bicop_dep_measures <- function(bc) {
+  dep <- bicop_dep_measures(bc)
+  cat(
+    "Dependence: tau = ",
+    format_bicop_number(dep$kendalls_tau),
+    "; beta = ",
+    format_bicop_number(dep$blomqvist_beta),
+    "; tail dependence: ",
+    format_bicop_tail_dep(dep$tail_dep),
+    "\n",
+    sep = ""
+  )
+}
+
+format_bicop_tail_dep <- function(td) {
+  available <- !is.na(td)
+  if (!any(available)) {
+    return("not available")
+  }
+  nonzero <- available & td != 0
+  if (!any(nonzero)) {
+    return("none")
+  }
+  paste(
+    names(td)[nonzero],
+    format_bicop_number(td[nonzero]),
+    sep = " = ",
+    collapse = "; "
+  )
+}
+
+format_bicop_number <- function(x) {
+  formatC(x, format = "f", digits = 2)
 }

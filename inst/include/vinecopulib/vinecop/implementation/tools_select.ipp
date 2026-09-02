@@ -1,17 +1,21 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <utility>
 #include <vinecopulib/misc/tools_stats.hpp>
 #include <vinecopulib/misc/tools_stl.hpp>
 
 #include <boost/graph/kruskal_min_spanning_tree.hpp>
 #include <boost/graph/prim_minimum_spanning_tree.hpp>
 #include <boost/graph/random_spanning_tree.hpp>
+#include <boost/random.hpp>
 #include <cmath>
+#include <functional>
 #include <iostream>
+#include <unordered_set>
 #include <wdm/eigen.hpp>
 
 namespace vinecopulib {
@@ -24,58 +28,68 @@ using namespace tools_stl;
 //! @param data Observations.
 //! @param tree_criterion The criterion.
 //! @param weights Vector of weights for each observation (can be empty).
+//! @param tree_criterion_function Custom criterion function, used when
+//!   `tree_criterion == "custom"`.
+//! (internal) criterion dispatch on clean (NaN-free) data.
 inline double
-calculate_criterion(const Eigen::MatrixXd& data,
-                    std::string tree_criterion,
-                    Eigen::VectorXd weights)
+calculate_criterion_clean(const Eigen::MatrixXd& data,
+                          const std::string& tree_criterion,
+                          const Eigen::VectorXd& weights,
+                          const TreeCriterionFunction& tree_criterion_function)
 {
   double w = 0.0;
-  Eigen::MatrixXd data_no_nan = data;
-  tools_eigen::remove_nans(data_no_nan, weights);
-  double freq =
-    static_cast<double>(data_no_nan.rows()) / static_cast<double>(data.rows());
-  if (data_no_nan.rows() > 10) {
-    if (tree_criterion == "mcor") {
-      w = tools_stats::pairwise_mcor(data_no_nan, weights);
+  if (data.rows() > 10) {
+    if (tree_criterion == "custom") {
+      if (!tree_criterion_function) {
+        throw std::runtime_error(
+          "tree_criterion = \"custom\" requires a tree_criterion_function "
+          "callable");
+      }
+      w = tree_criterion_function(data, weights);
+    } else if (tree_criterion == "mcor") {
+      w = tools_stats::pairwise_mcor(data, weights);
+    } else if (tree_criterion == "cxi") {
+      w = tools_stats::pairwise_cxi(data, weights);
     } else if (tree_criterion == "joe") {
       // mutual information for Gaussian copula
-      w = wdm::wdm(tools_stats::qnorm(data_no_nan), "pearson", weights)(0, 1);
+      w = wdm::wdm(tools_stats::qnorm(data), "pearson", weights)(0, 1);
       w = -0.5 * std::log(1 - w * w);
     } else {
-      w = wdm::wdm(data_no_nan, tree_criterion, weights)(0, 1);
+      w = wdm::wdm(data, tree_criterion, weights)(0, 1);
     }
 
     if (std::isnan(w)) {
       w = 0.0;
     }
   }
-  return std::fabs(w) * std::sqrt(freq);
+  return std::fabs(w);
 }
 
-//! @brief Evaluates maximal criterion for tree selection.
-//! @param data Observations.
-//! @param tree_criterion The criterion.
-//! @param weights Vector of weights for each observation (can be empty).
-inline Eigen::MatrixXd
-calculate_criterion_matrix(const Eigen::MatrixXd& data,
-                           const std::string& tree_criterion,
-                           const Eigen::VectorXd& weights)
+inline double
+calculate_criterion(const Eigen::MatrixXd& data,
+                    const std::string& tree_criterion,
+                    const Eigen::VectorXd& weights,
+                    const TreeCriterionFunction& tree_criterion_function)
 {
-  size_t n = data.rows();
-  size_t d = data.cols();
-  Eigen::MatrixXd mat(d, d);
-  mat.diagonal() = Eigen::VectorXd::Constant(d, 1.0);
-  Eigen::MatrixXd pair_data(n, 2);
-  for (size_t i = 1; i < d; ++i) {
-    for (size_t j = 0; j < i; ++j) {
-      pair_data.col(0) = data.col(i);
-      pair_data.col(1) = data.col(j);
-      Eigen::VectorXd pair_w = weights;
-      mat(i, j) = calculate_criterion(pair_data, tree_criterion, pair_w);
-      mat(j, i) = mat(i, j);
-    }
+  // fast path (the common case): no NaNs and no zero weights, so the
+  // copy + compaction can be skipped altogether
+  bool clean = !data.array().isNaN().any();
+  if (clean && (weights.size() > 0)) {
+    clean = !(weights.array().isNaN().any() || (weights.array() == 0.0).any());
   }
-  return mat;
+  if (clean) {
+    return calculate_criterion_clean(
+      data, tree_criterion, weights, tree_criterion_function);
+  }
+
+  Eigen::MatrixXd data_no_nan = data;
+  Eigen::VectorXd weights_no_nan = weights;
+  tools_eigen::remove_nans(data_no_nan, weights_no_nan);
+  double freq =
+    static_cast<double>(data_no_nan.rows()) / static_cast<double>(data.rows());
+  double w = calculate_criterion_clean(
+    data_no_nan, tree_criterion, weights_no_nan, tree_criterion_function);
+  return w * std::sqrt(freq);
 }
 
 //! computes
@@ -99,8 +113,9 @@ inline VinecopSelector::VinecopSelector(const Eigen::MatrixXd& data,
                                         const FitControlsVinecop& controls,
                                         std::vector<std::string> var_types)
   : n_(data.rows())
+  // d_ is declared before var_types_, so it is initialized before the move.
   , d_(var_types.size())
-  , var_types_(var_types)
+  , var_types_(std::move(var_types))
   , controls_(controls)
   , pool_(controls_.get_num_threads())
   , trees_(std::vector<VineTree>(1))
@@ -108,13 +123,23 @@ inline VinecopSelector::VinecopSelector(const Eigen::MatrixXd& data,
   , psi0_(controls.get_psi0())
 {
   vine_struct_ = RVineStructure(tools_stl::seq_int(1, d_), 1, false);
+
+  // conditioning-aware selection bookkeeping (empty set -> ordinary selection)
+  auto cond = controls.get_conditioning_set();
+  n_cond_ = cond.size();
+  in_cond_ = std::vector<char>(d_, 0);
+  for (auto v : cond) {
+    if ((v >= 1) && (v <= d_)) {
+      in_cond_[v - 1] = 1;
+    }
+  }
 }
 
 inline VinecopSelector::VinecopSelector(const Eigen::MatrixXd& data,
                                         const RVineStructure& vine_struct,
                                         const FitControlsVinecop& controls,
                                         std::vector<std::string> var_types)
-  : VinecopSelector(data, controls, var_types)
+  : VinecopSelector(data, controls, std::move(var_types))
 {
   vine_struct_ = vine_struct;
   structure_unknown_ = false;
@@ -156,6 +181,13 @@ VinecopSelector::make_pair_copula_store(size_t d, size_t trunc_lvl)
 inline void
 VinecopSelector::select_all_trees(const Eigen::MatrixXd& data)
 {
+  if (d_ == 1) {
+    loglik_ = 0.0;
+    n_ = data.rows();
+    pair_copulas_ = make_pair_copula_store(d_, controls_.get_trunc_lvl());
+    vine_struct_ = RVineStructure(d_);
+    return;
+  }
   loglik_ = 0.0;
   initialize_new_fit(data);
   for (size_t t = 0; t < d_ - 1; ++t) {
@@ -179,9 +211,17 @@ VinecopSelector::select_all_trees(const Eigen::MatrixXd& data)
 inline void
 VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
 {
+  if (d_ == 1) {
+    loglik_ = 0.0;
+    n_ = data.rows();
+    pair_copulas_ = make_pair_copula_store(d_, controls_.get_trunc_lvl());
+    vine_struct_ = RVineStructure(d_);
+    return;
+  }
+  loglik_ = 0.0;
+
   // family set must be reset after each iteration of the threshold search
   auto family_set = controls_.get_family_set();
-  double d = static_cast<double>(d_);
 
   std::vector<double> thresholded_crits;
   double mbicv_opt = std::numeric_limits<double>::max();
@@ -204,103 +244,134 @@ VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
       }
     }
 
-    // helper variables for checking whether an optimum was found
-    double mbicv = 0.0;
-    double mbicv_trunc = 0.0;
-    double loglik = 0.0;
-    bool select_trunc_lvl = controls_.get_select_trunc_lvl();
-    bool select_threshold = controls_.get_select_threshold();
-    double num_changed = 0.0;
-    double num_total = d * (d - 1.0) / 2.0;
-
-    for (size_t t = 0; t < d_ - 1; ++t) {
-      if (controls_.get_trunc_lvl() < t) {
-        break; // don't need to fit the remaining trees
-      }
-
-      // select pair copulas (and possibly tree structure)
-      select_tree(t);
-      num_changed += d - 1 - static_cast<double>(t);
-
-      // update fit statistic
-      double loglik_tree = get_loglik_of_tree(t);
-      loglik += loglik_tree;
-      double mbicv_tree = get_mbicv_of_tree(t, loglik_tree);
-      mbicv_trunc += mbicv_tree;
-
-      // print trace for this tree level
-      if (controls_.get_show_trace()) {
-        std::cout << "** Tree: " << t;
-        if (select_trunc_lvl) {
-          std::cout << ", mbicv: " << mbicv_tree << ", loglik: " << loglik_tree;
-        }
-        std::cout << std::endl;
-        print_pair_copulas_of_tree(t);
-      }
-
-      // mbicv comparison for truncation level (check only after 10% of
-      // copulas change to avoid getting stuck in local minimum)
-      if (num_changed / num_total > 0.1) {
-        num_changed = 0.0;
-        if (select_trunc_lvl & (mbicv_trunc >= mbicv) & (t > 0)) {
-          // mbicv did not improve
-          // check if it can be improved by removing trees
-          loglik -= loglik_tree;
-          mbicv_trunc -= mbicv_tree;
-          while (t > 1) {
-            loglik_tree = get_loglik_of_tree(t - 1);
-            mbicv_tree = get_mbicv_of_tree(t - 1, loglik_tree);
-            if (mbicv_tree <= 0)
-              break;
-            loglik -= loglik_tree;
-            mbicv_trunc -= mbicv_tree;
-            t--;
-          }
-          set_current_fit_as_opt(loglik);
-          controls_.set_trunc_lvl(t);
-          if (!select_threshold) {
-            // fixed threshold, no need to continue
-            needs_break = true;
-          }
-        } else {
-          mbicv = mbicv_trunc;
-        }
-      }
-    }
-
-    if (controls_.get_show_trace()) {
-      std::cout << "--> mbicv = " << mbicv << ", loglik = " << loglik
-                << std::endl
-                << std::endl;
-    }
+    // fit all trees for the current threshold
+    ThresholdPass pass = run_threshold_pass(needs_break);
 
     // check whether mbicv-optimal model has been found
-    if (mbicv == 0.0) {
-      //// CASE: 0-truncated model is best for this threshold
-      set_current_fit_as_opt(loglik);
-      if (!select_threshold) {
-        // threshold is fixed and trunc_lvl has been found -> stop
-        needs_break = true;
-      }
-    } else if (mbicv >= mbicv_opt) {
-      //// CASE: old model is optimal
-      needs_break = true;
-    } else {
-      //// CASE: optimum hasn't been found
-      set_current_fit_as_opt(loglik);
-      mbicv_opt = mbicv;
-      // while loop is only for threshold selection
-      needs_break = needs_break || !select_threshold;
-      // threshold is too close to 0
-      needs_break = needs_break || (controls_.get_threshold() < 0.01);
-      // prepare for possible next iteration
-      thresholded_crits = get_thresholded_crits();
-    }
+    update_optimum(pass, mbicv_opt, needs_break, thresholded_crits);
   }
 
   // set final model
   trees_ = trees_opt_;
   finalize(controls_.get_trunc_lvl());
+}
+
+//! @brief Fits all trees for the current threshold, accumulating fit
+//!   statistics into a `ThresholdPass`.
+inline VinecopSelector::ThresholdPass
+VinecopSelector::run_threshold_pass(bool& needs_break)
+{
+  double d = static_cast<double>(d_);
+  ThresholdPass pass;
+  pass.select_trunc_lvl = controls_.get_select_trunc_lvl();
+  pass.select_threshold = controls_.get_select_threshold();
+  pass.num_total = d * (d - 1.0) / 2.0;
+
+  for (size_t t = 0; t < d_ - 1; ++t) {
+    if (controls_.get_trunc_lvl() < t) {
+      break; // don't need to fit the remaining trees
+    }
+
+    // select pair copulas (and possibly tree structure)
+    select_tree(t);
+    pass.num_changed += d - 1 - static_cast<double>(t);
+
+    // update fit statistic
+    double loglik_tree = get_loglik_of_tree(t);
+    pass.loglik += loglik_tree;
+    double mbicv_tree = get_mbicv_of_tree(t, loglik_tree);
+    pass.mbicv_trunc += mbicv_tree;
+
+    // print trace for this tree level
+    if (controls_.get_show_trace()) {
+      std::cout << "** Tree: " << t;
+      if (pass.select_trunc_lvl) {
+        std::cout << ", mbicv: " << mbicv_tree << ", loglik: " << loglik_tree;
+      }
+      std::cout << std::endl;
+      print_pair_copulas_of_tree(t);
+    }
+
+    // mbicv comparison for truncation level (check only after 10% of
+    // copulas change to avoid getting stuck in local minimum)
+    check_truncation_rollback(pass, t, loglik_tree, mbicv_tree, needs_break);
+  }
+
+  if (controls_.get_show_trace()) {
+    std::cout << "--> mbicv = " << pass.mbicv << ", loglik = " << pass.loglik
+              << std::endl
+              << std::endl;
+  }
+
+  return pass;
+}
+
+//! @brief mBICv truncation check for one tree; may roll back trees by
+//!   decrementing `t` (shared with the enclosing loop, hence by reference).
+inline void
+VinecopSelector::check_truncation_rollback(ThresholdPass& pass,
+                                           size_t& t,
+                                           double loglik_tree,
+                                           double mbicv_tree,
+                                           bool& needs_break)
+{
+  if (pass.num_changed / pass.num_total > 0.1) {
+    pass.num_changed = 0.0;
+    if (pass.select_trunc_lvl & (pass.mbicv_trunc >= pass.mbicv) & (t > 0)) {
+      // mbicv did not improve
+      // check if it can be improved by removing trees
+      pass.loglik -= loglik_tree;
+      pass.mbicv_trunc -= mbicv_tree;
+      while (t > 1) {
+        loglik_tree = get_loglik_of_tree(t - 1);
+        mbicv_tree = get_mbicv_of_tree(t - 1, loglik_tree);
+        if (mbicv_tree <= 0)
+          break;
+        pass.loglik -= loglik_tree;
+        pass.mbicv_trunc -= mbicv_tree;
+        t--;
+      }
+      set_current_fit_as_opt(pass.loglik);
+      controls_.set_trunc_lvl(t);
+      if (!pass.select_threshold) {
+        // fixed threshold, no need to continue
+        needs_break = true;
+      }
+    } else {
+      pass.mbicv = pass.mbicv_trunc;
+    }
+  }
+}
+
+//! @brief Checks whether the mBICv-optimal model has been found and updates
+//!   the running optimum / stopping decision.
+inline void
+VinecopSelector::update_optimum(const ThresholdPass& pass,
+                                double& mbicv_opt,
+                                bool& needs_break,
+                                std::vector<double>& thresholded_crits)
+{
+  if (pass.mbicv == 0.0) {
+    //// CASE: 0-truncated model is best for this threshold
+    set_current_fit_as_opt(pass.loglik);
+    if (!pass.select_threshold) {
+      // threshold is fixed and trunc_lvl has been found -> stop
+      needs_break = true;
+    }
+  } else if (pass.mbicv >= mbicv_opt) {
+    //// CASE: old model is optimal
+    needs_break = true;
+  } else {
+    //// CASE: optimum hasn't been found
+    set_current_fit_as_opt(pass.loglik);
+    mbicv_opt = pass.mbicv;
+    // while loop is only for threshold selection
+    needs_break = needs_break || !pass.select_threshold;
+    // threshold is too close to 0
+    needs_break = needs_break || (controls_.get_threshold() < 0.01);
+    // prepare for possible next iteration
+    thresholded_crits = get_thresholded_crits();
+  }
 }
 
 inline void
@@ -338,7 +409,7 @@ VinecopSelector::get_nobs() const
 inline double
 VinecopSelector::get_next_threshold(std::vector<double>& thresholded_crits)
 {
-  if (thresholded_crits.size() == 0) {
+  if (thresholded_crits.empty()) {
     return 1.0;
   }
   // sort in descending order
@@ -362,58 +433,142 @@ VinecopSelector::get_next_threshold(std::vector<double>& thresholded_crits)
 inline void
 VinecopSelector::add_allowed_edges(VineTree& vine_tree)
 {
-  std::string tree_criterion = controls_.get_tree_criterion();
+  // hoist loop invariants: the getters return by value, so calling them
+  // per candidate edge would copy the weights vector every time
+  const std::string tree_criterion = controls_.get_tree_criterion();
+  const Eigen::VectorXd weights = controls_.get_weights();
+  const TreeCriterionFunction criterion_fun =
+    controls_.get_tree_criterion_function();
   if (structure_unknown_) {
-    std::vector<std::pair<size_t, size_t>> edge_list;
-    for (size_t v0 = 0; v0 < num_vertices(vine_tree); ++v0) {
-      tools_interface::check_user_interrupt(v0 % 50 == 0);
-      for (size_t v1 = 0; v1 < v0; ++v1) {
-        if (find_common_neighbor(v0, v1, vine_tree) > -1) {
-          boost::add_edge(v0, v1, vine_tree);
-          edge_list.emplace_back(v0, v1); // ordering preserved
-        }
-      }
-    }
-
-    std::mutex m;
-    double threshold = controls_.get_threshold();
-    auto process_edge = [&](const std::pair<size_t, size_t>& entry) {
-      size_t v0 = entry.first;
-      size_t v1 = entry.second;
-
-      auto pc_data = get_pc_data(v0, v1, vine_tree);
-      double crit =
-        calculate_criterion(pc_data, tree_criterion, controls_.get_weights());
-      double w = 1.0 - static_cast<double>(crit >= threshold) * crit;
-
-      {
-        std::lock_guard<std::mutex> lk(m);
-        auto e = boost::edge(v0, v1, vine_tree).first;
-        put(boost::edge_weight, vine_tree, e, w);
-        vine_tree[e].weight = w;
-        vine_tree[e].crit = crit;
-      }
-    };
-
-    pool_.map(process_edge, edge_list);
-    pool_.wait();
+    add_allowed_edges_proximity(
+      vine_tree, tree_criterion, weights, criterion_fun);
   } else {
-    size_t tree = d_ - boost::num_vertices(vine_tree);
-    size_t edges = boost::num_vertices(vine_tree) - 1;
-    size_t trunc_lvl = vine_struct_.get_trunc_lvl();
-    if (tree < trunc_lvl) {
-      for (size_t v0 = 0; v0 < edges; ++v0) {
-        tools_interface::check_user_interrupt(v0 % 10000 == 0);
-        size_t v1 = vine_struct_.min_array(tree, v0) - 1;
-        Eigen::MatrixXd pc_data = get_pc_data(v0, v1, vine_tree);
-        EdgeIterator e = boost::add_edge(v0, v1, 1.0, vine_tree).first;
-        double crit = calculate_criterion(
-          pc_data.leftCols(2), tree_criterion, controls_.get_weights());
-        vine_tree[e].weight = 1.0;
-        vine_tree[e].crit = crit;
+    add_allowed_edges_structured(
+      vine_tree, tree_criterion, weights, criterion_fun);
+  }
+}
+
+//! @brief Adds all edges allowed by the proximity condition and weights them.
+//!
+//! Used when the structure is unknown. The candidate edges are enumerated
+//! single-threaded (insertion order is significant); their weights are then
+//! computed in parallel, with graph writes guarded by a mutex. A custom
+//! criterion is the exception: it is user code that the library cannot assume
+//! to be thread safe (and that the R and Python bindings may only run on the
+//! thread that entered the library), so those weights are computed serially.
+inline void
+VinecopSelector::add_allowed_edges_proximity(
+  VineTree& vine_tree,
+  const std::string& tree_criterion,
+  const Eigen::VectorXd& weights,
+  const TreeCriterionFunction& criterion_fun)
+{
+  std::vector<std::pair<size_t, size_t>> edge_list;
+  for (size_t v0 = 0; v0 < num_vertices(vine_tree); ++v0) {
+    tools_interface::check_user_interrupt(v0 % 50 == 0);
+    for (size_t v1 = 0; v1 < v0; ++v1) {
+      if (find_common_neighbor(v0, v1, vine_tree) > -1) {
+        boost::add_edge(v0, v1, vine_tree);
+        edge_list.emplace_back(v0, v1); // ordering preserved
       }
     }
   }
+
+  std::mutex m;
+  double threshold = controls_.get_threshold();
+  auto process_edge = [&](const std::pair<size_t, size_t>& entry) {
+    size_t v0 = entry.first;
+    size_t v1 = entry.second;
+
+    auto pc_data = get_pc_data(v0, v1, vine_tree);
+    double crit =
+      calculate_criterion(pc_data, tree_criterion, weights, criterion_fun);
+    double w = 1.0 - static_cast<double>(crit >= threshold) * crit;
+
+    // Conditioning-aware selection: penalize edges that involve any
+    // non-conditioning variable. Since base weights lie in [0, 1], adding `d_`
+    // keeps all weights non-negative (required by Boost's Prim) while making
+    // every all-conditioning edge strictly cheaper. The (minimum) spanning tree
+    // then selects the conditioning set's own optimal sub-vine at every tree
+    // before attaching any other variable, so every remaining edge involves at
+    // least one non-conditioning variable. This makes the conditioning set a
+    // self-contained block that `Vinecop::reorient()` can place at the tail of
+    // the sampling order. Only `w` (the tree weight) is shifted; `crit` (used
+    // for thresholding/fit reuse) is left unchanged.
+    if (n_cond_ > 0) {
+      bool all_cond = true;
+      for (auto var : vine_tree[v0].all_indices)
+        if (!in_cond_[var]) {
+          all_cond = false;
+          break;
+        }
+      if (all_cond)
+        for (auto var : vine_tree[v1].all_indices)
+          if (!in_cond_[var]) {
+            all_cond = false;
+            break;
+          }
+      if (!all_cond)
+        w += static_cast<double>(d_);
+    }
+
+    {
+      std::lock_guard<std::mutex> lk(m);
+      auto e = boost::edge(v0, v1, vine_tree).first;
+      put(boost::edge_weight, vine_tree, e, w);
+      vine_tree[e].weight = w;
+      vine_tree[e].crit = crit;
+    }
+  };
+
+  if (tree_criterion == "custom") {
+    for (const auto& edge : edge_list) {
+      tools_interface::check_user_interrupt();
+      process_edge(edge);
+    }
+  } else {
+    pool_.map(process_edge, edge_list);
+    pool_.wait();
+  }
+}
+
+//! @brief Adds the edges dictated by a fixed vine structure.
+inline void
+VinecopSelector::add_allowed_edges_structured(
+  VineTree& vine_tree,
+  const std::string& tree_criterion,
+  const Eigen::VectorXd& weights,
+  const TreeCriterionFunction& criterion_fun)
+{
+  size_t tree = d_ - boost::num_vertices(vine_tree);
+  size_t edges = boost::num_vertices(vine_tree) - 1;
+  size_t trunc_lvl = vine_struct_.get_trunc_lvl();
+  if (tree < trunc_lvl) {
+    for (size_t v0 = 0; v0 < edges; ++v0) {
+      tools_interface::check_user_interrupt(v0 % 10000 == 0);
+      size_t v1 = vine_struct_.min_array(tree, v0) - 1;
+      Eigen::MatrixXd pc_data = get_pc_data(v0, v1, vine_tree);
+      EdgeIterator e = boost::add_edge(v0, v1, 1.0, vine_tree).first;
+      double crit = calculate_criterion(
+        pc_data.leftCols(2), tree_criterion, weights, criterion_fun);
+      vine_tree[e].weight = 1.0;
+      vine_tree[e].crit = crit;
+    }
+  }
+}
+
+//! @brief Removes every edge not retained by a predecessor/target map.
+inline void
+remove_edges_by_predecessor(VineTree& vine_tree,
+                            const std::vector<size_t>& pred)
+{
+  remove_edge_if(
+    [&](const EdgeIterator& e) {
+      auto source = boost::source(e, vine_tree);
+      auto target = boost::target(e, vine_tree);
+      return pred[source] != target && pred[target] != source;
+    },
+    vine_tree);
 }
 
 //! @brief Selects the edges using the minimum spanning tree.
@@ -424,8 +579,119 @@ VinecopSelector::add_allowed_edges(VineTree& vine_tree)
 inline void
 VinecopSelector::select_edges(VineTree& vine_tree)
 {
-  // has no effect if the input is already a tree
-  min_spanning_tree(vine_tree);
+
+  // Early exit: if graph is already a spanning tree, do nothing
+  const size_t V = num_vertices(vine_tree);
+  const size_t E = num_edges(vine_tree);
+  if (V > 0 && E == V - 1) {
+    return;
+  }
+
+  const auto algo = controls_.get_tree_algorithm();
+  if (algo == "mst_prim") {
+    select_edges_mst_prim(vine_tree);
+  } else if (algo == "mst_kruskal") {
+    select_edges_mst_kruskal(vine_tree);
+  } else {
+    select_edges_random(vine_tree);
+  }
+}
+
+//! @brief Collapses the graph to a Prim minimum spanning tree.
+inline void
+VinecopSelector::select_edges_mst_prim(VineTree& vine_tree)
+{
+  size_t d = num_vertices(vine_tree);
+  std::vector<size_t> targets(d);
+  prim_minimum_spanning_tree(vine_tree, targets.data());
+  remove_edges_by_predecessor(vine_tree, targets);
+}
+
+//! @brief Collapses the graph to a Kruskal minimum spanning tree.
+inline void
+VinecopSelector::select_edges_mst_kruskal(VineTree& vine_tree)
+{
+  std::vector<EdgeIterator> spanning_tree;
+  kruskal_minimum_spanning_tree(vine_tree, std::back_inserter(spanning_tree));
+  // A hash set makes the lookup below O(1); std::pair has no default hash, so
+  // the set carries its own.
+  struct PairHash
+  {
+    size_t operator()(const std::pair<size_t, size_t>& e) const noexcept
+    {
+      const size_t h = std::hash<size_t>()(e.first);
+      return h ^
+             (std::hash<size_t>()(e.second) + 0x9e3779b9 + (h << 6) + (h >> 2));
+    }
+  };
+  std::unordered_set<std::pair<size_t, size_t>, PairHash> edges_set;
+  for (auto e : spanning_tree) {
+    edges_set.insert(
+      { boost::source(e, vine_tree), boost::target(e, vine_tree) });
+  }
+  remove_edge_if(
+    [&](const EdgeIterator& e) {
+      auto source = boost::source(e, vine_tree);
+      auto target = boost::target(e, vine_tree);
+      return edges_set.find({ source, target }) == edges_set.end();
+    },
+    vine_tree);
+}
+
+//! @brief Collapses the graph to a random spanning tree (Wilson's algorithm).
+//!
+//! The RNG draw order (root vertex, then the spanning tree) is
+//! significant and must not be reordered.
+inline void
+VinecopSelector::select_edges_random(VineTree& vine_tree)
+{
+  constexpr double min_weight = 1e-10;
+  size_t d = num_vertices(vine_tree);
+  std::vector<size_t> predecessors(d);
+  boost::mt19937 gen = controls_.get_rng();
+
+  // Randomize root vertex
+  boost::random::uniform_int_distribution<size_t> root_dist(0, d - 1);
+  size_t root = root_dist(gen);
+
+  if (controls_.get_tree_algorithm() == "random_unweighted") {
+    // Here, no weight map is used
+    // So that it's Wilson uniformly over all spanning trees
+    boost::random_spanning_tree(
+      vine_tree,
+      gen,
+      boost::predecessor_map(predecessors.data()).root_vertex(root));
+  } else {
+    // Here we inverse the weights to get a spanning tree
+    // with probability proportional to the product of the weights
+    // (i.e., the higher the weight, the more likely it is to be selected)
+    //
+    // The floor keeps every weight strictly positive. Wilson's algorithm
+    // walks to the next vertex with probability proportional to the incident
+    // weights, so a vertex whose incident weights are all zero is one the
+    // walk can never leave and `random_spanning_tree` does not terminate.
+    // That is reachable: `calculate_criterion` returns exactly 0 for every
+    // edge when there are 10 or fewer observations, and returns 0 for an
+    // individual edge whose criterion is NaN or below the threshold.
+    // Flooring only changes the draw when a vertex has no positive weight at
+    // all, where it samples uniformly among the alternatives rather than
+    // hanging -- with any positive weight present, the floored edges keep a
+    // vanishing share of the mass, as they had before.
+    WeightMap original_weights = get(boost::edge_weight, vine_tree);
+    std::map<EdgeIterator, double> inv_weights;
+    for (auto e : boost::make_iterator_range(edges(vine_tree))) {
+      inv_weights[e] = std::max(1.0 - original_weights[e], min_weight);
+    }
+    boost::associative_property_map<std::map<EdgeIterator, double>>
+      inv_weight_map(inv_weights);
+    boost::random_spanning_tree(vine_tree,
+                                gen,
+                                boost::predecessor_map(predecessors.data())
+                                  .root_vertex(root)
+                                  .weight_map(inv_weight_map));
+  }
+
+  remove_edges_by_predecessor(vine_tree, predecessors);
 }
 
 inline void
@@ -435,126 +701,74 @@ VinecopSelector::finalize(size_t trunc_lvl)
   trunc_lvl = pair_copulas_.size(); // trunc_lvl may be <size_t>::max()
 
   if (structure_unknown_) {
-    using namespace tools_stl;
-    trees_opt_ = trees_;
-    TriangularArray<size_t> mat(d_, trunc_lvl);
-    std::vector<size_t> order(d_);
-
-    if (trunc_lvl > 0) {
-      std::vector<size_t> ning_set;
-
-      // fill matrix column by column
-      for (size_t col = 0; col < d_ - 1; ++col) {
-        tools_interface::check_user_interrupt();
-        // matrix above trunc_lvl is left empty
-        size_t t =
-          std::max(std::min(trunc_lvl, d_ - 1 - col), static_cast<size_t>(1));
-        // start with highest tree in this column
-        for (auto e : boost::edges(trees_[t])) {
-
-          // find an edge that contains a leaf
-          size_t v0 = boost::source(e, trees_[t]);
-          size_t v1 = boost::target(e, trees_[t]);
-          size_t min_deg = std::min(boost::out_degree(v0, trees_[t]),
-                                    boost::out_degree(v1, trees_[t]));
-          if (min_deg > 1) {
-            continue; // not a leaf
-          }
-          // find position of leaf in the edge
-          ptrdiff_t pos = (boost::out_degree(v1, trees_[t]) == 1);
-          if (pos == 1) {
-            trees_[t][e].pair_copula.flip();
-          }
-
-          // fill diagonal entry with leaf index
-          order[col] = trees_[t][e].conditioned[pos];
-
-          // entry in row t-1 is other index of the edge
-          mat(t - 1, col) = trees_[t][e].conditioned[std::abs(1 - pos)];
-
-          // assign fitted pair copula to appropriate entry, see
-          // `Vinecop::get_pair_copula()`.
-          if (trunc_lvl > 0) {
-            pair_copulas_[t - 1][col] = trees_[t][e].pair_copula;
-          }
-
-          // initialize running set with full conditioning set of this edge
-          ning_set = trees_[t][e].conditioning;
-
-          // remove edge (must not be reused in another column!)
-          boost::remove_edge(v0, v1, trees_[t]);
-          break;
-        }
-
-        // fill column bottom to top
-        for (size_t k = 1; k < t; ++k) {
-          auto check_set = cat(order[col], ning_set);
-          for (auto e : boost::edges(trees_[t - k])) {
-            // search for an edge in lower tree that shares all
-            // indices in the conditioning set + diagonal entry
-            if (!is_same_set(trees_[t - k][e].all_indices, check_set)) {
-              continue;
-            }
-            // found suitable edge ->
-            // next matrix entry is conditioned variable of new edge
-            // that's not equal to the diagonal entry of this column
-            auto e_new = trees_[t - k][e];
-            ptrdiff_t pos = (order[col] == e_new.conditioned[1]);
-            if (pos == 1) {
-              e_new.pair_copula.flip();
-            }
-            mat(t - k - 1, col) = e_new.conditioned[std::abs(1 - pos)];
-
-            // assign fitted pair copula to appropriate entry, see
-            // Vinecop::get_pair_copula().
-            pair_copulas_[t - 1 - k][col] = e_new.pair_copula;
-
-            // start over with conditioned set of next edge
-            ning_set = e_new.conditioning;
-
-            // remove edge (must not be reused in another column!)
-            size_t v0 = boost::source(e, trees_[t - k]);
-            size_t v1 = boost::target(e, trees_[t - k]);
-            boost::remove_edge(v0, v1, trees_[t - k]);
-            break;
-          }
-        }
-      }
-
-      // The last column contains a single element which must be different
-      // from all other diagonal elements. Based on the properties of an
-      // R-vine matrix, this must be the element next to it.
-      order[d_ - 1] = mat(0, d_ - 2);
-
-      // change to user-facing format
-      // (variable index starting at 1 instead of 0)
-      for (size_t i = 0; i < std::min(d_ - 1, trunc_lvl); ++i) {
-        for (size_t j = 0; j < d_ - i - 1; ++j) {
-          mat(i, j) += 1;
-        }
-      }
-      for (size_t i = 0; i < d_; i++)
-        order[i] += 1;
-    } else {
-      // order doesn't matter for truncated
-      order = tools_stl::seq_int(1, d_);
-    }
-
-    // return as RVineStructure
-    vine_struct_ = RVineStructure(order, mat);
+    finalize_unknown_structure(trunc_lvl);
   } else {
-
-    for (size_t tree = 0; tree < pair_copulas_.size(); tree++) {
-      size_t edge = 0;
-      for (auto e : boost::edges(trees_[tree + 1])) {
-        // trees_[0] is base tree, vine copula starts at trees_[1]
-        pair_copulas_[tree][edge] = trees_[tree + 1][e].pair_copula;
-        edge++;
-      }
-    }
-
-    vine_struct_.truncate(trunc_lvl);
+    finalize_known_structure(trunc_lvl);
   }
+}
+
+//! @brief Copies the fitted pair copulas onto a fixed structure and truncates.
+inline void
+VinecopSelector::finalize_known_structure(size_t trunc_lvl)
+{
+  for (size_t tree = 0; tree < pair_copulas_.size(); tree++) {
+    size_t edge = 0;
+    for (auto e : boost::edges(trees_[tree + 1])) {
+      // trees_[0] is base tree, vine copula starts at trees_[1]
+      pair_copulas_[tree][edge] = trees_[tree + 1][e].pair_copula;
+      edge++;
+    }
+  }
+
+  vine_struct_.truncate(trunc_lvl);
+}
+
+//! @brief Reconstructs the R-vine structure from the selected trees.
+//!
+//! @details Rebuilds the R-vine via the shared `RVineTrees` primitive: the
+//! fitted trees are converted into a list-of-trees decomposition (1-based
+//! labels, carrying the fitted pair copulas), then peeled back into an
+//! `(order, struct_array, pair_copulas)` triple, using the same
+//! (first-leaf-edge, `conditioned[0]` endpoint on the diagonal) policy as the
+//! default `RVineTrees::to_struct_array()`. Since each edge stores its
+//! pair copula with the first argument on `conditioned[0]`, placing
+//! `conditioned[0]` on the diagonal keeps the finalization flip-free: pair
+//! copulas are placed exactly as fitted, and `select()` and the structure
+//! round-trip (`RVineStructure::get_trees()`) share one diagonal convention.
+inline void
+VinecopSelector::finalize_unknown_structure(size_t trunc_lvl)
+{
+  trees_opt_ = trees_;
+
+  if (trunc_lvl == 0) {
+    // order doesn't matter for a fully truncated vine
+    vine_struct_ =
+      RVineStructure(tools_stl::seq_int(1, d_), TriangularArray<size_t>(d_, 0));
+    return;
+  }
+
+  std::vector<RVineTrees::Tree> tree_list(trunc_lvl);
+  for (size_t t = 1; t <= trunc_lvl; ++t) {
+    tools_interface::check_user_interrupt();
+    for (auto e : boost::edges(trees_[t])) {
+      const auto& edge = trees_[t][e];
+      std::vector<size_t> conditioning;
+      conditioning.reserve(edge.conditioning.size());
+      for (auto c : edge.conditioning)
+        conditioning.push_back(c + 1);
+      tree_list[t - 1].push_back(RVineTrees::Edge(edge.conditioned[0] + 1,
+                                                  edge.conditioned[1] + 1,
+                                                  conditioning,
+                                                  edge.pair_copula));
+    }
+  }
+
+  // Finalize with the default (flip-free, conditioned[0]) diagonal policy — the
+  // same convention as the RVineStructure round-trip, so no bespoke policy is
+  // needed here.
+  auto dec = RVineTrees(d_, std::move(tree_list)).to_struct_array();
+  vine_struct_ = RVineStructure(dec.order, dec.struct_array);
+  pair_copulas_ = std::move(dec.pair_copulas);
 }
 
 //! @brief Gets pair copula pseudo-observations from h-functions.
@@ -593,7 +807,7 @@ VinecopSelector::add_pc_info(const EdgeIterator& e, VineTree& tree)
   tree[e].all_indices = cat(tree[e].conditioned, tree[e].conditioning);
 }
 
-inline Eigen::VectorXd
+inline const Eigen::VectorXd&
 VinecopSelector::get_hfunc(const VertexProperties& vertex_data, bool is_first)
 {
   if (is_first) {
@@ -603,7 +817,7 @@ VinecopSelector::get_hfunc(const VertexProperties& vertex_data, bool is_first)
   }
 }
 
-inline Eigen::VectorXd
+inline const Eigen::VectorXd&
 VinecopSelector::get_hfunc_sub(const VertexProperties& vertex_data,
                                bool is_first)
 {
@@ -633,6 +847,22 @@ VinecopSelector::get_pc_data(size_t v0, size_t v1, const VineTree& tree)
   pc_data.col(0) = get_hfunc(tree[v0], pos0 == 0);
   pc_data.col(1) = get_hfunc(tree[v1], pos1 == 0);
   return pc_data;
+}
+
+//! @brief Whether tree `t` is the last tree whose h-functions are needed.
+//!
+//! In sparse mode the loop selects one extra tree (index == trunc_lvl) for
+//! the mbicv comparison, in regular mode it stops after tree trunc_lvl - 1.
+inline bool
+VinecopSelector::is_last_tree(size_t t) const
+{
+  bool last_tree = (t + 1 >= d_ - 1);
+  if (controls_.needs_sparse_select()) {
+    last_tree = last_tree || (t >= controls_.get_trunc_lvl());
+  } else {
+    last_tree = last_tree || (t + 1 >= controls_.get_trunc_lvl());
+  }
+  return last_tree;
 }
 
 //! @brief Selects and fits next tree of the vine.
@@ -673,10 +903,13 @@ VinecopSelector::select_tree(size_t t)
       // adjust prior probability to tree level
       controls_.set_psi0(std::pow(psi0_, t + 1));
     }
+    // h-functions of this tree's edges are only consumed when another tree
+    // is selected afterwards; skip them for the final tree.
+    bool last_tree = is_last_tree(t);
     if (trees_opt_.size() > t + 1) {
-      select_pair_copulas(new_tree, trees_opt_[t + 1]);
+      select_pair_copulas(new_tree, trees_opt_[t + 1], last_tree);
     } else {
-      select_pair_copulas(new_tree);
+      select_pair_copulas(new_tree, VineTree(), last_tree);
     }
   }
   // make sure there is space for new tree
@@ -777,6 +1010,12 @@ inline void
 VinecopSelector::set_current_fit_as_opt(const double& loglik)
 {
   threshold_ = controls_.get_threshold();
+  // the bulky per-edge data is not needed in the snapshot (nor in trees_
+  // afterwards): later iterations only read fit_id, crit, and pair_copula,
+  // and h-functions are always recomputed in select_pair_copulas
+  for (auto& tree : trees_) {
+    remove_edge_data(tree);
+  }
   trees_opt_ = trees_;
   loglik_ = loglik;
 }
@@ -833,19 +1072,21 @@ VinecopSelector::make_base_tree(const Eigen::MatrixXd& data)
 //! @return A edge-less graph of vertices, each representing one edge of the
 //!     previous tree.
 inline VineTree
-VinecopSelector::edges_as_vertices(const VineTree& prev_tree)
+VinecopSelector::edges_as_vertices(VineTree& prev_tree)
 {
   // start with full graph
   size_t d = num_edges(prev_tree);
   VineTree new_tree(d);
 
-  // copy & paste information from previous tree
+  // copy & paste information from previous tree; the h-function vectors are
+  // moved because the previous tree's edge data is discarded right after
+  // this call (see select_tree)
   int i = 0;
   for (auto e : boost::edges(prev_tree)) {
-    new_tree[i].hfunc1 = prev_tree[e].hfunc1;
-    new_tree[i].hfunc2 = prev_tree[e].hfunc2;
-    new_tree[i].hfunc1_sub = prev_tree[e].hfunc1_sub;
-    new_tree[i].hfunc2_sub = prev_tree[e].hfunc2_sub;
+    new_tree[i].hfunc1 = std::move(prev_tree[e].hfunc1);
+    new_tree[i].hfunc2 = std::move(prev_tree[e].hfunc2);
+    new_tree[i].hfunc1_sub = std::move(prev_tree[e].hfunc1_sub);
+    new_tree[i].hfunc2_sub = std::move(prev_tree[e].hfunc2_sub);
     new_tree[i].conditioned = prev_tree[e].conditioned;
     new_tree[i].conditioning = prev_tree[e].conditioning;
     new_tree[i].all_indices = prev_tree[e].all_indices;
@@ -873,7 +1114,7 @@ VinecopSelector::find_common_neighbor(size_t v0,
   auto ei1 = tree[v1].prev_edge_indices;
   auto ei_common = intersect(ei0, ei1);
 
-  if (ei_common.size() == 0) {
+  if (ei_common.empty()) {
     return -1;
   } else {
     return ei_common[0];
@@ -894,85 +1135,6 @@ VinecopSelector::compute_fit_id(const EdgeProperties& e)
   }
 
   return id;
-}
-
-//! @brief Collapses a graph to the minimum spanning tree.
-//! @param graph The input graph.
-//! @return the input graph with all non-MST edges removed.
-inline void
-VinecopSelector::min_spanning_tree(VineTree& graph)
-{
-  if (controls_.get_tree_algorithm() == "mst_prim") {
-    size_t d = num_vertices(graph);
-    std::vector<size_t> targets(d);
-    prim_minimum_spanning_tree(graph, targets.data());
-    remove_edge_if(
-      [&](const EdgeIterator& e) {
-        auto source = boost::source(e, graph);
-        auto target = boost::target(e, graph);
-        return targets[source] != target && targets[target] != source;
-      },
-      graph);
-  } else if (controls_.get_tree_algorithm() == "mst_kruskal") {
-    std::vector<EdgeIterator> spanning_tree;
-    kruskal_minimum_spanning_tree(graph, std::back_inserter(spanning_tree));
-    // Using a hashmap to make the lookup faster
-    // boost::unordered set is used instead of std::set
-    // because std::pair doesn't have a default hash function
-    boost::unordered_set<std::pair<size_t, size_t>> edges_set;
-    for (auto e : spanning_tree) {
-      edges_set.insert({ boost::source(e, graph), boost::target(e, graph) });
-    }
-    remove_edge_if(
-      [&](const EdgeIterator& e) {
-        auto source = boost::source(e, graph);
-        auto target = boost::target(e, graph);
-        return edges_set.find({ source, target }) == edges_set.end();
-      },
-      graph);
-  } else {
-    size_t d = num_vertices(graph);
-    std::vector<size_t> predecessors(d);
-    boost::mt19937 gen = controls_.get_rng();
-
-    // Randomize root vertex
-    std::uniform_int_distribution<size_t> root_dist(0, d - 1);
-    size_t root = root_dist(gen);
-
-    if (controls_.get_tree_algorithm() == "random_unweighted") {
-      // Here, no weight map is used
-      // So that it's Wilson uniformly over all spanning trees
-      boost::random_spanning_tree(
-        graph,
-        gen,
-        boost::predecessor_map(predecessors.data())
-             .root_vertex(root));
-    } else {
-      // Here we inverse the weights to get a spanning tree
-      // with probability proportional to the product of the weights
-      // (i.e., the higher the weight, the more likely it is to be selected)
-      WeightMap original_weights = get(boost::edge_weight, graph);
-      std::map<EdgeIterator, double> inv_weights;
-      for (auto e : boost::make_iterator_range(edges(graph))) {
-        inv_weights[e] = 1.0 / (original_weights[e] + 1e-10);
-      }
-      boost::associative_property_map<std::map<EdgeIterator, double>> inv_weight_map(inv_weights);
-      boost::random_spanning_tree(
-        graph,
-        gen,
-        boost::predecessor_map(predecessors.data())
-             .root_vertex(root)
-             .weight_map(inv_weight_map));
-    }
-
-    remove_edge_if(
-      [&](const EdgeIterator& e) {
-        auto source = boost::source(e, graph);
-        auto target = boost::target(e, graph);
-        return predecessors[source] != target && predecessors[target] != source;
-      },
-      graph);
-  }
 }
 
 //! @brief Adds conditioned info and data for each edge.
@@ -1016,54 +1178,76 @@ VinecopSelector::remove_vertex_data(VineTree& tree)
   }
 }
 
+//! @brief Fits a fresh pair copula for an edge, or reuses a matching fit
+//!   from the previous sparse-selection iteration.
+inline void
+VinecopSelector::fit_or_reuse_pair_copula(const EdgeIterator& e,
+                                          VineTree& tree,
+                                          const VineTree& tree_opt)
+{
+  bool is_thresholded = (tree[e].crit < controls_.get_threshold());
+  bool used_old_fit = false;
+
+  tree[e].fit_id = compute_fit_id(tree[e]);
+  if (boost::num_edges(tree_opt) > 0) {
+    auto old_fit = find_old_fit(tree[e].fit_id, tree_opt);
+    if (old_fit.second) { // indicates if match was found
+      // data and thresholding status haven't changed,
+      // we can use old fit
+      used_old_fit = true;
+      tree[e].pair_copula = tree_opt[old_fit.first].pair_copula;
+    }
+  }
+
+  if (!used_old_fit) {
+    tree[e].pair_copula = vinecopulib::Bicop();
+    tree[e].pair_copula.set_var_types(tree[e].var_types);
+    if (!is_thresholded) {
+      tree[e].pair_copula.select(tree[e].pc_data, controls_);
+    }
+  }
+}
+
+//! @brief Computes an edge's h-functions (consumed by the next tree).
+inline void
+compute_edge_hfuncs(const EdgeIterator& e, VineTree& tree)
+{
+  tree[e].hfunc1 = tree[e].pair_copula.hfunc1(tree[e].pc_data);
+  tree[e].hfunc2 = tree[e].pair_copula.hfunc2(tree[e].pc_data);
+  if (tree[e].var_types[1] == "d") {
+    auto sub_data = tree[e].pc_data;
+    sub_data.col(1) = sub_data.col(3);
+    tree[e].hfunc1_sub = tree[e].pair_copula.hfunc1(sub_data);
+  }
+  if (tree[e].var_types[0] == "d") {
+    auto sub_data = tree[e].pc_data;
+    sub_data.col(0) = sub_data.col(2);
+    tree[e].hfunc2_sub = tree[e].pair_copula.hfunc2(sub_data);
+  }
+}
+
 //! @brief Fits and selects a pair copula for each edges.
 //! @param tree A vine tree preprocessed with `add_edge_info()`.
 //! @param tree_opt The current optimal tree (used only for sparse
 //!     selection).
 inline void
-VinecopSelector::select_pair_copulas(VineTree& tree, const VineTree& tree_opt)
+VinecopSelector::select_pair_copulas(VineTree& tree,
+                                     const VineTree& tree_opt,
+                                     bool last_tree)
 {
   auto select_pc = [&](EdgeIterator e) -> void {
     tools_interface::check_user_interrupt();
-    bool is_thresholded = (tree[e].crit < controls_.get_threshold());
-    bool used_old_fit = false;
-
-    tree[e].fit_id = compute_fit_id(tree[e]);
-    if (boost::num_edges(tree_opt) > 0) {
-      auto old_fit = find_old_fit(tree[e].fit_id, tree_opt);
-      if (old_fit.second) { // indicates if match was found
-        // data and thresholding status haven't changed,
-        // we can use old fit
-        used_old_fit = true;
-        tree[e].pair_copula = tree_opt[old_fit.first].pair_copula;
-      }
-    }
-
-    if (!used_old_fit) {
-      tree[e].pair_copula = vinecopulib::Bicop();
-      tree[e].pair_copula.set_var_types(tree[e].var_types);
-      if (!is_thresholded) {
-        tree[e].pair_copula.select(tree[e].pc_data, controls_);
-      }
-    }
-
-    tree[e].hfunc1 = tree[e].pair_copula.hfunc1(tree[e].pc_data);
-    tree[e].hfunc2 = tree[e].pair_copula.hfunc2(tree[e].pc_data);
-    if (tree[e].var_types[1] == "d") {
-      auto sub_data = tree[e].pc_data;
-      sub_data.col(1) = sub_data.col(3);
-      tree[e].hfunc1_sub = tree[e].pair_copula.hfunc1(sub_data);
-    }
-    if (tree[e].var_types[0] == "d") {
-      auto sub_data = tree[e].pc_data;
-      sub_data.col(0) = sub_data.col(2);
-      tree[e].hfunc2_sub = tree[e].pair_copula.hfunc2(sub_data);
+    fit_or_reuse_pair_copula(e, tree, tree_opt);
+    // h-functions are only consumed by the selection of the next tree
+    if (!last_tree) {
+      compute_edge_hfuncs(e, tree);
     }
   };
 
   // make sure that Bicop.select() doesn't spawn too many new threads
   size_t num_threads = controls_.get_num_threads();
-  controls_.set_num_threads(num_threads / boost::num_edges(tree));
+  controls_.set_num_threads(std::max<size_t>(
+    1, num_threads / std::max<size_t>(1, boost::num_edges(tree))));
   pool_.map(select_pc, boost::edges(tree));
   pool_.wait();
   controls_.set_num_threads(num_threads);
@@ -1094,7 +1278,7 @@ VinecopSelector::get_pc_index(const EdgeIterator& e, const VineTree& tree)
   // add 1 everywhere for user-facing representation (boost::graph
   // starts at 0)
   index << tree[e].conditioned[0] + 1 << "," << tree[e].conditioned[1] + 1;
-  if (tree[e].conditioning.size() > 0) {
+  if (!tree[e].conditioning.empty()) {
     index << " | ";
     for (unsigned int i = 0; i < tree[e].conditioning.size(); ++i) {
       index << tree[e].conditioning[i] + 1;
@@ -1103,7 +1287,7 @@ VinecopSelector::get_pc_index(const EdgeIterator& e, const VineTree& tree)
     }
   }
 
-  return index.str().c_str();
+  return index.str();
 }
 }
 }

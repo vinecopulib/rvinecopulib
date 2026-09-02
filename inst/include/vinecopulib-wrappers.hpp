@@ -1,11 +1,37 @@
 #pragma once
 
+#ifndef INTERFACED_FROM_R
+#define INTERFACED_FROM_R
+#endif
+
 #include <RcppEigen.h>
 #include "vinecopulib/misc/tools_interface.hpp"
 #include "vinecopulib.hpp"
 
 
 namespace vinecopulib {
+
+inline size_t expected_npars(const BicopFamily& family)
+{
+  switch (family) {
+    case BicopFamily::gaussian:
+    case BicopFamily::clayton:
+    case BicopFamily::gumbel:
+    case BicopFamily::frank:
+    case BicopFamily::joe:
+      return 1;
+    case BicopFamily::student:
+    case BicopFamily::bb1:
+    case BicopFamily::bb6:
+    case BicopFamily::bb7:
+    case BicopFamily::bb8:
+      return 2;
+    case BicopFamily::tawn:
+      return 3;
+    default:
+      return 0;
+  }
+}
 
 // bicop wrapppers -----------------------------------
 
@@ -83,19 +109,34 @@ inline std::string to_r_family(const BicopFamily& fam)
 
 inline Bicop bicop_wrap(const Rcpp::List& bicop_r)
 {
+  BicopFamily family = to_cpp_family(bicop_r["family"]);
+  int rotation = bicop_r["rotation"];
   Eigen::MatrixXd par = bicop_r["parameters"];
   Bicop bicop_cpp;
   if (par.size() == 0) {
-    bicop_cpp = Bicop(
-      to_cpp_family(bicop_r["family"]),
-      bicop_r["rotation"]
-    );
+    bicop_cpp = Bicop(family, rotation);
   } else {
-    Eigen::MatrixXd pars = bicop_r["parameters"];
+    if (tools_stl::is_member(family, bicop_families::parametric)) {
+      // Parametric constructors expect one parameter set in p x 1 layout.
+      // For vectorized input (n x p), keep only the first row and transpose.
+      const size_t p = expected_npars(family);
+      if (par.cols() == 1) {
+        if ((p == 1) && (par.rows() > 1)) {
+          // .eval() materializes the first row before the self-aliased resize
+          // reallocates par's buffer (see the two-parameter branch below).
+          par = par.topRows(1).eval();
+        }
+      } else {
+        if ((p > 0) && (static_cast<size_t>(par.cols()) == p)) {
+          Eigen::MatrixXd first_par = par.topRows(1).transpose().eval();
+          par = first_par;
+        }
+      }
+    }
     bicop_cpp = Bicop(
-      to_cpp_family(bicop_r["family"]),
-      bicop_r["rotation"],
-             pars
+      family,
+      rotation,
+      par
     );
   }
   bicop_cpp.set_var_types(bicop_r["var_types"]);

@@ -24,7 +24,8 @@ vinecop(
   vinecop_object = NULL,
   show_trace = FALSE,
   cores = 1,
-  tree_algorithm = "mst_prim"
+  tree_algorithm = "mst_prim",
+  conditioning_set = NULL
 )
 }
 \arguments{
@@ -49,7 +50,7 @@ selection of the structure.}
 
 \item{par_method}{the estimation method for parametric models, either \code{"mle"}
 for maximum likelihood or \code{"itau"} for inversion of Kendall's tau (only
-available for one-parameter families and \code{"t"}.}
+available for one-parameter families and \code{"t"}).}
 
 \item{nonpar_method}{the estimation method for nonparametric models, either
 \code{"constant"} for the standard transformation estimator, or
@@ -79,9 +80,19 @@ truncation, \code{NA} indicates that the truncation level should be selected
 automatically by \code{\link[=mBICV]{mBICV()}}.}
 
 \item{tree_crit}{the criterion for tree selection, one of \code{"tau"}, \code{"rho"},
-\code{"hoeffd"}, \code{"mcor"}, or \code{"joe"} for Kendall's \eqn{\tau}, Spearman's
-\eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation, or logarithm of
-the partial correlation, respectively.}
+\code{"hoeffd"}, \code{"mcor"}, \code{"cxi"}, or \code{"joe"} for Kendall's \eqn{\tau},
+Spearman's \eqn{\rho}, Hoeffding's \eqn{D}, maximum correlation,
+symmetrized Chatterjee's \eqn{\xi}, or logarithm of the partial
+correlation, respectively. Alternatively, a function with arguments
+\code{data} and \code{weights} may be supplied. \code{data} is a two-column
+matrix of pair-copula pseudo-observations. \code{weights} contains the
+corresponding observation weights, standardized by the backend to sum to
+the original number of observations, or \code{numeric(0)} when no weights were
+supplied. Rows containing missing values or zero weights are removed
+before the function is called. The function must return one finite numeric
+value; its absolute value is used as the edge strength. Custom functions
+always run serially on the calling thread; pair-copula fitting may still use
+\code{cores} threads.}
 
 \item{threshold}{for thresholded vine copulas; \code{NA} indicates that the
 threshold should be selected automatically by \code{\link[=mBICV]{mBICV()}}.}
@@ -103,11 +114,17 @@ tree (\code{"mst_prim"}, \code{"mst_kruskal"}, \code{"random_weighted"}, or
 \code{"random_unweighted"}) during the tree-wise structure selection.
 \code{"mst_prim"} and \code{"mst_kruskal"} use Prim's and Kruskal's algorithms
 respectively to select the maximum spanning tree, maximizing
-the sum of the edge weights (i.e., \code{tree_criterion}).
+the sum of the edge weights (i.e., \code{tree_crit}).
 \code{"random_weighted"} and \code{"random_unweighted"} use Wilson's
 algorithm to generate a random spanning tree, either with probability
 proportional to the product of the edge weights (weighted) or
 uniformly (unweighted).}
+
+\item{conditioning_set}{variable indices or names to place at the end of the
+vine order. The resulting model can be sampled conditionally with
+\code{\link[=rvinecop]{rvinecop()}} by supplying \code{u_cond}. Conditioning-aware selection supports
+fixed or automatically selected truncation levels and requires an MST tree
+algorithm (\code{"mst_prim"} or \code{"mst_kruskal"}).}
 }
 \value{
 Objects inheriting from \code{vinecop} and \code{vinecop_dist} for \code{\link[=vinecop]{vinecop()}}. In
@@ -158,13 +175,14 @@ Dissmann, J. F., E. C. Brechmann, C. Czado, and D. Kurowicka (2013).
 financial returns.} Computational Statistics & Data Analysis, 59 (1),
 52-69.
 The dependence measure used to select trees (default: Kendall's tau) is
-corrected for ties and can be changed using the \code{tree_criterion}
-argument, which can be set to \code{"tau"}, \code{"rho"} or \code{"hoeffd"}.
-Both Prim's (default: \code{"mst_prim"}) and Kruskal's ()\code{"mst_kruskal"})
+corrected for ties and can be changed using the \code{tree_crit}
+argument, which can be set to \code{"tau"}, \code{"rho"}, \code{"hoeffd"}, \code{"mcor"},
+\code{"cxi"}, or \code{"joe"}, or to a custom function.
+Both Prim's (default: \code{"mst_prim"}) and Kruskal's (\code{"mst_kruskal"})
 algorithms are available through \code{tree_algorithm} to set the
 maximum spanning tree selection algorithm.
 An alternative to the maximum spanning tree selection is to use random
-spanning trees, which can be selected using \code{controls.tree_algorithm} and
+spanning trees, which can be selected using \code{tree_algorithm} and
 come in two flavors, both using Wilson's algorithm loop erased random walks:
 \itemize{
 \item "random_weighted"` generates a random spanning tree with probability
@@ -194,19 +212,24 @@ summary(fit)
 plot(fit)
 contour(fit)
 
-## select by log-likelihood criterion from one-paramter families
+## select by BIC from one-parameter families
 fit <- vinecop(u, family_set = "onepar", selcrit = "bic")
 summary(fit)
 
 ## 1-truncated, Gaussian D-vine
-fit <- vinecop(u, structure = dvine_structure(1:5), family = "gauss", trunc_lvl = 1)
+fit <- vinecop(
+  u,
+  structure = dvine_structure(1:5),
+  family_set = "gauss",
+  trunc_lvl = 1
+)
 plot(fit)
 contour(fit)
 
 ## Partial structure selection with only first tree specified
 structure <- rvine_structure(order = 1:5, list(rep(5, 4)))
 structure
-fit <- vinecop(u, structure = structure, family = "gauss")
+fit <- vinecop(u, structure = structure, family_set = "gauss")
 plot(fit)
 
 ## Model for discrete data

@@ -5,16 +5,35 @@
 \alias{dvinecop}
 \alias{pvinecop}
 \alias{rvinecop}
+\alias{scores}
+\alias{hessian}
 \alias{dvinecop_dist}
 \alias{pvinecop_dist}
 \alias{rvinecop_dist}
+\alias{scores.vinecop_dist}
+\alias{hessian.vinecop_dist}
 \title{Vine copula distributions}
 \usage{
-dvinecop(u, vinecop, cores = 1)
+dvinecop(u, vinecop, cores = 1, keep_all = FALSE, parameters = NULL)
+
+scores(u, vinecop, ...)
+
+\method{scores}{vinecop_dist}(u, vinecop, step_wise = TRUE, cores = 1, parameters = NULL, ...)
+
+hessian(u, vinecop, ...)
+
+\method{hessian}{vinecop_dist}(u, vinecop, step_wise = TRUE, cores = 1, parameters = NULL, ...)
 
 pvinecop(u, vinecop, n_mc = 10^4, cores = 1)
 
-rvinecop(n, vinecop, qrng = FALSE, cores = 1)
+rvinecop(
+  n,
+  vinecop,
+  qrng = FALSE,
+  cores = 1,
+  u_cond = NULL,
+  conditioning_set = NULL
+)
 }
 \arguments{
 \item{u}{matrix of evaluation points; must contain at least d columns, where
@@ -26,6 +45,23 @@ discrete models, see \emph{Details}.}
 \item{cores}{number of cores to use; if larger than one, computations are
 done in parallel on \code{cores} batches .}
 
+\item{keep_all}{if \code{TRUE}, \code{dvinecop()} returns additional intermediate
+quantities computed during density evaluation.}
+
+\item{parameters}{optional observation-specific parameters for \code{dvinecop()},
+\code{scores()}, and \code{hessian()}. For a model with one parameter, this may be a
+vector with one entry per observation. Otherwise, it must be a matrix with
+one row per observation and one column per model parameter. For vine
+copulas, columns follow the \verb{(tree, edge, parameter)} order of \code{scores()}.
+Parameters are not recycled. Only continuous parametric models are
+supported.}
+
+\item{...}{unused.}
+
+\item{step_wise}{if \code{FALSE}, the score/Hessian is computed for the full
+likelihood; if \code{TRUE}, gradients are computed per pair-copula as in
+step-wise estimation.}
+
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 
 \item{n}{number of observations.}
@@ -33,10 +69,31 @@ done in parallel on \code{cores} batches .}
 \item{qrng}{if \code{TRUE}, generates quasi-random numbers using the multivariate
 Generalized Halton sequence up to dimension 300 and the Generalized Sobol
 sequence in higher dimensions (default \code{qrng = FALSE}).}
+
+\item{u_cond}{optional conditioning values for \code{rvinecop()}. A vector or
+one-row matrix is repeated \code{n} times; alternatively, supply an \code{n}-row
+matrix for observation-specific conditioning values. The first block holds
+the copula-scale values \eqn{F(x)}. The expanded layout appends one
+left-limit column \eqn{F(x^-)} per conditioning variable in the same order;
+columns for continuous variables equal their value columns. In the compact
+layout, the redundant columns for continuous variables are omitted. If
+\code{NULL}, \code{rvinecop()} performs unconditional simulation.}
+
+\item{conditioning_set}{variable indices or names corresponding to the first
+block of \code{u_cond}. When \code{NULL}, the columns of \code{u_cond} correspond to the
+last variables of the current vine order. When supplied, the model is
+transiently reoriented and is not modified.}
 }
 \value{
 \code{dvinecop()} gives the density, \code{pvinecop()} gives the distribution function,
-and \code{rvinecop()} generates random deviates.
+\code{rvinecop()} generates unconditional or conditional random deviates,
+\code{scores()} gives the observation-wise score matrix, and \code{hessian()} gives the
+average Hessian matrix.
+
+If \code{keep_all = TRUE}, \code{dvinecop()} returns a list with entries \code{pdf},
+\code{pdf_edges}, \code{hfunc1}, \code{hfunc2}, \code{hfunc1_sub}, and \code{hfunc2_sub}. The \verb{_sub}
+entries contain h-functions evaluated at left-sided limits when the model
+contains discrete variables; they are empty for fully continuous models.
 
 The length of the result is determined by \code{n} for \code{rvinecop()}, and
 the number of rows in \code{u} for the other functions.
@@ -72,7 +129,7 @@ x <- rnorm(30) * matrix(1, 30, 5) + 0.5 * matrix(rnorm(30 * 5), 30, 5)
 u <- pseudo_obs(x)
 
 ## fit a model
-vc <- vinecop(u, family = "clayton")
+vc <- vinecop(u, family_set = "clayton")
 
 # simulate from the model
 u <- rvinecop(100, vc)
@@ -81,6 +138,14 @@ pairs(u)
 # evaluate the density and cdf
 dvinecop(u[1, ], vc)
 pvinecop(u[1, ], vc)
+
+# evaluate derivatives of the log-likelihood
+scores(u, vc)
+hessian(u, vc)
+
+# derivatives can also be computed for the full likelihood
+scores(u, vc, step_wise = FALSE)
+hessian(u, vc, step_wise = FALSE)
 
 ## Discrete models
 vc$var_types <- rep("d", 5)  # convert model to discrete
@@ -94,6 +159,24 @@ pvinecop(u_disc[1:5, ], vc)
 
 # simulated data always has uniform margins
 pairs(rvinecop(200, vc))
+
+## Conditional simulation
+vc_cond <- vinecop(
+  u,
+  family_set = "gaussian",
+  conditioning_set = c(2, 4)
+)
+u_cond <- c(0.25, 0.75)
+uc <- rvinecop(
+  100,
+  vc_cond,
+  u_cond = u_cond,
+  conditioning_set = c(2, 4)
+)
+stopifnot(
+  isTRUE(all.equal(uc[, 2], rep(0.25, 100))),
+  isTRUE(all.equal(uc[, 4], rep(0.75, 100)))
+)
 }
 \seealso{
 \code{\link[=vinecop_dist]{vinecop_dist()}}, \code{\link[=vinecop]{vinecop()}}, \code{\link[=plot.vinecop]{plot.vinecop()}}, \code{\link[=contour.vinecop]{contour.vinecop()}}

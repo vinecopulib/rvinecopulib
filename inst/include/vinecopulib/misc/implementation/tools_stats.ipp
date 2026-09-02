@@ -1,9 +1,10 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <array>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/seed_seq.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
@@ -61,8 +62,10 @@ simulate_uniform(const size_t& n,
   boost::random::mt19937 generator(seq);
   boost::random::uniform_real_distribution<double> distribution(0.0, 1.0);
 
-  Eigen::MatrixXd u(n, d);
-  return u.unaryExpr([&](double) { return distribution(generator); });
+  // NullaryExpr fills the result directly (column-major, same order as the
+  // previous unaryExpr-based version) without a second allocation
+  return Eigen::MatrixXd::NullaryExpr(
+    n, d, [&]() { return distribution(generator); });
 }
 
 //! @brief Simulates from independendent normals.
@@ -84,6 +87,26 @@ simulate_normal(const size_t& n,
   return qnorm(tools_stats::simulate_uniform(n, d, qrng, seeds));
 }
 
+// (internal) 1-d worker with pre-converted weights; moves `xvec` into
+// `wdm::impl::rank` to avoid a copy.
+inline Eigen::VectorXd
+pseudo_obs_1d_impl(std::vector<double>&& xvec,
+                   const std::string& ties_method,
+                   const std::vector<double>& weights,
+                   const std::vector<int>& seeds)
+{
+  // correction for NaNs (must be counted before the move)
+  size_t n = xvec.size();
+  for (size_t i = 0; i < xvec.size(); i++) {
+    if (std::isnan(xvec[i])) {
+      n--;
+    }
+  }
+  auto res = wdm::impl::rank(std::move(xvec), weights, ties_method, seeds);
+  return Eigen::Map<Eigen::VectorXd>(res.data(), res.size()) /
+         (static_cast<double>(n) + 1.0);
+}
+
 //! @brief Applies the empirical probability integral transform to a data
 //! matrix.
 //!
@@ -94,6 +117,8 @@ simulate_normal(const size_t& n,
 //! @param ties_method Indicates how to treat ties; same as in R, see
 //! https://stat.ethz.ch/R-manual/R-devel/library/base/html/rank.html.
 //! @param weights Vector of weights for the observations.
+//! @param seeds Seeds for the random number generator, used only when
+//! `ties_method = "random"`.
 //! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$
 //! (column-wise).
 inline Eigen::MatrixXd
@@ -102,9 +127,13 @@ to_pseudo_obs(Eigen::MatrixXd x,
               const Eigen::VectorXd& weights,
               std::vector<int> seeds)
 {
-  for (int j = 0; j < x.cols(); ++j)
-    x.col(j) = to_pseudo_obs_1d(
-      static_cast<Eigen::VectorXd>(x.col(j)), ties_method, weights, seeds);
+  // convert the weights once instead of once per column
+  const auto wvec = wdm::utils::convert_vec(weights);
+  const size_t n = x.rows();
+  for (int j = 0; j < x.cols(); ++j) {
+    std::vector<double> xvec(x.data() + n * j, x.data() + n * (j + 1));
+    x.col(j) = pseudo_obs_1d_impl(std::move(xvec), ties_method, wvec, seeds);
+  }
 
   return x;
 }
@@ -119,6 +148,8 @@ to_pseudo_obs(Eigen::MatrixXd x,
 //! @param ties_method Indicates how to treat ties; same as in R, see
 //! https://stat.ethz.ch/R-manual/R-devel/library/base/html/rank.html.
 //! @param weights Vector of weights for the observations.
+//! @param seeds Seeds for the random number generator, used only when
+//! `ties_method = "random"`.
 //! @return Pseudo-observations of the copula, i.e. \f$ F_X(x) \f$.
 inline Eigen::VectorXd
 to_pseudo_obs_1d(Eigen::VectorXd x,
@@ -126,22 +157,10 @@ to_pseudo_obs_1d(Eigen::VectorXd x,
                  const Eigen::VectorXd& weights,
                  std::vector<int> seeds)
 {
-  size_t n = x.size();
-  auto xvec = wdm::utils::convert_vec(x);
-  auto res =
-    wdm::impl::rank(xvec, wdm::utils::convert_vec(weights), ties_method, seeds);
-  x = Eigen::Map<Eigen::VectorXd>(res.data(), res.size());
-
-  // correction for NaNs
-  if (wdm::utils::any_nan(xvec)) {
-    for (size_t i = 0; i < xvec.size(); i++) {
-      if (std::isnan(xvec[i])) {
-        n--;
-      }
-    }
-  }
-
-  return x.array() / (static_cast<double>(n) + 1.0);
+  return pseudo_obs_1d_impl(wdm::utils::convert_vec(x),
+                            ties_method,
+                            wdm::utils::convert_vec(weights),
+                            seeds);
 }
 
 // Construct a box covering from a matrix of samples.
@@ -151,23 +170,13 @@ inline BoxCovering::BoxCovering(const Eigen::MatrixXd& u, uint16_t K)
   : u_(u)
   , K_(K)
 {
-  boxes_.resize(K);
-  for (size_t k = 0; k < K; k++) {
-    boxes_[k].resize(K);
-    for (size_t j = 0; j < K; j++) {
-      boxes_[k][j] = std::make_unique<Box>(
-        std::vector<double>{ static_cast<double>(k) / K,
-                             static_cast<double>(j) / K },
-        std::vector<double>{ static_cast<double>(k + 1) / K,
-                             static_cast<double>(j + 1) / K });
-    }
-  }
+  boxes_.resize(static_cast<size_t>(K) * K);
 
   n_ = u.rows();
   for (size_t i = 0; i < n_; i++) {
     size_t k = static_cast<size_t>(std::floor(u(i, 0) * K));
     size_t j = static_cast<size_t>(std::floor(u(i, 1) * K));
-    boxes_[k][j]->indices_.insert(i);
+    boxes_[k * K_ + j].insert(i);
   }
 }
 
@@ -179,7 +188,18 @@ BoxCovering::get_box_indices(const Eigen::VectorXd& lower,
                              const Eigen::VectorXd& upper) const
 {
   std::vector<size_t> indices;
-  indices.reserve(n_);
+  get_box_indices(lower, upper, indices);
+  return indices;
+}
+
+// Buffer-reusing variant: clears `indices` and fills it (the capacity
+// persists across calls, avoiding an allocation per call).
+inline void
+BoxCovering::get_box_indices(const Eigen::VectorXd& lower,
+                             const Eigen::VectorXd& upper,
+                             std::vector<size_t>& indices) const
+{
+  indices.clear();
   auto l0 = static_cast<size_t>(std::floor(lower(0) * K_));
   auto l1 = static_cast<size_t>(std::floor(lower(1) * K_));
   auto u0 = static_cast<size_t>(std::ceil(upper(0) * K_));
@@ -187,7 +207,7 @@ BoxCovering::get_box_indices(const Eigen::VectorXd& lower,
 
   for (size_t k = l0; k < u0; k++) {
     for (size_t j = l1; j < u1; j++) {
-      for (auto& i : boxes_[k][j]->indices_) {
+      for (auto& i : boxes_[k * K_ + j]) {
         if ((k == l0) || (k == u0 - 1)) {
           if ((u_(i, 0) < lower(0)) || (u_(i, 0) > upper(0)))
             continue;
@@ -200,8 +220,6 @@ BoxCovering::get_box_indices(const Eigen::VectorXd& lower,
       }
     }
   }
-
-  return indices;
 }
 
 // Swap a sample in the box covering.
@@ -211,27 +229,43 @@ BoxCovering::swap_sample(size_t i, const Eigen::VectorXd& new_sample)
 {
   auto k = static_cast<size_t>(std::floor(u_(i, 0) * K_));
   auto j = static_cast<size_t>(std::floor(u_(i, 1) * K_));
-  boxes_[k][j]->indices_.erase(i);
+  boxes_[k * K_ + j].erase(i);
 
   u_.row(i) = new_sample;
   k = static_cast<size_t>(std::floor(new_sample(0) * K_));
   j = static_cast<size_t>(std::floor(new_sample(1) * K_));
-  boxes_[k][j]->indices_.insert(i);
+  boxes_[k * K_ + j].insert(i);
 }
 
-//! Create a single box.
-inline BoxCovering::Box::Box(const std::vector<double>& lower,
-                             const std::vector<double>& upper)
-  : lower_(lower)
-  , upper_(upper)
-{
-}
-
-// Recovers a (continuous) latent sample from a sample of a discrete copula by
-// treating it as an interval-censored density estimation problem.
-// @param u A matrix of samples.
-// @param b The bandwidth of the kernel density estimator.
-// @param niter The number of iterations.
+//! @brief Recovers a continuous latent sample from a sample of a discrete
+//! copula.
+//!
+//! Treats the discrete sample as an interval-censored density estimation
+//! problem: observation \f$ i \f$ is only known to lie in the rectangle
+//! \f$ (u_{i1}^-, u_{i1}] \times (u_{i2}^-, u_{i2}] \f$. A latent point is
+//! initialized inside that rectangle and then refined by `niter` sweeps: for
+//! each observation, one of the observations whose current latent point falls
+//! in its own rectangle (widened by \f$ b \f$ on the normal scale) is picked
+//! uniformly at random, and the latent point is set to that neighbor's value
+//! plus Gaussian noise of scale \f$ b \f$ --- a draw from a Gaussian kernel
+//! density estimate restricted to the compatible observations. The refined
+//! points are not confined to the original rectangles.
+//!
+//! The draw is deterministic: every random component is drawn from a
+//! fixed-seed generator, so repeated calls on the same input agree bit for
+//! bit. It is also independent of argument order: recovering the latent sample
+//! of \f$ (u_1, u_2) \f$ and of \f$ (u_2, u_1) \f$ gives the same pair of
+//! columns, swapped.
+//!
+//! @param u An \f$ n \times 4 \f$ matrix \f$ (u_1, u_2, u_1^-, u_2^-) \f$
+//! holding each observation's distribution function values and their left
+//! limits; any other number of columns throws.
+//! @param b The bandwidth of the kernel density estimator.
+//! @param niter The number of sweeps.
+//!
+//! @return An \f$ n \times 2 \f$ matrix of pseudo-observations of the latent
+//! sample, i.e. on the copula scale rather than the normal scale the sweeps run
+//! on.
 inline Eigen::MatrixXd
 find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter)
 {
@@ -241,15 +275,42 @@ find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter)
     throw std::runtime_error("u must have four columns.");
   }
 
-  auto w = simulate_uniform(n, 2, true, { 5 });
-  Eigen::MatrixXd uu = w.array() * u.leftCols(2).array() +
-                       (1 - w.array()) * u.rightCols(2).array();
+  // The draws below are indexed by column position, so ordering the pair by
+  // its own values is what makes the result a function of the observations
+  // rather than of how they were passed. The columns tie only when the two
+  // variables are identical, where swapping them is a no-op.
+  bool swapped = false;
+  for (ptrdiff_t i = 0; i < u.rows(); i++) {
+    if (u(i, 0) != u(i, 1)) {
+      swapped = u(i, 1) < u(i, 0);
+      break;
+    }
+    if (u(i, 2) != u(i, 3)) {
+      swapped = u(i, 3) < u(i, 2);
+      break;
+    }
+  }
+  Eigen::MatrixXd v = u;
+  if (swapped) {
+    v.col(0).swap(v.col(1));
+    v.col(2).swap(v.col(3));
+  }
+
+  // Pseudo-random, not quasi-random: a low-discrepancy sequence is a
+  // deterministic near-lattice whose coordinates are negatively dependent by
+  // construction, which is what makes it integrate well and what makes it
+  // unusable as per-observation noise -- it imposes that lattice on the latent
+  // points and attenuates their dependence. Fixed seeds keep the draw
+  // reproducible.
+  auto w = simulate_uniform(n, 2, false, { 5 });
+  Eigen::MatrixXd uu = w.array() * v.leftCols(2).array() +
+                       (1 - w.array()) * v.rightCols(2).array();
 
   auto covering = BoxCovering(uu);
   std::vector<size_t> indices;
 
-  Eigen::MatrixXd lb = qnorm(u.rightCols(2));
-  Eigen::MatrixXd ub = qnorm(u.leftCols(2));
+  Eigen::MatrixXd lb = qnorm(v.rightCols(2));
+  Eigen::MatrixXd ub = qnorm(v.leftCols(2));
   lb = pnorm(lb.array() - b);
   ub = pnorm(ub.array() + b);
 
@@ -258,11 +319,11 @@ find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter)
   for (uint16_t it = 0; it < niter; it++) {
     uu = to_pseudo_obs(uu);
     x = qnorm(uu);
-    norm_sim = simulate_normal(n, 2, true, { it, 5 }).array() * b;
-    w = simulate_uniform(n, 1, true, { it, 55 });
+    norm_sim = simulate_normal(n, 2, false, { it, 5 }).array() * b;
+    w = simulate_uniform(n, 1, false, { it, 55 });
 
     for (size_t i = 0; i < n; i++) {
-      indices = covering.get_box_indices(lb.row(i), ub.row(i));
+      covering.get_box_indices(lb.row(i), ub.row(i), indices);
       double n_idx = static_cast<double>(indices.size());
       if (n_idx > 0) {
         size_t j = indices.at(static_cast<size_t>(w(i) * n_idx));
@@ -273,7 +334,11 @@ find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter)
     }
   }
 
-  return to_pseudo_obs(x);
+  Eigen::MatrixXd latent = to_pseudo_obs(x);
+  if (swapped) {
+    latent.col(0).swap(latent.col(1));
+  }
+  return latent;
 }
 
 // Utility function to compute the next power of 2.
@@ -287,27 +352,44 @@ next_power_of_two(size_t n)
   return power;
 }
 
+//! reusable state for the FFT window smoother: the plan, the window
+//! transform, and the scratch buffers only depend on (fftSize, wl), which is
+//! constant across all `win` calls of one `ace` run
+struct SmoothingWorkspace
+{
+  Eigen::FFT<double> fft;
+  Eigen::VectorXd xx;
+  Eigen::VectorXcd win_fft, tmp1, tmp2;
+  size_t fft_size{ 0 };
+  size_t wl{ 0 };
+};
+
 //! window smoother
 inline Eigen::VectorXd
-win(const Eigen::VectorXd& x, size_t wl = 5)
+win(const Eigen::VectorXd& x, size_t wl, SmoothingWorkspace& ws)
 {
   size_t n = x.size();
   // pad length to powers of 2 to force FFT to use its fastest algorithm
   size_t fftSize = next_power_of_two(n + 2 * wl);
 
-  Eigen::VectorXd xx = Eigen::VectorXd::Zero(fftSize);
-  Eigen::VectorXd yy = Eigen::VectorXd::Zero(fftSize);
-  xx.segment(2 * wl, n) = x;
-  yy.head(2 * wl + 1) = Eigen::VectorXd::Ones(2 * wl + 1);
+  if ((ws.fft_size != fftSize) || (ws.wl != wl)) {
+    // the conjugated window transform is constant; compute it once
+    Eigen::VectorXd yy = Eigen::VectorXd::Zero(fftSize);
+    yy.head(2 * wl + 1) = Eigen::VectorXd::Ones(2 * wl + 1);
+    Eigen::VectorXcd tmp = ws.fft.fwd(yy);
+    ws.win_fft = tmp.conjugate();
+    ws.xx = Eigen::VectorXd::Zero(fftSize);
+    ws.fft_size = fftSize;
+    ws.wl = wl;
+  }
 
-  Eigen::FFT<double> fft;
-  Eigen::VectorXcd tmp1 = fft.fwd(xx);
-  Eigen::VectorXcd tmp2 = fft.fwd(yy);
-  tmp2 = tmp2.conjugate();
-  tmp1 = tmp1.cwiseProduct(tmp2);
-  tmp2 = fft.inv(tmp1);
+  ws.xx.setZero();
+  ws.xx.segment(2 * wl, n) = x;
+  ws.fft.fwd(ws.tmp1, ws.xx);
+  ws.tmp1 = ws.tmp1.cwiseProduct(ws.win_fft);
+  ws.fft.inv(ws.tmp2, ws.tmp1);
 
-  Eigen::VectorXd result = tmp2.real().segment(wl, n);
+  Eigen::VectorXd result = ws.tmp2.real().segment(wl, n);
   result /= 2.0 * static_cast<double>(wl) + 1.0;
   result.head(wl).setConstant(result(wl));
   result.tail(wl).setConstant(result(n - wl - 1));
@@ -320,10 +402,11 @@ inline Eigen::VectorXd
 cef(const Eigen::VectorXd& x,
     const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& ind,
     const Eigen::Matrix<size_t, Eigen::Dynamic, 1>& ranks,
-    size_t wl = 5)
+    size_t wl,
+    SmoothingWorkspace& ws)
 {
   Eigen::VectorXd cey = x(ind);
-  cey = win(cey, wl);
+  cey = win(cey, wl, ws);
   return cey(ranks);
 }
 
@@ -384,6 +467,7 @@ ace(const Eigen::MatrixXd& data,                        // data
   size_t outer_iter = 1;
   double outer_eps = 1.0;
   double outer_abs_err = 1.0;
+  SmoothingWorkspace ws;
 
   // outer loop (expectation of the first variable given the second)
   while (outer_iter <= outer_iter_max && outer_abs_err > outer_abs_tol) {
@@ -396,7 +480,7 @@ ace(const Eigen::MatrixXd& data,                        // data
     while (inner_iter <= inner_iter_max && inner_abs_err > inner_abs_tol) {
       // conditional expectation
       phi.col(1) =
-        cef(phi.col(0).cwiseProduct(w), ind.col(1), ranks.col(1), wl);
+        cef(phi.col(0).cwiseProduct(w), ind.col(1), ranks.col(1), wl, ws);
 
       // center and standardize
       double m1 = phi.col(1).sum() / n_dbl;
@@ -413,7 +497,8 @@ ace(const Eigen::MatrixXd& data,                        // data
     }
 
     // conditional expectation
-    phi.col(0) = cef(phi.col(1).cwiseProduct(w), ind.col(0), ranks.col(0), wl);
+    phi.col(0) =
+      cef(phi.col(1).cwiseProduct(w), ind.col(0), ranks.col(0), wl, ws);
 
     // center and standardize
     double m0 = phi.col(0).sum() / n_dbl;
@@ -433,12 +518,36 @@ ace(const Eigen::MatrixXd& data,                        // data
   return phi;
 }
 
+//! @name Dependence measures
+//! @{
+
 //! calculates the pairwise maximum correlation coefficient.
 inline double
 pairwise_mcor(const Eigen::MatrixXd& x, const Eigen::VectorXd& weights)
 {
   Eigen::MatrixXd phi = ace(x, weights);
   return wdm::wdm(phi, "cor", weights)(0, 1);
+}
+
+//! @brief calculates the pairwise symmetrized Chatterjee's xi.
+//!
+//! Chatterjee's xi measures how well one variable is a measurable function of
+//! the other and is therefore asymmetric. The symmetrized version is the
+//! larger of the two directions, so it detects a functional relationship
+//! whichever way it runs.
+//!
+//! @literature
+//! Chatterjee, Sourav. *A New Coefficient of Correlation*. Journal of the
+//! American Statistical Association 116(536), 2009-2022, 2021
+inline double
+pairwise_cxi(const Eigen::MatrixXd& x, const Eigen::VectorXd& weights)
+{
+  double xi12 = wdm::wdm(x.col(0), x.col(1), "cxi", weights);
+  double xi21 = wdm::wdm(x.col(1), x.col(0), "cxi", weights);
+  if (std::isnan(xi12) || std::isnan(xi21)) {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+  return std::max(xi12, xi21);
 }
 //! @}
 
@@ -459,6 +568,9 @@ pairwise_mcor(const Eigen::MatrixXd& x, const Eigen::VectorXd& weights)
 inline Eigen::MatrixXd
 ghalton(const size_t& n, const size_t& d, const std::vector<int>& seeds)
 {
+  if ((n < 1) || (d < 1)) {
+    throw std::runtime_error("n and d must be at least 1.");
+  }
 
   Eigen::MatrixXd res(d, n);
 
@@ -521,6 +633,9 @@ ghalton(const size_t& n, const size_t& d, const std::vector<int>& seeds)
 inline Eigen::MatrixXd
 sobol(const size_t& n, const size_t& d, const std::vector<int>& seeds)
 {
+  if ((n < 1) || (d < 1)) {
+    throw std::runtime_error("n and d must be at least 1.");
+  }
 
   // output matrix
   Eigen::MatrixXd output = Eigen::MatrixXd::Zero(n, d);
@@ -549,12 +664,12 @@ sobol(const size_t& n, const size_t& d, const std::vector<int>& seeds)
   // Compute direction numbers scaled by pow(2,32)
   Eigen::Matrix<size_t, Eigen::Dynamic, 1> V(L);
   for (size_t i = 0; i < L; i++) {
-    V(i) = static_cast<size_t>(std::pow(2, 32 - (i + 1))); // all m's = 1
+    V(i) = static_cast<size_t>(1) << (32 - (i + 1)); // all m's = 1
   }
 
   // Evalulate X scaled by pow(2,32)
   Eigen::Matrix<size_t, Eigen::Dynamic, 1> X(n);
-  X(0) = static_cast<size_t>(scrambling(0) * std::pow(2.0, 32));
+  X(0) = static_cast<size_t>(scrambling(0) * 4294967296.0);
   for (size_t i = 1; i < n; i++) {
     X(i) = X(i - 1) ^ V(C(i - 1) - 1);
   }
@@ -583,14 +698,14 @@ sobol(const size_t& n, const size_t& d, const std::vector<int>& seeds)
     }
 
     // Evalulate X
-    X(0) = static_cast<size_t>(scrambling(j + 1) * std::pow(2.0, 32));
+    X(0) = static_cast<size_t>(scrambling(j + 1) * 4294967296.0);
     for (size_t i = 1; i < n; i++)
       X(i) = X(i - 1) ^ V(C(i - 1) - 1);
     output.block(0, j + 1, n, 1) = X.cast<double>();
   }
 
   // Scale output by pow(2,32)
-  output /= std::pow(2.0, 32);
+  output /= 4294967296.0;
 
   return output;
 }
@@ -614,8 +729,11 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
 {
   double snu = sqrt(static_cast<double>(nu));
   double ors = 1 - pow(rho, 2.0);
+  // even-nu starting value; depends only on rho, so hoisted out of the
+  // per-element lambda
+  double bvt0 = atan2(sqrt(ors), -rho) / 6.2831853071795862;
 
-  auto f = [snu, nu, ors, rho](double h, double k) {
+  auto f = [snu, nu, ors, rho, bvt0](double h, double k) {
     double d1, d2, bvt, gmph, gmpk, xnkh, xnhk, btnckh, btnchk, btpdkh, btpdhk;
     int hs, ks;
 
@@ -645,7 +763,7 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
     d1 = k - rho * h;
     ks = static_cast<int>(d1 >= 0 ? 1 : -1);
     if (nu % 2 == 0) {
-      bvt = atan2(sqrt(ors), -rho) / 6.2831853071795862;
+      bvt = bvt0;
       /* Computing 2nd power */
       d1 = h;
       gmph = h / sqrt((nu + d1 * d1) * 16);
@@ -738,9 +856,10 @@ inline Eigen::VectorXd
 pbvnorm(const Eigen::MatrixXd& z, double rho)
 {
 
-  // normal cdf
-  boost::math::normal dist;
-  auto phi = [&dist](double y) { return boost::math::cdf(dist, y); };
+  // normal cdf; direct erfc form of the standard normal cdf (avoids the
+  // boost distribution-object dispatch on every evaluation)
+  static const double inv_sqrt2 = 0.70710678118654752440;
+  auto phi = [](double y) { return 0.5 * std::erfc(-y * inv_sqrt2); };
 
   // set-up required constants
   size_t lg;
@@ -771,7 +890,53 @@ pbvnorm(const Eigen::MatrixXd& z, double rho)
       -.07652652113349733;
   }
 
-  auto f = [lg, rho, x, w, phi](double h, double k) {
+  // everything that depends only on rho and the quadrature nodes is
+  // precomputed here instead of once per evaluation point; fixed-size stack
+  // tables and branch-gated setup keep single-point calls (the discrete
+  // difference quotients evaluate the cdf row by row) as cheap as the
+  // pre-hoisting code
+  const double asr = asin(rho);
+  std::array<double, 10> sn1{}, sn2{}, dn1{}, dn2{};
+  std::array<double, 10> xs1{}, rs1{}, xs2{}, rs2{};
+  const double as = (1 - rho) * (rho + 1);
+  const double a_full = std::sqrt(as);
+  const double a_half = a_full / 2;
+  if (std::fabs(rho) < .925f) {
+    for (size_t i = 0; i < lg; ++i) {
+      double sn = std::sin(asr * (x(i) + 1) / 2);
+      sn1[i] = sn;
+      dn1[i] = 1 - sn * sn;
+      sn = std::sin(asr * (-x(i) + 1) / 2);
+      sn2[i] = sn;
+      dn2[i] = 1 - sn * sn;
+    }
+  } else {
+    for (size_t i = 0; i < lg; ++i) {
+      double d1 = a_half * (x(i) + 1);
+      xs1[i] = d1 * d1;
+      rs1[i] = std::sqrt(1 - xs1[i]);
+      d1 = -x(i) + 1;
+      xs2[i] = as * (d1 * d1) / 4;
+      rs2[i] = std::sqrt(1 - xs2[i]);
+    }
+  }
+
+  auto f = [lg,
+            rho,
+            w,
+            phi,
+            asr,
+            &sn1,
+            &sn2,
+            &dn1,
+            &dn2,
+            as,
+            a_full,
+            a_half,
+            &xs1,
+            &rs1,
+            &xs2,
+            &rs2](double h, double k) {
     size_t i1;
     double d1, d2, hk, bvn;
     h = -h;
@@ -780,13 +945,10 @@ pbvnorm(const Eigen::MatrixXd& z, double rho)
     bvn = 0.0;
     if (std::fabs(rho) < .925f) {
       double hs = (h * h + k * k) / 2;
-      double asr = asin(rho);
       i1 = lg;
       for (size_t i = 0; i < i1; ++i) {
-        double sn = std::sin(asr * (x(i) + 1) / 2);
-        bvn += w(i) * std::exp((sn * hk - hs) / (1 - sn * sn));
-        sn = std::sin(asr * (-x(i) + 1) / 2);
-        bvn += w(i) * std::exp((sn * hk - hs) / (1 - sn * sn));
+        bvn += w(i) * std::exp((sn1[i] * hk - hs) / dn1[i]);
+        bvn += w(i) * std::exp((sn2[i] * hk - hs) / dn2[i]);
       }
       d1 = -h;
       d2 = -k;
@@ -797,40 +959,30 @@ pbvnorm(const Eigen::MatrixXd& z, double rho)
         hk = -hk;
       }
       if (std::fabs(rho) < 1.) {
-        double as = (1 - rho) * (rho + 1);
-        double a = std::sqrt(as);
         /* Computing 2nd power */
         d1 = h - k;
         double bs = d1 * d1;
         double c = (4 - hk) / 8;
         double d = (12 - hk) / 16;
-        bvn = a * std::exp(-(bs / as + hk) / 2) *
+        bvn = a_full * std::exp(-(bs / as + hk) / 2) *
               (1 - c * (bs - as) * (1 - d * bs / 5) / 3 + c * d * as * as / 5);
         if (hk > -160.) {
           double b = std::sqrt(bs);
-          d1 = -b / a;
+          d1 = -b / a_full;
           bvn -= std::exp(-hk / 2) * std::sqrt(6.283185307179586) * phi(d1) *
                  b * (1 - c * bs * (1 - d * bs / 5) / 3);
         }
-        a /= 2;
         i1 = lg;
         for (size_t i = 0; i < i1; ++i) {
+          bvn += a_half * w(i) *
+                 (std::exp(-bs / (xs1[i] * 2) - hk / (rs1[i] + 1)) / rs1[i] -
+                  std::exp(-(bs / xs1[i] + hk) / 2) *
+                    (c * xs1[i] * (d * xs1[i] + 1) + 1));
           /* Computing 2nd power */
-          d1 = a * (x(i) + 1);
-          double xs = d1 * d1;
-          double rs = std::sqrt(1 - xs);
-          bvn += a * w(i) *
-                 (std::exp(-bs / (xs * 2) - hk / (rs + 1)) / rs -
-                  std::exp(-(bs / xs + hk) / 2) * (c * xs * (d * xs + 1) + 1));
-          /* Computing 2nd power */
-          d1 = -x(i) + 1;
-          xs = as * (d1 * d1) / 4;
-          rs = std::sqrt(1 - xs);
-          /* Computing 2nd power */
-          d1 = rs + 1;
-          bvn += a * w(i) * std::exp(-(bs / xs + hk) / 2) *
-                 (std::exp(-hk * xs / (d1 * d1 * 2)) / rs -
-                  (c * xs * (d * xs + 1) + 1));
+          d1 = rs2[i] + 1;
+          bvn += a_half * w(i) * std::exp(-(bs / xs2[i] + hk) / 2) *
+                 (std::exp(-hk * xs2[i] / (d1 * d1 * 2)) / rs2[i] -
+                  (c * xs2[i] * (d * xs2[i] + 1) + 1));
         }
         bvn = -bvn / 6.283185307179586;
       }
@@ -855,5 +1007,6 @@ pbvnorm(const Eigen::MatrixXd& z, double rho)
 
   return tools_eigen::binaryExpr_or_nan(z, f);
 }
+
 }
 }

@@ -1,12 +1,14 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <functional>
 #include <mutex>
 #include <vinecopulib/bicop/abstract.hpp>
 #include <vinecopulib/bicop/tools_select.hpp>
+#include <vinecopulib/misc/tools_batch.hpp>
 #include <vinecopulib/misc/tools_interface.hpp>
 #include <vinecopulib/misc/tools_serialization.hpp>
 #include <vinecopulib/misc/tools_stats.hpp>
@@ -102,15 +104,17 @@ inline Bicop::Bicop(const nlohmann::json& input)
   }
 }
 
-//! @brief Instantiates from a JSON file.
+//! @brief Instantiates from a JSON or CBOR file.
 //!
-//! @details The input file contains four attributes:
+//! @details Files ending in `.cbor` are read as CBOR. All other filenames are
+//! read as JSON for backwards compatibility. The input contains four
+//! attributes:
 //! `"fam"`, `"rot"`, `"par"`, `"vt"` respectively a
 //! string for the family name, an integer for the rotation, and a numeric
 //! matrix for the parameters, and a list of two strings for the variable
 //! types.
 //!
-//! @param filename The name of the JSON file to read.
+//! @param filename The name of the file to read.
 inline Bicop::Bicop(const std::string& filename)
   : Bicop(tools_serialization::file_to_json(filename))
 {
@@ -140,9 +144,11 @@ Bicop::to_json() const
   return output;
 }
 
-//! @brief Write the copula object into a JSON file.
+//! @brief Writes the copula object into a JSON or CBOR file.
 //!
-//! @details The written file contains four attributes:
+//! @details Filenames ending in `.cbor` are written as CBOR. All other
+//! filenames are written as JSON for backwards compatibility. The written
+//! representation contains four attributes:
 //! `"fam"`, `"rot"`, `"par"`, `"vt"`, `"nobs"`, `"ll"`, `"npars"`
 //! respectively a string for the family name, an integer for the rotation, and
 //! a numeric matrix for the parameters, a list of two strings for the
@@ -158,6 +164,12 @@ Bicop::to_file(const std::string& filename) const
   tools_serialization::json_to_file(filename, to_json());
 }
 
+//! @name Stats methods
+//!
+//! @details These evaluate the copula at the object's stored parameters. See
+//! below for the overloads taking one parameter set per row.
+//! @{
+
 //! @brief Evaluates the copula density.
 //!
 //! @details The copula density is defined as joint density divided by marginal
@@ -172,8 +184,11 @@ Bicop::to_file(const std::string& filename) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of copula densities evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::pdf(const Eigen::MatrixXd& u) const
@@ -194,14 +209,18 @@ Bicop::pdf(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of copula probabilities evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::cdf(const Eigen::MatrixXd& u) const
 {
   check_data(u);
-  Eigen::VectorXd p = bicop_->cdf(prep_for_abstract(u).leftCols(2));
+  Eigen::VectorXd p = bicop_->cdf(prep_for_abstract(u).leftCols(2),
+                                  bicop_->get_parameters().transpose());
   switch (rotation_) {
     default:
       return p;
@@ -231,33 +250,20 @@ Bicop::cdf(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of the first h-function evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::hfunc1(const Eigen::MatrixXd& u) const
 {
   check_data(u);
-  Eigen::VectorXd h(u.rows());
-  switch (rotation_) {
-    default:
-      h = bicop_->hfunc1(prep_for_abstract(u));
-      break;
-
-    case 90:
-      h = bicop_->hfunc2(prep_for_abstract(u));
-      break;
-
-    case 180:
-      h = 1.0 - bicop_->hfunc1(prep_for_abstract(u)).array();
-      break;
-
-    case 270:
-      h = 1.0 - bicop_->hfunc2(prep_for_abstract(u)).array();
-      break;
-  }
-  tools_eigen::trim(h, 0.0, 1.0);
-  return h;
+  const auto spec = get_conditional_spec(true);
+  const auto u_new = prep_for_abstract(u);
+  auto h = spec.use_first ? bicop_->hfunc1(u_new) : bicop_->hfunc2(u_new);
+  return finalize_conditional(std::move(h), spec.complement);
 }
 
 //! @brief Evaluates the second h-function.
@@ -274,33 +280,20 @@ Bicop::hfunc1(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of the second h-function evaluated at \c u.
 inline Eigen::VectorXd
 Bicop::hfunc2(const Eigen::MatrixXd& u) const
 {
   check_data(u);
-  Eigen::VectorXd h(u.rows());
-  switch (rotation_) {
-    default:
-      h = bicop_->hfunc2(prep_for_abstract(u));
-      break;
-
-    case 90:
-      h = 1.0 - bicop_->hfunc1(prep_for_abstract(u)).array();
-      break;
-
-    case 180:
-      h = 1.0 - bicop_->hfunc2(prep_for_abstract(u)).array();
-      break;
-
-    case 270:
-      h = bicop_->hfunc1(prep_for_abstract(u)).array();
-      break;
-  }
-  tools_eigen::trim(h, 0.0, 1.0);
-  return h;
+  const auto spec = get_conditional_spec(false);
+  const auto u_new = prep_for_abstract(u);
+  auto h = spec.use_first ? bicop_->hfunc1(u_new) : bicop_->hfunc2(u_new);
+  return finalize_conditional(std::move(h), spec.complement);
 }
 
 //! @brief Evaluates the inverse of the first h-function.
@@ -318,34 +311,21 @@ Bicop::hfunc2(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of the inverse of the first h-function evaluated
 //! at \c u.
 inline Eigen::VectorXd
 Bicop::hinv1(const Eigen::MatrixXd& u) const
 {
   check_data(u);
-  Eigen::VectorXd hi(u.rows());
-  switch (rotation_) {
-    default:
-      hi = bicop_->hinv1(prep_for_abstract(u));
-      break;
-
-    case 90:
-      hi = bicop_->hinv2(prep_for_abstract(u));
-      break;
-
-    case 180:
-      hi = 1.0 - bicop_->hinv1(prep_for_abstract(u)).array();
-      break;
-
-    case 270:
-      hi = 1.0 - bicop_->hinv2(prep_for_abstract(u)).array();
-      break;
-  }
-  tools_eigen::trim(hi, 0.0, 1.0);
-  return hi;
+  const auto spec = get_conditional_spec(true);
+  const auto u_new = prep_for_abstract(u);
+  auto hi = spec.use_first ? bicop_->hinv1(u_new) : bicop_->hinv2(u_new);
+  return finalize_conditional(std::move(hi), spec.complement);
 }
 
 //! @brief Evaluates the inverse of the second h-function.
@@ -363,36 +343,1165 @@ Bicop::hinv1(const Eigen::MatrixXd& u) const
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return A length n vector of the inverse of the second h-function evaluated
 //! at \c u.
 inline Eigen::VectorXd
 Bicop::hinv2(const Eigen::MatrixXd& u) const
 {
   check_data(u);
-  Eigen::VectorXd hi(u.rows());
+  const auto spec = get_conditional_spec(false);
+  const auto u_new = prep_for_abstract(u);
+  auto hi = spec.use_first ? bicop_->hinv1(u_new) : bicop_->hinv2(u_new);
+  return finalize_conditional(std::move(hi), spec.complement);
+}
+
+inline Eigen::VectorXd
+Bicop::hfunc1_continuous(const Eigen::MatrixXd& u, bool flipped) const
+{
+  auto u_new =
+    prep_for_abstract_continuous(flipped ? tools_eigen::swap_cols(u) : u);
+  // TLL leaves read their interpolation grid directly and ignore the parameter
+  // argument; do not materialize the full grid merely to pass it unused.
+  Eigen::MatrixXd parameters = get_family() == BicopFamily::tll
+                                 ? Eigen::MatrixXd()
+                                 : bicop_->get_parameters().transpose();
+  const auto spec = get_conditional_spec(!flipped);
+  auto h = spec.use_first ? bicop_->hfunc1_raw(u_new, parameters)
+                          : bicop_->hfunc2_raw(u_new, parameters);
+  return finalize_conditional(std::move(h), spec.complement);
+}
+
+inline Eigen::VectorXd
+Bicop::hinv2_continuous(const Eigen::MatrixXd& u, bool flipped) const
+{
+  auto u_new =
+    prep_for_abstract_continuous(flipped ? tools_eigen::swap_cols(u) : u);
+  Eigen::MatrixXd parameters = get_family() == BicopFamily::tll
+                                 ? Eigen::MatrixXd()
+                                 : bicop_->get_parameters().transpose();
+  const auto spec = get_conditional_spec(flipped);
+  auto hi = spec.use_first ? bicop_->hinv1_raw(u_new, parameters)
+                           : bicop_->hinv2_raw(u_new, parameters);
+  return finalize_conditional(std::move(hi), spec.complement);
+}
+
+inline Bicop::ConditionalSpec
+Bicop::get_conditional_spec(bool first_function) const
+{
   switch (rotation_) {
-    default:
-      hi = bicop_->hinv2(prep_for_abstract(u));
-      break;
-
     case 90:
-      hi = 1.0 - bicop_->hinv1(prep_for_abstract(u)).array();
-      break;
-
+      return { !first_function, !first_function };
     case 180:
-      hi = 1.0 - bicop_->hinv2(prep_for_abstract(u)).array();
-      break;
-
+      return { first_function, true };
     case 270:
-      hi = bicop_->hinv1(prep_for_abstract(u));
-      break;
+      return { !first_function, first_function };
+    default:
+      return { first_function, false };
   }
-  tools_eigen::trim(hi, 0.0, 1.0);
-  return hi;
+}
+
+inline Eigen::VectorXd
+Bicop::finalize_conditional(Eigen::VectorXd value, bool complement)
+{
+  if (complement) {
+    value = 1.0 - value.array();
+  }
+  tools_eigen::trim(value, 0.0, 1.0);
+  return value;
+}
+
+//! @cond INTERNAL
+inline BicopView::BicopView(const Bicop& bicop, bool flipped, bool continuous)
+  : bicop_(&bicop)
+  , flipped_(flipped)
+  , continuous_(continuous)
+{
+}
+
+inline BicopView
+BicopView::as_continuous() const
+{
+  return BicopView(*bicop_, flipped_, true);
+}
+
+inline std::vector<std::string>
+BicopView::get_var_types() const
+{
+  if (continuous_)
+    return { "c", "c" };
+  auto var_types = bicop_->get_var_types();
+  if (flipped_)
+    std::swap(var_types[0], var_types[1]);
+  return var_types;
+}
+
+inline Eigen::VectorXd
+BicopView::hfunc1(const Eigen::MatrixXd& u) const
+{
+  if (continuous_)
+    return bicop_->hfunc1_continuous(u, flipped_);
+  return flipped_ ? bicop_->hfunc2(swap_arguments(u)) : bicop_->hfunc1(u);
+}
+
+inline Eigen::VectorXd
+BicopView::hfunc2(const Eigen::MatrixXd& u) const
+{
+  if (continuous_)
+    return bicop_->hfunc1_continuous(swap_arguments(u), !flipped_);
+  return flipped_ ? bicop_->hfunc1(swap_arguments(u)) : bicop_->hfunc2(u);
+}
+
+inline Eigen::VectorXd
+BicopView::hinv2(const Eigen::MatrixXd& u) const
+{
+  if (continuous_)
+    return bicop_->hinv2_continuous(u, flipped_);
+  return flipped_ ? bicop_->hinv1(swap_arguments(u)) : bicop_->hinv2(u);
+}
+
+inline Eigen::MatrixXd
+BicopView::swap_arguments(const Eigen::MatrixXd& u)
+{
+  Eigen::MatrixXd swapped = u;
+  swapped.col(0).swap(swapped.col(1));
+  if (swapped.cols() == 4)
+    swapped.col(2).swap(swapped.col(3));
+  return swapped;
+}
+//! @endcond
+//! @}
+
+//! @name Stats methods with per-row parameters
+//!
+//! @details These overloads evaluate the copula at a *different* parameter set
+//! per row of `u`, in a single call, without mutating the object's stored
+//! parameters. The family, rotation, and variable types are taken from the
+//! object; only the parameter values vary by row. They are available for
+//! parametric families only (nonparametric families store an interpolation
+//! grid rather than a per-observation parameter vector).
+//!
+//! Common arguments:
+//!
+//! - `u`: an \f$ n \times 2 \f$ matrix for a continuous model. For a model
+//!   with `k` discrete variables, use an \f$ n \times 4 \f$ matrix containing
+//!   the values and their left-limits; left-limit columns for continuous
+//!   variables may be omitted to obtain the compact
+//!   \f$ n \times (2 + k) \f$ layout (see @ref discrete).
+//! - `parameters`: an \f$ n \times p \f$ matrix, where `p` is the number of
+//!   family parameters (`get_parameters().size()`) and row `i` holds the
+//!   parameter set used for row `i` of `u`. Parameters are given in the
+//!   family's natural (unrotated) parameterization, as for `get_parameters()`.
+//! - `num_threads`: the number of threads to parallelize over rows.
+//! @{
+
+//! @brief Evaluates the copula density with per-row parameters.
+inline Eigen::VectorXd
+Bicop::pdf(const Eigen::MatrixXd& u,
+           const Eigen::MatrixXd& parameters,
+           const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(u,
+                         par_t,
+                         num_threads,
+                         [this](const Eigen::MatrixXd& ub,
+                                const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+                           return bicop_->pdf(prep_for_abstract(ub), pb);
+                         });
+}
+
+//! @brief Evaluates the copula distribution with per-row parameters.
+inline Eigen::VectorXd
+Bicop::cdf(const Eigen::MatrixXd& u,
+           const Eigen::MatrixXd& parameters,
+           const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this](const Eigen::MatrixXd& ub,
+           const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::VectorXd p = bicop_->cdf(prep_for_abstract(ub).leftCols(2), pb);
+      switch (rotation_) {
+        case 90:
+          return ub.col(1) - p;
+        case 180:
+          return (p.array() - 1 + ub.leftCols(2).rowwise().sum().array())
+            .matrix();
+        case 270:
+          return ub.col(0) - p;
+        default:
+          return p;
+      }
+    });
+}
+
+//! @brief Evaluates the first h-function with per-row parameters.
+inline Eigen::VectorXd
+Bicop::hfunc1(const Eigen::MatrixXd& u,
+              const Eigen::MatrixXd& parameters,
+              const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(u,
+                         par_t,
+                         num_threads,
+                         [this](const Eigen::MatrixXd& ub,
+                                const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+                           const auto spec = get_conditional_spec(true);
+                           const auto u_new = prep_for_abstract(ub);
+                           auto h = spec.use_first ? bicop_->hfunc1(u_new, pb)
+                                                   : bicop_->hfunc2(u_new, pb);
+                           return finalize_conditional(std::move(h),
+                                                       spec.complement);
+                         });
+}
+
+//! @brief Evaluates the second h-function with per-row parameters.
+inline Eigen::VectorXd
+Bicop::hfunc2(const Eigen::MatrixXd& u,
+              const Eigen::MatrixXd& parameters,
+              const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(u,
+                         par_t,
+                         num_threads,
+                         [this](const Eigen::MatrixXd& ub,
+                                const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+                           const auto spec = get_conditional_spec(false);
+                           const auto u_new = prep_for_abstract(ub);
+                           auto h = spec.use_first ? bicop_->hfunc1(u_new, pb)
+                                                   : bicop_->hfunc2(u_new, pb);
+                           return finalize_conditional(std::move(h),
+                                                       spec.complement);
+                         });
+}
+
+//! @brief Evaluates the inverse of the first h-function with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::hinv1(const Eigen::MatrixXd& u,
+             const Eigen::MatrixXd& parameters,
+             const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(u,
+                         par_t,
+                         num_threads,
+                         [this](const Eigen::MatrixXd& ub,
+                                const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+                           const auto spec = get_conditional_spec(true);
+                           const auto u_new = prep_for_abstract(ub);
+                           auto hi = spec.use_first ? bicop_->hinv1(u_new, pb)
+                                                    : bicop_->hinv2(u_new, pb);
+                           return finalize_conditional(std::move(hi),
+                                                       spec.complement);
+                         });
+}
+
+//! @brief Evaluates the inverse of the second h-function with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::hinv2(const Eigen::MatrixXd& u,
+             const Eigen::MatrixXd& parameters,
+             const size_t num_threads) const
+{
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(u,
+                         par_t,
+                         num_threads,
+                         [this](const Eigen::MatrixXd& ub,
+                                const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+                           const auto spec = get_conditional_spec(false);
+                           const auto u_new = prep_for_abstract(ub);
+                           auto hi = spec.use_first ? bicop_->hinv1(u_new, pb)
+                                                    : bicop_->hinv2(u_new, pb);
+                           return finalize_conditional(std::move(hi),
+                                                       spec.complement);
+                         });
+}
+
+//! @brief Evaluates the log-likelihood contributions with per-row parameters
+//! and returns their sum (NaNs are ignored).
+inline double
+Bicop::loglik(const Eigen::MatrixXd& u,
+              const Eigen::MatrixXd& parameters,
+              const size_t num_threads) const
+{
+  Eigen::VectorXd lpdf = pdf(u, parameters, num_threads).array().log();
+  double ll = 0.0;
+  for (Eigen::Index i = 0; i < lpdf.size(); ++i) {
+    if (!(std::isnan)(lpdf(i))) {
+      ll += lpdf(i);
+    }
+  }
+  return ll;
 }
 //! @}
+
+//! @name Derivatives of the density and h-functions
+//!
+//! @details These methods evaluate partial derivatives of the copula density
+//! \f$ c(u_1, u_2; \theta) \f$, its logarithm, and the h-functions with
+//! respect to the parameters and/or the arguments. The derivative is chosen
+//! by the selector `deriv`, a concatenation of the components `"par1"`,
+//! `"par2"`, ... (the k-th parameter, in the family's natural parameterization
+//! as returned by `get_parameters()`), `"u1"`, and `"u2"`. First-order
+//! methods take one component (`"par"` is short for `"par1"`); second-order
+//! methods take two in any order (a single component means differentiating
+//! twice, so `"par"` is short for `"par1par1"`).
+//!
+//! Rotations are handled internally via the chain rule, so derivatives are
+//! always w.r.t. the arguments and (positive, natural) parameters of the
+//! rotated copula. Closed-form expressions are used for the families in
+//! `bicop_families::analytic_derivs`; other parametric families fall back to
+//! central finite differences of the corresponding function. Derivatives
+//! require continuous variable types; nonparametric families throw.
+//!
+//! The per-row-parameter overloads evaluate the derivative at a different
+//! parameter set per row of `u` (see the corresponding `pdf()` overload for
+//! the layout and validation rules).
+//!
+//! Common arguments: `u` is an \f$ n \times 2 \f$ matrix of observations in
+//! \f$ (0, 1)^2 \f$ and `deriv` selects the derivative; each method returns a
+//! length-`n` vector evaluated at `u`.
+//! @{
+
+//! @brief Evaluates a first derivative of the copula density.
+//!
+//! @details `deriv` is one of `"par1"`, `"par2"`, ... (short form `"par"`),
+//! `"u1"`, or `"u2"`.
+inline Eigen::VectorXd
+Bicop::pdf_deriv(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto spec = map_pdf_deriv(tools_deriv::canonicalize(deriv, 1, deriv_npars()));
+  return spec.sign * bicop_->pdf_deriv_raw(prep_for_abstract(u).leftCols(2),
+                                           bicop_->get_parameters().transpose(),
+                                           spec.deriv);
+}
+
+//! @brief Evaluates a second derivative of the copula density.
+//!
+//! @details `deriv` combines two first-order components, e.g. `"par1par1"`,
+//! `"par1u1"`, `"u1u2"`; a single component means differentiating twice.
+inline Eigen::VectorXd
+Bicop::pdf_deriv2(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto spec = map_pdf_deriv(tools_deriv::canonicalize(deriv, 2, deriv_npars()));
+  return spec.sign *
+         bicop_->pdf_deriv2_raw(prep_for_abstract(u).leftCols(2),
+                                bicop_->get_parameters().transpose(),
+                                spec.deriv);
+}
+
+//! @brief Evaluates a first derivative of the first h-function
+//! \f$ h_1(u_1, u_2) = P(U_2 \le u_2 | U_1 = u_1) \f$.
+//!
+//! @details `deriv` is one of `"par1"`, `"par2"`, ... (short form `"par"`),
+//! `"u1"` (the conditioning argument), or `"u2"` (which equals the copula
+//! density).
+inline Eigen::VectorXd
+Bicop::hfunc1_deriv(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  if (canonical == "u2") {
+    return pdf(u); // dh1/du2 = c, at every rotation
+  }
+  auto spec = map_hfunc_deriv(canonical, true);
+  Eigen::MatrixXd u_r = prep_for_abstract(u).leftCols(2);
+  Eigen::MatrixXd pars = bicop_->get_parameters().transpose();
+  if (spec.swap_hfunc) {
+    return spec.sign * bicop_->hfunc2_deriv_raw(u_r, pars, spec.deriv);
+  }
+  return spec.sign * bicop_->hfunc1_deriv_raw(u_r, pars, spec.deriv);
+}
+
+//! @brief Evaluates a second derivative of the first h-function.
+//!
+//! @details `deriv` combines two first-order components; any selector
+//! containing `"u2"` reduces to a density derivative (e.g. `"par1u2"` equals
+//! `pdf_deriv(u, "par1")`).
+inline Eigen::VectorXd
+Bicop::hfunc1_deriv2(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[1] == -2) { // sorted, so "u2" can only be the last component
+    // dh1/du2 = c: reduce to a first derivative of the density
+    return pdf_deriv(u, tools_deriv::comp_to_string(comps[0]));
+  }
+  auto spec = map_hfunc_deriv(canonical, true);
+  Eigen::MatrixXd u_r = prep_for_abstract(u).leftCols(2);
+  Eigen::MatrixXd pars = bicop_->get_parameters().transpose();
+  if (spec.swap_hfunc) {
+    return spec.sign * bicop_->hfunc2_deriv2_raw(u_r, pars, spec.deriv);
+  }
+  return spec.sign * bicop_->hfunc1_deriv2_raw(u_r, pars, spec.deriv);
+}
+
+//! @brief Evaluates a first derivative of the second h-function
+//! \f$ h_2(u_1, u_2) = P(U_1 \le u_1 | U_2 = u_2) \f$.
+//!
+//! @details `deriv` is one of `"par1"`, `"par2"`, ... (short form `"par"`),
+//! `"u2"` (the conditioning argument), or `"u1"` (which equals the copula
+//! density).
+inline Eigen::VectorXd
+Bicop::hfunc2_deriv(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  if (canonical == "u1") {
+    return pdf(u); // dh2/du1 = c, at every rotation
+  }
+  auto spec = map_hfunc_deriv(canonical, false);
+  Eigen::MatrixXd u_r = prep_for_abstract(u).leftCols(2);
+  Eigen::MatrixXd pars = bicop_->get_parameters().transpose();
+  if (spec.swap_hfunc) {
+    return spec.sign * bicop_->hfunc1_deriv_raw(u_r, pars, spec.deriv);
+  }
+  return spec.sign * bicop_->hfunc2_deriv_raw(u_r, pars, spec.deriv);
+}
+
+//! @brief Evaluates a second derivative of the second h-function.
+//!
+//! @details `deriv` combines two first-order components; any selector
+//! containing `"u1"` reduces to a density derivative (e.g. `"par1u1"` equals
+//! `pdf_deriv(u, "par1")`).
+inline Eigen::VectorXd
+Bicop::hfunc2_deriv2(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if ((comps[0] == -1) || (comps[1] == -1)) {
+    // dh2/du1 = c: reduce to a first derivative of the density
+    int other = (comps[0] == -1) ? comps[1] : comps[0];
+    return pdf_deriv(u, tools_deriv::comp_to_string(other));
+  }
+  auto spec = map_hfunc_deriv(canonical, false);
+  Eigen::MatrixXd u_r = prep_for_abstract(u).leftCols(2);
+  Eigen::MatrixXd pars = bicop_->get_parameters().transpose();
+  if (spec.swap_hfunc) {
+    return spec.sign * bicop_->hfunc1_deriv2_raw(u_r, pars, spec.deriv);
+  }
+  return spec.sign * bicop_->hfunc2_deriv2_raw(u_r, pars, spec.deriv);
+}
+
+//! @brief Evaluates a first derivative of the log-density
+//! \f$ \partial \log c / \partial \cdot \f$.
+//!
+//! @details For parameter selectors, dedicated closed forms are used where
+//! available (numerically stabler than `pdf_deriv() / pdf()` when the
+//! density is small); argument selectors are composed by the quotient rule.
+inline Eigen::VectorXd
+Bicop::logpdf_deriv(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[0] >= 0) {
+    // parameter selectors are rotation-invariant
+    return bicop_->logpdf_deriv_raw(prep_for_abstract(u).leftCols(2),
+                                    bicop_->get_parameters().transpose(),
+                                    canonical);
+  }
+  // pdf() is trimmed to [DBL_MIN, DBL_MAX], so the denominator is positive
+  Eigen::ArrayXd c = pdf(u).array();
+  return (pdf_deriv(u, canonical).array() / c).matrix();
+}
+
+//! @brief Evaluates a second derivative of the log-density.
+//!
+//! @details See `logpdf_deriv()`; selectors involving the arguments are
+//! composed from density derivatives by the quotient rule.
+inline Eigen::VectorXd
+Bicop::logpdf_deriv2(const Eigen::MatrixXd& u, const std::string& deriv) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[1] >= 0) { // sorted, so both components are parameters
+    return bicop_->logpdf_deriv2_raw(prep_for_abstract(u).leftCols(2),
+                                     bicop_->get_parameters().transpose(),
+                                     canonical);
+  }
+  // pdf() is trimmed to [DBL_MIN, DBL_MAX], so the denominator is positive
+  Eigen::ArrayXd c = pdf(u).array();
+  Eigen::ArrayXd c_xy = pdf_deriv2(u, canonical).array();
+  Eigen::ArrayXd c_x =
+    pdf_deriv(u, tools_deriv::comp_to_string(comps[0])).array();
+  Eigen::ArrayXd c_y =
+    (comps[0] == comps[1])
+      ? c_x
+      : pdf_deriv(u, tools_deriv::comp_to_string(comps[1])).array();
+  return (c_xy / c - (c_x / c) * (c_y / c)).matrix();
+}
+
+//! @brief Evaluates a first derivative of the copula density with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::pdf_deriv(const Eigen::MatrixXd& u,
+                 const std::string& deriv,
+                 const Eigen::MatrixXd& parameters,
+                 const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto spec = map_pdf_deriv(tools_deriv::canonicalize(deriv, 1, deriv_npars()));
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      return spec.sign * bicop_->pdf_deriv_raw(
+                           prep_for_abstract(ub).leftCols(2), pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a second derivative of the copula density with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::pdf_deriv2(const Eigen::MatrixXd& u,
+                  const std::string& deriv,
+                  const Eigen::MatrixXd& parameters,
+                  const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto spec = map_pdf_deriv(tools_deriv::canonicalize(deriv, 2, deriv_npars()));
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      return spec.sign * bicop_->pdf_deriv2_raw(
+                           prep_for_abstract(ub).leftCols(2), pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a first derivative of the first h-function with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::hfunc1_deriv(const Eigen::MatrixXd& u,
+                    const std::string& deriv,
+                    const Eigen::MatrixXd& parameters,
+                    const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  if (canonical == "u2") {
+    return pdf(u, parameters, num_threads);
+  }
+  auto spec = map_hfunc_deriv(canonical, true);
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::MatrixXd u_r = prep_for_abstract(ub).leftCols(2);
+      if (spec.swap_hfunc) {
+        return spec.sign * bicop_->hfunc2_deriv_raw(u_r, pb, spec.deriv);
+      }
+      return spec.sign * bicop_->hfunc1_deriv_raw(u_r, pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a second derivative of the first h-function with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::hfunc1_deriv2(const Eigen::MatrixXd& u,
+                     const std::string& deriv,
+                     const Eigen::MatrixXd& parameters,
+                     const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[1] == -2) {
+    return pdf_deriv(
+      u, tools_deriv::comp_to_string(comps[0]), parameters, num_threads);
+  }
+  auto spec = map_hfunc_deriv(canonical, true);
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::MatrixXd u_r = prep_for_abstract(ub).leftCols(2);
+      if (spec.swap_hfunc) {
+        return spec.sign * bicop_->hfunc2_deriv2_raw(u_r, pb, spec.deriv);
+      }
+      return spec.sign * bicop_->hfunc1_deriv2_raw(u_r, pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a first derivative of the second h-function with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::hfunc2_deriv(const Eigen::MatrixXd& u,
+                    const std::string& deriv,
+                    const Eigen::MatrixXd& parameters,
+                    const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  if (canonical == "u1") {
+    return pdf(u, parameters, num_threads);
+  }
+  auto spec = map_hfunc_deriv(canonical, false);
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::MatrixXd u_r = prep_for_abstract(ub).leftCols(2);
+      if (spec.swap_hfunc) {
+        return spec.sign * bicop_->hfunc1_deriv_raw(u_r, pb, spec.deriv);
+      }
+      return spec.sign * bicop_->hfunc2_deriv_raw(u_r, pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a second derivative of the second h-function with
+//! per-row parameters.
+inline Eigen::VectorXd
+Bicop::hfunc2_deriv2(const Eigen::MatrixXd& u,
+                     const std::string& deriv,
+                     const Eigen::MatrixXd& parameters,
+                     const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if ((comps[0] == -1) || (comps[1] == -1)) {
+    int other = (comps[0] == -1) ? comps[1] : comps[0];
+    return pdf_deriv(
+      u, tools_deriv::comp_to_string(other), parameters, num_threads);
+  }
+  auto spec = map_hfunc_deriv(canonical, false);
+  Eigen::MatrixXd par_t = format_parameters(u, parameters);
+  return eval_in_batches(
+    u,
+    par_t,
+    num_threads,
+    [this, spec](const Eigen::MatrixXd& ub,
+                 const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+      Eigen::MatrixXd u_r = prep_for_abstract(ub).leftCols(2);
+      if (spec.swap_hfunc) {
+        return spec.sign * bicop_->hfunc1_deriv2_raw(u_r, pb, spec.deriv);
+      }
+      return spec.sign * bicop_->hfunc2_deriv2_raw(u_r, pb, spec.deriv);
+    });
+}
+
+//! @brief Evaluates a first derivative of the log-density with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::logpdf_deriv(const Eigen::MatrixXd& u,
+                    const std::string& deriv,
+                    const Eigen::MatrixXd& parameters,
+                    const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 1, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[0] >= 0) {
+    Eigen::MatrixXd par_t = format_parameters(u, parameters);
+    return eval_in_batches(
+      u,
+      par_t,
+      num_threads,
+      [this, canonical](const Eigen::MatrixXd& ub,
+                        const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+        return bicop_->logpdf_deriv_raw(
+          prep_for_abstract(ub).leftCols(2), pb, canonical);
+      });
+  }
+  Eigen::ArrayXd c = pdf(u, parameters, num_threads).array();
+  return (pdf_deriv(u, canonical, parameters, num_threads).array() / c)
+    .matrix();
+}
+
+//! @brief Evaluates a second derivative of the log-density with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::logpdf_deriv2(const Eigen::MatrixXd& u,
+                     const std::string& deriv,
+                     const Eigen::MatrixXd& parameters,
+                     const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  auto canonical = tools_deriv::canonicalize(deriv, 2, deriv_npars());
+  auto comps = tools_deriv::parse_components(canonical);
+  if (comps[1] >= 0) {
+    Eigen::MatrixXd par_t = format_parameters(u, parameters);
+    return eval_in_batches(
+      u,
+      par_t,
+      num_threads,
+      [this, canonical](const Eigen::MatrixXd& ub,
+                        const Eigen::MatrixXd& pb) -> Eigen::VectorXd {
+        return bicop_->logpdf_deriv2_raw(
+          prep_for_abstract(ub).leftCols(2), pb, canonical);
+      });
+  }
+  Eigen::ArrayXd c = pdf(u, parameters, num_threads).array();
+  Eigen::ArrayXd c_xy =
+    pdf_deriv2(u, canonical, parameters, num_threads).array();
+  Eigen::ArrayXd c_x =
+    pdf_deriv(u, tools_deriv::comp_to_string(comps[0]), parameters, num_threads)
+      .array();
+  Eigen::ArrayXd c_y =
+    (comps[0] == comps[1])
+      ? c_x
+      : pdf_deriv(
+          u, tools_deriv::comp_to_string(comps[1]), parameters, num_threads)
+          .array();
+  return (c_xy / c - (c_x / c) * (c_y / c)).matrix();
+}
+//! @}
+
+//! @brief Assembles an \f$ n \times p \f$ score matrix from a per-parameter
+//! column evaluator (`col(k)` returns column `k`). Shared by the fixed- and
+//! per-row-parameter `scores()` overloads so each keeps its own optimal
+//! `logpdf_deriv()` path (broadcast vs. per-row) while the loop lives once.
+inline Eigen::MatrixXd
+assemble_scores(Eigen::Index n,
+                Eigen::Index p,
+                const std::function<Eigen::VectorXd(Eigen::Index)>& col)
+{
+  Eigen::MatrixXd s(n, p);
+  for (Eigen::Index k = 0; k < p; ++k) {
+    s.col(k) = col(k);
+  }
+  return s;
+}
+
+//! @brief Assembles the averaged, symmetric \f$ p \times p \f$ Hessian from a
+//! per-\f$ (a, b) \f$ second-derivative column evaluator (upper triangle only).
+inline Eigen::MatrixXd
+assemble_hessian(
+  Eigen::Index p,
+  const std::function<Eigen::VectorXd(Eigen::Index, Eigen::Index)>& col)
+{
+  Eigen::MatrixXd h(p, p);
+  for (Eigen::Index a = 0; a < p; ++a) {
+    for (Eigen::Index b = a; b < p; ++b) {
+      h(a, b) = col(a, b).mean();
+      h(b, a) = h(a, b);
+    }
+  }
+  return h;
+}
+
+//! @brief Assembles the per-observation, symmetric \f$ p \times p \f$ Hessians
+//! (one per row of `u`) from the same per-\f$ (a, b) \f$ column evaluator.
+inline std::vector<Eigen::MatrixXd>
+assemble_hessian_full(
+  Eigen::Index n,
+  Eigen::Index p,
+  const std::function<Eigen::VectorXd(Eigen::Index, Eigen::Index)>& col)
+{
+  std::vector<Eigen::MatrixXd> hess(static_cast<size_t>(n),
+                                    Eigen::MatrixXd(p, p));
+  for (Eigen::Index a = 0; a < p; ++a) {
+    for (Eigen::Index b = a; b < p; ++b) {
+      Eigen::VectorXd d = col(a, b);
+      for (Eigen::Index i = 0; i < n; ++i) {
+        hess[static_cast<size_t>(i)](a, b) = d(i);
+        hess[static_cast<size_t>(i)](b, a) = d(i);
+      }
+    }
+  }
+  return hess;
+}
+
+//! @name Scores, gradient, and Hessian of the log-likelihood
+//!
+//! @details These methods aggregate the log-density parameter derivatives into
+//! the score (the gradient of each observation's log-density contribution), its
+//! observation-average (`gradient`), and the Hessian. They are thin wrappers
+//! around `logpdf_deriv()` / `logpdf_deriv2()`: with `p = get_parameters()`
+//! parameters, the score of observation `i` w.r.t. parameter `k` is
+//! \f$ \partial \log c(u_i; \theta) / \partial \theta_k \f$, and the (per-obs
+//! and averaged) Hessians collect the second log-density derivatives. Like the
+//! derivatives they build on, they require parametric families and continuous
+//! variable types; nonparametric or discrete models throw.
+//!
+//! The per-row-parameter overloads evaluate at a different parameter set per
+//! row of `u` (see the corresponding `pdf()` overload for the layout and
+//! validation rules).
+//!
+//! In every method here, `u` is an \f$ n \times 2 \f$ matrix of observations
+//! in \f$ (0, 1)^2 \f$.
+//! @{
+
+//! @brief Evaluates the per-observation scores.
+//!
+//! @return An \f$ n \times p \f$ matrix whose column `k` is
+//! \f$ \partial \log c / \partial \theta_{k+1} \f$.
+inline Eigen::MatrixXd
+Bicop::scores(const Eigen::MatrixXd& u) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  return assemble_scores(
+    u.rows(), static_cast<Eigen::Index>(deriv_npars()), [&](Eigen::Index k) {
+      return logpdf_deriv(u, "par" + std::to_string(k + 1));
+    });
+}
+
+//! @brief Evaluates the gradient of the average log-likelihood.
+//!
+//! @return The observation-average of `scores()`, a vector of length `p`.
+inline Eigen::VectorXd
+Bicop::gradient(const Eigen::MatrixXd& u) const
+{
+  return scores(u).colwise().mean().transpose();
+}
+
+//! @brief Evaluates the Hessian of the average log-likelihood.
+//!
+//! @return A symmetric \f$ p \times p \f$ matrix whose entry \f$ (a, b) \f$ is
+//! the observation-average of
+//! \f$ \partial^2 \log c / \partial \theta_{a+1} \partial \theta_{b+1} \f$.
+inline Eigen::MatrixXd
+Bicop::hessian(const Eigen::MatrixXd& u) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  return assemble_hessian(
+    static_cast<Eigen::Index>(deriv_npars()),
+    [&](Eigen::Index a, Eigen::Index b) {
+      return logpdf_deriv2(
+        u, "par" + std::to_string(a + 1) + "par" + std::to_string(b + 1));
+    });
+}
+
+//! @brief Evaluates the per-observation Hessians.
+//!
+//! @return A vector of `n` symmetric \f$ p \times p \f$ matrices; entry `i`'s
+//! \f$ (a, b) \f$ element is
+//! \f$ \partial^2 \log c(u_i; \theta) / \partial \theta_{a+1} \partial
+//! \theta_{b+1} \f$.
+inline std::vector<Eigen::MatrixXd>
+Bicop::hessian_full(const Eigen::MatrixXd& u) const
+{
+  check_data(u);
+  check_deriv_preconditions();
+  return assemble_hessian_full(
+    u.rows(),
+    static_cast<Eigen::Index>(deriv_npars()),
+    [&](Eigen::Index a, Eigen::Index b) {
+      return logpdf_deriv2(
+        u, "par" + std::to_string(a + 1) + "par" + std::to_string(b + 1));
+    });
+}
+
+//! @brief Computes the covariance matrix of the scores.
+//!
+//! @return The mean-centered, divided-by-`n` covariance of `scores()`, a
+//! \f$ p \times p \f$ matrix.
+inline Eigen::MatrixXd
+Bicop::scores_cov(const Eigen::MatrixXd& u) const
+{
+  Eigen::MatrixXd s = scores(u);
+  // materialize the centered scores; a lazy expression would be evaluated
+  // twice by the product below
+  Eigen::MatrixXd sc = s.rowwise() - s.colwise().mean();
+  return (sc.adjoint() * sc) / static_cast<double>(s.rows());
+}
+
+//! @brief Evaluates the scores, bundled in a `ScoresResult`.
+//!
+//! @details Provided for parity with `Vinecop::scores_full()`; a single pair
+//! copula has no cascade caches, so the result only carries the score matrix.
+inline Bicop::ScoresResult
+Bicop::scores_full(const Eigen::MatrixXd& u) const
+{
+  ScoresResult result;
+  result.scores = scores(u);
+  return result;
+}
+
+//! @brief Evaluates the per-observation scores with per-row parameters.
+inline Eigen::MatrixXd
+Bicop::scores(const Eigen::MatrixXd& u,
+              const Eigen::MatrixXd& parameters,
+              const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  return assemble_scores(
+    u.rows(), static_cast<Eigen::Index>(deriv_npars()), [&](Eigen::Index k) {
+      return logpdf_deriv(
+        u, "par" + std::to_string(k + 1), parameters, num_threads);
+    });
+}
+
+//! @brief Evaluates the gradient of the average log-likelihood with per-row
+//! parameters.
+inline Eigen::VectorXd
+Bicop::gradient(const Eigen::MatrixXd& u,
+                const Eigen::MatrixXd& parameters,
+                const size_t num_threads) const
+{
+  return scores(u, parameters, num_threads).colwise().mean().transpose();
+}
+
+//! @brief Evaluates the Hessian of the average log-likelihood with per-row
+//! parameters.
+inline Eigen::MatrixXd
+Bicop::hessian(const Eigen::MatrixXd& u,
+               const Eigen::MatrixXd& parameters,
+               const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  return assemble_hessian(static_cast<Eigen::Index>(deriv_npars()),
+                          [&](Eigen::Index a, Eigen::Index b) {
+                            return logpdf_deriv2(u,
+                                                 "par" + std::to_string(a + 1) +
+                                                   "par" +
+                                                   std::to_string(b + 1),
+                                                 parameters,
+                                                 num_threads);
+                          });
+}
+
+//! @brief Evaluates the per-observation Hessians with per-row parameters.
+inline std::vector<Eigen::MatrixXd>
+Bicop::hessian_full(const Eigen::MatrixXd& u,
+                    const Eigen::MatrixXd& parameters,
+                    const size_t num_threads) const
+{
+  check_deriv_preconditions();
+  return assemble_hessian_full(u.rows(),
+                               static_cast<Eigen::Index>(deriv_npars()),
+                               [&](Eigen::Index a, Eigen::Index b) {
+                                 return logpdf_deriv2(
+                                   u,
+                                   "par" + std::to_string(a + 1) + "par" +
+                                     std::to_string(b + 1),
+                                   parameters,
+                                   num_threads);
+                               });
+}
+
+//! @brief Computes the covariance matrix of the scores with per-row parameters.
+inline Eigen::MatrixXd
+Bicop::scores_cov(const Eigen::MatrixXd& u,
+                  const Eigen::MatrixXd& parameters,
+                  const size_t num_threads) const
+{
+  Eigen::MatrixXd s = scores(u, parameters, num_threads);
+  Eigen::MatrixXd sc = s.rowwise() - s.colwise().mean();
+  return (sc.adjoint() * sc) / static_cast<double>(s.rows());
+}
+
+//! @brief Evaluates the scores with per-row parameters, bundled in a
+//! `ScoresResult`.
+inline Bicop::ScoresResult
+Bicop::scores_full(const Eigen::MatrixXd& u,
+                   const Eigen::MatrixXd& parameters,
+                   const size_t num_threads) const
+{
+  ScoresResult result;
+  result.scores = scores(u, parameters, num_threads);
+  return result;
+}
+//! @}
+
+//! checks that derivatives are available for the model (parametric family,
+//! continuous variable types).
+inline void
+Bicop::check_deriv_preconditions() const
+{
+  if (!tools_stl::is_member(get_family(), bicop_families::parametric)) {
+    throw std::runtime_error("derivatives are not implemented for the " +
+                             get_family_name() + " copula");
+  }
+  if (var_types_ != std::vector<std::string>{ "c", "c" }) {
+    throw std::runtime_error(
+      "derivatives are only available for continuous variable types");
+  }
+}
+
+//! the number of parameters used to validate derivative selectors.
+inline size_t
+Bicop::deriv_npars() const
+{
+  return static_cast<size_t>(bicop_->get_parameters().size());
+}
+
+//! @brief Resolves the rotation for a density-derivative selector.
+//!
+//! @details The rotated density is the unrotated one at transformed
+//! arguments (90: \f$ (u_2, 1 - u_1) \f$, 180: \f$ (1 - u_1, 1 - u_2) \f$,
+//! 270: \f$ (1 - u_2, u_1) \f$), so parameter components pass through
+//! unchanged while argument components map to the leaf's argument slot and
+//! pick up the chain-rule sign of the transform.
+inline Bicop::DerivSpec
+Bicop::map_pdf_deriv(const std::string& canonical) const
+{
+  auto comps = tools_deriv::parse_components(canonical);
+  double sign = 1.0;
+  for (auto& comp : comps) {
+    if (comp >= 0) {
+      continue;
+    }
+    switch (rotation_) {
+      default:
+        break;
+      case 90:
+        sign *= (comp == -1) ? -1.0 : 1.0;
+        comp = (comp == -1) ? -2 : -1;
+        break;
+      case 180:
+        sign *= -1.0;
+        break;
+      case 270:
+        sign *= (comp == -2) ? -1.0 : 1.0;
+        comp = (comp == -1) ? -2 : -1;
+        break;
+    }
+  }
+  return { tools_deriv::components_to_string(comps), sign, false };
+}
+
+//! @brief Resolves the rotation for an h-function-derivative selector.
+//!
+//! @details Under 90/270 rotations the rotated h-function is built from the
+//! *other* h-function's leaf (`swap_hfunc`), mirroring `hfunc1()`/`hfunc2()`.
+//! The sign is the product of the `1 - h` output flip (180/270 for the first
+//! h-function, 90/180 for the second) and one argument chain-rule factor per
+//! conditioning-argument component; parameter components pass through
+//! unchanged. Selectors containing the conditioned argument must be reduced
+//! to density derivatives before calling this.
+inline Bicop::DerivSpec
+Bicop::map_hfunc_deriv(const std::string& canonical, bool first_hfunc) const
+{
+  auto comps = tools_deriv::parse_components(canonical);
+  bool swap = (rotation_ == 90) || (rotation_ == 270);
+  double sign, chain;
+  if (first_hfunc) {
+    sign = ((rotation_ == 180) || (rotation_ == 270)) ? -1.0 : 1.0;
+    chain = ((rotation_ == 90) || (rotation_ == 180)) ? -1.0 : 1.0;
+  } else {
+    sign = ((rotation_ == 90) || (rotation_ == 180)) ? -1.0 : 1.0;
+    chain = ((rotation_ == 180) || (rotation_ == 270)) ? -1.0 : 1.0;
+  }
+  for (auto& comp : comps) {
+    if (comp >= 0) {
+      continue;
+    }
+    sign *= chain;
+    if (swap) {
+      comp = (comp == -1) ? -2 : -1;
+    }
+  }
+  return { tools_deriv::components_to_string(comps), sign, swap };
+}
+
+//! @brief Validates per-row parameters (the internal leaves use the same
+//! `n x p` layout as the public API, one parameter set per row).
+inline Eigen::MatrixXd
+Bicop::format_parameters(const Eigen::MatrixXd& u,
+                         const Eigen::MatrixXd& parameters) const
+{
+  check_data(u);
+  if (!tools_stl::is_member(get_family(), bicop_families::parametric)) {
+    throw std::runtime_error(
+      "per-row parameters are only supported for parametric families; "
+      "nonparametric families store an interpolation grid rather than a "
+      "per-observation parameter vector.");
+  }
+  const Eigen::Index n = u.rows();
+  const Eigen::Index p = get_parameters().rows();
+  if (parameters.rows() != n) {
+    throw std::runtime_error("parameters must have one row per row of u "
+                             "(parameters.rows() must equal u.rows()).");
+  }
+  if (parameters.cols() != p) {
+    std::stringstream msg;
+    msg << "parameters has wrong number of columns; expected " << p
+        << " (the number of family parameters), actual " << parameters.cols()
+        << ".";
+    throw std::runtime_error(msg.str());
+  }
+  if (!parameters.allFinite()) {
+    throw std::runtime_error("parameters must not contain NaN or Inf.");
+  }
+  if (p > 0 && n > 0) {
+    Eigen::MatrixXd lb = get_parameters_lower_bounds();
+    Eigen::MatrixXd ub = get_parameters_upper_bounds();
+    for (Eigen::Index k = 0; k < p; ++k) {
+      if (parameters.col(k).minCoeff() < lb(k) ||
+          parameters.col(k).maxCoeff() > ub(k)) {
+        std::stringstream msg;
+        msg << "parameter " << k << " is out of bounds [" << lb(k) << ", "
+            << ub(k) << "].";
+        throw std::runtime_error(msg.str());
+      }
+    }
+  }
+  return parameters;
+}
+
+//! @brief Evaluates `f` over row-batches of `u`/`parameters`, possibly in
+//! parallel, and assembles the results.
+inline Eigen::VectorXd
+Bicop::eval_in_batches(
+  const Eigen::MatrixXd& u,
+  const Eigen::MatrixXd& parameters,
+  const size_t num_threads,
+  const std::function<Eigen::VectorXd(const Eigen::MatrixXd&,
+                                      const Eigen::MatrixXd&)>& f) const
+{
+  const size_t n = static_cast<size_t>(u.rows());
+  Eigen::VectorXd out(n);
+  if (n == 0) {
+    return out;
+  }
+  auto do_batch = [&](const tools_batch::Batch& b) {
+    out.segment(b.begin, b.size) =
+      f(u.middleRows(b.begin, b.size), parameters.middleRows(b.begin, b.size));
+  };
+  if (num_threads <= 1) {
+    do_batch(tools_batch::Batch{ 0, n });
+  } else {
+    tools_thread::ThreadPool pool(num_threads);
+    pool.map(do_batch, tools_batch::create_batches(n, num_threads));
+    pool.join();
+  }
+  return out;
+}
 
 //! @brief Simulates from a bivariate copula.
 //!
@@ -418,6 +1527,42 @@ Bicop::simulate(const size_t& n,
   return u;
 }
 
+//! @brief Simulates from a bivariate copula with per-row parameters.
+//!
+//! @details Observation `i` is drawn from the copula carrying row `i` of
+//! `parameters`, without mutating the object's stored parameters. The family,
+//! rotation, and variable types are taken from the object; only the parameter
+//! values vary by observation. Available for parametric families only.
+//!
+//! @param parameters An \f$ n \times p \f$ matrix of parameters, where `n` is
+//!   the number of observations to simulate, `p` is the number of family
+//!   parameters (`get_parameters().size()`), and row `i` holds the parameter
+//!   set used for observation `i`. Parameters are given in the family's
+//!   natural (unrotated) parameterization, as for `get_parameters()`.
+//! @param qrng Set to true for quasi-random numbers.
+//! @param seeds Seeds of the (quasi-)random number generator; if empty
+//! (default), the (quasi-)random number generator is seeded randomly.
+//! @param num_threads The number of threads to parallelize the simulation over
+//!   observations.
+//! @return An \f$ n \times 2 \f$ matrix of samples from the copula model.
+inline Eigen::MatrixXd
+Bicop::simulate(const Eigen::MatrixXd& parameters,
+                const bool qrng,
+                const std::vector<int>& seeds,
+                const size_t num_threads) const
+{
+  if (parameters.rows() < 1) {
+    throw std::runtime_error("parameters must have at least one row (one "
+                             "parameter set per simulated observation).");
+  }
+  auto u = tools_stats::simulate_uniform(
+    static_cast<size_t>(parameters.rows()), 2, qrng, seeds);
+  // use inverse Rosenblatt transform to generate a sample from the copula
+  // (always simulate continuous data)
+  u.col(1) = this->as_continuous().hinv1(u, parameters, num_threads);
+  return u;
+}
+
 //! @brief Evaluates the log-likelihood.
 //!
 //! @details The log-likelihood is defined as
@@ -433,8 +1578,11 @@ Bicop::simulate(const size_t& n,
 //! variables the left limit and the cdf itself coincide. Respective columns can
 //! be omitted in the second block.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return The log-likelihood evaluated at \c u.
 inline double
 Bicop::loglik(const Eigen::MatrixXd& u) const
@@ -442,7 +1590,7 @@ Bicop::loglik(const Eigen::MatrixXd& u) const
   if (u.rows() < 1) {
     return get_loglik();
   } else {
-    tools_eigen::check_if_in_unit_cube(u);
+    check_data(u);
     return bicop_->loglik(prep_for_abstract(u));
   }
 }
@@ -456,8 +1604,11 @@ Bicop::loglik(const Eigen::MatrixXd& u) const
 //! The AIC is a consistent model selection criterion even
 //! for nonparametric models.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return The AIC evaluated at \c u.
 inline double
 Bicop::aic(const Eigen::MatrixXd& u) const
@@ -474,8 +1625,11 @@ Bicop::aic(const Eigen::MatrixXd& u) const
 //! The BIC is a consistent model selection criterion
 //! for parametric models.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @return The BIC evaluated at \c u.
 inline double
 Bicop::bic(const Eigen::MatrixXd& u) const
@@ -494,14 +1648,17 @@ Bicop::bic(const Eigen::MatrixXd& u) const
 //!
 //! @details The mBIC is defined as
 //! \f[ \mathrm{BIC} = -2\, \mathrm{loglik} +  p \log(n) - 2 (I \log(\psi_0) + (1 - I) \log(1 - \psi_0), \f]
-//! where \f$ \mathrm{loglik} \f$ is the \log-liklihood
+//! where \f$ \mathrm{loglik} \f$ is the log-likelihood
 //! (see `Bicop::loglik()`), \f$ p \f$ is the (effective) number of parameters of the
 //! model, and \f$ \psi_0 \f$ is the prior probability of having a
 //! non-independence copula and \f$ I \f$ is an indicator for the family being
 //! non-independence.
 //!
-//! @param u An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @param psi0 Prior probability of a non-independence copula.
 //! @return The mBIC evaluated at \c u.
 // clang-format on
@@ -515,6 +1672,7 @@ Bicop::mbic(const Eigen::MatrixXd& u, const double psi0) const
                      static_cast<double>(is_indep) * std::log(1.0 - psi0);
   double n = static_cast<double>(nobs_);
   if (u.rows() > 0) {
+    tools_eigen::remove_nans(u_no_nan);
     n = static_cast<double>(u_no_nan.rows());
   }
   return -2 * this->loglik(u_no_nan) + std::log(n) * npars - 2 * log_prior;
@@ -533,25 +1691,118 @@ Bicop::get_npars() const
 
 //! @brief Converts a Kendall's \f$ \tau \f$ into copula parameters
 //! for one-parameter families.
+//!
+//! @details Only available where \f$ \tau \f$ determines the parameters
+//! completely: the one-parameter families in `bicop_families::itau`, i.e.
+//! `indep`, `gaussian`, `clayton`, `gumbel`, `frank` and `joe`. Note that
+//! `student` belongs to `bicop_families::itau` — it can be *fitted* by
+//! inverting \f$ \tau \f$ — but is not invertible here, because \f$ \tau
+//! \f$ pins its correlation and leaves the degrees of freedom free.
+//!
 //! @param tau A value in \f$ (-1, 1) \f$.
+//! @throws std::runtime_error if the family is not one of those listed above.
+//! @see parameters_to_tau(), which is available for every family.
 inline Eigen::MatrixXd
 Bicop::tau_to_parameters(const double& tau) const
 {
   return bicop_->tau_to_parameters(tau);
 }
 
-//! @brief Converts the copula parameters to Kendall's \f$ tau \f$.
+//! @brief Converts the copula parameters to Kendall's \f$ \tau \f$.
+//!
+//! @details Available for every family. For the families whose \f$ \tau \f$
+//! has no closed form (`bb6`, `bb7`, `bb8`, `tawn`) it is computed by
+//! quadrature. The sign is flipped for the 90 and 270 degree rotations.
 //!
 //! @param parameters The parameters (must be a valid parametrization of
 //!     the current family).
+//! @see tau_to_parameters() for the inverse, which only some families admit.
 inline double
 Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters) const
 {
+  check_parameters_size(parameters);
   double tau = bicop_->parameters_to_tau(parameters);
   if (tools_stl::is_member(rotation_, { 90, 270 })) {
     tau *= -1;
   }
   return tau;
+}
+
+//! @brief Converts the copula parameters to the tail dependence coefficients.
+//!
+//! @details The result is a \f$ 2 \times 2 \f$ matrix \f$ M \f$ collecting the
+//! tail dependence coefficients in the four corners of the unit square:
+//! \f$ M(i, j) \f$ is the coefficient as \f$ U_1 \to i \f$ and
+//! \f$ U_2 \to j \f$, with \f$ i, j \in \{0, 1\} \f$ (0 = lower, 1 = upper).
+//! Thus \f$ M(0, 0) \f$ is the classical lower and \f$ M(1, 1) \f$ the
+//! classical upper tail dependence coefficient.
+//!
+//! For the unrotated family, the lower \f$ \lambda_L = M(0, 0) \f$ and upper
+//! \f$ \lambda_U = M(1, 1) \f$ coefficients are:
+//!
+//! | Family | Lower \f$ \lambda_L \f$ | Upper \f$ \lambda_U \f$ |
+//! | --- | --- | --- |
+//! | Independence, Gaussian, Frank | \f$ 0 \f$ | \f$ 0 \f$ |
+//! | Student t | \f$ \lambda_t \f$ (see below) | \f$ \lambda_t \f$ |
+//! | Clayton | \f$ 2^{-1/\theta} \f$ | \f$ 0 \f$ |
+//! | Gumbel | \f$ 0 \f$ | \f$ 2 - 2^{1/\theta} \f$ |
+//! | Joe | \f$ 0 \f$ | \f$ 2 - 2^{1/\theta} \f$ |
+//! | BB1 | \f$ 2^{-1/(\theta\delta)} \f$ | \f$ 2 - 2^{1/\delta} \f$ |
+//! | BB6 | \f$ 0 \f$ | \f$ 2 - 2^{1/(\theta\delta)} \f$ |
+//! | BB7 | \f$ 2^{-1/\delta} \f$ | \f$ 2 - 2^{1/\theta} \f$ |
+//! | BB8 | \f$ 0 \f$ | \f$ 2 - 2^{1/\theta} \f$ if \f$ \delta=1 \f$, else 0 |
+//! | Tawn (extreme-value) | \f$ 0 \f$ | \f$ 2 (1 - A(1/2)) \f$ |
+//! | TLL (nonparametric) | \c NaN | \c NaN |
+//!
+//! Here \f$ \theta \f$ (and \f$ \delta \f$ for two-parameter families) denote
+//! the copula parameters and \f$ A \f$ the Pickands dependence function. For
+//! the Student t copula, with correlation \f$ \rho \f$, degrees of freedom
+//! \f$ \nu \f$, and \f$ t_{\nu+1} \f$ the Student t cdf,
+//! \f$ \lambda_t = 2\, t_{\nu+1}(-\sqrt{(\nu+1)(1-\rho)/(1+\rho)}) \f$; it
+//! additionally has equal dependence in the two off-diagonal (discordant)
+//! corners, obtained by replacing \f$ \rho \f$ with \f$ -\rho \f$. All other
+//! parametric families have zero off-diagonal coefficients. Rotations permute
+//! the corners: 180 degrees swaps lower/upper, while 90/270 degrees move
+//! dependence to the off-diagonal corners.
+//!
+//! @param parameters The parameters (must be a valid parametrization of
+//!     the current family).
+inline Eigen::MatrixXd
+Bicop::parameters_to_taildep(const Eigen::MatrixXd& parameters) const
+{
+  check_parameters_size(parameters);
+  Eigen::MatrixXd m = bicop_->parameters_to_taildep(parameters);
+  // rotate the 2x2 matrix like a grid, counter-clockwise, to match the
+  // (counter-clockwise) rotation applied to the data in `rotate_data`.
+  switch (rotation_) {
+    case 90:
+      return m.transpose().colwise().reverse();
+    case 180:
+      return m.reverse();
+    case 270:
+      return m.transpose().rowwise().reverse();
+    default:
+      return m;
+  }
+}
+
+//! @brief Converts the copula parameters to Blomqvist's \f$ \beta \f$.
+//!
+//! @details Blomqvist's beta is computed from the copula cdf as
+//! \f$ \beta = 4\, C(0.5, 0.5) - 1 \f$, using the same formula for every
+//! family (including the nonparametric `tll`).
+//!
+//! @param parameters The parameters (must be a valid parametrization of
+//!     the current family).
+inline double
+Bicop::parameters_to_beta(const Eigen::MatrixXd& parameters) const
+{
+  check_parameters_size(parameters);
+  double beta = bicop_->parameters_to_beta(parameters);
+  if (tools_stl::is_member(rotation_, { 90, 270 })) {
+    beta *= -1;
+  }
+  return beta;
 }
 
 //! @name Getters and setters
@@ -644,6 +1895,23 @@ Bicop::get_tau() const
   return parameters_to_tau(bicop_->get_parameters());
 }
 
+//! @brief Gets the tail dependence coefficients.
+//!
+//! @details See Bicop::parameters_to_taildep() for the layout of the returned
+//! \f$ 2 \times 2 \f$ matrix.
+inline Eigen::MatrixXd
+Bicop::get_taildep() const
+{
+  return parameters_to_taildep(bicop_->get_parameters());
+}
+
+//! @brief Gets Blomqvist's beta.
+inline double
+Bicop::get_beta() const
+{
+  return parameters_to_beta(bicop_->get_parameters());
+}
+
 //! @brief Sets the rotation.
 inline void
 Bicop::set_rotation(const int rotation)
@@ -671,15 +1939,22 @@ Bicop::check_data_dim(const Eigen::MatrixXd& u) const
   unsigned short n_cols_exp = static_cast<unsigned short>(2 + n_disc);
   if ((n_cols != n_cols_exp) & (n_cols != 4)) {
     std::stringstream msg;
-    msg << "data has wrong number of columns; "
-        << "expected: " << n_cols_exp << " or 4, actual: " << n_cols
-        << " (model contains ";
+    msg << "data has wrong number of columns; expected: ";
     if (n_disc == 0) {
-      msg << "no discrete variables)." << std::endl;
-    } else if (n_disc == 1) {
-      msg << "1 discrete variable)." << std::endl;
+      msg << "2 (n x 2 continuous layout)";
+    } else if (n_cols_exp == 4) {
+      msg << "4 (n x 4 expanded or n x (2 + k) compact layout)";
     } else {
-      msg << get_n_discrete() << " discrete variables)." << std::endl;
+      msg << "4 (n x 4 expanded layout) or " << n_cols_exp
+          << " (n x (2 + k) compact layout)";
+    }
+    msg << ", actual: " << n_cols << " (model contains ";
+    if (n_disc == 0) {
+      msg << "no discrete variables).";
+    } else if (n_disc == 1) {
+      msg << "1 discrete variable).";
+    } else {
+      msg << n_disc << " discrete variables).";
     }
     throw std::runtime_error(msg.str());
   }
@@ -701,8 +1976,6 @@ Bicop::set_parameters(const Eigen::MatrixXd& parameters)
 }
 
 //! @brief Sets variable types.
-//! @param var_types A vector of size two specifying the types of the variables,
-//!   e.g., `{"c", "d"}` means first variable continuous, second discrete.
 inline void
 Bicop::set_var_types(const std::vector<std::string>& var_types)
 {
@@ -753,7 +2026,7 @@ Bicop::flip()
   } else if (rotation_ == 270) {
     rotation_ = 90;
   }
-  // The following implements any changes to the shape beyond the change in 
+  // The following implements any changes to the shape beyond the change in
   // rotation. Formost of our families, it does nothing.
   bicop_->flip();
 }
@@ -775,7 +2048,7 @@ Bicop::str() const
   } else if (get_family() != BicopFamily::indep) {
     bicop_str << "  parameters = " << get_parameters() << "\n";
   }
-  return bicop_str.str().c_str();
+  return bicop_str.str();
 }
 
 //! @brief Gets lower bounds for copula parameters.
@@ -824,16 +2097,20 @@ Bicop::as_continuous() const
 //! When at least one variable is discrete, two types of "observations"
 //! are required: the first \f$ n \times 2 \f$ block contains realizations of
 //! \f$ F_{X_1}(X_1), F_{X_2}(X_2) \f$. Let \f$ k \f$ denote the number of
-//! discrete variables (either one or two). Then the second \f$ n \times k \f$
-//! block contains realizations of \f$ F_{X_k}(X_k^-) \f$. The minus indicates a
+//! discrete variables (either one or two). The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ F_{X_j}(X_j^-) \f$. The minus indicates a
 //! left-sided limit of the cdf. For continuous variables the left limit and the
-//! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
-//! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
+//! cdf itself coincide, and their columns can be omitted from the second block.
+//! For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_j}(X_j^-) = F_{X_j}(X_j - 1) \f$.
 //!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
-//! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param data An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @param controls The controls (see `FitControlsBicop`).
 inline void
 Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
@@ -844,6 +2121,7 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
   } else {
     method = controls.get_nonparametric_method();
   }
+  check_data_dim(data);
   tools_eigen::check_if_in_unit_cube(data);
 
   auto w = controls.get_weights();
@@ -854,6 +2132,7 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
   bicop_->fit(prep_for_abstract(data_no_nan),
               method,
               controls.get_nonparametric_mult(),
+              controls.get_nonparametric_grid_size(),
               w);
   nobs_ = data_no_nan.rows();
 }
@@ -869,16 +2148,20 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 //! When at least one variable is discrete, two types of "observations"
 //! are required: the first \f$ n \times 2 \f$ block contains realizations of
 //! \f$ F_{X_1}(X_1), F_{X_2}(X_2) \f$. Let \f$ k \f$ denote the number of
-//! discrete variables (either one or two). Then the second \f$ n \times k \f$
-//! block contains realizations of \f$ F_{X_k}(X_k^-) \f$. The minus indicates a
+//! discrete variables (either one or two). The second \f$ n \times 2 \f$ block
+//! contains realizations of \f$ F_{X_j}(X_j^-) \f$. The minus indicates a
 //! left-sided limit of the cdf. For continuous variables the left limit and the
-//! cdf itself coincide. For, e.g., an integer-valued variable, it holds \f$
-//! F_{X_k}(X_k^-) = F_{X_k}(X_k - 1) \f$.
+//! cdf itself coincide, and their columns can be omitted from the second block.
+//! For, e.g., an integer-valued variable, it holds
+//! \f$ F_{X_j}(X_j^-) = F_{X_j}(X_j - 1) \f$.
 //!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
-//! @param data An \f$ n \times (2 + k) \f$ matrix of observations contained in
-//!   \f$(0, 1) \f$, where \f$ k \f$ is the number of discrete variables.
+//! @param data An \f$ n \times 2 \f$ matrix of observations for a continuous
+//!   model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @param controls The controls (see `FitControlsBicop`).
 inline void
 Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
@@ -930,8 +2213,9 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
         double npars = cop.get_npars();
 
         new_criterion = -2 * ll + log(n_eff) * npars; // BIC
-        if (controls.get_selection_criterion() == "mbic") {
-          // correction for mBIC
+        if (controls.get_selection_criterion() == "mbic" ||
+            controls.get_selection_criterion() == "mbicv") {
+          // correction for mBIC or mBICV
           bool is_indep = (cop.get_family() == BicopFamily::indep);
           double psi0 = controls.get_psi0();
           double log_prior = static_cast<double>(!is_indep) * log(psi0) +
@@ -1037,6 +2321,15 @@ Bicop::prep_for_abstract(const Eigen::MatrixXd& u) const
   return u_new;
 }
 
+inline Eigen::MatrixXd
+Bicop::prep_for_abstract_continuous(const Eigen::MatrixXd& u) const
+{
+  Eigen::MatrixXd u_new = u.leftCols(2);
+  tools_eigen::trim(u_new);
+  rotate_data(u_new);
+  return u_new;
+}
+
 //! @brief Checks whether the supplied rotation is valid (only 0, 90, 180, 270
 //! allowd).
 inline void
@@ -1053,6 +2346,29 @@ Bicop::check_rotation(int rotation) const
                                bicop_->get_family_name() + " copula");
     }
   }
+}
+
+//! @brief Checks that a parameter matrix has the current family's shape.
+//!
+//! @details The leaf families index the parameter matrix positionally, and
+//! `eigen_assert` is compiled out of a release build, so a matrix of the wrong
+//! shape reads past the end of its own storage. An empty matrix has no storage
+//! at all: `Eigen` allocates nothing for size zero, so `parameters(0)` would
+//! dereference a null pointer.
+inline void
+Bicop::check_parameters_size(const Eigen::MatrixXd& parameters) const
+{
+  const auto expected = bicop_->get_parameters();
+  if (parameters.rows() == expected.rows() &&
+      parameters.cols() == expected.cols()) {
+    return;
+  }
+  std::stringstream message;
+  message << "parameters have the wrong shape for the " << get_family_name()
+          << " copula; expected: " << expected.rows() << " x "
+          << expected.cols() << ", actual: " << parameters.rows() << " x "
+          << parameters.cols() << std::endl;
+  throw std::runtime_error(message.str());
 }
 
 //! @brief Checks whether weights and data have matching sizes.
@@ -1083,7 +2399,7 @@ Bicop::check_var_types(const std::vector<std::string>& var_types) const
   if (var_types.size() != 2) {
     throw std::runtime_error("var_types must have size two.");
   }
-  for (auto t : var_types) {
+  for (const auto& t : var_types) {
     if (!tools_stl::is_member(t, { "c", "d" })) {
       throw std::runtime_error("var type must be either 'c' or 'd'.");
     }
@@ -1095,7 +2411,7 @@ inline unsigned short
 Bicop::get_n_discrete() const
 {
   int n_discrete = 0;
-  for (auto t : var_types_) {
+  for (const auto& t : var_types_) {
     n_discrete += (t == "d");
   }
   return static_cast<unsigned short>(n_discrete);

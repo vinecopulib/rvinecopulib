@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -8,96 +8,122 @@
 #include <vinecopulib/misc/tools_integration.hpp>
 
 namespace vinecopulib {
-inline Eigen::VectorXd ExtremeValueBicop::cdf(
-    const Eigen::MatrixXd &u
-)
+inline Eigen::VectorXd
+ExtremeValueBicop::cdf(const Eigen::MatrixXd& u,
+                       const Eigen::MatrixXd& parameters)
 {
-    auto f = [this](const double &u1, const double &u2) {
-        double t = std::log(u2) / std::log(u1 * u2);
-        t = pickands(t);
-        t = (std::log(u1) + std::log(u2)) * t;
-        return std::exp(t);
-    };
-    return tools_eigen::binaryExpr_or_nan(u, f);
-}
-
-inline Eigen::VectorXd ExtremeValueBicop::pdf_raw(
-    const Eigen::MatrixXd &u
-)
-{
-    auto f = [this](const double &u1, const double &u2) {
-        double t = std::log(u2) / std::log(u1 * u2);
-        double t2 = pickands(t);
-        double t3 = pickands_derivative(t);
-        double t4 = pickands_derivative2(t);
-
-        t3 = std::pow(t2, 2) + (1 - 2 * t) * t3 * t2 - 
-                (1 - t) * t * (std::pow(t3, 2) + t4 / std::log(u1 * u2));
-        t2 = (std::log(u1) + std::log(u2)) * t2;
-
-        return std::exp(t2) * t3 / (u1 * u2);
-    };
-    return tools_eigen::binaryExpr_or_nan(u, f);
-}
-
-inline Eigen::VectorXd ExtremeValueBicop::hfunc1_raw(
-    const Eigen::MatrixXd &u
-)
-{
-    auto f = [this](const double &u1, const double &u2) {
-        double t = std::log(u2) / std::log(u1 * u2);
-        double t2 = pickands(t);
-        double t3 = pickands_derivative(t);
-        t3 = t2 - t * t3;
-        t2 = (std::log(u1) + std::log(u2)) * t2;
-
-        return std::exp(t2) * t3 / u1;
-    };
-    return tools_eigen::binaryExpr_or_nan(u, f);
-}
-
-inline Eigen::VectorXd ExtremeValueBicop::hfunc2_raw(
-    const Eigen::MatrixXd &u
-)
-{
-    auto f = [this](const double &u1, const double &u2) {
-        double t = std::log(u2) / std::log(u1 * u2);
-        double t2 = pickands(t);
-        double t3 = pickands_derivative(t);
-        t3 = t2 + (1 - t) * t3;
-        t2 = (std::log(u1) + std::log(u2)) * t2;
-
-        return std::exp(t2) * t3 / u2;
-    };
-    return tools_eigen::binaryExpr_or_nan(u, f);
+  auto f = [this](const double& u1,
+                  const double& u2,
+                  const Eigen::Ref<const Eigen::VectorXd>& par) {
+    double t = std::log(u2) / std::log(u1 * u2);
+    t = pickands(t, par);
+    t = (std::log(u1) + std::log(u2)) * t;
+    return std::exp(t);
+  };
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
 }
 
 inline Eigen::VectorXd
-ExtremeValueBicop::hinv1_raw(const Eigen::MatrixXd& u)
+ExtremeValueBicop::pdf_raw(const Eigen::MatrixXd& u,
+                           const Eigen::MatrixXd& parameters)
 {
-  Eigen::VectorXd hinv = hinv1_num(u);
-  return hinv;
+  auto f = [this](const double& u1,
+                  const double& u2,
+                  const Eigen::Ref<const Eigen::VectorXd>& par) {
+    double t = std::log(u2) / std::log(u1 * u2);
+    double t2 = pickands(t, par);
+    double t3 = pickands_derivative(t, par);
+    double t4 = pickands_derivative2(t, par);
+
+    t3 = std::pow(t2, 2) + (1 - 2 * t) * t3 * t2 -
+         (1 - t) * t * (std::pow(t3, 2) + t4 / std::log(u1 * u2));
+    t2 = (std::log(u1) + std::log(u2)) * t2;
+
+    return std::exp(t2) * t3 / (u1 * u2);
+  };
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
 }
 
 inline Eigen::VectorXd
-ExtremeValueBicop::hinv2_raw(const Eigen::MatrixXd& u)
+ExtremeValueBicop::hfunc1_raw(const Eigen::MatrixXd& u,
+                              const Eigen::MatrixXd& parameters)
 {
-  Eigen::VectorXd hinv = hinv2_num(u);
-  return hinv;
+  auto f = [this](const double& u1,
+                  const double& u2,
+                  const Eigen::Ref<const Eigen::VectorXd>& par) {
+    double t = std::log(u2) / std::log(u1 * u2);
+    double t2 = pickands(t, par);
+    double t3 = pickands_derivative(t, par);
+    t3 = t2 - t * t3;
+    t2 = (std::log(u1) + std::log(u2)) * t2;
+
+    return std::exp(t2) * t3 / u1;
+  };
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+}
+
+inline Eigen::VectorXd
+ExtremeValueBicop::hfunc2_raw(const Eigen::MatrixXd& u,
+                              const Eigen::MatrixXd& parameters)
+{
+  auto f = [this](const double& u1,
+                  const double& u2,
+                  const Eigen::Ref<const Eigen::VectorXd>& par) {
+    double t = std::log(u2) / std::log(u1 * u2);
+    double t2 = pickands(t, par);
+    double t3 = pickands_derivative(t, par);
+    t3 = t2 + (1 - t) * t3;
+    t2 = (std::log(u1) + std::log(u2)) * t2;
+
+    return std::exp(t2) * t3 / u2;
+  };
+  return tools_eigen::binaryExpr_or_nan(u, parameters, f);
+}
+
+inline Eigen::VectorXd
+ExtremeValueBicop::hinv1_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters)
+{
+  return hinv1_num_raw(u, parameters);
+}
+
+inline Eigen::VectorXd
+ExtremeValueBicop::hinv2_raw(const Eigen::MatrixXd& u,
+                             const Eigen::MatrixXd& parameters)
+{
+  return hinv2_num_raw(u, parameters);
+}
+
+inline double
+ExtremeValueBicop::pickands_peak(
+  const Eigen::Ref<const Eigen::VectorXd>& /* parameters */)
+{
+  return 0.5;
 }
 
 inline double
 ExtremeValueBicop::parameters_to_tau(const Eigen::MatrixXd& par)
 {
-  auto old_par = this->parameters_;
-  this->set_parameters(par);
-  auto f = [this](const double t) {
-    double A = pickands(t);
-    double A2 = pickands_derivative2(t);
+  auto f = [this, &par](const double t) {
+    double A = pickands(t, par.col(0));
+    double A2 = pickands_derivative2(t, par.col(0));
     return t * (1 - t) * A2 / A;
   };
-  double tau = tools_integration::integrate_zero_to_one(f);
-  this->parameters_ = old_par;
-  return tau;
+  // A'' concentrates in a narrow peak, ~2% of the interval wide at Tawn's
+  // theta = 60 and narrower still as the parameters grow asymmetric, so the
+  // integral is split at the peak.
+  return tools_integration::integrate_zero_to_one_split(
+    f, pickands_peak(par.col(0)));
+}
+
+inline Eigen::MatrixXd
+ExtremeValueBicop::parameters_to_taildep(const Eigen::MatrixXd& par)
+{
+  // extreme-value copulas have no lower tail dependence; the upper tail
+  // dependence coefficient is 2 * (1 - A(0.5)), where A is the Pickands
+  // dependence function.
+  Eigen::MatrixXd taildep = Eigen::MatrixXd::Zero(2, 2);
+  taildep(1, 1) = 2 * (1 - pickands(0.5, par.col(0)));
+  return taildep;
 }
 }
