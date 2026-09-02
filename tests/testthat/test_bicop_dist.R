@@ -110,6 +110,7 @@ test_that("print method produces output", {
     summary(bicop_dist("clayton", 0, 2)),
     "tail dependence: LL = 0.71"
   )
+  expect_identical(format_bicop_tail_dep(rep(NA_real_, 4)), "not available")
 })
 
 test_that("getters work", {

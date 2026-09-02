@@ -147,6 +147,18 @@ test_that("margins_controls works", {
     sapply(fit_legacy_xmin$margins, "[[", "mult"),
     rep(log1p(ncol(u)), ncol(u))
   )
+  suppressWarnings(
+    expect_error(
+      vine(
+        u[, 1:2],
+        margins_controls = list(
+          family_set = kde1d_family(),
+          mult = 2
+        )
+      ),
+      "legacy KDE controls cannot be combined"
+    )
+  )
 
   fit_legacy_type <- vine(
     cbind(rnorm(30), rpois(30, 1)),
@@ -190,6 +202,7 @@ test_that("weights work", {
   )
   expect_eql(fit_weights$weights, w)
   expect_false(identical(fit$margins[[1]], fit_weights$margins[[1]]))
+  expect_error(vine(u, weights = -1), "finite non-negative values")
 })
 
 test_that("margin fitting can use multiple cores", {
@@ -232,6 +245,10 @@ test_that("margin fitting can use multiple cores", {
     collect_vine_margin_results(list(NULL)),
     "variable 1.*cores = 1"
   )
+  expect_error(
+    collect_vine_margin_results(list(simpleError("worker failed"))),
+    "worker failed"
+  )
 
   noisy <- margin_family(
     function(x, weights, type) {
@@ -259,6 +276,15 @@ test_that("margin fitting can use multiple cores", {
     "margin fit warning"
   )
   expect_length(fits, 2)
+  direct_result <- fit_one_vine_margin(
+    1,
+    margin_data[1],
+    list(list(noisy)),
+    "c",
+    numeric(),
+    "aic"
+  )
+  expect_match(direct_result$warnings, "margin fit warning")
 
   fit_override <- vine(
     u,
@@ -595,6 +621,13 @@ test_that("margin candidate controls are validated", {
       margins_controls = list(family_set = "norm", selcrit = "invalid")
     ),
     "must be 'loglik', 'aic', or 'bic'"
+  )
+  expect_error(
+    vine(
+      x[, 1, drop = FALSE],
+      margins_controls = list(family_set = "norm", selcrit = NA_character_)
+    ),
+    "must be a single string"
   )
   expect_error(
     vine(
