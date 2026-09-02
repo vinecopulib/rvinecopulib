@@ -33,6 +33,12 @@ inline RVineStructure::RVineStructure(
   bool check)
 {
   d_ = mat.cols();
+  // Unconditional: `check = false` must not reach find_trunc_lvl() either,
+  // where `d - 1` wraps around for an empty array and the loop then indexes
+  // a row that does not exist.
+  if (d_ == 0) {
+    throw std::runtime_error("d should be greater than 0");
+  }
   if (check) {
     check_if_quadratic(mat);
     check_lower_tri(mat);

@@ -1720,6 +1720,7 @@ Bicop::tau_to_parameters(const double& tau) const
 inline double
 Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters) const
 {
+  check_parameters_size(parameters);
   double tau = bicop_->parameters_to_tau(parameters);
   if (tools_stl::is_member(rotation_, { 90, 270 })) {
     tau *= -1;
@@ -1769,6 +1770,7 @@ Bicop::parameters_to_tau(const Eigen::MatrixXd& parameters) const
 inline Eigen::MatrixXd
 Bicop::parameters_to_taildep(const Eigen::MatrixXd& parameters) const
 {
+  check_parameters_size(parameters);
   Eigen::MatrixXd m = bicop_->parameters_to_taildep(parameters);
   // rotate the 2x2 matrix like a grid, counter-clockwise, to match the
   // (counter-clockwise) rotation applied to the data in `rotate_data`.
@@ -1795,6 +1797,7 @@ Bicop::parameters_to_taildep(const Eigen::MatrixXd& parameters) const
 inline double
 Bicop::parameters_to_beta(const Eigen::MatrixXd& parameters) const
 {
+  check_parameters_size(parameters);
   double beta = bicop_->parameters_to_beta(parameters);
   if (tools_stl::is_member(rotation_, { 90, 270 })) {
     beta *= -1;
@@ -2343,6 +2346,29 @@ Bicop::check_rotation(int rotation) const
                                bicop_->get_family_name() + " copula");
     }
   }
+}
+
+//! @brief Checks that a parameter matrix has the current family's shape.
+//!
+//! @details The leaf families index the parameter matrix positionally, and
+//! `eigen_assert` is compiled out of a release build, so a matrix of the wrong
+//! shape reads past the end of its own storage. An empty matrix has no storage
+//! at all: `Eigen` allocates nothing for size zero, so `parameters(0)` would
+//! dereference a null pointer.
+inline void
+Bicop::check_parameters_size(const Eigen::MatrixXd& parameters) const
+{
+  const auto expected = bicop_->get_parameters();
+  if (parameters.rows() == expected.rows() &&
+      parameters.cols() == expected.cols()) {
+    return;
+  }
+  std::stringstream message;
+  message << "parameters have the wrong shape for the " << get_family_name()
+          << " copula; expected: " << expected.rows() << " x "
+          << expected.cols() << ", actual: " << parameters.rows() << " x "
+          << parameters.cols() << std::endl;
+  throw std::runtime_error(message.str());
 }
 
 //! @brief Checks whether weights and data have matching sizes.

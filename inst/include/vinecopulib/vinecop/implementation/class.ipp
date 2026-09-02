@@ -1069,9 +1069,11 @@ inline void
 Vinecop::check_var_types(const std::vector<std::string>& var_types) const
 {
   std::stringstream msg;
-  if (var_types.size() > d_) {
-    msg << "more var_types (" << var_types.size() << ") "
-        << "than variables (" << d_ << ")" << std::endl;
+  if (var_types.size() != d_) {
+    // One entry per variable. A shorter vector used to be accepted and then
+    // indexed per variable when deriving each pair's types.
+    msg << "var_types must have one entry per variable; expected: " << d_
+        << ", actual: " << var_types.size() << std::endl;
     throw std::runtime_error(msg.str());
   }
   for (const auto& t : var_types) {

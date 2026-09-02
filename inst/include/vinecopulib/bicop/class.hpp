@@ -409,6 +409,8 @@ private:
 
   void flip_abstract_var_types();
 
+  void check_parameters_size(const Eigen::MatrixXd& parameters) const;
+
   void check_weights_size(const Eigen::VectorXd& weights,
                           const Eigen::MatrixXd& data) const;
 
