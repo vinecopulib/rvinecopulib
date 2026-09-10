@@ -41,7 +41,7 @@ calculate_criterion(const Eigen::MatrixXd& data,
 std::vector<size_t>
 get_disc_cols(std::vector<std::string> var_types);
 
-// boost::graph represenation of a vine tree
+// boost::graph representation of a vine tree
 struct VertexProperties
 {
   std::vector<size_t> conditioning;
@@ -182,7 +182,7 @@ protected:
   // conditioning-aware selection: in_cond_[v] == 1 iff variable v (0-based) is
   // in the conditioning set; n_cond_ = |conditioning set|. n_cond_ == 0 means
   // ordinary (unconditional) selection and every conditioning-specific branch
-  // below is skipped, leaving the default path byte-for-byte unchanged.
+  // below is skipped, leaving the default path bit-identical.
   std::vector<char> in_cond_;
   size_t n_cond_{ 0 };
   std::vector<std::string> var_types_;
@@ -191,7 +191,7 @@ protected:
   std::vector<VineTree> trees_;
   RVineStructure vine_struct_;
   std::vector<std::vector<Bicop>> pair_copulas_;
-  // for sparse selction
+  // for sparse selection
   std::vector<VineTree> trees_opt_;
   double loglik_;
   double threshold_;

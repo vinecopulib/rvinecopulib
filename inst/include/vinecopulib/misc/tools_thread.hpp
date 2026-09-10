@@ -17,7 +17,7 @@ namespace vinecopulib {
 
 namespace tools_thread {
 
-//! Implemenation of the thread pool pattern based on `std::sthread`.
+//! Implementation of the thread pool pattern based on `std::thread`.
 class ThreadPool
 {
 public:
@@ -204,7 +204,7 @@ ThreadPool::start_worker()
 }
 
 //! executes a job safely and let's pool know when it's busy.
-//! @param job Job to be exectued.
+//! @param job Job to be executed.
 inline void
 ThreadPool::do_job(std::function<void()>&& job)
 {
@@ -258,7 +258,7 @@ ThreadPool::join_workers()
   }
 }
 
-//! checks if an error occured.
+//! checks if an error occurred.
 inline bool
 ThreadPool::has_errored()
 {

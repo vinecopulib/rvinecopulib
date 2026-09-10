@@ -945,7 +945,7 @@ inline RVineTrees
 Vinecop::get_trees() const
 {
   // decompose in original labels: the diagonal `get_order()`, the original-
-  // label structure array, and the pair-copulas share the same labelling. An
+  // label structure array, and the pair-copulas share the same labeling. An
   // empty store is passed through as such: `RVineTrees` reads it as
   // independence on every edge.
   return RVineTrees(rvine_structure_.get_order(),
@@ -1087,7 +1087,7 @@ Vinecop::check_var_types(const std::vector<std::string>& var_types) const
 
 //! @brief Sets variable types.
 //! @param var_types A vector specifying the types of the variables,
-//!   e.g., `{"c", "d"}` means first varible continuous, second discrete.
+//!   e.g., `{"c", "d"}` means first variable continuous, second discrete.
 inline void
 Vinecop::set_var_types_internal(const std::vector<std::string>& var_types)
 {
@@ -2763,7 +2763,7 @@ Vinecop::cdf(const Eigen::MatrixXd& u,
 
 //! @brief Simulates from a vine copula model, see `inverse_rosenblatt()`.
 //!
-//! @details Simulated data is always a continous \f$ n \times d \f$ matrix.
+//! @details Simulated data is always a continuous \f$ n \times d \f$ matrix.
 //! Sampling from a vine copula model is done by first generating
 //! \f$ n \times d \f$ uniform random numbers and then applying the inverse
 //! Rosenblatt transformation.
@@ -3330,7 +3330,7 @@ Vinecop::rosenblatt_impl(Eigen::MatrixXd u,
 //! If the problem is too large, it is split recursively into halves (w.r.t.
 //! \f$ n \f$, the number of observations).
 //! "Too large" means that the required memory will exceed 1 GB. An
-//! examplary configuration requiring less than 1 GB is \f$ n = 1000 \f$,
+//! exemplary configuration requiring less than 1 GB is \f$ n = 1000 \f$,
 //! \f$ d = 200\f$.
 //!
 //! The Rosenblatt transform (Rosenblatt, 1952) \f$ U = T(V) \f$ of a random

@@ -300,7 +300,7 @@ Bicop::hfunc2(const Eigen::MatrixXd& u) const
 //!
 //! @details The first h-function is
 //! \f$ h_1(u_1, u_2) = P(U_2 \le u_2 | U_1 = u_1) \f$.
-//! The inverse is calulated w.r.t. the second argument.
+//! The inverse is calculated w.r.t. the second argument.
 //!
 //! When at least one variable is discrete, more than two columns are required
 //! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
@@ -1680,7 +1680,7 @@ Bicop::mbic(const Eigen::MatrixXd& u, const double psi0) const
 
 //! @brief The number of parameters of the copula model.
 //!
-//! @details Returns the actual number of parameters for parameteric families.
+//! @details Returns the actual number of parameters for parametric families.
 //! For nonparametric families, there is a conceptually similar definition in
 //! the sense that it can be used in the calculation of fit statistics.
 inline double
@@ -2027,7 +2027,7 @@ Bicop::flip()
     rotation_ = 90;
   }
   // The following implements any changes to the shape beyond the change in
-  // rotation. Formost of our families, it does nothing.
+  // rotation. For most of our families, it does nothing.
   bicop_->flip();
 }
 
@@ -2331,7 +2331,7 @@ Bicop::prep_for_abstract_continuous(const Eigen::MatrixXd& u) const
 }
 
 //! @brief Checks whether the supplied rotation is valid (only 0, 90, 180, 270
-//! allowd).
+//! allowed).
 inline void
 Bicop::check_rotation(int rotation) const
 {

@@ -667,7 +667,7 @@ sobol(const size_t& n, const size_t& d, const std::vector<int>& seeds)
     V(i) = static_cast<size_t>(1) << (32 - (i + 1)); // all m's = 1
   }
 
-  // Evalulate X scaled by pow(2,32)
+  // Evaluate X scaled by pow(2,32)
   Eigen::Matrix<size_t, Eigen::Dynamic, 1> X(n);
   X(0) = static_cast<size_t>(scrambling(0) * 4294967296.0);
   for (size_t i = 1; i < n; i++) {
@@ -697,7 +697,7 @@ sobol(const size_t& n, const size_t& d, const std::vector<int>& seeds)
       }
     }
 
-    // Evalulate X
+    // Evaluate X
     X(0) = static_cast<size_t>(scrambling(j + 1) * 4294967296.0);
     for (size_t i = 1; i < n; i++)
       X(i) = X(i - 1) ^ V(C(i - 1) - 1);
@@ -844,7 +844,7 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
 //! developed using Drezner, Z. and Wesolowsky, G. O. (1989),
 //! On the Computation of the Bivariate Normal Integral,
 //! J. Stat. Comput. Simul.. 35 pp. 101-107.
-//! with extensive modications for double precisions by
+//! with extensive modifications for double precisions by
 //! Alan Genz and Yihong Ge. Translated from the Fortran routines of
 //! Alan Genz (www.math.wsu.edu/faculty/genz/software/fort77/mvtdstpack.f).
 //!

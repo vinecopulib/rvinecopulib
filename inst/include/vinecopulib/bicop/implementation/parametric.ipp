@@ -47,7 +47,7 @@ ParBicop::flip()
 inline double
 ParBicop::get_npars() const
 {
-  // indepence copula has no parameters
+  // independence copula has no parameters
   if (family_ == BicopFamily::indep) {
     return 0.0;
   }

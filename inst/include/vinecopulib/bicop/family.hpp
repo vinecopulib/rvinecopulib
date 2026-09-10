@@ -13,8 +13,8 @@ namespace vinecopulib {
 
 //! @brief A bivariate copula family identifier.
 //!
-//! The list below summarises each family's parameter count, parameter
-//! range, available rotations, and tail-dependence behaviour. The exact
+//! The list below summarizes each family's parameter count, parameter
+//! range, available rotations, and tail-dependence behavior. The exact
 //! parameter bounds enforced at fit time are visible via
 //! `Bicop::get_parameters_lower_bounds()` /
 //! `Bicop::get_parameters_upper_bounds()`. The Kendall's-tau column
@@ -67,7 +67,7 @@ enum class BicopFamily
   //! Transformation Local Likelihood (TLL) nonparametric estimator. No
   //! finite parametric form: the copula density is fit on a grid in the
   //! inverse-normal-transformed copula space. Data-driven rotation and
-  //! tail behaviour; Kendall's tau is rank-based on the fitted density.
+  //! tail behavior; Kendall's tau is rank-based on the fitted density.
   tll
 };
 

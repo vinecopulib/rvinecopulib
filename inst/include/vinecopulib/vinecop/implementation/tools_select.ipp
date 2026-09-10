@@ -1043,8 +1043,8 @@ VinecopSelector::make_base_tree(const Eigen::MatrixXd& data)
     tools_interface::check_user_interrupt(target % 10000 == 0);
     // add edge and extract edge iterator
     auto e = add_edge(d_, target, base_tree).first;
-    // inititialize hfunc1 with actual data for variable "target"
-    // data need are reordered to correspond to natural order (neccessary
+    // initialize hfunc1 with actual data for variable "target"
+    // data need are reordered to correspond to natural order (necessary
     // when structure is fixed)
     base_tree[e].hfunc1 = data.col(order[target] - 1);
     if (var_types_[order[target] - 1] == "d") {
@@ -1121,7 +1121,7 @@ VinecopSelector::find_common_neighbor(size_t v0,
   }
 }
 
-//! @brief Computes a fit id; can be used to re-use already fitted pair-copulas.
+//! @brief Computes a fit id; can be used to reuse already fitted pair-copulas.
 //! @param edge.
 inline double
 VinecopSelector::compute_fit_id(const EdgeProperties& e)
@@ -1129,7 +1129,7 @@ VinecopSelector::compute_fit_id(const EdgeProperties& e)
   double id = 0.0;
   if (controls_.needs_sparse_select()) {
     // the formula is quite arbitrary, but sufficient for
-    // identifying situations where fits can be re-used
+    // identifying situations where fits can be reused
     id = (e.pc_data.col(0) - 2 * e.pc_data.col(1)).sum();
     id += 5.0 * static_cast<double>(e.crit < controls_.get_threshold());
   }

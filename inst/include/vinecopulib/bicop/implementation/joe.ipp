@@ -780,7 +780,7 @@ qcondjoe(const double& q, const double& u, const double& de)
   // v = 0.5 * (q+u); // starting guess
 
   // Use a better starting point based on reflected B4 copula
-  // A good starting point is crucial when delta is large because
+  // A good starting point matters when delta is large because
   //    C_{2|1} will be steep
   // C_{R,2|1}(v|u)=1-C_{2|1}(1-v|1-u),
   // C_{R,2|1}^{-1}(q|u)=1-C_{2|1}^{-1}(1-q|1-u)

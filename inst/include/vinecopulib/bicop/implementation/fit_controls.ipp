@@ -61,7 +61,7 @@ inline FitControlsBicop::FitControlsBicop(std::vector<BicopFamily> family_set,
   set_num_threads(num_threads);
 }
 
-//! @brief Instantiates default controls except for the parameteric method.
+//! @brief Instantiates default controls except for the parametric method.
 //! @param parametric_method The fit method for parametric families;
 //!     possible choices: `"mle"`, `"itau"`.
 inline FitControlsBicop::FitControlsBicop(std::string parametric_method)

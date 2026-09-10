@@ -27,7 +27,7 @@ namespace vinecopulib {
 //! virtual destructor
 inline AbstractBicop::~AbstractBicop() = default;
 
-//! Instantiates a bivariate copula using the default contructor
+//! Instantiates a bivariate copula using the default constructor
 //!
 //! @param family The copula family.
 //! @param parameters The copula parameters (optional, must be compatible
@@ -107,7 +107,7 @@ AbstractBicop::no_tau_to_parameters(const double&)
 
 //! Default tail dependence: not implemented for this family, so all four
 //! corners are reported as NaN. Families with a closed form override this
-//! (including those that genuinely have zero tail dependence, e.g. `indep`,
+//! (including those whose tail dependence is exactly zero, e.g. `indep`,
 //! `gaussian`, `frank`).
 inline Eigen::MatrixXd
 AbstractBicop::parameters_to_taildep(const Eigen::MatrixXd&)
