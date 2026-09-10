@@ -198,7 +198,7 @@ vine <- function(
   var_types <- resolve_margin_types(data, var_types)
   validate_vine_weights(weights, nrow(data))
   marg_cores <- margins_controls$cores
-  # not ifelse(): it is vectorised over the condition and would silently
+  # not ifelse(): it is vectorized over the condition and would silently
   # truncate a longer `cores` to its first element before as_count() sees it
   if (is.null(marg_cores)) {
     marg_cores <- cores

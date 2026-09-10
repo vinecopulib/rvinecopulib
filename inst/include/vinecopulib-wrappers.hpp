@@ -33,7 +33,7 @@ inline size_t expected_npars(const BicopFamily& family)
   }
 }
 
-// bicop wrapppers -----------------------------------
+// bicop wrappers -----------------------------------
 
 inline BicopFamily to_cpp_family(const std::string& fam)
 {
