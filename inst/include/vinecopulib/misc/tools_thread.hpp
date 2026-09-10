@@ -9,6 +9,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <future>
+#include <mutex>
 #include <queue>
 #include <thread>
 #include <vector>
@@ -42,16 +43,22 @@ public:
   void clear();
 
 private:
+  // `jobs_`, `stopped_`, `num_busy_` and `error_ptr_` may only be touched
+  // while holding `m_tasks_`. A member whose name ends in `_locked` requires
+  // the caller to hold it and keeps it held; one taking a
+  // `std::unique_lock<std::mutex>&` requires the caller to hold it, but may
+  // release it while waiting.
   void start_worker();
   void do_job(std::function<void()>&& job);
-  void announce_busy();
+  void announce_busy_locked();
   void announce_idle();
   void announce_stop();
   void join_workers();
+  void clear_locked();
 
-  bool has_errored();
-  bool all_jobs_done();
-  bool wait_for_wake_up_event();
+  bool has_errored_locked() const;
+  bool all_jobs_done_locked() const;
+  bool wait_for_wake_up_event(std::unique_lock<std::mutex>& lk);
   void rethrow_exceptions();
 
   std::vector<std::thread> workers_;       // worker threads in the pool
@@ -135,17 +142,20 @@ ThreadPool::map(F&& f, I&& items)
 inline void
 ThreadPool::wait()
 {
-  while (true) {
-    if (wait_for_wake_up_event()) {
-      if (!this->all_jobs_done()) {
-        this->clear(); // cancel all remaining jobs
-        continue;      // wait for currently running jobs
+  {
+    // must hold the lock while reading the shared state; the wake up event
+    // releases it while waiting
+    std::unique_lock<std::mutex> lk(m_tasks_);
+    while (true) {
+      if (this->wait_for_wake_up_event(lk)) {
+        if (this->all_jobs_done_locked())
+          break;
+        // an error makes the jobs that have not started pointless; the ones
+        // already running still have to finish
+        this->clear_locked();
       }
-      if (this->has_errored() || this->all_jobs_done())
-        break;
     }
-    std::this_thread::yield();
-  }
+  } // the lock must be released before the exception is rethrown
 
   this->rethrow_exceptions();
 }
@@ -165,6 +175,14 @@ ThreadPool::clear()
 {
   // must hold lock while modifying job queue
   std::lock_guard<std::mutex> lk(m_tasks_);
+  this->clear_locked();
+}
+
+//! clears the pool from all open jobs (must be called while holding
+//! `m_tasks_`).
+inline void
+ThreadPool::clear_locked()
+{
   std::queue<std::function<void()>>().swap(jobs_);
   cv_tasks_.notify_all();
 }
@@ -174,26 +192,25 @@ inline void
 ThreadPool::start_worker()
 {
   workers_.emplace_back([this] {
-    std::function<void()> job;
-    // observe thread pool; only stop after all jobs are done
-    while ((!stopped_) | (!jobs_.empty())) {
-      // must hold a lock while modifying shared variables
+    while (true) {
+      // must hold a lock while reading or modifying shared variables
       std::unique_lock<std::mutex> lk(m_tasks_);
 
       // thread should wait when there is no job
       cv_tasks_.wait(lk, [this] { return stopped_ || !jobs_.empty(); });
 
-      // queue can be empty if thread pool is stopped
+      // an empty queue implies the pool was stopped, and nothing can be
+      // pushed to a stopped pool; there is no work left to wait for
       if (jobs_.empty())
-        continue;
+        return;
 
       // take job from the queue
-      job = std::move(jobs_.front());
+      auto job = std::move(jobs_.front());
       jobs_.pop();
 
       // lock can be released before starting work, but must signal
       // that thread will be busy before (!) to avoid premature breaks
-      this->announce_busy();
+      this->announce_busy_locked();
       lk.unlock();
 
       this->do_job(std::move(job));
@@ -211,14 +228,17 @@ ThreadPool::do_job(std::function<void()>&& job)
   try {
     job();
   } catch (...) {
-    std::lock_guard<std::mutex> lk(m_tasks_);
-    error_ptr_ = std::current_exception();
+    {
+      std::lock_guard<std::mutex> lk(m_tasks_);
+      error_ptr_ = std::current_exception();
+    }
+    cv_busy_.notify_one();
   }
 }
 
-//! signals that a worker is busy (must be called why locking m_tasks_).
+//! signals that a worker is busy (must be called while holding `m_tasks_`).
 inline void
-ThreadPool::announce_busy()
+ThreadPool::announce_busy_locked()
 {
   ++num_busy_;
   cv_busy_.notify_one();
@@ -258,31 +278,35 @@ ThreadPool::join_workers()
   }
 }
 
-//! checks if an error occurred.
+//! checks if an error occurred (must be called while holding `m_tasks_`).
 inline bool
-ThreadPool::has_errored()
+ThreadPool::has_errored_locked() const
 {
   return static_cast<bool>(error_ptr_);
 }
 
-//! check whether all jobs are done
+//! check whether all jobs are done (must be called while holding `m_tasks_`).
 inline bool
-ThreadPool::all_jobs_done()
+ThreadPool::all_jobs_done_locked() const
 {
   return (num_busy_ == 0) && jobs_.empty();
 }
 
-//! checks whether `wait()` needs to wake up
+//! checks whether `wait()` needs to wake up, i.e., all jobs are done or an
+//! error makes the jobs that have not started pointless.
+//! @param lk A lock on `m_tasks_` held by the caller; released while waiting.
 inline bool
-ThreadPool::wait_for_wake_up_event()
+ThreadPool::wait_for_wake_up_event(std::unique_lock<std::mutex>& lk)
 {
   static auto timeout = std::chrono::milliseconds(250);
-  auto wake_up_event_occured = [this] {
-    return this->all_jobs_done() || this->has_errored();
+  auto wake_up_event_occurred = [this] {
+    return this->all_jobs_done_locked() ||
+           (this->has_errored_locked() && !jobs_.empty());
   };
-  std::unique_lock<std::mutex> lk(m_tasks_);
-  cv_busy_.wait_for(lk, timeout, wake_up_event_occured);
-  return wake_up_event_occured();
+  // the timeout bounds the wait: `cv_busy_` is notified to a single waiter,
+  // and pushing a job does not notify it at all
+  cv_busy_.wait_for(lk, timeout, wake_up_event_occurred);
+  return wake_up_event_occurred();
 }
 
 //! rethrows exceptions (exceptions from workers are caught and stored; the
@@ -290,8 +314,14 @@ ThreadPool::wait_for_wake_up_event()
 inline void
 ThreadPool::rethrow_exceptions()
 {
-  if (this->has_errored())
-    std::rethrow_exception(error_ptr_);
+  std::exception_ptr error_ptr;
+  {
+    // must hold the lock while reading the stored exception
+    std::lock_guard<std::mutex> lk(m_tasks_);
+    error_ptr = error_ptr_;
+  }
+  if (error_ptr)
+    std::rethrow_exception(error_ptr);
 }
 
 }

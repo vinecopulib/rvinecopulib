@@ -316,11 +316,14 @@ find_latent_sample(const Eigen::MatrixXd& u, double b, size_t niter)
 
   Eigen::MatrixXd x(n, 2), norm_sim(n, 2);
 
-  for (uint16_t it = 0; it < niter; it++) {
+  for (size_t it = 0; it < niter; it++) {
     uu = to_pseudo_obs(uu);
     x = qnorm(uu);
-    norm_sim = simulate_normal(n, 2, false, { it, 5 }).array() * b;
-    w = simulate_uniform(n, 1, false, { it, 55 });
+    // the seed vectors hold `int`, which a `size_t` does not narrow to
+    // implicitly inside a braced initializer
+    const auto seed = static_cast<int>(it);
+    norm_sim = simulate_normal(n, 2, false, { seed, 5 }).array() * b;
+    w = simulate_uniform(n, 1, false, { seed, 55 });
 
     for (size_t i = 0; i < n; i++) {
       covering.get_box_indices(lb.row(i), ub.row(i), indices);
@@ -759,7 +762,7 @@ pbvt(const Eigen::MatrixXd& z, int nu, double rho)
       xnkh = 0.;
     }
     d1 = h - rho * k;
-    hs = static_cast<int>(d1 >= 0 ? 1 : -1); // d_sign(&c_b91, &d1);
+    hs = static_cast<int>(d1 >= 0 ? 1 : -1);
     d1 = k - rho * h;
     ks = static_cast<int>(d1 >= 0 ? 1 : -1);
     if (nu % 2 == 0) {
