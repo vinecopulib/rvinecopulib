@@ -109,6 +109,14 @@ vinecop_pdf_cpp <- function(u, vinecop_r, parameters, cores) {
     .Call(`_rvinecopulib_vinecop_pdf_cpp`, u, vinecop_r, parameters, cores)
 }
 
+vinecop_logpdf_cpp <- function(u, vinecop_r, parameters, cores) {
+    .Call(`_rvinecopulib_vinecop_logpdf_cpp`, u, vinecop_r, parameters, cores)
+}
+
+vinecop_loglik_cpp <- function(u, vinecop_r, parameters, cores) {
+    .Call(`_rvinecopulib_vinecop_loglik_cpp`, u, vinecop_r, parameters, cores)
+}
+
 vinecop_pdf_full_cpp <- function(u, vinecop_r, parameters, cores) {
     .Call(`_rvinecopulib_vinecop_pdf_full_cpp`, u, vinecop_r, parameters, cores)
 }

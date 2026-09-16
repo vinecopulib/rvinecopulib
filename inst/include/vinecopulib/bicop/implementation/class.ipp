@@ -300,7 +300,7 @@ Bicop::hfunc2(const Eigen::MatrixXd& u) const
 //!
 //! @details The first h-function is
 //! \f$ h_1(u_1, u_2) = P(U_2 \le u_2 | U_1 = u_1) \f$.
-//! The inverse is calulated w.r.t. the second argument.
+//! The inverse is calculated w.r.t. the second argument.
 //!
 //! When at least one variable is discrete, more than two columns are required
 //! for `u`: the first \f$ n \times 2 \f$ block contains realizations of
@@ -1523,7 +1523,7 @@ Bicop::simulate(const size_t& n,
   auto u = tools_stats::simulate_uniform(n, 2, qrng, seeds);
   // use inverse Rosenblatt transform to generate a sample from the copula
   // (always simulate continuous data)
-  u.col(1) = this->as_continuous().hinv1(u);
+  u.col(1) = this->with_var_types().hinv1(u);
   return u;
 }
 
@@ -1559,7 +1559,7 @@ Bicop::simulate(const Eigen::MatrixXd& parameters,
     static_cast<size_t>(parameters.rows()), 2, qrng, seeds);
   // use inverse Rosenblatt transform to generate a sample from the copula
   // (always simulate continuous data)
-  u.col(1) = this->as_continuous().hinv1(u, parameters, num_threads);
+  u.col(1) = this->with_var_types().hinv1(u, parameters, num_threads);
   return u;
 }
 
@@ -1680,7 +1680,7 @@ Bicop::mbic(const Eigen::MatrixXd& u, const double psi0) const
 
 //! @brief The number of parameters of the copula model.
 //!
-//! @details Returns the actual number of parameters for parameteric families.
+//! @details Returns the actual number of parameters for parametric families.
 //! For nonparametric families, there is a conceptually similar definition in
 //! the sense that it can be used in the calculation of fit statistics.
 inline double
@@ -2027,7 +2027,7 @@ Bicop::flip()
     rotation_ = 90;
   }
   // The following implements any changes to the shape beyond the change in
-  // rotation. Formost of our families, it does nothing.
+  // rotation. For most of our families, it does nothing.
   bicop_->flip();
 }
 
@@ -2073,14 +2073,26 @@ Bicop::get_bicop() const
   return bicop_;
 }
 
+//! @brief The same copula under different variable types.
+//!
+//! @details The model is unchanged: only the variable types change, so a
+//! fitted copula can be evaluated on a continuous, discrete or mixed edge
+//! without being refitted. The types decide which layout `pdf()`, `cdf()` and
+//! the h-functions expect and what they return (see @ref discrete).
+//!
+//! @param var_types A vector specifying the types of the variables, e.g.,
+//!   `{"c", "d"}` means first variable continuous, second discrete. Defaults
+//!   to both continuous.
+//! @return A copy with the given variable types.
+//! @throws std::runtime_error if `var_types` is not two entries, each `"c"` or
+//!   `"d"`.
 inline Bicop
-Bicop::as_continuous() const
+Bicop::with_var_types(const std::vector<std::string>& var_types) const
 {
-  std::vector<std::string> cc = { "c", "c" };
-  if (var_types_ == cc)
+  if (var_types_ == var_types)
     return *this;
   auto bc_new = *this;
-  bc_new.set_var_types(cc);
+  bc_new.set_var_types(var_types);
   return bc_new;
 }
 
@@ -2331,7 +2343,7 @@ Bicop::prep_for_abstract_continuous(const Eigen::MatrixXd& u) const
 }
 
 //! @brief Checks whether the supplied rotation is valid (only 0, 90, 180, 270
-//! allowd).
+//! allowed).
 inline void
 Bicop::check_rotation(int rotation) const
 {

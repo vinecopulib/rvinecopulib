@@ -471,14 +471,15 @@ FitControlsVinecop::set_tree_algorithm(std::string tree_algorithm)
 inline void
 FitControlsVinecop::set_seeds(std::vector<int> seeds)
 {
+  // Store what the caller asked for, so an empty vector keeps reporting that
+  // no seeds were set; the draw below is the RNG's, not the caller's.
+  seeds_ = seeds;
   if (seeds.empty()) {
-    // no seeds provided, seed randomly
     std::random_device rd{};
     seeds = std::vector<int>(20);
     std::generate(
       seeds.begin(), seeds.end(), [&]() { return static_cast<int>(rd()); });
   }
-  seeds_ = seeds;
   boost::random::seed_seq seq(seeds.begin(), seeds.end());
   rng_.seed(seq);
 }

@@ -8,7 +8,7 @@ namespace vinecopulib {
 
 //! @brief Builds the tree list from an `(order, struct_array)` representation.
 //! @param order The variable order (diagonal of the R-vine matrix).
-//! @param struct_array The structure array, labelled consistently with `order`.
+//! @param struct_array The structure array, labeled consistently with `order`.
 inline RVineTrees::RVineTrees(const std::vector<size_t>& order,
                               const TriangularArray<size_t>& struct_array)
   : RVineTrees(order, struct_array, {})
@@ -17,7 +17,7 @@ inline RVineTrees::RVineTrees(const std::vector<size_t>& order,
 
 //! @brief Builds the tree list, attaching pair-copulas to each edge.
 //! @param order The variable order (diagonal of the R-vine matrix).
-//! @param struct_array The structure array, labelled consistently with `order`.
+//! @param struct_array The structure array, labeled consistently with `order`.
 //! @param pair_copulas The pair-copulas, indexed `[tree][edge]`; each is stored
 //!   with its first argument aligned to the diagonal variable `order[edge]`. If
 //!   empty, every edge is independence; otherwise it must cover every tree of

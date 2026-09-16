@@ -27,7 +27,7 @@ namespace vinecopulib {
 //! virtual destructor
 inline AbstractBicop::~AbstractBicop() = default;
 
-//! Instantiates a bivariate copula using the default contructor
+//! Instantiates a bivariate copula using the default constructor
 //!
 //! @param family The copula family.
 //! @param parameters The copula parameters (optional, must be compatible
@@ -107,7 +107,7 @@ AbstractBicop::no_tau_to_parameters(const double&)
 
 //! Default tail dependence: not implemented for this family, so all four
 //! corners are reported as NaN. Families with a closed form override this
-//! (including those that genuinely have zero tail dependence, e.g. `indep`,
+//! (including those whose tail dependence is exactly zero, e.g. `indep`,
 //! `gaussian`, `frank`).
 inline Eigen::MatrixXd
 AbstractBicop::parameters_to_taildep(const Eigen::MatrixXd&)
@@ -296,12 +296,12 @@ AbstractBicop::pdf_c_d(const Eigen::MatrixXd& u,
     const Eigen::MatrixXd par_i =
       parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
     if (udiff(i) > 5e-5) {
+      // the discrete argument is integrated over its atom, the continuous one
+      // is the conditioning coordinate
       if (var_types_[0] != "c") {
-        pdf(i) =
-          (hfunc2_raw(umax.row(i), par_i) - hfunc2_raw(umin.row(i), par_i))(0);
+        pdf(i) = cond_interval_prob(u(i, 1), u(i, 2), u(i, 0), 2, par_i);
       } else {
-        pdf(i) =
-          (hfunc1_raw(umax.row(i), par_i) - hfunc1_raw(umin.row(i), par_i))(0);
+        pdf(i) = cond_interval_prob(u(i, 0), u(i, 3), u(i, 1), 1, par_i);
       }
       pdf(i) /= udiff(i);
     } else {
@@ -344,14 +344,71 @@ AbstractBicop::pdf_d_d(const Eigen::MatrixXd& u,
                 hfunc2_raw(umin.row(i), par_i)(0)) /
                udiff(i, 0);
     } else {
-      pdf(i) = cdf(umax.row(i), par_i)(0) + cdf(umin.row(i), par_i)(0);
-      std::swap(umax(i, 0), umin(i, 0));
-      pdf(i) -= cdf(umax.row(i), par_i)(0) + cdf(umin.row(i), par_i)(0);
-      pdf(i) /= udiff(i, 0) * udiff(i, 1);
+      pdf(i) =
+        rect_prob(umin(i, 0), umax(i, 0), umin(i, 1), umax(i, 1), par_i) /
+        (udiff(i, 0) * udiff(i, 1));
     }
   }
 
   return pdf.cwiseAbs();
+}
+
+//! @brief probability of the rectangle spanned by two corners.
+//!
+//! @details A bound of `0` is the distribution's own lower limit, so its
+//! corners contribute nothing.
+//!
+//! @param a1,b1 Bounds in the first argument, in either order.
+//! @param a2,b2 Bounds in the second argument, in either order.
+//! @param parameters A single row of parameters.
+inline double
+AbstractBicop::rect_prob(double a1,
+                         double b1,
+                         double a2,
+                         double b2,
+                         const Eigen::MatrixXd& parameters)
+{
+  const double x0 = std::min(a1, b1);
+  const double x1 = std::max(a1, b1);
+  const double y0 = std::min(a2, b2);
+  const double y1 = std::max(a2, b2);
+
+  Eigen::MatrixXd corner(1, 2);
+  auto at = [&](double x, double y) {
+    if ((x <= 0.0) || (y <= 0.0)) {
+      return 0.0;
+    }
+    corner << x, y;
+    return cdf(corner, parameters)(0);
+  };
+
+  return (at(x1, y1) + at(x0, y0)) - (at(x0, y1) + at(x1, y0));
+}
+
+//! @brief probability that the free argument falls in an interval, given the
+//! other.
+//!
+//! @param u_cond The argument held fixed.
+//! @param lo,hi Bounds in the free argument, in either order.
+//! @param cond_var Either 1 or 2; the argument held fixed.
+//! @param parameters A single row of parameters.
+inline double
+AbstractBicop::cond_interval_prob(double u_cond,
+                                  double lo,
+                                  double hi,
+                                  size_t cond_var,
+                                  const Eigen::MatrixXd& parameters)
+{
+  Eigen::MatrixXd point(1, 2);
+  auto at = [&](double free) {
+    if (cond_var == 1) {
+      point << u_cond, free;
+      return hfunc1_raw(point, parameters)(0);
+    }
+    point << free, u_cond;
+    return hfunc2_raw(point, parameters)(0);
+  };
+  return at(std::max(lo, hi)) - at(std::min(lo, hi));
 }
 
 inline Eigen::VectorXd
@@ -369,9 +426,9 @@ AbstractBicop::hfunc1(const Eigen::MatrixXd& u,
       const Eigen::MatrixXd par_i =
         parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
       if (std::abs(u1diff(i)) > 5e-5) {
-        h(i) = cdf(uu.row(i).leftCols(2), par_i)(0) -
-               cdf(uu.row(i).rightCols(2), par_i)(0);
-        h(i) /= u1diff(i);
+        // the discrete argument is integrated over its atom, the other up to
+        // its own value, so the second bound is the distribution's lower limit
+        h(i) = rect_prob(uu(i, 2), uu(i, 0), 0.0, uu(i, 1), par_i) / u1diff(i);
       } else {
         uu(i, 0) = (uu(i, 0) + uu(i, 2)) / 2;
         h(i) = hfunc1_raw(uu.row(i).leftCols(2), par_i)(0);
@@ -398,9 +455,7 @@ AbstractBicop::hfunc2(const Eigen::MatrixXd& u,
       const Eigen::MatrixXd par_i =
         parameters.rows() == 0 ? parameters : parameters.row(bc ? 0 : i);
       if (u2diff(i) > 5e-5) {
-        h(i) = cdf(uu.row(i).leftCols(2), par_i)(0) -
-               cdf(uu.row(i).rightCols(2), par_i)(0);
-        h(i) /= u2diff(i);
+        h(i) = rect_prob(0.0, uu(i, 0), uu(i, 3), uu(i, 1), par_i) / u2diff(i);
       } else {
         uu(i, 1) = (uu(i, 1) + uu(i, 3)) / 2;
         h(i) = hfunc2_raw(uu.row(i).leftCols(2), par_i)(0);

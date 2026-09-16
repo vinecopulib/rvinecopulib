@@ -68,7 +68,7 @@ chol22(const Eigen::Matrix2d& B)
   return rB;
 }
 
-//! evaluates local likleihood density estimate.
+//! evaluates local likelihood density estimate.
 //!
 //! @param x Evaluation points.
 //! @param x_data Observations.

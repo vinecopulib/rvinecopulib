@@ -10,7 +10,7 @@
 \alias{rvine_dist}
 \title{Vine based distributions}
 \usage{
-dvine(x, vine, cores = 1)
+dvine(x, vine, cores = 1, log = FALSE)
 
 pvine(x, vine, n_mc = 10^4, cores = 1)
 
@@ -24,6 +24,13 @@ where d is the number of variables in the vine.}
 
 \item{cores}{number of cores to use; if larger than one, computations are
 done in parallel on \code{cores} batches .}
+
+\item{log}{if \code{TRUE}, \code{dvine()} returns the log-density instead of the
+density. The density is accumulated in log space either way and only
+exponentiated at the end; \code{log = TRUE} skips that last step. The joint
+density is a product over the margins and the vine edges, so it underflows
+to \code{0} in high dimensions or under strong dependence while its logarithm
+is still an ordinary double.}
 
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 

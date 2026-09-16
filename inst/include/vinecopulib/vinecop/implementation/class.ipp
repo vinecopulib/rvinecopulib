@@ -4,6 +4,7 @@
 // the MIT license. For a copy, see the LICENSE file in the root directory of
 // vinecopulib or https://vinecopulib.github.io/vinecopulib/.
 
+#include <cmath>
 #include <utility>
 #include <vinecopulib/bicop/class.hpp>
 #include <vinecopulib/misc/tools_interface.hpp>
@@ -659,6 +660,16 @@ Vinecop::fit(const Eigen::MatrixXd& data,
   // set up thread pool
   tools_thread::ThreadPool pool((num_threads == 1) ? 0 : num_threads);
 
+  // Concurrent edges write h-function columns their siblings read.
+  const bool snapshot_hfuncs = num_threads > 1;
+  Eigen::MatrixXd hfunc1_prev, hfunc2_prev, hfunc1_sub_prev, hfunc2_sub_prev;
+  const Eigen::MatrixXd& hfunc1_in = snapshot_hfuncs ? hfunc1_prev : hfunc1;
+  const Eigen::MatrixXd& hfunc2_in = snapshot_hfuncs ? hfunc2_prev : hfunc2;
+  const Eigen::MatrixXd& hfunc1_sub_in =
+    snapshot_hfuncs ? hfunc1_sub_prev : hfunc1_sub;
+  const Eigen::MatrixXd& hfunc2_sub_in =
+    snapshot_hfuncs ? hfunc2_sub_prev : hfunc2_sub;
+
   // fill first row of hfunc2 matrix with observed data;
   // points have to be reordered to correspond to natural order
   for (size_t j = 0; j < d_; ++j) {
@@ -670,6 +681,12 @@ Vinecop::fit(const Eigen::MatrixXd& data,
 
   for (size_t tree = 0; tree < trunc_lvl; ++tree) {
     tools_interface::check_user_interrupt();
+    if (snapshot_hfuncs) {
+      hfunc1_prev = hfunc1;
+      hfunc2_prev = hfunc2;
+      hfunc1_sub_prev = hfunc1_sub;
+      hfunc2_sub_prev = hfunc2_sub;
+    }
     // scale down the per-fit thread budget: the edges of this tree already
     // run concurrently on the pool, so nested threading would oversubscribe
     FitControlsBicop tree_controls = controls;
@@ -686,20 +703,20 @@ Vinecop::fit(const Eigen::MatrixXd& data,
       size_t m = rvine_structure_.min_array(tree, edge);
 
       Eigen::MatrixXd u_e(n, 2), u_e_sub;
-      u_e.col(0) = hfunc2.col(edge);
+      u_e.col(0) = hfunc2_in.col(edge);
       if (m == rvine_structure_.struct_array(tree, edge, true)) {
-        u_e.col(1) = hfunc2.col(m - 1);
+        u_e.col(1) = hfunc2_in.col(m - 1);
       } else {
-        u_e.col(1) = hfunc1.col(m - 1);
+        u_e.col(1) = hfunc1_in.col(m - 1);
       }
 
       if ((var_types[0] == "d") || (var_types[1] == "d")) {
         u_e.conservativeResize(n, 4);
-        u_e.col(2) = hfunc2_sub.col(edge);
+        u_e.col(2) = hfunc2_sub_in.col(edge);
         if (m == rvine_structure_.struct_array(tree, edge, true)) {
-          u_e.col(3) = hfunc2_sub.col(m - 1);
+          u_e.col(3) = hfunc2_sub_in.col(m - 1);
         } else {
-          u_e.col(3) = hfunc1_sub.col(m - 1);
+          u_e.col(3) = hfunc1_sub_in.col(m - 1);
         }
       }
 
@@ -945,7 +962,7 @@ inline RVineTrees
 Vinecop::get_trees() const
 {
   // decompose in original labels: the diagonal `get_order()`, the original-
-  // label structure array, and the pair-copulas share the same labelling. An
+  // label structure array, and the pair-copulas share the same labeling. An
   // empty store is passed through as such: `RVineTrees` reads it as
   // independence on every edge.
   return RVineTrees(rvine_structure_.get_order(),
@@ -1087,7 +1104,7 @@ Vinecop::check_var_types(const std::vector<std::string>& var_types) const
 
 //! @brief Sets variable types.
 //! @param var_types A vector specifying the types of the variables,
-//!   e.g., `{"c", "d"}` means first varible continuous, second discrete.
+//!   e.g., `{"c", "d"}` means first variable continuous, second discrete.
 inline void
 Vinecop::set_var_types_internal(const std::vector<std::string>& var_types)
 {
@@ -1163,6 +1180,7 @@ Vinecop::get_var_types() const
 //! @param keep_all Whether to keep and return per-edge pdfs and h-functions.
 //! @return A struct containing:
 //!   - `pdf`: the copula density evaluated at `u`.
+//!   - `logpdf`: the log-density evaluated at `u`.
 //! If `keep_all = true`, the struct also contains the following fields:
 //!   - `pdf_edges`: a triangular array of vectors containing
 //!     the per-edge copula densities evaluated at `u`.
@@ -1242,8 +1260,10 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
     }
   }
 
-  // initial value must be 1.0 for multiplication
-  result.pdf = Eigen::VectorXd::Constant(u.rows(), 1.0);
+  // the density is accumulated in log space: the product of up to d(d - 1)/2
+  // edge densities underflows to exactly 0 well before the log-density stops
+  // being representable
+  result.logpdf = Eigen::VectorXd::Zero(u.rows());
 
   auto do_batch = [&](const tools_batch::Batch& b) {
     // temporary storage objects (all data must be in (0, 1))
@@ -1323,8 +1343,14 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
         };
 
         Eigen::VectorXd edge_pdf = ec_pdf();
-        result.pdf.segment(b.begin, b.size) =
-          result.pdf.segment(b.begin, b.size).cwiseProduct(edge_pdf);
+        // `unaryExpr`, not `array().log()`: Eigen's vectorized logarithm and
+        // its scalar one round differently, and which elements reach which
+        // depends on the length of the vector -- so the density would depend
+        // on how many rows a caller passed and, through the batches below, on
+        // `num_threads`. Multiplication had no such freedom, so this is the
+        // one place accumulating in log space could cost determinism.
+        result.logpdf.segment(b.begin, b.size) +=
+          edge_pdf.unaryExpr([](double p) { return std::log(p); });
 
         // h-functions are only evaluated if needed in next step
         if (rvine_structure_.needed_hfunc1(tree, edge)) {
@@ -1372,6 +1398,10 @@ Vinecop::pdf_full(Eigen::MatrixXd u,
     pool.map(do_batch, tools_batch::create_batches(u.rows(), num_threads));
     pool.join();
   }
+  // Scalar for the same reason as the logarithm above: this one runs over
+  // the whole sample rather than over a batch, so it would make the density
+  // depend on the number of rows even on one thread.
+  result.pdf = result.logpdf.unaryExpr([](double l) { return std::exp(l); });
 
   return result;
 }
@@ -1416,6 +1446,41 @@ Vinecop::pdf(Eigen::MatrixXd u,
              const size_t num_threads) const
 {
   return pdf_full(std::move(u), parameters, num_threads, false).pdf;
+}
+
+//! @brief Evaluates the copula log-density.
+//!
+//! @details The logarithm of `pdf()`, and the accurate way to obtain it: a vine
+//! density is a product of up to \f$ d(d-1)/2 \f$ pair-copula densities, so for
+//! a high-dimensional or strongly dependent model `pdf()` underflows to `0`,
+//! and `log(pdf())` to \f$ -\infty \f$, while the log-density is still
+//! perfectly representable. `loglik()` is the sum of these values.
+//!
+//! @param u An \f$ n \times d \f$ matrix of evaluation points for a
+//!   continuous model. For a model with \f$ k \f$ discrete variables, use an
+//!   \f$ n \times 2d \f$ matrix containing the values and their left-limits;
+//!   left-limit columns for continuous variables may be omitted to obtain the
+//!   compact \f$ n \times (d + k) \f$ layout (see @ref discrete).
+//! @param num_threads The number of threads to use for computations; if greater
+//!   than 1, the function will be applied concurrently to `num_threads` batches
+//!   of `u`.
+//! @return A vector of length `n` containing the copula log-density values.
+inline Eigen::VectorXd
+Vinecop::logpdf(Eigen::MatrixXd u, const size_t num_threads) const
+{
+  return pdf_full(std::move(u), num_threads, false).logpdf;
+}
+
+//! @brief Evaluates the copula log-density with per-observation parameters.
+//!
+//! Per-observation counterpart of `logpdf()`; see the per-observation
+//! `pdf_full()` overload for the `parameters` layout and restrictions.
+inline Eigen::VectorXd
+Vinecop::logpdf(Eigen::MatrixXd u,
+                const Eigen::MatrixXd& parameters,
+                const size_t num_threads) const
+{
+  return pdf_full(std::move(u), parameters, num_threads, false).logpdf;
 }
 
 //! throws if the model has a nonparametric pair copula (see scores()).
@@ -1791,14 +1856,12 @@ Vinecop::scores_full(Eigen::MatrixXd u,
             pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
             eps += pars_tmp(p) - pars(p);
             pair_copulas_[t][e].set_parameters(pars_tmp);
-            Eigen::VectorXd f1 =
-              this->pdf(u, num_threads).array().max(1e-20).log();
+            Eigen::VectorXd f1 = this->logpdf(u, num_threads);
 
             pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
             eps -= pars_tmp(p) - pars(p);
             pair_copulas_[t][e].set_parameters(pars_tmp);
-            Eigen::VectorXd f2 =
-              this->pdf(u, num_threads).array().max(1e-20).log();
+            Eigen::VectorXd f2 = this->logpdf(u, num_threads);
 
             result.scores.col(ipar++) = (f1 - f2) / eps;
             pair_copulas_[t][e].set_parameters(pars);
@@ -2104,12 +2167,12 @@ Vinecop::scores_full(Eigen::MatrixXd u,
             pars_tmp(p) = std::min(pars(p) + 1e-3, ub(p));
             eps += pars_tmp(p) - pars(p);
             edge_copula.set_parameters(pars_tmp);
-            Eigen::VectorXd f1 = edge_copula.pdf(u_e).array().max(1e-20).log();
+            Eigen::VectorXd f1 = edge_copula.pdf(u_e).array().log();
 
             pars_tmp(p) = std::max(pars(p) - 1e-3, lb(p));
             eps -= pars_tmp(p) - pars(p);
             edge_copula.set_parameters(pars_tmp);
-            Eigen::VectorXd f2 = edge_copula.pdf(u_e).array().max(1e-20).log();
+            Eigen::VectorXd f2 = edge_copula.pdf(u_e).array().log();
 
             Eigen::VectorXd col = (f1 - f2) / eps;
             result.scores.col(ipar).segment(b.begin, b.size) = col;
@@ -2763,7 +2826,7 @@ Vinecop::cdf(const Eigen::MatrixXd& u,
 
 //! @brief Simulates from a vine copula model, see `inverse_rosenblatt()`.
 //!
-//! @details Simulated data is always a continous \f$ n \times d \f$ matrix.
+//! @details Simulated data is always a continuous \f$ n \times d \f$ matrix.
 //! Sampling from a vine copula model is done by first generating
 //! \f$ n \times d \f$ uniform random numbers and then applying the inverse
 //! Rosenblatt transformation.
@@ -2970,11 +3033,28 @@ Vinecop::simulate_conditional_impl(const Eigen::MatrixXd& u_cond,
   return inverse_rosenblatt_impl(u, view, num_threads);
 }
 
+//! sums a vector of log-densities over the observations that have one. An
+//! observation containing `NaN` has a `NaN` log-density and is left out,
+//! matching `Bicop::loglik()`; a log-density of \f$ -\infty \f$ is kept,
+//! which is the right answer for an observation the model rules out.
+inline double
+Vinecop::sum_loglik(const Eigen::VectorXd& lpdf)
+{
+  Eigen::MatrixXd finite = lpdf;
+  tools_eigen::remove_nans(finite);
+  return finite.sum();
+}
+
 //! @brief Evaluates the log-likelihood.
 //!
 //! @details The log-likelihood is defined as
 //! \f[ \mathrm{loglik} = \sum_{i = 1}^n \log c(U_{1, i}, ..., U_{d, i}), \f]
-//! where \f$ c \f$ is the copula density, see `Vinecop::pdf()`.
+//! where \f$ c \f$ is the copula density, see `Vinecop::pdf()`. Summing the
+//! log-densities keeps the result finite wherever it is representable, which a
+//! product of pair-copula densities is not; see `Vinecop::logpdf()`. An
+//! observation containing `NaN` has no likelihood and is left out of the sum,
+//! as it is for `Bicop::loglik()`; an empty `u` reports the value recorded by
+//! the fit.
 //!
 //! @param u An \f$ n \times d \f$ matrix of evaluation points for a
 //!   continuous model. For a model with \f$ k \f$ discrete variables, use an
@@ -2990,9 +3070,8 @@ Vinecop::loglik(const Eigen::MatrixXd& u, const size_t num_threads) const
 {
   if (u.rows() < 1) {
     return this->get_loglik();
-  } else {
-    return pdf(u, num_threads).array().log().sum();
   }
+  return sum_loglik(logpdf(u, num_threads));
 }
 
 //! @brief Evaluates the log-likelihood with per-observation parameters.
@@ -3006,7 +3085,10 @@ Vinecop::loglik(const Eigen::MatrixXd& u,
                 const Eigen::MatrixXd& parameters,
                 const size_t num_threads) const
 {
-  return pdf(u, parameters, num_threads).array().log().sum();
+  if (u.rows() < 1) {
+    return this->get_loglik();
+  }
+  return sum_loglik(logpdf(u, parameters, num_threads));
 }
 
 //! @brief Evaluates the Akaike information criterion (AIC).
@@ -3330,7 +3412,7 @@ Vinecop::rosenblatt_impl(Eigen::MatrixXd u,
 //! If the problem is too large, it is split recursively into halves (w.r.t.
 //! \f$ n \f$, the number of observations).
 //! "Too large" means that the required memory will exceed 1 GB. An
-//! examplary configuration requiring less than 1 GB is \f$ n = 1000 \f$,
+//! exemplary configuration requiring less than 1 GB is \f$ n = 1000 \f$,
 //! \f$ d = 200\f$.
 //!
 //! The Rosenblatt transform (Rosenblatt, 1952) \f$ U = T(V) \f$ of a random

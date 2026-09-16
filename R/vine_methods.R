@@ -10,6 +10,12 @@
 #' @param vine an object of class `"vine_dist"`.
 #' @param cores number of cores to use; if larger than one, computations are
 #'   done in parallel on `cores` batches .
+#' @param log if `TRUE`, `dvine()` returns the log-density instead of the
+#'   density. The density is accumulated in log space either way and only
+#'   exponentiated at the end; `log = TRUE` skips that last step. The joint
+#'   density is a product over the margins and the vine edges, so it underflows
+#'   to `0` in high dimensions or under strong dependence while its logarithm
+#'   is still an ordinary double.
 #' @param x_cond optional conditioning values for `rvine()` on the original
 #'   data scale. A vector or one-row object is repeated `n` times;
 #'   alternatively, supply an `n`-row matrix or data frame for
@@ -58,9 +64,10 @@
 #' pvine(x[1, ], vc)
 #' @rdname vine_methods
 #' @export
-dvine <- function(x, vine, cores = 1) {
+dvine <- function(x, vine, cores = 1, log = FALSE) {
   stopifnot(inherits(vine, "vine_dist"))
   cores <- as_count(cores, "cores")
+  assert_that(is.flag(log))
   if (NCOL(x) == 1) {
     x <- t(x)
   }
@@ -75,13 +82,17 @@ dvine <- function(x, vine, cores = 1) {
 
   if (!is.null(vine$copula)) {
     u <- compute_pseudo_obs(x, vine)
-    vinevals <- dvinecop(u, vine$copula, cores)
+    vinevals <- dvinecop(u, vine$copula, cores, log = TRUE)
   } else {
-    vinevals <- rep(1, nrow(x))
+    vinevals <- rep(0, nrow(x))
   }
 
-  ## final density estimate is product of marginals and copula density
-  apply(cbind(margvals, vinevals), 1, prod)
+  ## always accumulate in log space and exponentiate at the end: the copula
+  ## density on its own underflows to 0 while its logarithm is an ordinary
+  ## double, so multiplying the densities would discard a joint density the
+  ## concentrated margins still bring back into range
+  res <- rowSums(log(cbind(margvals))) + vinevals
+  if (log) res else exp(res)
 }
 
 #' @rdname vine_methods

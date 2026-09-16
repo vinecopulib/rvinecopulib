@@ -488,7 +488,7 @@ inline RVineTrees
 RVineStructure::get_trees() const
 {
   // decompose in original labels (the diagonal `order_` and the original-label
-  // structure array must share the same labelling)
+  // structure array must share the same labeling)
   return RVineTrees(order_, get_struct_array(false));
 }
 

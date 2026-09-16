@@ -36,6 +36,26 @@ KernelBicop::cdf(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
   return interp_grid_->integrate_2d(u);
 }
 
+inline double
+KernelBicop::rect_prob(double a1,
+                       double b1,
+                       double a2,
+                       double b2,
+                       const Eigen::MatrixXd&)
+{
+  return interp_grid_->rect_mass(a1, b1, a2, b2);
+}
+
+inline double
+KernelBicop::cond_interval_prob(double u_cond,
+                                double lo,
+                                double hi,
+                                size_t cond_var,
+                                const Eigen::MatrixXd&)
+{
+  return interp_grid_->cond_interval_mass(u_cond, lo, hi, cond_var);
+}
+
 inline Eigen::VectorXd
 KernelBicop::hfunc1_raw(const Eigen::MatrixXd& u, const Eigen::MatrixXd&)
 {

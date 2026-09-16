@@ -60,7 +60,15 @@ test_that("d/p/r- functions work", {
   pdf_full <- dvinecop(u, vc, keep_all = TRUE)
   expect_named(
     pdf_full,
-    c("pdf", "pdf_edges", "hfunc1", "hfunc2", "hfunc1_sub", "hfunc2_sub")
+    c(
+      "pdf",
+      "logpdf",
+      "pdf_edges",
+      "hfunc1",
+      "hfunc2",
+      "hfunc1_sub",
+      "hfunc2_sub"
+    )
   )
   expect_eql(pdf_full$pdf, dvinecop(u, vc))
   expect_length(pdf_full$pdf_edges, dim(vc)["trunc_lvl"])

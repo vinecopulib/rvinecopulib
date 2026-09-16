@@ -85,7 +85,7 @@ namespace vinecopulib {
 //!      `(M[t-1, j], {M[d-j-1, j], M[0, j], ..., M[t-2, j]})`.
 //!
 //! An R-vine array is said to be in natural order when the anti-diagonal
-//! entries are \f$ 1, \dots, d \f$ (from left to right). The exemplary arrray
+//! entries are \f$ 1, \dots, d \f$ (from left to right). The exemplary array
 //! above is in natural order. Any R-vine array can be characterized by the
 //! diagonal entries (called order) and the entries below the diagonal of the
 //! corresponding R-vine array in natural order. Since most algorithms work
@@ -175,7 +175,7 @@ protected:
   size_t trunc_lvl_;
   TriangularArray<size_t> struct_array_;
   TriangularArray<size_t> min_array_;
-  // can't use bool b/c the comittee messed up std::vector<bool>
+  // can't use bool b/c the committee messed up std::vector<bool>
   TriangularArray<short unsigned> needed_hfunc1_;
   TriangularArray<short unsigned> needed_hfunc2_;
 };

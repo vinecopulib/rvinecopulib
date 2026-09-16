@@ -14,6 +14,12 @@
 #' @param ... unused.
 #' @param keep_all if `TRUE`, `dvinecop()` returns additional intermediate
 #'   quantities computed during density evaluation.
+#' @param log if `TRUE`, `dvinecop()` returns the log-density instead of the
+#'   density. A vine density is a product of one factor per edge, so it
+#'   underflows to `0` in high dimensions or under strong dependence while its
+#'   logarithm is still an ordinary double; `log = TRUE` accumulates in log
+#'   space and is the accurate way to obtain it. Ignored when
+#'   `keep_all = TRUE`, which reports both.
 #' @param u_cond optional conditioning values for `rvinecop()`. A vector or
 #'   one-row matrix is repeated `n` times; alternatively, supply an `n`-row
 #'   matrix for observation-specific conditioning values. The first block holds
@@ -57,7 +63,8 @@
 #' average Hessian matrix.
 #'
 #' If `keep_all = TRUE`, `dvinecop()` returns a list with entries `pdf`,
-#' `pdf_edges`, `hfunc1`, `hfunc2`, `hfunc1_sub`, and `hfunc2_sub`. The `_sub`
+#' `logpdf`, `pdf_edges`, `hfunc1`, `hfunc2`, `hfunc1_sub`, and `hfunc2_sub`.
+#' The `_sub`
 #' entries contain h-functions evaluated at left-sided limits when the model
 #' contains discrete variables; they are empty for fully continuous models.
 #'
@@ -130,12 +137,14 @@ dvinecop <- function(
   vinecop,
   cores = 1,
   keep_all = FALSE,
-  parameters = NULL
+  parameters = NULL,
+  log = FALSE
 ) {
   cores <- as_count(cores, "cores")
   assert_that(
     inherits(vinecop, "vinecop_dist"),
-    is.flag(keep_all)
+    is.flag(keep_all),
+    is.flag(log)
   )
   u <- if_vec_to_matrix(u, dim(vinecop)[1] == 1)
   if (is.null(parameters)) {
@@ -145,6 +154,8 @@ dvinecop <- function(
   parameters <- as.matrix(parameters)
   if (keep_all) {
     vinecop_pdf_full_cpp(u, vinecop, parameters, cores)
+  } else if (log) {
+    vinecop_logpdf_cpp(u, vinecop, parameters, cores)
   } else {
     vinecop_pdf_cpp(u, vinecop, parameters, cores)
   }
@@ -492,11 +503,15 @@ mBICV <- function(object, psi0 = 0.9, newdata = NULL) {
   if (!is.number(psi0) || !is.finite(psi0) || psi0 <= 0 || psi0 >= 1) {
     stop("`psi0` must be a number strictly between 0 and 1.", call. = FALSE)
   }
-  ll <- ifelse(
-    is.null(newdata),
-    object$loglik,
-    sum(log(dvinecop(newdata, object)))
-  )
+  # not sum(log(dvinecop())): a vine density is a product of one factor per
+  # edge, so it underflows to 0 well before its log-density stops being an
+  # ordinary double, and the sum then collapses to -Inf
+  ll <- if (is.null(newdata)) {
+    object$loglik
+  } else {
+    newdata <- if_vec_to_matrix(newdata, dim(object)[1] == 1)
+    vinecop_loglik_cpp(newdata, object, matrix(numeric(), 0, 0), 1)
+  }
   -2 * ll + compute_mBICV_penalty(object, psi0)
 }
 

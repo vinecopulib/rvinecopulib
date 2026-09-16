@@ -223,6 +223,22 @@ protected:
   Eigen::VectorXd pdf_d_d(const Eigen::MatrixXd& u,
                           const Eigen::MatrixXd& parameters);
 
+  // the two probabilities the discrete difference quotients above are built
+  // from. Both default to the difference of `cdf` / `*_raw` values they
+  // replace; a family that can evaluate them without that cancellation
+  // overrides them (see `KernelBicop`).
+  virtual double rect_prob(double a1,
+                           double b1,
+                           double a2,
+                           double b2,
+                           const Eigen::MatrixXd& parameters);
+
+  virtual double cond_interval_prob(double u_cond,
+                                    double lo,
+                                    double hi,
+                                    size_t cond_var,
+                                    const Eigen::MatrixXd& parameters);
+
   double loglik(const Eigen::MatrixXd& u,
                 const Eigen::VectorXd& weights = Eigen::VectorXd());
 

@@ -396,6 +396,32 @@ Eigen::VectorXd vinecop_pdf_cpp(const Eigen::MatrixXd& u,
   return vinecop_cpp.pdf(u, cores);
 }
 
+// [[Rcpp::export()]]
+Eigen::VectorXd vinecop_logpdf_cpp(const Eigen::MatrixXd& u,
+                                   const Rcpp::List& vinecop_r,
+                                   const Eigen::MatrixXd& parameters,
+                                   size_t cores)
+{
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (parameters.size() > 0) {
+    return vinecop_cpp.logpdf(u, parameters, cores);
+  }
+  return vinecop_cpp.logpdf(u, cores);
+}
+
+// [[Rcpp::export()]]
+double vinecop_loglik_cpp(const Eigen::MatrixXd& u,
+                          const Rcpp::List& vinecop_r,
+                          const Eigen::MatrixXd& parameters,
+                          size_t cores)
+{
+  Vinecop vinecop_cpp = vinecop_wrap(vinecop_r);
+  if (parameters.size() > 0) {
+    return vinecop_cpp.loglik(u, parameters, cores);
+  }
+  return vinecop_cpp.loglik(u, cores);
+}
+
 inline Rcpp::NumericVector eigen_vector_wrap(const Eigen::VectorXd& x)
 {
   Rcpp::NumericVector result(x.size());
@@ -431,6 +457,7 @@ Rcpp::List vinecop_pdf_full_cpp(const Eigen::MatrixXd& u,
                   : vinecop_cpp.pdf_full(u, cores, true);
   return Rcpp::List::create(
     Rcpp::Named("pdf") = eigen_vector_wrap(result.pdf),
+    Rcpp::Named("logpdf") = eigen_vector_wrap(result.logpdf),
     Rcpp::Named("pdf_edges") = vector_triangular_array_wrap(result.pdf_edges),
     Rcpp::Named("hfunc1") = vector_triangular_array_wrap(result.hfunc1),
     Rcpp::Named("hfunc2") = vector_triangular_array_wrap(result.hfunc2),

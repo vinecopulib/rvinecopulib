@@ -24,7 +24,7 @@ namespace vinecopulib {
 //! fitted pair-copula. The class converts to and from the `(order,
 //! struct_array)` representation used by `RVineStructure`, validating the
 //! proximity condition on the way back. It is the shared primitive behind
-//! `Vinecop::reorient()` and the structure finalisation during selection.
+//! `Vinecop::reorient()` and the structure finalization during selection.
 //!
 //! The orientation convention is that an edge's pair-copula has its first
 //! argument aligned with the conditioned variable `a`; a copula is therefore
