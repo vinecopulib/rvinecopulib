@@ -7,16 +7,19 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <utility>
 #include <vector>
 #include <vinecopulib/misc/tools_eigen.hpp>
 
 namespace vinecopulib {
 
 namespace tools_interpolation {
-//! A class for cubic spline interpolation of bivariate copulas
+//! A class for bilinear interpolation of bivariate copulas
 //!
 //! The class is used for implementing kernel estimators. It makes storing the
-//! observations obsolete and allows for fast numerical integration.
+//! observations obsolete and allows for fast numerical integration. The
+//! interpolant is piecewise bilinear, so its mass over a grid-aligned
+//! rectangle is available in closed form; see `rect_mass()`.
 class InterpolationGrid
 {
 public:
@@ -45,34 +48,51 @@ public:
 
   Eigen::VectorXd integrate_2d(const tools_eigen::ConstMatRef& u);
 
+  //! @brief probability of one rectangle, without the cancellation a
+  //! difference of four `integrate_2d()` values carries.
+  double rect_mass(double a1, double b1, double a2, double b2) const;
+
+  //! @brief probability of one interval in the free coordinate, given the
+  //! other.
+  double cond_interval_mass(double u_cond,
+                            double lo,
+                            double hi,
+                            size_t cond_var) const;
+
 private:
+  // the grid line at a fixed conditioning coordinate; `cond_knot` evaluates a
+  // knot of it on demand, so no caller has to materialize the line
+  struct CondLine
+  {
+    ptrdiff_t cell;
+    double x2x, xx1, x2x1;
+    size_t cond_var;
+  };
+  CondLine cond_line(double u_cond, size_t cond_var) const;
+  double cond_knot(const CondLine& line, ptrdiff_t j) const;
+
+  // the weights of the two nodes of a cell `[g0, g1]`, integrating the linear
+  // basis over the cell's overlap with `[a, b]`; the quadrature every integral
+  // here is built from
+  static std::pair<double, double> cell_weights(double g0,
+                                                double g1,
+                                                double a,
+                                                double b);
+  ptrdiff_t interval_weights(double lo, double hi, Eigen::VectorXd& w) const;
+  void row_integrals(double u, Eigen::VectorXd& out) const;
   // normalizes the grid margins; internal only (callers must refresh the
   // cached integrals afterwards, as the ctor and set_values do)
   void normalize_margins(int max_iter);
   void update_weights();
-  Eigen::Matrix<ptrdiff_t, 1, 2> get_indices(double x0, double x1);
   ptrdiff_t binary_search(double x);
   ptrdiff_t find_cell(double x) const;
   void update_cell_lookup();
   void update_cached_integrals();
-  double cond_cdf(double u_cond, double u, size_t cond_var) const;
   double cond_quantile(double u_cond,
                        double p,
                        size_t cond_var,
                        Eigen::VectorXd& knots) const;
-  double bilinear_interpolation(double z11,
-                                double z12,
-                                double z21,
-                                double z22,
-                                double x1,
-                                double x2,
-                                double y1,
-                                double y2,
-                                double x,
-                                double y);
-  double int_on_grid(const double& upr,
-                     const Eigen::VectorXd& vals,
-                     const Eigen::VectorXd& grid);
+  double int_on_grid(double upr, const Eigen::VectorXd& vals) const;
 
   Eigen::VectorXd grid_points_;
   Eigen::MatrixXd values_;

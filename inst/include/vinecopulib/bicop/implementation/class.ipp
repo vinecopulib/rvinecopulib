@@ -1523,7 +1523,7 @@ Bicop::simulate(const size_t& n,
   auto u = tools_stats::simulate_uniform(n, 2, qrng, seeds);
   // use inverse Rosenblatt transform to generate a sample from the copula
   // (always simulate continuous data)
-  u.col(1) = this->as_continuous().hinv1(u);
+  u.col(1) = this->with_var_types().hinv1(u);
   return u;
 }
 
@@ -1559,7 +1559,7 @@ Bicop::simulate(const Eigen::MatrixXd& parameters,
     static_cast<size_t>(parameters.rows()), 2, qrng, seeds);
   // use inverse Rosenblatt transform to generate a sample from the copula
   // (always simulate continuous data)
-  u.col(1) = this->as_continuous().hinv1(u, parameters, num_threads);
+  u.col(1) = this->with_var_types().hinv1(u, parameters, num_threads);
   return u;
 }
 
@@ -2073,14 +2073,26 @@ Bicop::get_bicop() const
   return bicop_;
 }
 
+//! @brief The same copula under different variable types.
+//!
+//! @details The model is unchanged: only the variable types change, so a
+//! fitted copula can be evaluated on a continuous, discrete or mixed edge
+//! without being refitted. The types decide which layout `pdf()`, `cdf()` and
+//! the h-functions expect and what they return (see @ref discrete).
+//!
+//! @param var_types A vector specifying the types of the variables, e.g.,
+//!   `{"c", "d"}` means first variable continuous, second discrete. Defaults
+//!   to both continuous.
+//! @return A copy with the given variable types.
+//! @throws std::runtime_error if `var_types` is not two entries, each `"c"` or
+//!   `"d"`.
 inline Bicop
-Bicop::as_continuous() const
+Bicop::with_var_types(const std::vector<std::string>& var_types) const
 {
-  std::vector<std::string> cc = { "c", "c" };
-  if (var_types_ == cc)
+  if (var_types_ == var_types)
     return *this;
   auto bc_new = *this;
-  bc_new.set_var_types(cc);
+  bc_new.set_var_types(var_types);
   return bc_new;
 }
 

@@ -40,6 +40,20 @@ protected:
   Eigen::VectorXd cdf(const Eigen::MatrixXd& u,
                       const Eigen::MatrixXd& parameters) override;
 
+  // the interpolant is piecewise bilinear, so these two are exact sums of
+  // nonnegative weights against a nonnegative grid rather than differences
+  double rect_prob(double a1,
+                   double b1,
+                   double a2,
+                   double b2,
+                   const Eigen::MatrixXd& parameters) override;
+
+  double cond_interval_prob(double u_cond,
+                            double lo,
+                            double hi,
+                            size_t cond_var,
+                            const Eigen::MatrixXd& parameters) override;
+
   Eigen::VectorXd hfunc1_raw(const Eigen::MatrixXd& u,
                              const Eigen::MatrixXd& parameters) override;
 

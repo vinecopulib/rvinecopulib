@@ -337,7 +337,8 @@ public:
 
   Eigen::MatrixXd get_parameters_upper_bounds() const;
 
-  Bicop as_continuous() const;
+  Bicop with_var_types(
+    const std::vector<std::string>& var_types = { "c", "c" }) const;
 
 private:
   // Evaluate the continuous copula represented by this object without
