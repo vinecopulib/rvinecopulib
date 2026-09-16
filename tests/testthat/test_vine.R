@@ -638,3 +638,10 @@ test_that("margin candidate controls are validated", {
     "univariateML.*do not support observation weights"
   )
 })
+
+test_that("dvine returns a log-density on request", {
+  set.seed(2)
+  x <- sapply(1:4, function(i) rnorm(100))
+  fit <- vine(x, copula_controls = list(family_set = "par"))
+  expect_eql(dvine(x, fit, log = TRUE), log(dvine(x, fit)))
+})

@@ -526,3 +526,36 @@ test_that("zero-truncated independence models can be refit", {
   expect_equal(refit_indep$loglik, 0)
   expect_identical(refit_indep$nobs, 12L)
 })
+
+test_that("the log-density survives where the density underflows", {
+  # a vine density is a product of one factor per edge, so in high dimensions
+  # it underflows to exactly 0 while its logarithm is an ordinary double
+  set.seed(11)
+  d <- 60
+  n <- 40
+  z <- rnorm(n)
+  x <- sapply(seq_len(d), function(i) 0.99 * z + sqrt(1 - 0.99^2) * rnorm(n))
+  fit <- vinecop(pseudo_obs(x), family_set = "gaussian", keep_data = TRUE)
+
+  set.seed(5)
+  contradicting <- pseudo_obs(matrix(rnorm(n * d), n, d))
+  pdf <- dvinecop(contradicting, fit)
+  logpdf <- dvinecop(contradicting, fit, log = TRUE)
+
+  expect_true(all(pdf == 0)) # the density cannot represent these values
+  expect_true(all(is.finite(logpdf))) # the log-density can
+  expect_true(is.finite(mBICV(fit, newdata = contradicting)))
+})
+
+test_that("the log-density agrees with the density where both are finite", {
+  set.seed(1)
+  u <- sapply(1:5, function(i) runif(200))
+  fit <- vinecop(u, family_set = "par", keep_data = TRUE)
+
+  expect_eql(dvinecop(u, fit, log = TRUE), log(dvinecop(u, fit)))
+  expect_eql(mBICV(fit, newdata = u), mBICV(fit))
+
+  keep_all <- dvinecop(u, fit, keep_all = TRUE)
+  expect_true("logpdf" %in% names(keep_all))
+  expect_eql(keep_all$logpdf, log(keep_all$pdf))
+})

@@ -42,6 +42,12 @@ for the backend changes.
   `margin_dist()` and `margin_family()`, distribution and quantile generics, and
   model metadata through `margin_info()`.
 
+* `dvinecop()` and `dvine()` gain a `log` argument returning the log-density,
+  and `dvinecop(keep_all = TRUE)` reports `logpdf` alongside `pdf`. A vine
+  density is a product of one factor per edge, so it underflows to `0` in high
+  dimensions or under strong dependence while its logarithm is still an
+  ordinary double.
+
 * Add `kde1d_family()`, `univariateML_family()`, and `stats_margin()` adapters.
   `vine()` can select among these and user-defined candidates through
   `margins_controls$family_set` while reporting and skipping failed candidates.
@@ -82,6 +88,11 @@ for the backend changes.
 
 * Ensure weighted Wilson random spanning trees terminate when all candidate
   edge strengths are zero.
+
+* `mBICV(object, newdata = )` no longer returns `Inf` when the density
+  underflows. It computed the log-likelihood as `sum(log(dvinecop(newdata)))`,
+  which collapses as soon as one observation underflows to `0`; it now uses the
+  backend's log-space log-likelihood, as the stored `object$loglik` always did.
 
 * Correctly evaluate and refit zero-truncated models and models whose omitted
   pair copulas represent implicit independence.

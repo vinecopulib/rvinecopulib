@@ -14,7 +14,14 @@
 \alias{hessian.vinecop_dist}
 \title{Vine copula distributions}
 \usage{
-dvinecop(u, vinecop, cores = 1, keep_all = FALSE, parameters = NULL)
+dvinecop(
+  u,
+  vinecop,
+  cores = 1,
+  keep_all = FALSE,
+  parameters = NULL,
+  log = FALSE
+)
 
 scores(u, vinecop, ...)
 
@@ -56,6 +63,13 @@ copulas, columns follow the \verb{(tree, edge, parameter)} order of \code{scores
 Parameters are not recycled. Only continuous parametric models are
 supported.}
 
+\item{log}{if \code{TRUE}, \code{dvinecop()} returns the log-density instead of the
+density. A vine density is a product of one factor per edge, so it
+underflows to \code{0} in high dimensions or under strong dependence while its
+logarithm is still an ordinary double; \code{log = TRUE} accumulates in log
+space and is the accurate way to obtain it. Ignored when
+\code{keep_all = TRUE}, which reports both.}
+
 \item{...}{unused.}
 
 \item{step_wise}{if \code{FALSE}, the score/Hessian is computed for the full
@@ -91,7 +105,8 @@ transiently reoriented and is not modified.}
 average Hessian matrix.
 
 If \code{keep_all = TRUE}, \code{dvinecop()} returns a list with entries \code{pdf},
-\code{pdf_edges}, \code{hfunc1}, \code{hfunc2}, \code{hfunc1_sub}, and \code{hfunc2_sub}. The \verb{_sub}
+\code{logpdf}, \code{pdf_edges}, \code{hfunc1}, \code{hfunc2}, \code{hfunc1_sub}, and \code{hfunc2_sub}.
+The \verb{_sub}
 entries contain h-functions evaluated at left-sided limits when the model
 contains discrete variables; they are empty for fully continuous models.
 
