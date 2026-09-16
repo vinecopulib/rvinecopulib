@@ -26,10 +26,11 @@ where d is the number of variables in the vine.}
 done in parallel on \code{cores} batches .}
 
 \item{log}{if \code{TRUE}, \code{dvine()} returns the log-density instead of the
-density. The joint density is a product over the margins and the vine
-edges, so it underflows to \code{0} in high dimensions or under strong
-dependence while its logarithm is still an ordinary double; \code{log = TRUE}
-accumulates in log space.}
+density. The density is accumulated in log space either way and only
+exponentiated at the end; \code{log = TRUE} skips that last step. The joint
+density is a product over the margins and the vine edges, so it underflows
+to \code{0} in high dimensions or under strong dependence while its logarithm
+is still an ordinary double.}
 
 \item{n_mc}{number of samples used for quasi Monte Carlo integration.}
 

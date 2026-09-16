@@ -48,6 +48,12 @@ for the backend changes.
   dimensions or under strong dependence while its logarithm is still an
   ordinary double.
 
+* `dvine()` accumulates the margins and the copula density in log space and
+  exponentiates once at the end, so it returns a representable density where it
+  previously returned `0`: the copula factor used to be exponentiated before
+  being multiplied by the marginal densities, discarding a joint density that
+  concentrated margins bring back into range.
+
 * Add `kde1d_family()`, `univariateML_family()`, and `stats_margin()` adapters.
   `vine()` can select among these and user-defined candidates through
   `margins_controls$family_set` while reporting and skipping failed candidates.
