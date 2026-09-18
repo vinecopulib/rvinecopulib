@@ -1,0 +1,955 @@
+%% Bibliography for "rvinecopulib: A Fast and Comprehensive Implementation of
+%% Vine Copula Models in C++ and R" (JSS submission).
+%%
+%% JSS style: all titles in title case; \pkg{}, \proglang{}, \code{} used where
+%% appropriate; journal names spelled out in house form.
+
+%% ------------------------------------------------------------------
+%% Foundations
+%% ------------------------------------------------------------------
+
+@incollection{joe1996,
+  author    = {Harry Joe},
+  title     = {Families of $m$-Variate Distributions with Given Margins and
+               $m(m-1)/2$ Bivariate Dependence Parameters},
+  booktitle = {Distributions with Fixed Marginals and Related Topics},
+  editor    = {Ludger R{\"u}schendorf and Berthold Schweizer and Michael D. Taylor},
+  series    = {IMS Lecture Notes--Monograph Series},
+  volume    = {28},
+  pages     = {120--141},
+  year      = {1996},
+  publisher = {Institute of Mathematical Statistics},
+  address   = {Hayward},
+  doi       = {10.1214/lnms/1215452614}
+}
+
+@article{bedford2001,
+  author  = {Tim Bedford and Roger M. Cooke},
+  title   = {Probability Density Decomposition for Conditionally Dependent
+             Random Variables Modeled by Vines},
+  journal = {Annals of Mathematics and Artificial Intelligence},
+  volume  = {32},
+  number  = {1},
+  pages   = {245--268},
+  year    = {2001},
+  doi     = {10.1023/A:1016725902970}
+}
+
+@article{bedford2002,
+  author  = {Tim Bedford and Roger M. Cooke},
+  title   = {Vines -- A New Graphical Model for Dependent Random Variables},
+  journal = {The Annals of Statistics},
+  volume  = {30},
+  number  = {4},
+  pages   = {1031--1068},
+  year    = {2002},
+  doi     = {10.1214/aos/1031689016}
+}
+
+@article{aas2009,
+  author  = {Kjersti Aas and Claudia Czado and Arnoldo Frigessi and Henrik Bakken},
+  title   = {Pair-Copula Constructions of Multiple Dependence},
+  journal = {Insurance: Mathematics and Economics},
+  volume  = {44},
+  number  = {2},
+  pages   = {182--198},
+  year    = {2009},
+  doi     = {10.1016/j.insmatheco.2007.02.001}
+}
+
+@book{kurowicka2011,
+  editor    = {Dorota Kurowicka and Harry Joe},
+  title     = {Dependence Modeling: Vine Copula Handbook},
+  publisher = {World Scientific},
+  address   = {Singapore},
+  year      = {2011},
+  doi       = {10.1142/7699}
+}
+
+@book{joe2014,
+  author    = {Harry Joe},
+  title     = {Dependence Modeling with Copulas},
+  series    = {Monographs on Statistics and Applied Probability},
+  volume    = {134},
+  publisher = {Chapman \& Hall/CRC},
+  address   = {Boca Raton},
+  year      = {2014},
+  doi       = {10.1201/b17116}
+}
+
+@book{czado2019,
+  author    = {Claudia Czado},
+  title     = {Analyzing Dependent Data with Vine Copulas: A Practical Guide with \proglang{R}},
+  series    = {Lecture Notes in Statistics},
+  volume    = {222},
+  publisher = {Springer-Verlag},
+  address   = {Cham},
+  year      = {2019},
+  doi       = {10.1007/978-3-030-13785-4}
+}
+
+@article{czado2022,
+  author  = {Claudia Czado and Thomas Nagler},
+  title   = {Vine Copula Based Modeling},
+  journal = {Annual Review of Statistics and Its Application},
+  volume  = {9},
+  number  = {1},
+  pages   = {453--477},
+  year    = {2022},
+  doi     = {10.1146/annurev-statistics-040220-101153}
+}
+
+@article{sklar1959,
+  author  = {Abe Sklar},
+  title   = {Fonctions de R{\'e}partition {\`a} $n$ Dimensions et Leurs Marges},
+  journal = {Publications de l'Institut de Statistique de l'Universit{\'e} de Paris},
+  volume  = {8},
+  pages   = {229--231},
+  year    = {1959}
+}
+
+%% ------------------------------------------------------------------
+%% Structure selection, truncation, sparsity
+%% ------------------------------------------------------------------
+
+@article{dissmann2013,
+  author  = {Jeffrey Di{\ss}mann and Eike C. Brechmann and Claudia Czado and
+             Dorota Kurowicka},
+  title   = {Selecting and Estimating Regular Vine Copulae and Application to
+             Financial Returns},
+  journal = {Computational Statistics \& Data Analysis},
+  volume  = {59},
+  pages   = {52--69},
+  year    = {2013},
+  doi     = {10.1016/j.csda.2012.08.010}
+}
+
+@article{brechmann2012,
+  author  = {Eike C. Brechmann and Claudia Czado and Kjersti Aas},
+  title   = {Truncated Regular Vines in High Dimensions with Application to
+             Financial Data},
+  journal = {The Canadian Journal of Statistics},
+  volume  = {40},
+  number  = {1},
+  pages   = {68--85},
+  year    = {2012},
+  doi     = {10.1002/cjs.10141}
+}
+
+@article{brechmann2015,
+  author  = {Eike C. Brechmann and Harry Joe},
+  title   = {Truncation of Vine Copulas Using Fit Indices},
+  journal = {Journal of Multivariate Analysis},
+  volume  = {138},
+  pages   = {19--33},
+  year    = {2015},
+  doi     = {10.1016/j.jmva.2015.02.012}
+}
+
+@article{nagler2019,
+  author  = {Thomas Nagler and Christian Bumann and Claudia Czado},
+  title   = {Model Selection in Sparse High-Dimensional Vine Copula Models with
+             an Application to Portfolio Risk},
+  journal = {Journal of Multivariate Analysis},
+  volume  = {172},
+  pages   = {180--192},
+  year    = {2019},
+  doi     = {10.1016/j.jmva.2019.03.004}
+}
+
+@article{czado2013,
+  author  = {Claudia Czado and Stephan Jeske and Mathias Hofmann},
+  title   = {Selection Strategies for Regular Vine Copulae},
+  journal = {Journal de la Soci{\'e}t{\'e} Fran{\c c}aise de Statistique},
+  volume  = {154},
+  number  = {1},
+  pages   = {174--191},
+  year    = {2013}
+}
+
+@inproceedings{wilson1996,
+  author    = {David Bruce Wilson},
+  title     = {Generating Random Spanning Trees More Quickly Than the Cover Time},
+  booktitle = {Proceedings of the Twenty-Eighth Annual ACM Symposium on Theory
+               of Computing (STOC '96)},
+  pages     = {296--303},
+  year      = {1996},
+  publisher = {ACM},
+  address   = {New York},
+  doi       = {10.1145/237814.237880}
+}
+
+@article{renyi1959,
+  author  = {Alfr{\'e}d R{\'e}nyi},
+  title   = {On Measures of Dependence},
+  journal = {Acta Mathematica Academiae Scientiarum Hungaricae},
+  volume  = {10},
+  number  = {3},
+  pages   = {441--451},
+  year    = {1959},
+  doi     = {10.1007/BF02024507}
+}
+
+@article{breiman1985,
+  author  = {Leo Breiman and Jerome H. Friedman},
+  title   = {Estimating Optimal Transformations for Multiple Regression and
+             Correlation},
+  journal = {Journal of the American Statistical Association},
+  volume  = {80},
+  number  = {391},
+  pages   = {580--598},
+  year    = {1985},
+  doi     = {10.1080/01621459.1985.10478157}
+}
+
+@article{chatterjee2021,
+  author  = {Sourav Chatterjee},
+  title   = {A New Coefficient of Correlation},
+  journal = {Journal of the American Statistical Association},
+  volume  = {116},
+  number  = {536},
+  pages   = {2009--2022},
+  year    = {2021},
+  doi     = {10.1080/01621459.2020.1758115}
+}
+
+@article{hoeffding1948,
+  author  = {Wassily Hoeffding},
+  title   = {A Non-Parametric Test of Independence},
+  journal = {The Annals of Mathematical Statistics},
+  volume  = {19},
+  number  = {4},
+  pages   = {546--557},
+  year    = {1948},
+  doi     = {10.1214/aoms/1177730150}
+}
+
+@techreport{vatter2025,
+  author      = {Thibault Vatter and Thomas Nagler},
+  title       = {Throwing Vines at the Wall: Structure Learning via Random Search},
+  type        = {arXiv preprint},
+  number      = {2510.20035},
+  institution = {arXiv.org E-Print Archive},
+  year        = {2025},
+  doi         = {10.48550/arXiv.2510.20035}
+}
+
+%% ------------------------------------------------------------------
+%% Nonparametric pair copulas
+%% ------------------------------------------------------------------
+
+@article{nagler2016,
+  author  = {Thomas Nagler and Claudia Czado},
+  title   = {Evading the Curse of Dimensionality in Nonparametric Density
+             Estimation with Simplified Vine Copulas},
+  journal = {Journal of Multivariate Analysis},
+  volume  = {151},
+  pages   = {69--89},
+  year    = {2016},
+  doi     = {10.1016/j.jmva.2016.07.003}
+}
+
+@article{geenens2017,
+  author  = {Gery Geenens and Arthur Charpentier and Davy Paindaveine},
+  title   = {Probit Transformation for Nonparametric Kernel Estimation of the
+             Copula Density},
+  journal = {Bernoulli},
+  volume  = {23},
+  number  = {3},
+  pages   = {1848--1873},
+  year    = {2017},
+  doi     = {10.3150/15-BEJ798}
+}
+
+@article{nagler2017,
+  author  = {Thomas Nagler and Christian Schellhase and Claudia Czado},
+  title   = {Nonparametric Estimation of Simplified Vine Copula Models:
+             Comparison of Methods},
+  journal = {Dependence Modeling},
+  volume  = {5},
+  number  = {1},
+  pages   = {99--120},
+  year    = {2017},
+  doi     = {10.1515/demo-2017-0007}
+}
+
+@book{loader1999,
+  author    = {Clive Loader},
+  title     = {Local Regression and Likelihood},
+  series    = {Statistics and Computing},
+  publisher = {Springer-Verlag},
+  address   = {New York},
+  year      = {1999},
+  doi       = {10.1007/b98858}
+}
+
+@article{nagler2018spl,
+  author  = {Thomas Nagler},
+  title   = {A Generic Approach to Nonparametric Function Estimation with
+             Mixed Data},
+  journal = {Statistics \& Probability Letters},
+  volume  = {137},
+  pages   = {326--330},
+  year    = {2018},
+  doi     = {10.1016/j.spl.2018.02.040}
+}
+
+@article{nagler2018mms,
+  author  = {Thomas Nagler},
+  title   = {Asymptotic Analysis of the Jittering Kernel Density Estimator},
+  journal = {Mathematical Methods of Statistics},
+  volume  = {27},
+  number  = {1},
+  pages   = {32--46},
+  year    = {2018},
+  doi     = {10.3103/S1066530718010027}
+}
+
+@article{geenens2014,
+  author  = {Gery Geenens},
+  title   = {Probit Transformation for Kernel Density Estimation on the Unit
+             Interval},
+  journal = {Journal of the American Statistical Association},
+  volume  = {109},
+  number  = {505},
+  pages   = {346--358},
+  year    = {2014},
+  doi     = {10.1080/01621459.2013.842173}
+}
+
+%% ------------------------------------------------------------------
+%% Discrete and mixed data
+%% ------------------------------------------------------------------
+
+@article{panagiotelis2012,
+  author  = {Anastasios Panagiotelis and Claudia Czado and Harry Joe},
+  title   = {Pair Copula Constructions for Multivariate Discrete Data},
+  journal = {Journal of the American Statistical Association},
+  volume  = {107},
+  number  = {499},
+  pages   = {1063--1072},
+  year    = {2012},
+  doi     = {10.1080/01621459.2012.682850}
+}
+
+@article{panagiotelis2017,
+  author  = {Anastasios Panagiotelis and Claudia Czado and Harry Joe and Jakob St{\"o}ber},
+  title   = {Model Selection for Discrete Regular Vine Copulas},
+  journal = {Computational Statistics \& Data Analysis},
+  volume  = {106},
+  pages   = {138--152},
+  year    = {2017},
+  doi     = {10.1016/j.csda.2016.09.007}
+}
+
+@article{stober2015,
+  author  = {Jakob St{\"o}ber and Hyokyoung G. Hong and Claudia Czado and Pulak Ghosh},
+  title   = {Comorbidity of Chronic Diseases in the Elderly: Patterns Identified
+             by a Copula Design for Mixed Responses},
+  journal = {Computational Statistics \& Data Analysis},
+  volume  = {88},
+  pages   = {28--39},
+  year    = {2015},
+  doi     = {10.1016/j.csda.2015.02.001}
+}
+
+@article{funk2026,
+  author  = {Henri Funk and Ralf Ludwig and Helmut K{\"u}chenhoff and Thomas Nagler},
+  title   = {Towards More Realistic Climate Model Outputs: A Multivariate Bias
+             Correction Based on Zero-Inflated Vine Copulas},
+  journal = {Journal of the Royal Statistical Society C},
+  volume  = {75},
+  number  = {2},
+  pages   = {271--302},
+  year    = {2026},
+  doi     = {10.1093/jrsssc/qlaf044}
+}
+
+@techreport{schallhorn2017,
+  author      = {Nicole Schallhorn and Daniel Kraus and Thomas Nagler and Claudia Czado},
+  title       = {D-Vine Quantile Regression with Discrete Variables},
+  type        = {arXiv preprint},
+  number      = {1705.08310},
+  institution = {arXiv.org E-Print Archive},
+  year        = {2017},
+  doi         = {10.48550/arXiv.1705.08310}
+}
+
+%% ------------------------------------------------------------------
+%% Derivatives, standard errors, inference
+%% ------------------------------------------------------------------
+
+@article{stober2013,
+  author  = {Jakob St{\"o}ber and Ulf Schepsmeier},
+  title   = {Estimating Standard Errors in Regular Vine Copula Models},
+  journal = {Computational Statistics},
+  volume  = {28},
+  number  = {6},
+  pages   = {2679--2707},
+  year    = {2013},
+  doi     = {10.1007/s00180-013-0423-8}
+}
+
+@article{schepsmeier2014,
+  author  = {Ulf Schepsmeier and Jakob St{\"o}ber},
+  title   = {Derivatives and {F}isher Information of Bivariate Copulas},
+  journal = {Statistical Papers},
+  volume  = {55},
+  number  = {2},
+  pages   = {525--542},
+  year    = {2014},
+  doi     = {10.1007/s00362-013-0498-x}
+}
+
+@article{haff2013,
+  author  = {Ingrid Hob{\ae}k Haff},
+  title   = {Parameter Estimation for Pair-Copula Constructions},
+  journal = {Bernoulli},
+  volume  = {19},
+  number  = {2},
+  pages   = {462--491},
+  year    = {2013},
+  doi     = {10.3150/12-BEJ413}
+}
+
+@article{haff2012,
+  author  = {Ingrid Hob{\ae}k Haff},
+  title   = {Comparison of Estimators for Pair-Copula Constructions},
+  journal = {Journal of Multivariate Analysis},
+  volume  = {110},
+  pages   = {91--105},
+  year    = {2012},
+  doi     = {10.1016/j.jmva.2011.08.013}
+}
+
+@article{joe2005,
+  author  = {Harry Joe},
+  title   = {Asymptotic Efficiency of the Two-Stage Estimation Method for
+             Copula-Based Models},
+  journal = {Journal of Multivariate Analysis},
+  volume  = {94},
+  number  = {2},
+  pages   = {401--419},
+  year    = {2005},
+  doi     = {10.1016/j.jmva.2004.06.003}
+}
+
+@article{white1982,
+  author  = {Halbert White},
+  title   = {Maximum Likelihood Estimation of Misspecified Models},
+  journal = {Econometrica},
+  volume  = {50},
+  number  = {1},
+  pages   = {1--25},
+  year    = {1982},
+  doi     = {10.2307/1912526}
+}
+
+@article{ko2019,
+  author  = {Vinnie Ko and Nils Lid Hjort},
+  title   = {Model Robust Inference with Two-Stage Maximum Likelihood Estimation
+             for Copulas},
+  journal = {Journal of Multivariate Analysis},
+  volume  = {171},
+  pages   = {362--381},
+  year    = {2019},
+  doi     = {10.1016/j.jmva.2019.01.004}
+}
+
+%% ------------------------------------------------------------------
+%% Conditional simulation and transforms
+%% ------------------------------------------------------------------
+
+@article{rosenblatt1952,
+  author  = {Murray Rosenblatt},
+  title   = {Remarks on a Multivariate Transformation},
+  journal = {The Annals of Mathematical Statistics},
+  volume  = {23},
+  number  = {3},
+  pages   = {470--472},
+  year    = {1952},
+  doi     = {10.1214/aoms/1177729394}
+}
+
+@article{brockwell2007,
+  author  = {A. E. Brockwell},
+  title   = {Universal Residuals: A Multivariate Transformation},
+  journal = {Statistics \& Probability Letters},
+  volume  = {77},
+  number  = {14},
+  pages   = {1473--1478},
+  year    = {2007},
+  doi     = {10.1016/j.spl.2007.02.008}
+}
+
+@article{czado2009,
+  author  = {Claudia Czado and Tilmann Gneiting and Leonhard Held},
+  title   = {Predictive Model Assessment for Count Data},
+  journal = {Biometrics},
+  volume  = {65},
+  number  = {4},
+  pages   = {1254--1261},
+  year    = {2009},
+  doi     = {10.1111/j.1541-0420.2009.01191.x}
+}
+
+@article{cooke2015,
+  author  = {Roger M. Cooke and Dorota Kurowicka and Kevin Wilson},
+  title   = {Sampling, Conditionalizing, Counting, Merging, Searching Regular Vines},
+  journal = {Journal of Multivariate Analysis},
+  volume  = {138},
+  pages   = {4--18},
+  year    = {2015},
+  doi     = {10.1016/j.jmva.2015.02.001}
+}
+
+@article{bevacqua2017,
+  author  = {Emanuele Bevacqua and Douglas Maraun and Ingrid Hob{\ae}k Haff and
+             Martin Widmann and Mathieu Vrac},
+  title   = {Multivariate Statistical Modelling of Compound Events via
+             Pair-Copula Constructions: Analysis of Floods in {R}avenna ({I}taly)},
+  journal = {Hydrology and Earth System Sciences},
+  volume  = {21},
+  number  = {6},
+  pages   = {2701--2723},
+  year    = {2017},
+  doi     = {10.5194/hess-21-2701-2017}
+}
+
+@article{zhu2020,
+  author  = {Kailun Zhu and Dorota Kurowicka and Gabriela F. Nane},
+  title   = {Common Sampling Orders of Regular Vines with Application to Model
+             Selection},
+  journal = {Computational Statistics \& Data Analysis},
+  volume  = {142},
+  pages   = {106811},
+  year    = {2020},
+  doi     = {10.1016/j.csda.2019.106811}
+}
+
+@article{cambou2017,
+  author  = {Mathieu Cambou and Marius Hofert and Christiane Lemieux},
+  title   = {Quasi-Random Numbers for Copula Models},
+  journal = {Statistics and Computing},
+  volume  = {27},
+  number  = {5},
+  pages   = {1307--1329},
+  year    = {2017},
+  doi     = {10.1007/s11222-016-9688-4}
+}
+
+%% ------------------------------------------------------------------
+%% Covariate-dependent and time-varying parameters
+%% ------------------------------------------------------------------
+
+@article{patton2006,
+  author  = {Andrew J. Patton},
+  title   = {Modelling Asymmetric Exchange Rate Dependence},
+  journal = {International Economic Review},
+  volume  = {47},
+  number  = {2},
+  pages   = {527--556},
+  year    = {2006},
+  doi     = {10.1111/j.1468-2354.2006.00387.x}
+}
+
+@article{almeida2012,
+  author  = {Carlos Almeida and Claudia Czado},
+  title   = {Efficient {B}ayesian Inference for Stochastic Time-Varying Copula Models},
+  journal = {Computational Statistics \& Data Analysis},
+  volume  = {56},
+  number  = {6},
+  pages   = {1511--1527},
+  year    = {2012},
+  doi     = {10.1016/j.csda.2011.08.015}
+}
+
+@article{vatter2015,
+  author  = {Thibault Vatter and Val{\'e}rie Chavez-Demoulin},
+  title   = {Generalized Additive Models for Conditional Dependence Structures},
+  journal = {Journal of Multivariate Analysis},
+  volume  = {141},
+  pages   = {147--167},
+  year    = {2015},
+  doi     = {10.1016/j.jmva.2015.07.003}
+}
+
+@article{vatter2018,
+  author  = {Thibault Vatter and Thomas Nagler},
+  title   = {Generalized Additive Models for Pair-Copula Constructions},
+  journal = {Journal of Computational and Graphical Statistics},
+  volume  = {27},
+  number  = {4},
+  pages   = {715--727},
+  year    = {2018},
+  doi     = {10.1080/10618600.2018.1451338}
+}
+
+@article{acar2011,
+  author  = {Elif F. Acar and Radu V. Craiu and Fang Yao},
+  title   = {Dependence Calibration in Conditional Copulas: A Nonparametric Approach},
+  journal = {Biometrics},
+  volume  = {67},
+  number  = {2},
+  pages   = {445--453},
+  year    = {2011},
+  doi     = {10.1111/j.1541-0420.2010.01472.x}
+}
+
+%% ------------------------------------------------------------------
+%% Extremes
+%% ------------------------------------------------------------------
+
+@article{tawn1988,
+  author  = {Jonathan A. Tawn},
+  title   = {Bivariate Extreme Value Theory: Models and Estimation},
+  journal = {Biometrika},
+  volume  = {75},
+  number  = {3},
+  pages   = {397--415},
+  year    = {1988},
+  doi     = {10.1093/biomet/75.3.397}
+}
+
+%% ------------------------------------------------------------------
+%% Applications of the ecosystem
+%% ------------------------------------------------------------------
+
+@article{nagler2022,
+  author  = {Thomas Nagler and Daniel Kr{\"u}ger and Aleksey Min},
+  title   = {Stationary Vine Copula Models for Multivariate Time Series},
+  journal = {Journal of Econometrics},
+  volume  = {227},
+  number  = {2},
+  pages   = {305--324},
+  year    = {2022},
+  doi     = {10.1016/j.jeconom.2021.11.015}
+}
+
+@article{kraus2017,
+  author  = {Daniel Kraus and Claudia Czado},
+  title   = {D-Vine Copula Based Quantile Regression},
+  journal = {Computational Statistics \& Data Analysis},
+  volume  = {110},
+  pages   = {1--18},
+  year    = {2017},
+  doi     = {10.1016/j.csda.2016.12.009}
+}
+
+%% ------------------------------------------------------------------
+%% Software
+%% ------------------------------------------------------------------
+
+@article{brechmann2013,
+  author  = {Eike Christian Brechmann and Ulf Schepsmeier},
+  title   = {Modeling Dependence with {C}- and {D}-Vine Copulas: The \proglang{R}
+             Package \pkg{CDVine}},
+  journal = {Journal of Statistical Software},
+  volume  = {52},
+  number  = {3},
+  pages   = {1--27},
+  year    = {2013},
+  doi     = {10.18637/jss.v052.i03}
+}
+
+@article{nagler2018jss,
+  author  = {Thomas Nagler},
+  title   = {\pkg{kdecopula}: An \proglang{R} Package for the Kernel Estimation
+             of Bivariate Copula Densities},
+  journal = {Journal of Statistical Software},
+  volume  = {84},
+  number  = {7},
+  pages   = {1--22},
+  year    = {2018},
+  doi     = {10.18637/jss.v084.i07}
+}
+
+@article{wright2017,
+  author  = {Marvin N. Wright and Andreas Ziegler},
+  title   = {\pkg{ranger}: A Fast Implementation of Random Forests for High
+             Dimensional Data in \proglang{C++} and \proglang{R}},
+  journal = {Journal of Statistical Software},
+  volume  = {77},
+  number  = {1},
+  pages   = {1--17},
+  year    = {2017},
+  doi     = {10.18637/jss.v077.i01}
+}
+
+@article{eddelbuettel2011,
+  author  = {Dirk Eddelbuettel and Romain Fran{\c c}ois},
+  title   = {\pkg{Rcpp}: Seamless \proglang{R} and \proglang{C++} Integration},
+  journal = {Journal of Statistical Software},
+  volume  = {40},
+  number  = {8},
+  pages   = {1--18},
+  year    = {2011},
+  doi     = {10.18637/jss.v040.i08}
+}
+
+@article{bates2013,
+  author  = {Douglas Bates and Dirk Eddelbuettel},
+  title   = {Fast and Elegant Numerical Linear Algebra Using the \pkg{RcppEigen} Package},
+  journal = {Journal of Statistical Software},
+  volume  = {52},
+  number  = {5},
+  pages   = {1--24},
+  year    = {2013},
+  doi     = {10.18637/jss.v052.i05}
+}
+
+@article{theussl2020,
+  author  = {Stefan Theu{\ss}l and Florian Schwendinger and Kurt Hornik},
+  title   = {\pkg{ROI}: An Extensible \proglang{R} Optimization Infrastructure},
+  journal = {Journal of Statistical Software},
+  volume  = {94},
+  number  = {15},
+  pages   = {1--64},
+  year    = {2020},
+  doi     = {10.18637/jss.v094.i15}
+}
+
+@article{claassen2024,
+  author  = {Judith N. Claassen and Elco E. Koks and Marleen C. de Ruiter and
+             Philip J. Ward and Wiebke S. J{\"a}ger},
+  title   = {\pkg{VineCopulas}: An Open-Source \proglang{Python} Package for
+             Vine Copula Modelling},
+  journal = {Journal of Open Source Software},
+  volume  = {9},
+  number  = {101},
+  pages   = {6728},
+  year    = {2024},
+  doi     = {10.21105/joss.06728}
+}
+
+@article{coblenz2021,
+  author  = {Markus Coblenz},
+  title   = {\pkg{MATVines}: A Vine Copula Package for \proglang{MATLAB}},
+  journal = {SoftwareX},
+  volume  = {14},
+  pages   = {100700},
+  year    = {2021},
+  doi     = {10.1016/j.softx.2021.100700}
+}
+
+@article{laverny2024,
+  author  = {Oskar Laverny and Santiago Jimenez},
+  title   = {\pkg{Copulas.jl}: A Fully \pkg{Distributions.jl}-Compliant Copula Package},
+  journal = {Journal of Open Source Software},
+  volume  = {9},
+  number  = {94},
+  pages   = {6189},
+  year    = {2024},
+  doi     = {10.21105/joss.06189}
+}
+
+@Manual{VineCopula,
+  title  = {\pkg{VineCopula}: Statistical Inference of Vine Copulas},
+  author = {Thomas Nagler and Ulf Schepsmeier and Jakob St{\"o}ber and
+            Eike Christian Brechmann and Benedikt Gr{\"a}ler and Tobias Erhardt},
+  year   = {2025},
+  note   = {\proglang{R} package version 2.6.2},
+  url    = {https://CRAN.R-project.org/package=VineCopula}
+}
+
+@Manual{kdevine,
+  title  = {\pkg{kdevine}: Multivariate Kernel Density Estimation with Vine Copulas},
+  author = {Thomas Nagler},
+  year   = {2025},
+  note   = {\proglang{R} package version 0.4.6},
+  url    = {https://CRAN.R-project.org/package=kdevine}
+}
+
+@Manual{kde1d,
+  title  = {\pkg{kde1d}: Univariate Kernel Density Estimation},
+  author = {Thomas Nagler and Thibault Vatter},
+  year   = {2025},
+  note   = {\proglang{R} package version 1.1.1},
+  url    = {https://CRAN.R-project.org/package=kde1d}
+}
+
+@Manual{wdm,
+  title  = {\pkg{wdm}: Weighted Dependence Measures},
+  author = {Thomas Nagler},
+  year   = {2025},
+  note   = {\proglang{R} package version 0.3.0},
+  url    = {https://CRAN.R-project.org/package=wdm}
+}
+
+@Manual{univariateML,
+  title  = {\pkg{univariateML}: Maximum Likelihood Estimation for Univariate Densities},
+  author = {Jonas Moss},
+  year   = {2025},
+  note   = {\proglang{R} package version 1.5.0},
+  url    = {https://CRAN.R-project.org/package=univariateML}
+}
+
+@Manual{RcppThread,
+  title  = {\pkg{RcppThread}: R-Friendly Threading in \proglang{C++}},
+  author = {Thomas Nagler},
+  year   = {2025},
+  note   = {\proglang{R} package version 2.1.2},
+  url    = {https://CRAN.R-project.org/package=RcppThread}
+}
+
+@Manual{insuranceData,
+  title  = {\pkg{insuranceData}: A Collection of Insurance Datasets Useful in Risk Classification},
+  author = {Alicja Wolny-Dominiak and Michal Trzesiok},
+  year   = {2014},
+  note   = {\proglang{R} package version 1.0},
+  url    = {https://CRAN.R-project.org/package=insuranceData}
+}
+
+@Manual{bench,
+  title  = {\pkg{bench}: High Precision Timing of \proglang{R} Expressions},
+  author = {Jim Hester and Davis Vaughan},
+  year   = {2024},
+  note   = {\proglang{R} package version 1.1.4},
+  url    = {https://CRAN.R-project.org/package=bench}
+}
+
+@Manual{R,
+  title        = {\proglang{R}: A Language and Environment for Statistical Computing},
+  author       = {{R Core Team}},
+  organization = {R Foundation for Statistical Computing},
+  address      = {Vienna, Austria},
+  year         = {2026},
+  url          = {https://www.R-project.org/}
+}
+
+@Manual{eigen,
+  title  = {\pkg{Eigen} v3},
+  author = {Ga{\"e}l Guennebaud and Beno{\^i}t Jacob and others},
+  year   = {2010},
+  url    = {https://eigen.tuxfamily.org/}
+}
+
+@book{siek2002,
+  author    = {Jeremy G. Siek and Lie-Quan Lee and Andrew Lumsdaine},
+  title     = {The {B}oost Graph Library: User Guide and Reference Manual},
+  publisher = {Addison-Wesley},
+  address   = {Boston},
+  year      = {2002}
+}
+
+%% ------------------------------------------------------------------
+%% Companion work
+%% ------------------------------------------------------------------
+
+@techreport{companion,
+  author      = {Thomas Nagler and Thibault Vatter},
+  title       = {Algorithms for Vine Copula Models: Conditional Simulation,
+                 Nonparametric Estimation with Mixed Data, and Differentiable
+                 Likelihoods},
+  type        = {arXiv preprint},
+  institution = {arXiv.org E-Print Archive},
+  year        = {2026},
+  note        = {In preparation}
+}
+
+@techreport{gauss2026,
+  author      = {Julian Gauss and Thomas Nagler},
+  title       = {Properties of Stepwise Parameter Estimation in High-Dimensional
+                 Vine Copulas},
+  type        = {arXiv preprint},
+  number      = {2511.17291},
+  institution = {arXiv.org E-Print Archive},
+  year        = {2026},
+  doi         = {10.48550/arXiv.2511.17291}
+}
+
+@techreport{pyvinecopulib,
+  author      = {Thibault Vatter and Thomas Nagler},
+  title       = {\pkg{pyvinecopulib}: Scalable Vine Copula Modeling for
+                 \proglang{Python} and Machine Learning},
+  institution = {Submitted},
+  year        = {2026}
+}
+
+%% ------------------------------------------------------------------
+%% Two-step estimation and the simplifying assumption
+%% ------------------------------------------------------------------
+
+@article{genest1995,
+  author  = {Christian Genest and Kilani Ghoudi and Louis-Paul Rivest},
+  title   = {A Semiparametric Estimation Procedure of Dependence Parameters in
+             Multivariate Families of Distributions},
+  journal = {Biometrika},
+  volume  = {82},
+  number  = {3},
+  pages   = {543--552},
+  year    = {1995},
+  doi     = {10.1093/biomet/82.3.543}
+}
+
+@techreport{joe1996ifm,
+  author      = {Harry Joe and James Jianmeng Xu},
+  title       = {The Estimation Method of Inference Functions for Margins for
+                 Multivariate Models},
+  type        = {Technical Report},
+  number      = {166},
+  institution = {Department of Statistics, University of British Columbia},
+  year        = {1996},
+  doi         = {10.14288/1.0225985}
+}
+
+@article{nagler2025,
+  author  = {Thomas Nagler},
+  title   = {Simplified Vine Copula Models: State of Science and Affairs},
+  journal = {Risk Sciences},
+  volume  = {1},
+  pages   = {100022},
+  year    = {2025},
+  doi     = {10.1016/j.risk.2025.100022}
+}
+
+@article{zeileis2006,
+  author  = {Achim Zeileis},
+  title   = {Object-Oriented Computation of Sandwich Estimators},
+  journal = {Journal of Statistical Software},
+  volume  = {16},
+  number  = {9},
+  pages   = {1--16},
+  year    = {2006},
+  doi     = {10.18637/jss.v016.i09}
+}
+
+@Manual{vinereg,
+  title  = {\pkg{vinereg}: D-Vine Quantile Regression},
+  author = {Thomas Nagler},
+  year   = {2025},
+  note   = {\proglang{R} package version 0.12.1},
+  url    = {https://CRAN.R-project.org/package=vinereg}
+}
+
+@Manual{svines,
+  title  = {\pkg{svines}: Stationary Vine Copula Models},
+  author = {Thomas Nagler},
+  year   = {2025},
+  note   = {\proglang{R} package version 0.2.7},
+  url    = {https://CRAN.R-project.org/package=svines}
+}
+
+@Manual{portvine,
+  title  = {\pkg{portvine}: Vine Based (Un)Conditional Portfolio Risk Measure Estimation},
+  author = {Emanuel Sommer},
+  year   = {2024},
+  note   = {\proglang{R} package version 1.0.3},
+  url    = {https://CRAN.R-project.org/package=portvine}
+}
+
+@Manual{copulareg,
+  title  = {\pkg{copulareg}: Copula Regression},
+  author = {Simon Boge Brant and Ingrid Hob{\ae}k Haff},
+  year   = {2022},
+  note   = {\proglang{R} package version 0.1.0},
+  url    = {https://CRAN.R-project.org/package=copulareg}
+}
+
+@Manual{covsim,
+  title  = {\pkg{covsim}: {VITA}, {IG} and {PLSIM} Simulation for Given Covariance and Marginals},
+  author = {Njaal Foldnes and Steffen Gr{\o}nneberg},
+  year   = {2023},
+  note   = {\proglang{R} package version 1.1.0},
+  url    = {https://CRAN.R-project.org/package=covsim}
+}
