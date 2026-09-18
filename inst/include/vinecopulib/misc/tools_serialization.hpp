@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -8,6 +8,7 @@
 
 #include <Eigen/Dense>
 #include <fstream>
+#include <stdexcept>
 #include <vector>
 #include <vinecopulib/misc/nlohmann_json.hpp>
 #include <vinecopulib/misc/triangular_array.hpp>
@@ -15,6 +16,20 @@
 namespace vinecopulib {
 
 namespace tools_serialization {
+
+//! @brief Whether a filename selects the binary CBOR encoding.
+//!
+//! CBOR is a binary encoding of the same logical `nlohmann::json`
+//! representation; filenames ending in `.cbor` use it, all others use JSON.
+inline bool
+is_cbor_filename(const std::string& filename)
+{
+  const std::string extension = ".cbor";
+  return filename.size() >= extension.size() &&
+         filename.compare(filename.size() - extension.size(),
+                          extension.size(),
+                          extension) == 0;
+}
 
 //! conversion from Eigen::Matrix to nlohmann::json
 //!
@@ -32,33 +47,6 @@ matrix_to_json(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& matrix)
     for (long row = 0; row < matrix.rows(); row++) {
       json_data.push_back(matrix(row, col));
     }
-  }
-  output["data"] = json_data;
-
-  return output;
-}
-
-//! conversion from vinecopulib::TriangularArray to nlohmann::json
-//!
-//! @param array The vinecopulib::TriangularArray to convert.
-//! @return the corresponding nlohmann::json.
-template<class T>
-inline nlohmann::json
-triangular_array_to_json(const TriangularArray<T>& array)
-{
-  nlohmann::json output;
-  size_t d = array.get_dim();
-  size_t trunc_lvl = array.get_trunc_lvl();
-  output["d"] = d;
-  output["t"] = trunc_lvl;
-
-  nlohmann::json json_data;
-  for (size_t i = 0; i < std::min(d - -1, trunc_lvl); i++) {
-    nlohmann::json row;
-    for (size_t j = 0; j < d - 1 - i; j++) {
-      row.push_back(array(i, j));
-    }
-    json_data.push_back(row);
   }
   output["data"] = json_data;
 
@@ -99,19 +87,6 @@ json_to_matrix(const nlohmann::json& input)
   return matrix.cast<T>();
 }
 
-//! conversion from nlohmann::json to vinecopulib::TriangularArray
-//!
-//! @param input The nlohmann::json to convert.
-//! @return the corresponding vinecopulib::TriangularArray
-template<typename T>
-inline TriangularArray<T>
-json_to_triangular_array(const nlohmann::json& input)
-{
-
-  std::vector<std::vector<T>> vec = input["data"];
-  return TriangularArray<T>(vec);
-}
-
 //! conversion from nlohmann::json to std::vector
 //!
 //! @param input The nlohmann::json to convert.
@@ -125,20 +100,61 @@ json_to_vector(const nlohmann::json& input)
   return res;
 }
 
+//! @brief Reads a `nlohmann::json` from a JSON or CBOR file.
+//!
+//! Files ending in `.cbor` are read as CBOR, all others as JSON.
 inline nlohmann::json
 file_to_json(const std::string& filename)
 {
-  nlohmann::json output;
-  std::ifstream file(filename);
-  file >> output;
-  return output;
+  const bool cbor = is_cbor_filename(filename);
+  auto mode = std::ios::in;
+  if (cbor) {
+    mode |= std::ios::binary;
+  }
+  std::ifstream file(filename, mode);
+  if (!file.is_open()) {
+    throw std::runtime_error("could not open " + filename + " for reading");
+  }
+
+  try {
+    if (cbor) {
+      return nlohmann::json::from_cbor(file);
+    }
+    nlohmann::json output;
+    file >> output;
+    return output;
+  } catch (const nlohmann::json::exception& exception) {
+    throw std::runtime_error("failed to parse " +
+                             std::string(cbor ? "CBOR" : "JSON") + " file " +
+                             filename + ": " + exception.what());
+  }
 }
 
+//! @brief Writes a `nlohmann::json` to a JSON or CBOR file.
+//!
+//! Filenames ending in `.cbor` are written as CBOR, all others as JSON.
 inline void
 json_to_file(const std::string& filename, const nlohmann::json& json)
 {
-  std::ofstream file(filename);
-  file << json << std::endl;
+  const bool cbor = is_cbor_filename(filename);
+  auto mode = std::ios::out;
+  if (cbor) {
+    mode |= std::ios::binary;
+  }
+  std::ofstream file(filename, mode);
+  if (!file.is_open()) {
+    throw std::runtime_error("could not open " + filename + " for writing");
+  }
+
+  if (cbor) {
+    nlohmann::json::to_cbor(json, file);
+  } else {
+    file << json << std::endl;
+  }
+  file.flush();
+  if (!file) {
+    throw std::runtime_error("failed to write " + filename);
+  }
 }
 }
 }

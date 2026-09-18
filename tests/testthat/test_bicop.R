@@ -61,6 +61,23 @@ test_that("returns proper 'bicop' object", {
   )
 })
 
+test_that("TLL fitting is equivariant to swapping arguments", {
+  set.seed(42)
+  x <- matrix(rnorm(400), 200, 2)
+  x[, 2] <- 0.8 * x[, 1] + sqrt(1 - 0.8^2) * x[, 2]
+  u <- pseudo_obs(x)
+
+  fit_12 <- bicop(u, family_set = "tll")
+  fit_21 <- bicop(u[, 2:1], family_set = "tll")
+
+  expect_equal(
+    dbicop(u, fit_12),
+    dbicop(u[, 2:1], fit_21),
+    tolerance = 1e-10
+  )
+  expect_equal(fit_12$loglik, fit_21$loglik, tolerance = 1e-10)
+})
+
 test_that("family sets (w/ partial matching)", {
   bicop(u, family = "arch")
   bicop(u, family = "nonp")
@@ -79,6 +96,20 @@ test_that("as.bicop works", {
   expect_s3_class(as.bicop(object), "bicop_dist")
   object$var_types <- c("d", "d")
   expect_eql(unlist(as.bicop(object)), unlist(object))
+
+  vec_object <- list(
+    family = "gaussian",
+    rotation = 0,
+    parameters = matrix(seq(-0.5, 0.5, length.out = 10), ncol = 1),
+    npars = 10
+  )
+  expect_error(
+    as.bicop(vec_object),
+    "not supported by 'bicop_dist' objects"
+  )
+  unchecked <- as.bicop(vec_object, check = FALSE)
+  expect_s3_class(unchecked, "bicop_dist")
+  expect_equal(unchecked$parameters, vec_object$parameters)
 })
 
 
@@ -90,8 +121,20 @@ test_that("S3 generics work", {
   expect_eql(predict(fit, u, what = "hinv1"), fitted(fit, what = "hinv1"))
   expect_eql(predict(fit, u, what = "hinv2"), fitted(fit, what = "hinv2"))
   u <- as.data.frame(u)
-  expect_equiv(logLik(fit), sum(log(predict(fit, u, what = "pdf"))))
+  expect_s3_class(logLik(fit), "logLik")
+  expect_equal(
+    as.numeric(logLik(fit)),
+    sum(log(predict(fit, u, what = "pdf")))
+  )
   expect_output(print(fit))
-  expect_output(summary(fit))
+  summary_output <- capture.output(summary(fit))
+  expect_length(summary_output, 3)
+  expect_match(summary_output[1], "Bivariate copula fit")
+  expect_match(summary_output[2], "^Dependence: tau =")
+  expect_match(summary_output[2], "; beta =")
+  expect_match(summary_output[3], "^Fit: n =")
+  expect_match(summary_output[3], "; logLik = .+; df = .+; AIC = .+; BIC =")
+  expect_eql(tail_dep(fit), tail_dep(as.bicop(fit)))
+  expect_eql(blomqvist_beta(fit), blomqvist_beta(as.bicop(fit)))
   expect_output(print(bicop(u, family = "nonp")))
 })

@@ -1,208 +1,147 @@
-rvinecopulib
-==========
+
+<!-- README.md is generated from README.Rmd. Please edit that file. -->
+
+# rvinecopulib
 
 [![R-CMD-check](https://github.com/vinecopulib/rvinecopulib/actions/workflows/R-CMD-check.yaml/badge.svg?branch=main)](https://github.com/vinecopulib/rvinecopulib/actions/workflows/R-CMD-check.yaml)
-[![Coverage Status](https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/main.svg)](https://app.codecov.io/github/vinecopulib/rvinecopulib?branch=main)
-[![CRAN version](https://www.r-pkg.org/badges/version/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib) 
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib)
+[![Coverage
+Status](https://img.shields.io/codecov/c/github/vinecopulib/rvinecopulib/main.svg)](https://app.codecov.io/github/vinecopulib/rvinecopulib?branch=main)
+[![CRAN
+version](https://www.r-pkg.org/badges/version/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/rvinecopulib)](https://cran.r-project.org/package=rvinecopulib)
 
-Vine copulas are a flexible class of dependence models consisting of bivariate 
-building blocks (see e.g., Aas et al., 2009). You can find a comprehensive 
-list of publications and other materials on [vine-copula.org](https://www.math.cit.tum.de/math/forschung/gruppen/statistics/vine-copula-models/).
+rvinecopulib provides high-performance tools for bivariate and vine
+copula models. It covers model construction, estimation and selection,
+simulation, prediction, visualization, discrete and mixed data, and full
+multivariate distributions with fitted margins. The package is the R
+interface to the
+[vinecopulib](https://github.com/vinecopulib/vinecopulib) C++ library.
 
-This package is the [R](https://cran.r-project.org/) API to the C++ library 
-[vinecopulib](https://github.com/vinecopulib/vinecopulib), a header-only 
-C++ library for vine copula models based on [Boost](https://www.boost.org/) and 
-[Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page).
+## Main capabilities
 
-It provides high-performance implementations of the core features of the popular
-[VineCopula R library](https://github.com/tnagler/VineCopula), in particular
-inference algorithms for both vine copula and bivariate copula models.
-Advantages over VineCopula are  
-* a sleaker and more modern API,
-* shorter runtimes, especially in high dimensions,
-* nonparametric and multi-parameter families,
-* ability to model discrete variables.
+- fit, select, evaluate, and simulate [bivariate copula
+  models](https://vinecopulib.github.io/rvinecopulib/articles/bivariate-copulas.html),
+  including parametric, nonparametric, rotated, and extreme-value
+  families;
+- fit and select high-dimensional [vine copula models and
+  structures](https://vinecopulib.github.io/rvinecopulib/articles/vine-copula-models.html),
+  with automatic family, structure, truncation, and threshold selection;
+- combine vine copulas with nonparametric, parametric, or custom
+  [marginal
+  models](https://vinecopulib.github.io/rvinecopulib/articles/marginal-models.html)
+  to form complete multivariate distributions;
+- handle continuous, integer-valued discrete, mixed, and [zero-inflated
+  data](https://vinecopulib.github.io/rvinecopulib/articles/discrete-data.html),
+  with optional observation weights;
+- perform [conditional simulation and Rosenblatt
+  transforms](https://vinecopulib.github.io/rvinecopulib/articles/conditional-simulation.html);
+- compute likelihood [scores and
+  Hessians](https://vinecopulib.github.io/rvinecopulib/articles/likelihood-inference.html)
+  and evaluate models with observation-specific parameters;
+- use parallel fitting, custom marginal families, and custom
+  tree-selection criteria in extensible modeling workflows.
 
-As VineCopula, the package is primarily made for the statistical analysis of 
-**vine copula models**. The package includes tools for parameter estimation, 
-model selection, simulation, and visualization. Tools for estimation, selection 
-and exploratory data analysis of **bivariate copula** models are also provided. 
-Please see the [API documentation](https://vinecopulib.github.io/rvinecopulib/) 
-for a detailed description of all functions.
+## Installation
 
-Table of contents
------------------
+Install the stable release from CRAN:
 
-- [rvinecopulib](#rvinecopulib)
-  - [Table of contents](#table-of-contents)
-  - [How to install](#how-to-install)
-  - [Package overview](#package-overview)
-    - [Bivariate copula modeling: bicop_dist and bicop](#bivariate-copula-modeling-bicopdist-and-bicop)
-    - [Vine copula modeling: vinecop_dist and vinecop](#vine-copula-modeling-vinecopdist-and-vinecop)
-    - [Bivariate copula families](#bivariate-copula-families)
-  - [References](#references)
+``` r
+install.packages("rvinecopulib")
+```
 
-------------------------------------------------------------------------
+Install the development version from GitHub:
 
+``` r
+remotes::install_github("vinecopulib/rvinecopulib")
+```
 
-How to install
---------------
+## Examples
 
+rvinecopulib exposes the same modeling framework at three levels:
 
-You can install:
+| Starting point                       | Main function | Model                  |
+|--------------------------------------|---------------|------------------------|
+| Two uniform variables                | `bicop()`     | One bivariate copula   |
+| Uniform pseudo-observations          | `vinecop()`   | Dependence only        |
+| Observations on their original scale | `vine()`      | Margins and dependence |
 
--   the stable release on CRAN:
+### A bivariate copula
 
-    ``` r
-    install.packages("rvinecopulib")
-    ```
+`bicop()` fits and selects a copula model for two uniform variables.
+Fixed models can be created with `bicop_dist()`.
 
--   the latest development version:
+``` r
+u <- rbicop(200, family = "clayton", rotation = 90, parameters = 2)
+bivariate_fit <- bicop(u, family_set = "par")
+summary(bivariate_fit)
 
-    ``` r
-    remotes::install_github("vinecopulib/rvinecopulib")
-    ```
+dbicop(u[1:5, ], bivariate_fit)
+tail_dep(bivariate_fit)
+```
 
-------------------------------------------------------------------------
+See the [bivariate-copula
+article](https://vinecopulib.github.io/rvinecopulib/articles/bivariate-copulas.html)
+for implemented families, rotations, h-functions, dependence measures,
+and selection controls.
 
-Package overview
-----------------
+### A vine copula on the copula scale
 
-Below, we list most functions and features you should know about. As usual in 
-copula models, data are assumed to be serially independent and lie in the unit
-hypercube. 
+`pseudo_obs()` converts continuous observations to approximately uniform
+scores. `vinecop()` then selects the vine structure, pair-copula
+families, and parameters.
 
-### Bivariate copula modeling: bicop_dist and bicop
+``` r
+u <- pseudo_obs(as.matrix(USArrests))
+copula_fit <- vinecop(u, family_set = "onepar")
+summary(copula_fit)
 
-  * `bicop_dist`: Creates a bivariate copula by specifying the family, rotation 
-    and parameters. Returns an object of class `bicop_dist`. The class has the
-    following methods:
-     
-     * `print`: a brief overview of the bivariate copula. 
-            
-     * `plot`, `contour`: surface/perspective and contour plots of the copula
-        density. Possibly coupled with standard normal margins (default for
-        `contour`). 
-        
-  * `dbicop`, `pbicop`, `rbicop`, `hbicop`: Density, distribution function, random 
-    generation and H-functions (with their inverses) for bivariate copula 
-    distributions. Additionally to the evaluation points, you can provide 
-    either `family`, `rotation` and `parameter`, or an object of class 
-    `bicop_dist`.
+simulated_u <- rvinecop(100, copula_fit)
+dvinecop(simulated_u[1:5, ], copula_fit)
+```
 
-  * `bicop`: Estimates parameters of a bivariate copula. Estimation can be done 
-    by maximum likelihood (`par_method = "mle"`) or inversion of the empirical 
-    Kendall's tau (`par_method = "itau"`, only available for one-parameter 
-    families) for parametric families, and using local-likelihood 
-    approximations of order zero/one/two for nonparametric models 
-    (`nonpar_method="constant"`/`nonpar_method="linear"`/`nonpar_method="quadratic"`). 
-    If `family_set` is a vector of families, then the family is selected using
-    `selcrit="loglik"`, `selcrit="aic"` or `selcrit="bic"`. The function 
-    returns an object of classes `bicop` and `bicop_dist`.
-    The class `bicop` has the following following methods:
-    
-     * `print`: a more comprehensive overview of the bivariate copula model 
-       with fit statistics. 
-            
-     * `predict`, `fitted`: predictions and fitted values for a bivariate 
-       copula model.
-       
-     * `nobs`, `logLik`, `AIC`, `BIC`: usual fit statistics.
+See the [vine-copula
+article](https://vinecopulib.github.io/rvinecopulib/articles/vine-copula-models.html)
+for structure construction, selection, truncation, and model inspection.
 
-### Vine copula modeling: vinecop_dist and vinecop
+### A full distribution on the original scale
 
-  * `vinecop_dist`: Creates a vine copula by specifying a nested list of 
-    `bicop_dist` objects and a quadratic structure matrix. 
-    Returns an object of class `vinecop_dist`. The class has the
-    following methods:
-     
-     * `print`, `summary`: a brief and more comprehensive overview of the vine 
-       copula. 
-            
-     * `plot`: plots of the vine structure. 
-        
-  * `dvinecop`, `pvinecop`, `rvinecop`: Density, distribution function, random 
-    generation for vine copula distributions. 
+`vine()` fits one marginal distribution per variable and a vine copula
+to their probability integral transforms. The default margins are
+nonparametric; parametric and custom marginal families are also
+supported.
 
-  * `vinecop`: automated fitting for vine copula models. The function inherits 
-    the parameters of `bicop`. Optionally, a quadratic `matrix` can be used as 
-    input to pre-specify the vine structure. `tree_crit` describes the 
-    criterion for tree selection, one of `"tau"`, `"rho"`, `"hoeffd"` for 
-    Kendall's tau, Spearman's rho, and Hoeffding's D, respectively.
-    Additionally, `threshold` allows to threshold the `tree_crit` and 
-    `trunc_lvl` to truncate the vine copula, with `threshold_sel` and 
-    `trunc_lvl_sel` to automatically select both parameters. The function 
-    returns an object of classes `vinecop` and `vinecop_dist`.
-    The class has the `vinecop` has the following following methods:
-    
-     * `print`, `summary`: a brief and more comprehensive overview of the vine 
-       copula with additional fit statistics information.
-            
-     * `predict`, `fitted`: predictions and fitted values for a vine 
-       copula model.
-       
-     * `nobs`, `logLik`, `AIC`, `BIC`: usual fit statistics.
+``` r
+n <- 150
+latent <- rnorm(n)
+x <- data.frame(
+  amount = exp(latent + rnorm(n, sd = 0.5)),
+  duration = exp(0.5 * latent + rnorm(n, sd = 0.7)),
+  count = rpois(n, exp(0.2 + 0.3 * latent))
+)
 
-### Bivariate copula families
+fit <- vine(
+  x,
+  var_types = c("c", "c", "d"),
+  copula_controls = list(family_set = "onepar")
+)
+summary(fit)
+rvine(5, fit)
+```
 
-In this package several bivariate copula families are included for bivariate 
-and multivariate analysis using vine copulas. It provides 
-functionality of elliptical (Gaussian and Student-t) as well as Archimedean 
-(Clayton, Gumbel, Frank, Joe, BB1, BB6, BB7 and BB8) copulas to cover a large
-range of dependence patterns. For Archimedean copula families,
-rotated versions are included to cover negative dependence as well. 
-Additionally, nonparametric families are also supported.
+See the [marginal-modeling
+article](https://vinecopulib.github.io/rvinecopulib/articles/marginal-models.html)
+for parametric selection, custom families, ordered variables, zero
+inflation, and observation weights. The [getting-started
+article](https://vinecopulib.github.io/rvinecopulib/articles/getting-started.html)
+develops the complete workflow.
 
-| type          | name                  | name in R  |
-| ------------- | --------------------- | ---------- |
-| -             | Independence          | "indep"    |
-| Elliptical    | Gaussian              | "gaussian" |
-| "             | Student t             | "t"        |
-| Archimedean   | Clayton               | "clayton"  |
-| "             | Gumbel                | "gumbel"   |
-| "             | Frank                 | "frank"    |
-| "             | Joe                   | "joe"      |
-| "             | Clayton-Gumbel (BB1)  | "bb1"      |
-| "             | Joe-Gumbel (BB6)      | "bb6"      |
-| "             | Joe-Clayton (BB7)     | "bb7"      |
-| "             | Joe-Frank (BB8)       | "bb8"      |
-| Nonparametric | Transformation kernel | "tll"      |
+The constructors `bicop_dist()`, `vinecop_dist()`, and `vine_dist()`
+create models from components specified directly.
 
-Note that several convenience vectors of families are included:
-* `"all"` contains all the families
-* `"parametric"` contains the parametric families (all except `"tll"`)
-* `"nonparametric"` contains the nonparametric families (`"indep"` and `"tll"`)
-* `"one_par"` contains the parametric families with a single parameter
-(`"gaussian"`, `"clayton"`, `"gumbel"`, `"frank"`, and `"joe"`)
-* `"two_par"` contains the parametric families with two parameters
-(`"t"`, `"bb1"`, `"bb6"`, `"bb7"`, and `"bb8"`)
-* `"elliptical"` contains the elliptical families
-* `"archimedean"` contains the archimedean families
-* `"BB"` contains the BB families
-* `"itau"` families for which estimation by Kendall's tau inversion is available
-(`"indep"`,`"gaussian"`, `"t"`,`"clayton"`, `"gumbel"`, `"frank"`, `"joe"`)
-
-The following table shows the parameter ranges of bivariate copula families with 
-one or two parameters:
-
-| Copula family        | `par[1]`   | `par[2]`   |
-| :------------------- | :--------- | :--------- |
-| Gaussian             | `(-1, 1)`  | -          |
-| Student t            | `(-1, 1)`  | `(2,Inf)`  |
-| Clayton              | `(0, Inf)` | -          |
-| Gumbel               | `[1, Inf)` | -          |
-| Frank                | `R \ {0}`  | -          |
-| Joe                  | `(1, Inf)` | -          |
-| Clayton-Gumbel (BB1) | `(0, Inf)` | `[1, Inf)` |
-| Joe-Gumbel (BB6)     | `[1 ,Inf)` | `[1, Inf)` |
-| Joe-Clayton (BB7)    | `[1, Inf)` | `(0, Inf)` |
-| Joe-Frank (BB8)      | `[1, Inf)` | `(0, 1]`   |
-
-------------------------------------------------------------------------
-
-References
-----------
-
-Aas, K., C. Czado, A. Frigessi, and H. Bakken (2009). Pair-copula constructions 
-of multiple dependence. Insurance: Mathematics and Economics 44 (2), 182-198.
+The [complete API
+reference](https://vinecopulib.github.io/rvinecopulib/reference/) and
+all articles are available on the [package
+website](https://vinecopulib.github.io/rvinecopulib/). Questions and bug
+reports are welcome in the [GitHub issue
+tracker](https://github.com/vinecopulib/rvinecopulib/issues).

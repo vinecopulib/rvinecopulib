@@ -107,15 +107,15 @@ as_rvine_matrix.rvine_structure <- function(x, ..., validate = FALSE) {
 
   # extract order and dimension
   order <- x$order
-  d <- dim(x)[1]
-  trunc_lvl <- dim(x)[2]
+  d <- unname(dim(x)[1])
+  trunc_lvl <- unname(dim(x)[2])
 
   # set-up output
   matrix <- matrix(0, d, d)
 
   # fill output
   diag(matrix) <- order
-  matrix <- matrix[d:1, ]
+  matrix <- matrix[rev(seq_len(d)), , drop = FALSE]
   for (i in seq_len(min(trunc_lvl, d - 1))) {
     newrow <- order[x[["struct_array"]][[i]]]
     matrix[i, seq_along(newrow)] <- newrow
@@ -177,17 +177,22 @@ as_rvine_structure.rvine_matrix <- function(x, ..., validate = FALSE) {
   }
 
   # compute structure array in natural order
-  d <- dim(x)[1]
-  order <- order(diag(x[d:1, ]))
-  struct_array <- lapply(1:(d - 1), function(i) order[x[i, 1:(d - i)]])
+  d <- unname(dim(x)[1])
+  trunc_lvl <- unname(dim(x)[2])
+  reversed_x <- x[rev(seq_len(d)), , drop = FALSE]
+  order <- order(diag(reversed_x))
+  struct_array <- lapply(
+    seq_len(d - 1),
+    function(i) order[x[i, seq_len(d - i)]]
+  )
 
   # create and return x
   structure(
     list(
-      order = diag(x[d:1, ]),
+      order = diag(reversed_x),
       struct_array = struct_array,
       d = d,
-      trunc_lvl = dim(x)[2]
+      trunc_lvl = trunc_lvl
     ),
     class = c("rvine_structure", "list")
   )

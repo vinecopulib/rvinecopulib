@@ -5,7 +5,7 @@
 ^cran-comments\.md$
 ^.*\.Rprofile$
 ^README\.Rmd$
-^.*\.html$
+^vignettes/.*\.html$
 ^\.travis\.yml$
 ^appveyor\.yml$
 ^revdep$
@@ -19,3 +19,5 @@
 ^\.github$
 ^\.vscode$
 ^CRAN-SUBMISSION$
+^air\.toml$
+^AGENTS\.md$

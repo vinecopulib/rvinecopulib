@@ -43,7 +43,7 @@
 #' @examples
 #' # set up vine copula model
 #' u <- matrix(runif(20 * 10), 20, 10)
-#' vc <- vinecop(u, family = "indep")
+#' vc <- vinecop(u, family_set = "indep")
 #'
 #' # plot
 #' plot(vc, tree = c(1, 2))

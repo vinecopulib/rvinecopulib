@@ -24,13 +24,13 @@
 \code{"norm"} for the transformed density with standard normal margins,
 \code{"exp"} with standard exponential margins, and  \code{"flexp"} with
 flipped exponential margins. Default is \code{"norm"} for \code{type =
-  "contour"}, and \code{"unif"} for \code{type = "surface"}.}
+"contour"}, and \code{"unif"} for \code{type = "surface"}.}
 
 \item{size}{integer; the plot is based on values on a \verb{size x size} grid,
 default is 100.}
 
 \item{\dots}{optional arguments passed to \code{\link[graphics:contour]{graphics::contour()}} or
-\code{\link[lattice:cloud]{lattice::wireframe()}}.}
+\code{\link[lattice:wireframe]{lattice::wireframe()}}.}
 }
 \description{
 There are several options for plotting bicop_dist objects. The density of a
@@ -49,6 +49,6 @@ contour(obj) # contour plot with standard normal margins
 contour(obj, margins = "unif") # contour plot of copula density
 }
 \seealso{
-\code{\link[=bicop_dist]{bicop_dist()}}, \code{\link[graphics:contour]{graphics::contour()}}, \code{\link[lattice:cloud]{lattice::wireframe()}}
+\code{\link[=bicop_dist]{bicop_dist()}}, \code{\link[graphics:contour]{graphics::contour()}}, \code{\link[lattice:wireframe]{lattice::wireframe()}}
 }
 \keyword{plot}

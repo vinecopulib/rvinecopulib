@@ -11,7 +11,9 @@
 #'
 #' @noRd
 if_vec_to_matrix <- function(u, to_col = FALSE) {
-  if (is.null(u)) return(NULL)
+  if (is.null(u)) {
+    return(NULL)
+  }
   assert_that(is.numeric(u) | is.data.frame(u))
   if (NCOL(u) == 1) {
     if (to_col) {
@@ -25,6 +27,108 @@ if_vec_to_matrix <- function(u, to_col = FALSE) {
   }
 
   u
+}
+
+#' Internal: Validate and normalize a conditioning set.
+#' @param conditioning_set variable indices or names.
+#' @param var_names variable names, or `NULL`.
+#' @param d model dimension.
+#' @return an integer vector of 1-based variable indices.
+#' @noRd
+process_conditioning_set <- function(conditioning_set, var_names, d) {
+  if (is.null(conditioning_set) || length(conditioning_set) == 0) {
+    return(integer())
+  }
+
+  if (is.character(conditioning_set)) {
+    if (is.null(var_names)) {
+      stop(
+        "character 'conditioning_set' requires named variables.",
+        call. = FALSE
+      )
+    }
+    if (anyDuplicated(var_names)) {
+      stop(
+        "character 'conditioning_set' requires unique variable names.",
+        call. = FALSE
+      )
+    }
+    conditioning_set <- match(conditioning_set, var_names)
+    if (anyNA(conditioning_set)) {
+      stop("'conditioning_set' contains unknown variable names.", call. = FALSE)
+    }
+  } else {
+    if (
+      !is.numeric(conditioning_set) ||
+        anyNA(conditioning_set) ||
+        any(!is.finite(conditioning_set)) ||
+        any(conditioning_set != floor(conditioning_set))
+    ) {
+      stop(
+        "'conditioning_set' must contain variable indices or names.",
+        call. = FALSE
+      )
+    }
+  }
+
+  conditioning_set <- as.integer(conditioning_set)
+  if (any(conditioning_set < 1L | conditioning_set > d)) {
+    stop("'conditioning_set' indices must be between 1 and d.", call. = FALSE)
+  }
+  if (anyDuplicated(conditioning_set)) {
+    stop("'conditioning_set' must not contain duplicates.", call. = FALSE)
+  }
+  if (length(conditioning_set) >= d) {
+    stop(
+      "'conditioning_set' must contain at most d - 1 variables.",
+      call. = FALSE
+    )
+  }
+
+  conditioning_set
+}
+
+#' Internal: Normalize conditioning values and recycle a single row.
+#' @param x conditioning values.
+#' @param n required number of rows.
+#' @param arg argument name used in error messages.
+#' @param numeric_only whether all values must be numeric.
+#' @return a matrix or data frame with `n` rows.
+#' @noRd
+process_conditioning_values <- function(x, n, arg, numeric_only = FALSE) {
+  if (is.factor(x)) {
+    x <- as.data.frame(
+      lapply(seq_along(x), function(i) x[i]),
+      optional = TRUE
+    )
+  } else if (is.atomic(x) && is.vector(x)) {
+    x <- matrix(x, nrow = 1)
+  }
+
+  if (!is.matrix(x) && !is.data.frame(x)) {
+    stop(
+      sprintf("'%s' must be a vector, matrix, or data frame.", arg),
+      call. = FALSE
+    )
+  }
+  if (
+    numeric_only &&
+      !(is.numeric(x) ||
+        (is.data.frame(x) && all(vapply(x, is.numeric, logical(1)))))
+  ) {
+    stop(sprintf("'%s' must be numeric.", arg), call. = FALSE)
+  }
+
+  if (nrow(x) == 1L) {
+    x <- x[rep.int(1L, n), , drop = FALSE]
+  } else if (nrow(x) != n) {
+    stop(
+      sprintf("'%s' must have one or 'n' rows.", arg),
+      call. = FALSE
+    )
+  }
+
+  x
 }
 
 #' Internal: Convert arguments to `bicop_dist` object.
@@ -44,8 +148,65 @@ args2bicop <- function(family, rotation, parameters, var_types = c("c", "c")) {
       parameters <- numeric(0)
     }
     assert_that(is.string(family), is.number(rotation), is.numeric(parameters))
+    family <- family_set_all[pmatch(family, family_set_all)]
+    if (is_vectorized_bicop_parameters(parameters, family)) {
+      return(as.bicop(
+        list(
+          family = family,
+          rotation = rotation,
+          parameters = as.matrix(parameters),
+          var_types = var_types,
+          npars = length(parameters)
+        ),
+        check = FALSE
+      ))
+    }
     return(bicop_dist(family, rotation, parameters, var_types))
   }
+}
+
+is_vectorized_bicop_parameters <- function(parameters, family) {
+  parameters <- as.matrix(parameters)
+  if (
+    !(family %in% setdiff(family_set_parametric, "indep")) ||
+      (length(parameters) == 0) ||
+      (nrow(parameters) <= 1)
+  ) {
+    return(FALSE)
+  }
+
+  if (ncol(parameters) == 1) {
+    return(family %in% family_set_onepar)
+  }
+
+  TRUE
+}
+
+#' Internal: Validate a bivariate copula derivative selector.
+#' @param deriv character vector identifying one or two differentiation
+#'   components.
+#' @return The normalized components, or `NULL`.
+#' @noRd
+normalize_bicop_deriv <- function(deriv) {
+  if (is.null(deriv)) {
+    return(NULL)
+  }
+  if (!is.character(deriv) || !length(deriv) %in% 1:2 || anyNA(deriv)) {
+    stop(
+      "'deriv' must be NULL or a character vector of length one or two.",
+      call. = FALSE
+    )
+  }
+
+  deriv[deriv == "par"] <- "par1"
+  valid <- grepl("^(u1|u2|par[1-9][0-9]*)$", deriv)
+  if (!all(valid)) {
+    stop(
+      "components of 'deriv' must be 'u1', 'u2', 'par', or 'par<k>'.",
+      call. = FALSE
+    )
+  }
+  deriv
 }
 
 process_family_set <- function(family_set, par_method) {
@@ -166,75 +327,6 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
 # Get the depth of a list
 depth <- function(this) ifelse(is.list(this), 1L + max(sapply(this, depth)), 0L)
 
-supported_distributions <- c(
-  "beta",
-  "cauchy",
-  "chisq",
-  "exp",
-  "f",
-  "gamma",
-  "logis",
-  "lnorm",
-  "norm",
-  "t",
-  "unif",
-  "weibull"
-)
-
-#' @importFrom stats pbeta qbeta qbeta dcauchy pcauchy qcauchy dchisq pchisq
-#' @importFrom stats qchisq dexp pexp qexp df pf qf dgamma pgamma qgamma
-#' @importFrom stats dlnorm plnorm qlnorm dt pt qt dunif punif qunif
-#' @importFrom stats dweibull pweibull qweibull
-check_distr <- function(distr) {
-  ## if provided with a kde1d object, then there is nothing to do
-  if (inherits(distr, "kde1d")) {
-    return(TRUE)
-  }
-
-  ## basic sanity checks
-  if (!is.list(distr)) {
-    return("a distribution should be a kde1d object or a list")
-  }
-  if (!any(is.element(names(distr), "distr"))) {
-    return(
-      "a distribution should be a kde1d object or a list with a 'distr' element"
-    )
-  }
-  nn <- distr[["distr"]]
-  if (!is.element(nn, supported_distributions)) {
-    return("the provided name does not belong to supported distributions")
-  }
-
-  ## check that the provided parameters are consistent with the distribution
-  qfun <- get(paste0("q", nn))
-  par <- distr[names(distr) != "distr"]
-  par$p <- 0.5
-  e <- tryCatch(do.call(qfun, par), error = function(e) e)
-  if (any(class(e) == "error")) {
-    return(e$message)
-  }
-
-  return(TRUE)
-}
-
-get_npars_distr <- function(distr) {
-  switch(
-    distr$distr,
-    beta = 2,
-    cauchy = 2,
-    chisq = ifelse("ncp" %in% names(distr), 2, 1),
-    exp = 1,
-    f = 3,
-    gamma = 2,
-    lnorm = 2,
-    norm = 2,
-    logis = 2,
-    t = ifelse("ncp" %in% names(distr), 2, 1),
-    unif = 2,
-    weibull = ifelse("scale" %in% names(distr), 2, 1)
-  )
-}
-
 #' @noRd
 #' @importFrom assertthat assert_that on_failure<-
 #' @importFrom assertthat is.number is.string is.flag is.scalar
@@ -250,6 +342,34 @@ on_failure(in_set) <- function(call, env) {
     paste0(eval(call$set, env), collapse = ", "),
     "}."
   )
+}
+
+#' Test whether an object is a count accepted by native code
+#' @noRd
+is_count <- function(x) {
+  is.numeric(x) &&
+    length(x) == 1L &&
+    !is.na(x) &&
+    is.finite(x) &&
+    x > 0 &&
+    x == floor(x) &&
+    x <= .Machine$integer.max
+}
+
+#' Validate and convert a count passed to native code
+#' @noRd
+as_count <- function(x, arg) {
+  if (!is_count(x)) {
+    stop(
+      sprintf(
+        "`%s` must be a finite positive whole number no greater than %d.",
+        arg,
+        .Machine$integer.max
+      ),
+      call. = FALSE
+    )
+  }
+  as.double(x)
 }
 
 correct_var_types <- function(var_types, data) {

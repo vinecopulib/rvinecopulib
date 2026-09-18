@@ -1,4 +1,4 @@
-// Copyright © 2016-2025 Thomas Nagler and Thibault Vatter
+// Copyright © 2016-2026 Thomas Nagler and Thibault Vatter
 //
 // This file is part of the vinecopulib library and licensed under the terms of
 // the MIT license. For a copy, see the LICENSE file in the root directory of
@@ -8,7 +8,6 @@
 
 // interface specfifc #defines can be set here
 // (R package does: #define INTERFACED_FROM_R)
-#define INTERFACED_FROM_R
 
 // interface specific headers
 #ifdef INTERFACED_FROM_R

@@ -4,6 +4,10 @@ expect_equiv <- function(...) expect_equivalent(..., check.environment = FALSE)
 
 context("Exported statistical tools")
 
+test_that("NULL matrix input remains NULL", {
+  expect_null(if_vec_to_matrix(NULL))
+})
+
 set.seed(0)
 
 test_that("'pseudo_obs' works", {

@@ -11,7 +11,7 @@
 #'   additional options.
 #' @param par_method the estimation method for parametric models, either `"mle"`
 #'   for maximum likelihood or `"itau"` for inversion of Kendall's tau (only
-#'   available for one-parameter families and `"t"`.
+#'   available for one-parameter families and `"t"`).
 #' @param nonpar_method the estimation method for nonparametric models, either
 #'   `"constant"` for the standard transformation estimator, or
 #'   `"linear"`/`"quadratic"` for the local-likelihood approximations of order
@@ -70,7 +70,7 @@
 #' * `"twopar"` contains the parametric families with two parameters,
 #' (`"t"`, `"bb1"`, `"bb6"`, `"bb7"`, and `"bb8"`),
 #'
-#' * `"threepar"` contains the paramtric families with three parameters,
+#' * `"threepar"` contains the parametric families with three parameters,
 #' (`"tawn"`),
 #'
 #' * `"elliptical"` contains the elliptical families,
@@ -136,6 +136,7 @@ bicop <- function(
   keep_data = FALSE,
   cores = 1
 ) {
+  cores <- as_count(cores, "cores")
   assert_that(
     is.character(family_set),
     is.string(par_method),
@@ -150,8 +151,6 @@ bicop <- function(
     is.flag(presel),
     is.flag(allow_rotations),
     is.flag(keep_data),
-    is.number(cores),
-    cores > 0,
     correct_var_types(var_types)
   )
 
@@ -176,7 +175,7 @@ bicop <- function(
   )
 
   ## add information about the fit
-  bicop$names <- colnames(data)
+  bicop$names <- colnames(data)[1:2]
   if (keep_data) {
     bicop$data <- data
   }
@@ -216,6 +215,13 @@ as.bicop <- function(object, check = TRUE) {
   object$parameters <- as.matrix(object$parameters)
   if (is.null(object$var_types)) {
     object$var_types <- c("c", "c")
+  }
+  if (
+    check && is_vectorized_bicop_parameters(object$parameters, object$family)
+  ) {
+    stop(
+      "vectorized 'parameters' are not supported by 'bicop_dist' objects."
+    )
   }
   if (check) {
     bicop_check_cpp(object)
@@ -300,16 +306,22 @@ bicop_dist <- function(
       parameters <- as.matrix(parameters)
       stopifnot(dim(parameters) == c(30, 30))
       margin_integrals <- c(rowMeans(parameters), colMeans(parameters))
-      if (any(abs(margin_integrals - 1) > 0.5))
+      if (any(abs(margin_integrals - 1) > 0.5)) {
         warning(
           "margins implied by 'parameters' deviate strongly from the standard uniform distribution."
         )
+      }
     } else {
       parameters <- matrix(1, 30, 30)
     }
   }
 
   family <- family_set_all[pmatch(family, family_set_all)]
+  if (is_vectorized_bicop_parameters(parameters, family)) {
+    stop(
+      "vectorized 'parameters' are not supported by 'bicop_dist' objects."
+    )
+  }
   dist <- list(
     family = family,
     rotation = rotation,
