@@ -62,6 +62,7 @@ public:
 private:
   // the grid line at a fixed conditioning coordinate; `cond_knot` evaluates a
   // knot of it on demand, so no caller has to materialize the line
+  //! @brief A grid line at a fixed conditioning coordinate.
   struct CondLine
   {
     ptrdiff_t cell;

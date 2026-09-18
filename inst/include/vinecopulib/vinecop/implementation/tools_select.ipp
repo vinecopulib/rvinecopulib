@@ -771,11 +771,10 @@ VinecopSelector::finalize_unknown_structure(size_t trunc_lvl)
   pair_copulas_ = std::move(dec.pair_copulas);
 }
 
-//! @brief Gets pair copula pseudo-observations from h-functions.
-//! @param v0,v1 vertex indices.
+//! @brief Stores an edge's pair-copula pseudo-observations, taken from the
+//! h-functions the previous tree computed.
+//! @param e The edge to fill in.
 //! @param tree A vine tree.
-//! @return The pseudo-observations for the pair coula, extracted from
-//!     the h-functions calculated in the previous tree.
 inline void
 VinecopSelector::add_pc_info(const EdgeIterator& e, VineTree& tree)
 {
@@ -877,11 +876,8 @@ VinecopSelector::is_last_tree(size_t t) const
 //!        observations.
 //!     5. Fit and select a copula model for each edge.
 //!
-//! @param prev_tree Tree T_{k}.
-//! @param controls The controls for fitting a vine copula
-//!     (see FitControlsVinecop).
-//! @param tree_opt The current optimal tree (used only for sparse
-//!     selection).
+//! @param t Index of the tree to select, built from `trees_[t]`. The
+//!     controls and the optimal tree are members.
 inline void
 VinecopSelector::select_tree(size_t t)
 {
@@ -972,8 +968,8 @@ VinecopSelector::get_num_non_indeps_of_tree(size_t t)
   return num_non_indeps;
 }
 
-//! @brief Prints indices, family, and parameters for each pair-copula
-//! @param tree A vine tree.
+//! @brief Prints indices, family, and parameters for each pair-copula.
+//! @param t Index of the tree to print.
 inline void
 VinecopSelector::print_pair_copulas_of_tree(size_t t)
 {
@@ -1068,8 +1064,8 @@ VinecopSelector::make_base_tree(const Eigen::MatrixXd& data)
 //!     - conditioned/conditioning set,
 //!     - indices of vertices connected by the edge in the previous tree.
 //!
-//! @param tree T_{k}.
-//! @return A edge-less graph of vertices, each representing one edge of the
+//! @param prev_tree Tree T_{k}.
+//! @return An edge-less graph of vertices, each representing one edge of the
 //!     previous tree.
 inline VineTree
 VinecopSelector::edges_as_vertices(VineTree& prev_tree)
@@ -1122,7 +1118,7 @@ VinecopSelector::find_common_neighbor(size_t v0,
 }
 
 //! @brief Computes a fit id; can be used to reuse already fitted pair-copulas.
-//! @param edge.
+//! @param e The edge whose fit is identified.
 inline double
 VinecopSelector::compute_fit_id(const EdgeProperties& e)
 {
@@ -1226,10 +1222,12 @@ compute_edge_hfuncs(const EdgeIterator& e, VineTree& tree)
   }
 }
 
-//! @brief Fits and selects a pair copula for each edges.
+//! @brief Fits and selects a pair copula for each edge.
 //! @param tree A vine tree preprocessed with `add_edge_info()`.
 //! @param tree_opt The current optimal tree (used only for sparse
 //!     selection).
+//! @param last_tree Whether this is the last tree, whose edges need no
+//!     h-functions for a tree above.
 inline void
 VinecopSelector::select_pair_copulas(VineTree& tree,
                                      const VineTree& tree_opt,

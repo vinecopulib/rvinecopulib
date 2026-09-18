@@ -46,16 +46,16 @@ inline Bicop::Bicop(const BicopFamily family,
 //! @details Equivalent to creating a default `Bicop()` and then selecting
 //!  the model using `Bicop::select()`.
 //!
-//! @param data See `Bicop::select()`.
+//! @param u See `Bicop::select()`.
 //! @param controls See `Bicop::select()`.
 //! @param var_types Two strings specifying the types of the variables,
 //!   e.g., `("c", "d")` means first variable continuous, second discrete.
-inline Bicop::Bicop(const Eigen::MatrixXd& data,
+inline Bicop::Bicop(const Eigen::MatrixXd& u,
                     const FitControlsBicop& controls,
                     const std::vector<std::string>& var_types)
 {
   set_var_types(var_types);
-  select(data, controls);
+  select(u, controls);
 }
 
 //! @brief Copy constructor (deep copy)
@@ -2118,14 +2118,14 @@ Bicop::with_var_types(const std::vector<std::string>& var_types) const
 //!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
-//! @param data An \f$ n \times 2 \f$ matrix of observations for a continuous
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
 //!   model. For a model with \f$ k \f$ discrete variables, use an
 //!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
 //!   left-limit columns for continuous variables may be omitted to obtain the
 //!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @param controls The controls (see `FitControlsBicop`).
 inline void
-Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
+Bicop::fit(const Eigen::MatrixXd& u, const FitControlsBicop& controls)
 {
   std::string method;
   if (tools_stl::is_member(bicop_->get_family(), bicop_families::parametric)) {
@@ -2133,20 +2133,20 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
   } else {
     method = controls.get_nonparametric_method();
   }
-  check_data_dim(data);
-  tools_eigen::check_if_in_unit_cube(data);
+  check_data_dim(u);
+  tools_eigen::check_if_in_unit_cube(u);
 
   auto w = controls.get_weights();
-  Eigen::MatrixXd data_no_nan = data;
-  check_weights_size(w, data);
-  tools_eigen::remove_nans(data_no_nan, w);
+  Eigen::MatrixXd u_no_nan = u;
+  check_weights_size(w, u);
+  tools_eigen::remove_nans(u_no_nan, w);
 
-  bicop_->fit(prep_for_abstract(data_no_nan),
+  bicop_->fit(prep_for_abstract(u_no_nan),
               method,
               controls.get_nonparametric_mult(),
               controls.get_nonparametric_grid_size(),
               w);
-  nobs_ = data_no_nan.rows();
+  nobs_ = u_no_nan.rows();
 }
 
 //
@@ -2169,33 +2169,33 @@ Bicop::fit(const Eigen::MatrixXd& data, const FitControlsBicop& controls)
 //!
 //! Incomplete observations (i.e., ones with a NaN value) are discarded.
 //!
-//! @param data An \f$ n \times 2 \f$ matrix of observations for a continuous
+//! @param u An \f$ n \times 2 \f$ matrix of observations for a continuous
 //!   model. For a model with \f$ k \f$ discrete variables, use an
 //!   \f$ n \times 4 \f$ matrix containing the values and their left-limits;
 //!   left-limit columns for continuous variables may be omitted to obtain the
 //!   compact \f$ n \times (2 + k) \f$ layout (see @ref discrete).
 //! @param controls The controls (see `FitControlsBicop`).
 inline void
-Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
+Bicop::select(const Eigen::MatrixXd& u, FitControlsBicop controls)
 {
   using namespace tools_select;
-  check_weights_size(controls.get_weights(), data);
-  Eigen::MatrixXd data_no_nan = data;
+  check_weights_size(controls.get_weights(), u);
+  Eigen::MatrixXd u_no_nan = u;
   {
     auto w = controls.get_weights();
-    tools_eigen::remove_nans(data_no_nan, w);
+    tools_eigen::remove_nans(u_no_nan, w);
     controls.set_weights(w);
   }
-  check_data(data_no_nan);
-  nobs_ = data_no_nan.rows();
+  check_data(u_no_nan);
+  nobs_ = u_no_nan.rows();
 
   bicop_ = AbstractBicop::create();
   bicop_->set_var_types(var_types_);
   rotation_ = 0;
   bicop_->set_loglik(0.0);
-  if (data_no_nan.rows() >= 10) {
-    tools_eigen::trim(data_no_nan);
-    std::vector<Bicop> bicops = create_candidate_bicops(data_no_nan, controls);
+  if (u_no_nan.rows() >= 10) {
+    tools_eigen::trim(u_no_nan);
+    std::vector<Bicop> bicops = create_candidate_bicops(u_no_nan, controls);
     for (auto& bc : bicops) {
       bc.set_var_types(var_types_);
     }
@@ -2207,7 +2207,7 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
     auto fit_and_compare = [&](Bicop cop) {
       tools_interface::check_user_interrupt();
       // Estimate the model
-      cop.fit(data_no_nan, controls);
+      cop.fit(u_no_nan, controls);
 
       // Compute the selection criterion
       double new_criterion;
@@ -2217,7 +2217,7 @@ Bicop::select(const Eigen::MatrixXd& data, FitControlsBicop controls)
       } else if (controls.get_selection_criterion() == "aic") {
         new_criterion = -2 * ll + 2 * cop.get_npars();
       } else {
-        double n_eff = static_cast<double>(data_no_nan.rows());
+        double n_eff = static_cast<double>(u_no_nan.rows());
         if (controls.get_weights().size() > 0) {
           n_eff = std::pow(controls.get_weights().sum(), 2);
           n_eff /= controls.get_weights().array().pow(2).sum();

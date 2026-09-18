@@ -14,6 +14,8 @@ namespace tools_select {
 //! association direction.
 //! @param data Captured by reference to avoid data copies;
 //!     should NOT be modified though.
+//! @param controls The controls for the pair-copula fit, whose family set and
+//!     selection criterion the candidates are drawn from.
 inline std::vector<Bicop>
 create_candidate_bicops(const Eigen::MatrixXd& data,
                         const FitControlsBicop& controls)

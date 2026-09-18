@@ -352,14 +352,14 @@ FitControlsVinecop::set_threshold(double threshold)
   threshold_ = threshold;
 }
 
-//! @brief Gets whether to show a trace is during fitting.
+//! @brief Gets whether a trace is shown during fitting.
 inline bool
 FitControlsVinecop::get_show_trace() const
 {
   return show_trace_;
 }
 
-//! @brief Gets whether to show a trace is during fitting.
+//! @brief Sets whether a trace is shown during fitting.
 inline void
 FitControlsVinecop::set_show_trace(bool show_trace)
 {

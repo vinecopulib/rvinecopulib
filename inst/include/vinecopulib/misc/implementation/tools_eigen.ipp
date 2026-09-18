@@ -31,8 +31,8 @@ remove_nans(Eigen::MatrixXd& x)
 
 //! remove rows of a matrix which contain nan values or have zero weight
 //! @param x The matrix.
-//! @param a Vector of weights that is either empty or whose size is equal to
-//!   the number of columns of x.
+//! @param weights Vector of weights that is either empty or whose size is
+//!   equal to the number of rows of x.
 inline void
 remove_nans(Eigen::MatrixXd& x, Eigen::VectorXd& weights)
 {
@@ -180,9 +180,10 @@ invert_f(const Eigen::VectorXd& x,
 //! \f$ f(\text{lb}) \le x \le f(\text{ub}) \f$.
 //!
 //! @param x Evaluation points (the target values of \f$ f \f$).
-//! @param eval Fills `f` and `f'` at the currently-active (unconverged) rows;
-//!   evaluating only these rows keeps the expensive transcendental work
-//!   proportional to the average number of iterations, not the worst case.
+//! @param eval Fills \f$ f \f$ and \f$ f' \f$ at the currently-active
+//!   (unconverged) rows; evaluating only these keeps the expensive
+//!   transcendental work proportional to the average number of iterations,
+//!   not the worst case.
 //! @param lb Lower bound.
 //! @param ub Upper bound.
 //! @param tol Convergence tolerance on the step size.
@@ -389,6 +390,5 @@ read_matxd(const char* filename, int max_buffer_size)
   return result;
 }
 
-//! @}
 }
 }

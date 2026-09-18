@@ -41,7 +41,11 @@ calculate_criterion(const Eigen::MatrixXd& data,
 std::vector<size_t>
 get_disc_cols(std::vector<std::string> var_types);
 
-// boost::graph representation of a vine tree
+//! @brief A node of a vine tree: one variable in tree 0, and one edge of
+//! the tree below it thereafter.
+//!
+//! Carries the conditioning and conditioned sets that name it, the indices
+//! that reach it, and the h-function columns the next tree is built from.
 struct VertexProperties
 {
   std::vector<size_t> conditioning;
@@ -54,6 +58,13 @@ struct VertexProperties
   Eigen::VectorXd hfunc2_sub;
   std::vector<std::string> var_types{ "c", "c" };
 };
+
+//! @brief An edge of a vine tree, i.e. one pair copula and what it is fitted
+//! on.
+//!
+//! Adds to a node's contents the pair-copula data, the selection weight and
+//! criterion the spanning tree is chosen by, the fitted pair copula, and the
+//! identifier that lets an unchanged pair be reused rather than refitted.
 struct EdgeProperties
 {
   std::vector<size_t> conditioning;
@@ -81,6 +92,10 @@ using EdgeIterator = boost::graph_traits<VineTree>::edge_descriptor;
 using FoundEdge = std::pair<EdgeIterator, bool>;
 using WeightMap = boost::property_map<VineTree, boost::edge_weight_t>::type;
 
+//! @brief Selects a vine copula model tree by tree.
+//!
+//! Holds the data, the controls and the trees selected so far, and runs the
+//! spanning-tree search and the pair-copula fits of each level.
 class VinecopSelector
 {
 public:
@@ -200,6 +215,7 @@ protected:
   double get_next_threshold(std::vector<double>& thresholded_crits);
 
   // bundles the accumulators of one threshold-search pass over all trees
+  //! @brief The accumulators of one threshold-search pass over all trees.
   struct ThresholdPass
   {
     double mbicv = 0.0;

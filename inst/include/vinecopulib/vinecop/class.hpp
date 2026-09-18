@@ -42,15 +42,15 @@ public:
     const std::vector<std::string>& var_types = {});
 
   // Constructors from data
-  explicit Vinecop(const Eigen::MatrixXd& data,
+  explicit Vinecop(const Eigen::MatrixXd& u,
                    const RVineStructure& structure = RVineStructure(),
                    const std::vector<std::string>& var_types = {},
                    const FitControlsVinecop& controls = FitControlsVinecop());
 
-  // `matrix` must not be defaulted: that makes `Vinecop(data)` ambiguous with
+  // `matrix` must not be defaulted: that makes `Vinecop(u)` ambiguous with
   // the overload above.
   explicit Vinecop(
-    const Eigen::MatrixXd& data,
+    const Eigen::MatrixXd& u,
     const Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>& matrix,
     const std::vector<std::string>& var_types = {},
     const FitControlsVinecop& controls = FitControlsVinecop());
@@ -64,10 +64,10 @@ public:
   void to_file(const std::string& filename) const;
 
   // Methods modifying structure and/or families and parameters
-  void select(const Eigen::MatrixXd& data,
+  void select(const Eigen::MatrixXd& u,
               const FitControlsVinecop& controls = FitControlsVinecop());
 
-  void fit(const Eigen::MatrixXd& data,
+  void fit(const Eigen::MatrixXd& u,
            const FitControlsBicop& controls = FitControlsBicop(),
            const size_t num_threads = 1);
 
@@ -360,6 +360,7 @@ public:
                              const size_t num_threads = 1);
 
 private:
+  //! @brief A relabeled structure and where each pair copula moved to.
   struct ReorientationMap
   {
     RVineStructure structure;
@@ -367,6 +368,8 @@ private:
     bool identity{ false };
   };
 
+  //! @brief Reads a vine through an optional reorientation, so a cascade
+  //! evaluates a relabeled model without copying it.
   class VinecopView
   {
   public:
@@ -413,6 +416,7 @@ private:
   // on it. For an h-function output, `du1`/`du2` are ∂h/∂u1, ∂h/∂u2 (one of
   // them equals the copula density `c` by the identity ∂h2/∂u1 = ∂h1/∂u2 =
   // c).
+  //! @brief One edge's h-function derivatives, the seed of the cascade.
   struct DerivLeaf
   {
     Eigen::VectorXd du1, du2;          // ∂h/∂u1, ∂h/∂u2
@@ -436,6 +440,7 @@ private:
   // mirroring how the pdf/rosenblatt passes assemble their arguments.
   // (The du*/dpar* here are derivatives of `log c`; the identically named
   // fields of `DerivLeaf` are derivatives of an h-function `h`.)
+  //! @brief One edge's log-density derivatives, accumulated over a pass.
   struct DerivCache
   {
     size_t np{ 0 }, arg2_col{ 0 };
@@ -485,8 +490,8 @@ protected:
   std::vector<std::string> var_types_;
   int n_discrete_{ 0 };
 
-  void check_data_dim(const Eigen::MatrixXd& data) const;
-  void check_data(const Eigen::MatrixXd& data) const;
+  void check_data_dim(const Eigen::MatrixXd& u) const;
+  void check_data(const Eigen::MatrixXd& u) const;
   void check_pair_copulas_rvine_structure(
     const std::vector<std::vector<Bicop>>& pair_copulas) const;
   double calculate_mbicv_penalty(const size_t nobs, const double psi0) const;
@@ -496,7 +501,7 @@ protected:
   static void check_tree_criterion_function(const FitControlsVinecop& controls);
   void check_weights_size(const Eigen::VectorXd& weights,
                           const Eigen::MatrixXd& data) const;
-  void check_enough_data(const Eigen::MatrixXd& data) const;
+  void check_enough_data(const Eigen::MatrixXd& u) const;
   void check_fitted() const;
   void check_indices(const size_t tree, const size_t edge) const;
   void check_var_types(const std::vector<std::string>& var_types) const;

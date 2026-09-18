@@ -54,7 +54,7 @@ public:
         const Eigen::MatrixXd& parameters = Eigen::MatrixXd(),
         const std::vector<std::string>& var_types = { "c", "c" });
 
-  explicit Bicop(const Eigen::MatrixXd& data,
+  explicit Bicop(const Eigen::MatrixXd& u,
                  const FitControlsBicop& controls = FitControlsBicop(),
                  const std::vector<std::string>& var_types = { "c", "c" });
 
@@ -303,10 +303,10 @@ public:
                            const size_t num_threads = 1) const;
 
   // Methods modifying the family/rotation/parameters
-  void fit(const Eigen::MatrixXd& data,
+  void fit(const Eigen::MatrixXd& u,
            const FitControlsBicop& controls = FitControlsBicop());
 
-  void select(const Eigen::MatrixXd& data,
+  void select(const Eigen::MatrixXd& u,
               FitControlsBicop controls = FitControlsBicop());
 
   // Fit statistics
@@ -360,6 +360,8 @@ private:
 
   Eigen::MatrixXd prep_for_abstract_continuous(const Eigen::MatrixXd& u) const;
 
+  //! @brief Which leaf an h-function resolves to under the rotation, and
+  //! whether its value is complemented.
   struct ConditionalSpec
   {
     bool use_first;
@@ -384,6 +386,7 @@ private:
   // rotation-resolved derivative call: canonical selector for the (unrotated)
   // leaf, chain-rule sign, and, for h-functions, whether the rotation swaps
   // which h-function's leaf is used
+  //! @brief A rotation-resolved derivative call.
   struct DerivSpec
   {
     std::string deriv;

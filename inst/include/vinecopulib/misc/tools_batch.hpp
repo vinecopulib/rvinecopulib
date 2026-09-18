@@ -13,6 +13,7 @@ namespace vinecopulib {
 
 namespace tools_batch {
 
+//! @brief A contiguous run of tasks handed to one thread.
 struct Batch
 {
   size_t begin;
