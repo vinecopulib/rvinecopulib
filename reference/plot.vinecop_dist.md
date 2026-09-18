@@ -104,9 +104,9 @@ plt <- plot(vc, edge_labels = "family_tau")
 
 igr_obj <- get("g", plt$plot_env)[[1]]
 igr_obj  # print object
-#> IGRAPH f88e6dc UN-- 10 9 -- 
+#> IGRAPH 4012655 UN-- 10 9 -- 
 #> + attr: name (v/c), name (e/c)
-#> + edges from f88e6dc (vertex names):
+#> + edges from 4012655 (vertex names):
 #> [1] 7 --10 10--8  4 --2  9 --8  3 --8  2 --8  8 --1  5 --6  6 --1 
 igraph::E(igr_obj)$name  # extract edge labels
 #>       [,1]      

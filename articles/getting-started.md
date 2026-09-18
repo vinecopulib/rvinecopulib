@@ -277,5 +277,5 @@ stopifnot(isTRUE(all.equal(draws1, draws2)))
   inference](https://vinecopulib.github.io/rvinecopulib/articles/likelihood-inference.md)
   introduce advanced workflows.
 - The [function
-  reference](https://vinecopulib.github.io/rvinecopulib/reference/index.md)
+  reference](https://vinecopulib.github.io/rvinecopulib/reference/)
   lists the complete API by modeling task.
