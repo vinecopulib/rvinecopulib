@@ -2,6 +2,8 @@
 
 ## rvinecopulib 1.0.0.1.0
 
+CRAN release: 2026-09-20
+
 The first stable release, based on vinecopulib 1.0.0. Highlights include
 a new marginal-modeling interface, conditional simulation and
 transforms, analytic derivatives, observation-specific parameters, and

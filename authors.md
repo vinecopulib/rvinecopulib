@@ -9,7 +9,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/vinecopulib/rvinecopulib/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/vinecopulib/rvinecopulib/blob/v1.0.0.1.0/DESCRIPTION)
 
 Nagler T, Vatter T (2026). *rvinecopulib: High Performance Algorithms
 for Vine Copula Modeling*. R package version 1.0.0.1.0,
