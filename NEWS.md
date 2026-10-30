@@ -1,3 +1,13 @@
+# rvinecopulib (development version)
+
+### BUG FIXES
+
+* Automatic truncation and threshold selection (`trunc_lvl = NA`,
+  `threshold = NA`) used an inverted count of independence copulas in the
+  prior of the modified BIC, so the search optimized a different criterion
+  than `mBICV()` reports and truncated too early. Fixed in the vendored
+  backend (vinecopulib#805).
+
 # rvinecopulib 1.0.0.1.0
 
 The first stable release, based on vinecopulib 1.0.0. Highlights include a new
