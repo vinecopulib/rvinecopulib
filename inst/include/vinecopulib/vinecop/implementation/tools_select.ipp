@@ -955,7 +955,7 @@ VinecopSelector::get_npars_of_tree(size_t t)
   return npars;
 }
 
-//! @brief Calculates the numbers of independence copulas in a tree.
+//! @brief Calculates the number of non-independence copulas in a tree.
 inline size_t
 VinecopSelector::get_num_non_indeps_of_tree(size_t t)
 {
@@ -963,7 +963,7 @@ VinecopSelector::get_num_non_indeps_of_tree(size_t t)
   // trees_[0] is base tree, see make_base_tree()
   for (const auto& e : boost::edges(trees_[t + 1])) {
     num_non_indeps += static_cast<size_t>(
-      trees_[t + 1][e].pair_copula.get_family() == BicopFamily::indep);
+      trees_[t + 1][e].pair_copula.get_family() != BicopFamily::indep);
   }
   return num_non_indeps;
 }
