@@ -1,9 +1,10 @@
 ## ---------------------------------------------------------------------------
-## Figures for the manuscript.  Run after code.R, which fits the models.
+## Figures for the manuscript.  Refits the two case-study models of code.R.
 ##
 ##   Rscript make_figures.R
 ##
-## Writes figures/margins.pdf, figures/condsim.pdf and figures/truncation.pdf.
+## Writes figures/margins.pdf, figures/contours.pdf, figures/condsim.pdf and
+## figures/truncation.pdf, each at the text width of the jss class.
 ## ---------------------------------------------------------------------------
 
 suppressMessages({
@@ -13,10 +14,11 @@ suppressMessages({
   library("xts")
 })
 dir.create("figures", showWarnings = FALSE)
-set.seed(20260826)
+tw <- 6.1 # text width in inches
 
-## --- Case study B: margins and conditional simulation --------------------
+## --- Case study B: margins, contours and conditional simulation ----------
 data("dataCar", package = "insuranceData")
+set.seed(20260826)
 idx <- sample(nrow(dataCar), 10000)
 dat <- data.frame(
   cost = zero_inflated(dataCar$claimcst0[idx]),
@@ -78,14 +80,13 @@ fit <- vine(
   cores = 4
 )
 
-pdf("figures/margins.pdf", width = 8.4, height = 2.9, pointsize = 10)
+pdf("figures/margins.pdf", width = tw, height = 2.3, pointsize = 9)
 par(
   mfrow = c(1, 3),
-  mar = c(3.6, 3.6, 2.2, 0.8),
-  mgp = c(2.2, 0.7, 0),
+  mar = c(3.4, 3.4, 2.0, 0.6),
+  mgp = c(2.1, 0.7, 0),
   bty = "n"
 )
-
 pos <- dat$cost[dat$cost > 0]
 p0 <- 1 - mean(dat$cost > 0)
 hist(
@@ -100,12 +101,7 @@ hist(
 )
 xs <- seq(min(log(pos)), max(log(pos)), length.out = 300)
 lines(xs, dmargin(exp(xs), fit$margins[[1]]) * exp(xs) / (1 - p0), lwd = 2)
-legend(
-  "topright",
-  bty = "n",
-  legend = sprintf("atom at 0: %.3f", p0),
-  cex = 0.9
-)
+legend("topright", bty = "n", legend = sprintf("atom at 0: %.3f", p0))
 
 hist(
   dat$veh_value,
@@ -136,20 +132,25 @@ points(bp, pk, pch = 19, cex = 1.1)
 segments(bp, 0, bp, pk, lwd = 1.5)
 dev.off()
 
+pdf("figures/contours.pdf", width = tw, height = 1.9, pointsize = 9)
+contour(fit$copula, tree = 1)
+dev.off()
+
 profile <- data.frame(
   veh_value = 1.5,
   exposure = 0.75,
   veh_age = ordered(2, levels = levels(dat$veh_age)),
   agecat = ordered(2, levels = levels(dat$agecat))
 )
-sc <- rvine(20000, fit, x_cond = profile, conditioning_set = predictors)
-su <- rvine(20000, fit)
+set.seed(20260826)
+sc <- rvine(1e6, fit, x_cond = profile, conditioning_set = predictors)
+su <- rvine(1e6, fit)
 
-pdf("figures/condsim.pdf", width = 8.4, height = 3.1, pointsize = 10)
+pdf("figures/condsim.pdf", width = tw, height = 2.4, pointsize = 9)
 par(
   mfrow = c(1, 2),
-  mar = c(3.8, 3.8, 2.2, 0.8),
-  mgp = c(2.4, 0.7, 0),
+  mar = c(3.6, 3.6, 2.0, 0.6),
+  mgp = c(2.3, 0.7, 0),
   bty = "n"
 )
 p <- c(
@@ -164,7 +165,7 @@ b <- barplot(
   ylab = "P(claim)",
   main = "probability of a claim"
 )
-text(b, p + 0.008, sprintf("%.3f", p), cex = 0.95)
+text(b, p + 0.008, sprintf("%.3f", p))
 du <- density(log(su[su[, "cost"] > 0, "cost"]))
 dc <- density(log(sc[sc[, "cost"] > 0, "cost"]))
 plot(
@@ -182,8 +183,7 @@ legend(
   bty = "n",
   lwd = 2,
   col = c("grey55", "black"),
-  legend = c("unconditional", "given profile"),
-  cex = 0.9
+  legend = c("unconditional", "given profile")
 )
 dev.off()
 
@@ -203,15 +203,25 @@ full <- vinecop(
   selcrit = "mbicv",
   cores = 4
 )
+auto <- vinecop(
+  u_ret,
+  family_set = "parametric",
+  tree_crit = "tau",
+  trunc_lvl = NA,
+  selcrit = "mbicv",
+  cores = 4
+)
+sel <- auto$structure$trunc_lvl
 ks <- seq_len(ncol(u_ret) - 1)
 ll <- sapply(ks, function(k) truncate_model(full, k)$loglik)
 mb <- sapply(ks, function(k) mBICV(truncate_model(full, k), newdata = u_ret))
+kmin <- which.min(mb)
 
-pdf("figures/truncation.pdf", width = 8.4, height = 3.1, pointsize = 10)
+pdf("figures/truncation.pdf", width = tw, height = 2.4, pointsize = 9)
 par(
   mfrow = c(1, 2),
-  mar = c(3.8, 4.0, 2.0, 0.8),
-  mgp = c(2.5, 0.7, 0),
+  mar = c(3.6, 3.9, 2.0, 0.6),
+  mgp = c(2.4, 0.7, 0),
   bty = "n"
 )
 plot(
@@ -223,20 +233,32 @@ plot(
   ylab = "log-likelihood",
   main = "fit"
 )
-points(10, ll[10], pch = 19)
-text(10, ll[10], " selected", adj = c(0, 1.6), cex = 0.9)
+points(sel, ll[sel], pch = 19)
+## the level-1 value lies far below the rest; show the path from level 2
 plot(
-  ks,
-  mb,
+  ks[-1],
+  mb[-1],
   type = "l",
   lwd = 2,
   xlab = "truncation level",
   ylab = "mBICV",
-  main = "criterion"
+  main = "criterion (levels 2 to 49)"
 )
-points(10, mb[10], pch = 19)
-text(10, mb[10], " selected", adj = c(0, 1.6), cex = 0.9)
+points(sel, mb[sel], pch = 19)
+points(kmin, mb[kmin], pch = 1, cex = 1.4)
+legend(
+  "topright",
+  bty = "n",
+  pch = c(19, 1),
+  legend = c("selected by trunc_lvl = NA", "minimum over the path")
+)
 dev.off()
 
-cat("figures written to figures/\n")
+cat(
+  "figures written to figures/; selected level",
+  sel,
+  "path minimum",
+  kmin,
+  "\n"
+)
 sessionInfo()

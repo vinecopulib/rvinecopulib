@@ -6,9 +6,10 @@
 ##
 ## Run with:  Rscript code.R
 ##
-## Set FAST <- TRUE (or export RVCL_FAST=1) for the reduced grid, which
-## completes in a few minutes.  The full run reproduces every number in the
-## paper and is intended to stay under one hour on a recent desktop.
+## Set RVCL_FAST=1 for a reduced grid that completes in a few minutes.  The
+## full run reproduces every number in the paper; the timings of Section 7.3
+## are only meaningful on an idle machine with uniform cores (see README.md).
+## An HTML report of the run is produced by knitr::spin("code.R").
 ## ---------------------------------------------------------------------------
 
 FAST <- nzchar(Sys.getenv("RVCL_FAST"))
@@ -22,11 +23,9 @@ library("rvinecopulib")
 ## Section 4.1: bivariate copulas
 ## ===========================================================================
 
-## A fixed pair copula, printed as it appears in the paper.
 cop <- bicop_dist("bb1", rotation = 90, parameters = c(3, 2))
 cop
 
-## Dependence summaries.
 par_to_ktau(cop)
 tail_dep(cop)
 blomqvist_beta(cop)
@@ -45,17 +44,16 @@ as_rvine_matrix(structure)
 ## the number of discrete variables.  Both must give the same density.
 ## ===========================================================================
 
-n <- 500
-x <- cbind(rnorm(n), rpois(n, 1), rnorm(n))
+pair_copulas <- list(
+  list(bicop_dist("gaussian", 0, 0.5), bicop_dist("clayton", 0, 1.5)),
+  list(bicop_dist("frank", 0, 2))
+)
 model <- vinecop_dist(
-  list(
-    list(bicop_dist("gaussian", 0, 0.5), bicop_dist("clayton", 0, 1.5)),
-    list(bicop_dist("frank", 0, 2))
-  ),
+  pair_copulas,
   dvine_structure(1:3),
   var_types = c("c", "d", "c")
 )
-
+x <- cbind(rnorm(500), rpois(500, 1), rnorm(500))
 u_expanded <- cbind(
   pnorm(x[, 1]),
   ppois(x[, 2], 1),
@@ -65,11 +63,10 @@ u_expanded <- cbind(
   pnorm(x[, 3])
 )
 u_compact <- u_expanded[, c(1, 2, 3, 5)]
-
 all.equal(dvinecop(u_expanded, model), dvinecop(u_compact, model))
 
 ## ===========================================================================
-## Section 4.7 and 5.1: derivatives, uncertainty, and the margin protocol
+## Section 4.7: derivatives and uncertainty
 ## ===========================================================================
 
 ## The stepwise gradient is (near) zero at a sequentially fitted model; the
@@ -82,13 +79,15 @@ fit <- vinecop(u, family_set = "parametric", keep_data = TRUE)
 max(abs(colSums(scores(u, fit, step_wise = TRUE))))
 max(abs(colSums(scores(u, fit, step_wise = FALSE))))
 
-## Covariance and Wald intervals.
-## the sandwich is the only form offered; step_wise selects the objective
-sqrt(diag(vcov(fit)))
-sqrt(diag(vcov(fit, step_wise = FALSE)))
-confint(fit, level = 0.95)
+## The sandwich is the only form offered; step_wise selects the objective.
+round(sqrt(diag(vcov(fit))), 3)
+round(sqrt(diag(vcov(fit, step_wise = FALSE))), 3)
+round(confint(fit, level = 0.95), 3)
 
-## A user-defined zero-inflated log-normal margin family.
+## ===========================================================================
+## Section 5.1: a user-defined zero-inflated log-normal margin family
+## ===========================================================================
+
 fit_zilnorm <- function(x, weights = numeric(), type = "zi") {
   if (length(weights) == 0) {
     weights <- rep(1, length(x))
@@ -118,28 +117,36 @@ fit_zilnorm <- function(x, weights = numeric(), type = "zi") {
 }
 zilnorm <- margin_family(fit_zilnorm, family_name = "zilnorm", types = "zi")
 
+## a check on simulated data; the paper fits it to the insurance claims below
 z <- ifelse(runif(400) < 0.6, 0, rlnorm(400, 1, 0.5))
-margin_info(fit_margin(zilnorm, z))
+str(margin_info(fit_margin(zilnorm, z))[c("npars", "loglik")])
 
 ## ===========================================================================
 ## Section 5.2: a user-supplied tree-selection criterion
 ##
-## Chatterjee's xi, which detects functional relationships that rank
-## correlations miss.
+## Chatterjee's xi, symmetrized because a tree edge is undirected; it rejects
+## weights rather than ignoring them.
 ## ===========================================================================
 
-xi <- function(data, weights) {
-  n <- nrow(data)
-  r <- rank(data[order(data[, 1]), 2], ties.method = "max")
+xi_one <- function(x, y) {
+  n <- length(x)
+  r <- rank(y[order(x)], ties.method = "max")
   1 - 3 * sum(abs(diff(r))) / (n^2 - 1)
 }
-vinecop(u, tree_crit = xi, family_set = "parametric")
+xi <- function(data, weights) {
+  if (length(weights) > 0) {
+    stop("xi does not support weights")
+  }
+  max(xi_one(data[, 1], data[, 2]), xi_one(data[, 2], data[, 1]))
+}
+fit_xi <- vinecop(u, tree_crit = xi, family_set = "parametric")
+fit_xi
 
 ## ===========================================================================
 ## Section 4.7: coverage of the Wald intervals under known vs estimated margins
 ##
-## Establishes that the two-stage approximation, not an implementation error,
-## explains the shortfall reported in the paper.
+## The two-stage approximation, not an implementation error, explains the
+## shortfall reported in the paper.
 ## ===========================================================================
 
 coverage_study <- function(R = 300, n = 1000, d = 3, rho = 0.5) {
@@ -160,7 +167,7 @@ coverage_study <- function(R = 300, n = 1000, d = 3, rho = 0.5) {
       est <- unlist(lapply(f$pair_copulas, function(t) {
         lapply(t, function(p) p$parameters)
       }))
-      se <- sqrt(diag(vcov(f, type = "sandwich")))
+      se <- sqrt(diag(vcov(f)))
       out[[nm]][r, ] <- (truth >= est - 1.96 * se) & (truth <= est + 1.96 * se)
     }
   }
@@ -229,10 +236,9 @@ for (d in c(5, 10, 20, 50)) {
 }
 
 ## ===========================================================================
-## Section 6: illustrations
+## Section 6.1: financial returns
 ## ===========================================================================
 
-## --- Case study A: S&P 500 returns --------------------------------------
 library("qrmdata")
 library("xts")
 data("SP500_const", package = "qrmdata")
@@ -246,14 +252,24 @@ u_ret <- pseudo_obs(as.matrix(returns))
 
 settings <- list(
   list(
-    lab = "parametric, untruncated",
+    lab = "parametric, trunc_lvl = NA",
     fs = "parametric",
     tc = "tau",
-    tl = Inf
+    tl = NA
   ),
-  list(lab = "parametric, mBICV", fs = "parametric", tc = "tau", tl = NA),
-  list(lab = "all families, mBICV", fs = "all", tc = "tau", tl = NA),
-  list(lab = "parametric, mBICV, mcor", fs = "parametric", tc = "mcor", tl = NA)
+  list(lab = "all families, trunc_lvl = NA", fs = "all", tc = "tau", tl = NA),
+  list(
+    lab = "parametric, mcor, trunc_lvl = NA",
+    fs = "parametric",
+    tc = "mcor",
+    tl = NA
+  ),
+  list(
+    lab = "parametric, trunc_lvl = 10",
+    fs = "parametric",
+    tc = "tau",
+    tl = 10
+  )
 )
 if (!FAST) {
   ret_times <- numeric(length(settings))
@@ -271,9 +287,11 @@ if (!FAST) {
     ret_times[i] <<- as.numeric(difftime(Sys.time(), t0, units = "secs"))
     f
   })
-  ## the untruncated fit time quoted in Section 6.1
-  round(ret_times[1])
-  do.call(
+  ## seconds per fit on four cores; the first is quoted in Section 6.1
+  print(round(ret_times))
+
+  ## Table: fitted vine copulas
+  print(do.call(
     rbind,
     Map(
       function(r, f) {
@@ -290,65 +308,78 @@ if (!FAST) {
       settings,
       ret_fits
     )
-  )
+  ))
 
   ## the nonparametric family is never selected at this dimension
-  "tll" %in% unlist(get_all_families(ret_fits[[3]]))
+  print("tll" %in% unlist(get_all_families(ret_fits[[2]])))
 
-  ## truncation path (Figure: truncation.pdf)
+  ## the Section 4.3 call is the second setting
+  print(head(summary(ret_fits[[2]]), 4))
+
+  ## families of the selected model, by tree
+  smr <- summary(ret_fits[[1]])
+  print(sort(table(smr$family), decreasing = TRUE))
+  print(table(smr$tree, smr$family))
+
+  ## truncation path of the full fit (Figure: truncation.pdf)
   full <- ret_fits[[1]]
-  sapply(1:15, function(k) mBICV(truncate_model(full, k), newdata = u_ret))
+  path <- sapply(1:49, function(k) {
+    mBICV(truncate_model(full, k), newdata = u_ret)
+  })
+  print(round(path))
+  print(c(selected = full$structure$trunc_lvl, path_min = which.min(path)))
 
   ## Whole-model comparison, out of sample.  Information criteria compare
   ## parametric candidates; they are not a basis for choosing between a
   ## parametric family and a nonparametric estimator, so we split the sample.
   train <- u_ret[1:1000, ]
   test <- u_ret[1001:1509, ]
-  heldout <- function(m) mean(log(dvinecop(test, m)))
+  heldout <- function(m) mean(dvinecop(test, m, log = TRUE))
+  timed <- function(expr) {
+    secs <- system.time(f <- expr)[["elapsed"]]
+    attr(f, "secs") <- secs
+    f
+  }
   fits_ho <- list(
-    parametric_itau = vinecop(
+    parametric_itau = timed(vinecop(
       train,
       family_set = "itau",
       par_method = "itau",
       selcrit = "mbicv",
       trunc_lvl = NA,
       cores = 8
-    ),
-    parametric_mle = vinecop(
+    )),
+    parametric_mle = timed(vinecop(
       train,
       family_set = "parametric",
       selcrit = "mbicv",
       trunc_lvl = NA,
       cores = 8
-    ),
-    nonparametric_9 = vinecop(
-      train,
-      family_set = "tll",
-      trunc_lvl = 9,
-      cores = 8
-    ),
-    nonparametric_3 = vinecop(
-      train,
-      family_set = "tll",
-      trunc_lvl = 3,
-      cores = 8
-    ),
-    nonparametric_1 = vinecop(
-      train,
-      family_set = "tll",
-      trunc_lvl = 1,
-      cores = 8
-    )
+    ))
   )
-  data.frame(
+  ## nonparametric vines at the parametric level and at two shallower ones
+  lvls <- unique(c(fits_ho$parametric_itau$structure$trunc_lvl, 3, 1))
+  for (k in lvls) {
+    fits_ho[[paste0("nonparametric_", k)]] <- timed(vinecop(
+      train,
+      family_set = "tll",
+      trunc_lvl = k,
+      cores = 8
+    ))
+  }
+  print(data.frame(
     model = names(fits_ho),
+    trees = sapply(fits_ho, function(m) m$structure$trunc_lvl),
     npars = round(sapply(fits_ho, function(m) m$npars), 1),
+    fit_secs = round(sapply(fits_ho, attr, "secs"), 1),
     heldout = round(sapply(fits_ho, heldout), 2)
-  )
+  ))
 }
 
+## ===========================================================================
+## Section 6.2: insurance claims
+## ===========================================================================
 
-## --- Case study B: insurance claims -------------------------------------
 library("insuranceData")
 data("dataCar", package = "insuranceData")
 
@@ -361,12 +392,14 @@ dat <- data.frame(
   veh_age = ordered(dataCar$veh_age[idx]),
   agecat = ordered(dataCar$agecat[idx])
 )
-
 predictors <- c("veh_value", "exposure", "veh_age", "agecat")
 
 ## claim cost is positive exactly when the claim count is, so only one of the
 ## two can enter the model
 all((dataCar$claimcst0 > 0) == (dataCar$numclaims > 0))
+
+## the user-defined family of Section 5.1, fitted directly
+str(margin_info(fit_margin(zilnorm, dat$cost))[c("npars", "loglik")])
 
 fit_ins <- vine(
   dat,
@@ -407,8 +440,23 @@ do.call(
 
 summary(fit_ins$copula)
 
-## intervals condition on the fitted margins; see ?parameter_uncertainty
-confint(fit_ins$copula)
+## the modified BIC would not truncate this model
+round(
+  sapply(1:4, function(k) {
+    mBICV(truncate_model(fit_ins$copula, k), newdata = fit_ins$copula$data)
+  }),
+  1
+)
+
+## Wald intervals condition on the fitted margins; see ?parameter_uncertainty
+round(confint(fit_ins$copula), 3)
+
+## Rosenblatt residuals: uniform margins and no remaining dependence
+set.seed(1)
+res <- rosenblatt(dat, fit_ins)
+pv <- function(x) suppressWarnings(ks.test(x, "punif"))$p.value
+round(apply(res, 2, pv), 2)
+round(max(abs(cor(res, method = "kendall")[upper.tri(diag(5))])), 3)
 
 ## Conditional simulation on the original data scale.
 profile <- data.frame(
@@ -417,13 +465,15 @@ profile <- data.frame(
   veh_age = ordered(2, levels = levels(dat$veh_age)),
   agecat = ordered(2, levels = levels(dat$agecat))
 )
+n_sim <- if (FAST) 1e5 else 1e6
+set.seed(20260826)
 sim_cond <- rvine(
-  20000,
+  n_sim,
   fit_ins,
   x_cond = profile,
   conditioning_set = predictors
 )
-sim_marg <- rvine(20000, fit_ins)
+sim_marg <- rvine(n_sim, fit_ins)
 
 c(
   conditional = mean(sim_cond[, "cost"] > 0),
@@ -433,9 +483,13 @@ c(
   conditional = mean(sim_cond[, "cost"]),
   unconditional = mean(sim_marg[, "cost"])
 )
+c(
+  conditional = median(sim_cond[sim_cond[, "cost"] > 0, "cost"]),
+  unconditional = median(sim_marg[sim_marg[, "cost"] > 0, "cost"])
+)
 
 ## the conditioning values are reproduced exactly
-all.equal(unname(sim_cond[, "veh_value"]), rep(1.5, 20000))
+all.equal(unname(sim_cond[, "veh_value"]), rep(1.5, n_sim))
 
 ## ===========================================================================
 ## Section 7: validation and benchmarks
@@ -597,7 +651,7 @@ if (!FAST) {
     runtime_cell(10, 1000, 5),
     runtime_cell(20, 1000, 5)
   )
-  ## median seconds
+  ## fastest seconds
   print(do.call(rbind, lapply(mle, `[[`, "time")))
   ## the same fits, checked against each other
   print(do.call(rbind, lapply(mle, `[[`, "fit")))
@@ -687,8 +741,8 @@ eval_cell <- function(d, n = 1509) {
     rv_pdf1 = dvinecop(u, f, cores = 1),
     rv_pdf8 = dvinecop(u, f, cores = 8),
     vc_pdf = RVinePDF(u, v),
-    rv_ll1 = sum(log(dvinecop(u, f, cores = 1))),
-    rv_ll8 = sum(log(dvinecop(u, f, cores = 8))),
+    rv_ll1 = sum(dvinecop(u, f, cores = 1, log = TRUE)),
+    rv_ll8 = sum(dvinecop(u, f, cores = 8, log = TRUE)),
     vc_ll = RVineLogLik(u, v)$loglik,
     rv_ros1 = rosenblatt(u, f, cores = 1),
     rv_ros8 = rosenblatt(u, f, cores = 8),
@@ -706,7 +760,7 @@ eval_cell <- function(d, n = 1509) {
   setNames(as.numeric(b$min), as.character(b$expression))
 }
 if (!FAST) {
-  t(sapply(c(5, 10, 20, 50), eval_cell))
+  print(t(sapply(c(5, 10, 20, 50), eval_cell)))
 }
 
 ## --- Nonparametric track -------------------------------------------------
